@@ -561,7 +561,7 @@
 
     <!-- 런닝 기록 -->
     <div style="padding:16px 16px 8px;display:flex;justify-content:space-between;align-items:center;">
-      <div class="my-section" style="padding:0;">런닝 기록</div>
+      <div class="my-section" style="padding:0;">최근 런닝 기록</div>
       <div style="font-size:12px;color:var(--green);cursor:pointer;" onclick="openAllRecords()">전체 보기 →</div>
     </div>
     <div style="padding:0 16px 20px;" id="myPageRecordList">
@@ -882,22 +882,21 @@ window.addEventListener('load', () => {
   document.getElementById('screen-home').classList.add('active');
   S.tab = 'home';
   renderRecords();
-  loadNearCourses();
-  // 위치 감지 먼저 → 완료되면 날씨 불러오기
+  // 위치 먼저 잡고 → 날씨 + 추천코스 불러오기
   if (navigator.geolocation) {
-    // 위치 감지 중
     navigator.geolocation.getCurrentPosition(pos => {
       S.lat = pos.coords.latitude;
       S.lng = pos.coords.longitude;
-      // 위치 감지 완료
       document.getElementById('addrInput').value = '현재 위치';
       fetchWeather();
+      loadNearCourses();
     }, () => {
-      // 위치 실패 시 기본값으로 날씨
       fetchWeather();
-    }, { enableHighAccuracy: true, timeout: 5000 });
+      loadNearCourses();
+    }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 });
   } else {
     fetchWeather();
+    loadNearCourses();
   }
 });
 
@@ -1120,7 +1119,8 @@ function updStartBtn() {
 /* ── 런닝 상태 ── */
 const R = {
   running: false, elapsed: 0, dist: 0,
-  totalKm: 5, interval: null, courseName: '', watchId: null
+  totalKm: 5, interval: null, courseName: '', watchId: null, gpsActive: false,
+  lastLat: null, lastLng: null
 };
 
 function startRun() {
@@ -1151,10 +1151,13 @@ function buildKmTrack(total) {
 function runTick() {
   if (!R.running) return;
   R.elapsed++;
-  R.dist = Math.min(R.dist + (1/390), R.totalKm); // 6분30초 페이스 기준
+  // GPS 없을 때만 시뮬레이션으로 거리 증가
+  if (!R.gpsActive) {
+    R.dist = Math.min(R.dist + (1/390), R.totalKm);
+    if (R.dist >= R.totalKm) { clearInterval(R.interval); stopRun(); }
+  }
   updateRunStats();
-  if (!runMap) drawRunCanvas(); // GPS 없을 때만 캔버스 사용
-  if (R.dist >= R.totalKm) { clearInterval(R.interval); stopRun(); }
+  if (!runMap) drawRunCanvas();
 }
 
 function fmtTime(s) {
@@ -1671,10 +1674,33 @@ function initRunMap(savedPoints) {
 
   // GPS watchPosition으로 실시간 위치 추적
   if (R.watchId) navigator.geolocation.clearWatch(R.watchId);
+  R.gpsActive = false;
+  R.lastLat = null; R.lastLng = null;
+
   if (navigator.geolocation) {
     R.watchId = navigator.geolocation.watchPosition(pos => {
-      const latlng = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
+      const latlng = new kakao.maps.LatLng(lat, lng);
+
+      // GPS 첫 수신 시 시뮬레이션 끄기
+      if (!R.gpsActive) {
+        R.gpsActive = true;
+        toast('GPS 연결됐어요! 실제 거리로 측정해요 📍');
+      }
+
+      // 이전 위치와 거리 계산해서 누적
+      if (R.lastLat !== null) {
+        const moved = getDistKm(R.lastLat, R.lastLng, lat, lng);
+        // 노이즈 필터: 0.003km(3m) 이상 이동했을 때만 반영
+        if (moved > 0.003 && moved < 0.1) {
+          R.dist = Math.min(R.dist + moved, R.totalKm * 1.5);
+        }
+      }
+      R.lastLat = lat; R.lastLng = lng;
+
       runPath.push(latlng);
+
       // 마커 이동
       if (runMarker) runMarker.setMap(null);
       runMarker = new kakao.maps.CustomOverlay({
@@ -1682,8 +1708,8 @@ function initRunMap(savedPoints) {
         content: '<div style="width:16px;height:16px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(29,158,117,.3)"></div>',
         zIndex: 5
       });
-      // 지도 중심 이동
       runMap.setCenter(latlng);
+
       // 달린 경로 그리기
       if (runPolyline) runPolyline.setMap(null);
       if (runPath.length > 1) {
@@ -1691,11 +1717,14 @@ function initRunMap(savedPoints) {
           map: runMap, path: runPath,
           strokeWeight: 4, strokeColor: '#1D9E75', strokeOpacity: 0.95
         });
-        // 실제 GPS 거리 계산
-        const gpsDist = runPolyline.getLength() / 1000;
-        if (gpsDist > R.dist) R.dist = gpsDist;
       }
-    }, null, { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 });
+
+      updateRunStats();
+
+    }, (err) => {
+      // GPS 실패 시 시뮬레이션으로 폴백
+      if (!R.gpsActive) toast('GPS를 찾는 중이에요… 시뮬레이션으로 진행해요');
+    }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 });
   }
 }
 
@@ -1869,6 +1898,20 @@ function obFinish() {
   ob.style.display = 'none';
   renderMyPage();
   toast(`환영해요, ${name}님! 🎉`);
+  // 온보딩 완료 후 위치 권한 요청
+  setTimeout(() => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(pos => {
+        S.lat = pos.coords.latitude;
+        S.lng = pos.coords.longitude;
+        fetchWeather();
+        loadNearCourses();
+      }, () => {
+        fetchWeather();
+        loadNearCourses();
+      }, { enableHighAccuracy: true, timeout: 10000 });
+    }
+  }, 800);
 }
 
 /* ── 프로필 편집 모달 ── */
@@ -2046,7 +2089,7 @@ function renderMyPage() {
       myRecList.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--gray-500);"><div style="font-size:28px;margin-bottom:8px;">👟</div><div style="font-size:13px;color:var(--gray-700);">아직 기록이 없어요</div><div style="font-size:12px;margin-top:4px;">추천 탭에서 첫 런닝을 시작해보세요!</div></div>';
     } else {
       const emojis = ['🏃','🌟','💪','🔥','⚡'];
-      myRecList.innerHTML = records.slice(0, 5).map((r, i) => `
+      myRecList.innerHTML = records.slice(0, 3).map((r, i) => `
         <div style="background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:14px;margin-bottom:8px;">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:${r.memo ? '10px' : '0'};">
             <div style="width:40px;height:40px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${r.mood ? r.mood.split(' ')[0] : emojis[i % emojis.length]}</div>
