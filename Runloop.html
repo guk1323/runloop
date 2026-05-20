@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>런룹 Runloop</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+  :root {
+    --green:#1D9E75;--green-light:#E1F5EE;--green-dark:#0F6E56;
+    --amber:#BA7517;--amber-light:#FAEEDA;
+    --red:#A32D2D;--red-light:#FCEBEB;
+    --gray-50:#F8F8F6;--gray-100:#F0EFEA;--gray-300:#D3D1C7;
+    --gray-500:#888780;--gray-700:#444441;--gray-900:#1A1A18;
+    --r:12px;--rs:8px;--rp:999px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+  html,body{height:100%;font-family:'Noto Sans KR',sans-serif;background:var(--gray-50);color:var(--gray-900);}
+  body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100dvh;overflow:hidden;}
+
+  .header{background:#fff;border-bottom:1px solid var(--gray-100);padding:14px 18px 10px;flex-shrink:0;z-index:100;}
+  .header-top{display:flex;justify-content:space-between;align-items:center;}
+  .logo{font-size:20px;font-weight:700;color:var(--green);letter-spacing:-0.5px;}
+  .loc-btn{display:flex;align-items:center;gap:5px;background:var(--green-light);color:var(--green-dark);padding:6px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;cursor:pointer;border:none;font-family:inherit;}
+
+  .tabs{display:flex;background:#fff;border-bottom:1px solid var(--gray-100);flex-shrink:0;}
+  .tab{flex:1;padding:11px 0;text-align:center;font-size:13px;font-weight:500;color:var(--gray-500);cursor:pointer;border-bottom:2px solid transparent;border:none;background:none;font-family:inherit;transition:all .2s;}
+  .tab.active{color:var(--green);border-bottom:2px solid var(--green);}
+
+  .screen{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;}
+  .screen.active{display:flex;}
+
+  /* AI 탭 */
+  .ai-top{background:#fff;padding:14px 16px;border-bottom:1px solid var(--gray-100);flex-shrink:0;}
+  .slabel{font-size:11px;font-weight:500;color:var(--gray-500);margin-bottom:7px;letter-spacing:.3px;}
+  .addr-input{width:100%;height:40px;border:1px solid var(--gray-300);border-radius:var(--rs);padding:0 12px;font-size:14px;font-family:inherit;outline:none;background:var(--gray-50);transition:border-color .2s;}
+  .addr-input:focus{border-color:var(--green);background:#fff;}
+  .addr-input::placeholder{color:var(--gray-500);}
+  .km-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
+  .km-label{font-size:13px;color:var(--gray-700);white-space:nowrap;}
+  .km-slider{flex:1;accent-color:var(--green);}
+  .km-val{font-size:15px;font-weight:700;color:var(--green);min-width:46px;text-align:right;}
+  .gen-btn{margin-top:10px;width:100%;height:42px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s;}
+  .gen-btn:hover{background:var(--green-dark);}
+  .gen-btn:disabled{background:var(--gray-300);cursor:not-allowed;}
+
+  .course-scroll{flex:1;overflow-y:auto;}
+  .course-list{padding:12px;display:flex;flex-direction:column;gap:10px;}
+  .course-card{background:#fff;border-radius:var(--r);border:1.5px solid var(--gray-100);overflow:hidden;cursor:pointer;transition:border-color .15s;}
+  .course-card:hover{border-color:var(--gray-300);}
+  .course-card.selected{border-color:var(--green);}
+  .cmap{height:85px;position:relative;overflow:hidden;background:#dce8dc;}
+  .cmap canvas{width:100%;height:100%;display:block;}
+  .cbadge{position:absolute;top:7px;left:7px;background:rgba(29,158,117,.9);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--rp);}
+  .crank{position:absolute;top:7px;right:7px;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--rp);}
+  .cinfo{padding:10px 14px 12px;}
+  .cname{font-size:14px;font-weight:700;margin-bottom:3px;}
+  .cmeta{font-size:12px;color:var(--gray-500);margin-bottom:7px;}
+  .tags{display:flex;gap:5px;flex-wrap:wrap;}
+  .tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:var(--rp);}
+  .tg{background:var(--green-light);color:var(--green-dark);}
+  .tb{background:#E6F1FB;color:#185FA5;}
+  .ta{background:var(--amber-light);color:var(--amber);}
+
+  .start-bar{padding:10px 16px 14px;background:#fff;border-top:1px solid var(--gray-100);flex-shrink:0;}
+  .start-btn{width:100%;height:48px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s;}
+  .start-btn:hover{background:var(--green-dark);}
+  .start-btn:disabled{background:var(--gray-300);cursor:not-allowed;}
+
+  .empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--gray-500);padding:32px;text-align:center;}
+  .empty-icon{font-size:36px;opacity:.5;}
+  .empty-title{font-size:15px;font-weight:500;color:var(--gray-700);}
+  .empty-desc{font-size:13px;line-height:1.6;}
+
+  /* 그리기 탭 */
+  #drawMapEl{flex:1;min-height:0;position:relative;}
+  .draw-hud{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;pointer-events:none;z-index:10;}
+  .hud-col{display:flex;flex-direction:column;gap:6px;pointer-events:auto;}
+  .hud-pill{background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:var(--rp);padding:7px 14px;font-size:13px;font-weight:500;color:var(--gray-900);display:flex;align-items:center;gap:6px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.1);white-space:nowrap;}
+  .hud-pill.acc{background:var(--green);color:#fff;border-color:var(--green);}
+  .hud-pill.dan{background:var(--red-light);color:var(--red);border-color:#f09595;}
+
+  .draw-stats{background:#fff;border-top:1px solid var(--gray-100);padding:12px 16px;flex-shrink:0;}
+  .sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;}
+  .scell{text-align:center;background:var(--gray-50);border-radius:var(--rs);padding:8px 4px;}
+  .scell-l{font-size:10px;color:var(--gray-500);margin-bottom:2px;}
+  .scell-v{font-size:17px;font-weight:700;}
+  .scell-v.g{color:var(--green);}
+  .conds{display:flex;gap:5px;flex-wrap:wrap;}
+  .ctag{display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:var(--rp);font-size:12px;font-weight:500;}
+  .cg{background:var(--green-light);color:var(--green-dark);}
+  .ca{background:var(--amber-light);color:var(--amber);}
+
+  .save-bar{padding:10px 16px 14px;background:#fff;border-top:1px solid var(--gray-100);flex-shrink:0;}
+  .save-btn{width:100%;height:48px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s;}
+  .save-btn:hover{background:var(--green-dark);}
+  .save-btn:disabled{background:var(--gray-300);cursor:not-allowed;}
+
+  .map-loading{position:absolute;inset:0;background:#e8f0e8;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:5;font-size:14px;color:var(--gray-700);}
+  .ml-spin{width:28px;height:28px;border:3px solid var(--gray-300);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;}
+  .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--gray-900);color:#fff;padding:10px 20px;border-radius:var(--rp);font-size:13px;font-weight:500;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;z-index:9999;}
+  .toast.show{opacity:1;}
+
+  .course-scroll::-webkit-scrollbar{width:3px;}
+  .course-scroll::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:2px;}
+
+  /* ── 런닝 화면 ── */
+  .run-screen{position:fixed;inset:0;background:#fff;z-index:999;display:none;flex-direction:column;max-width:430px;margin:0 auto;}
+  .run-screen.active{display:flex;}
+  .run-header{padding:14px 18px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gray-100);}
+  .run-title{font-size:16px;font-weight:700;color:var(--gray-900);}
+  .run-live{display:flex;align-items:center;gap:5px;background:#FEECEC;color:var(--red);padding:5px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;}
+  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:blink 1s infinite;}
+  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+  .run-map{height:220px;background:#dce8dc;position:relative;flex-shrink:0;}
+  .run-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 14px;flex-shrink:0;}
+  .rstat{background:var(--gray-50);border-radius:var(--r);padding:12px 14px;}
+  .rstat-l{font-size:11px;color:var(--gray-500);margin-bottom:4px;}
+  .rstat-v{font-size:26px;font-weight:700;color:var(--gray-900);line-height:1;}
+  .rstat-v.g{color:var(--green);}
+  .rstat-u{font-size:13px;font-weight:400;color:var(--gray-500);}
+  .pace-wrap{padding:0 14px 12px;flex-shrink:0;}
+  .pace-top{display:flex;justify-content:space-between;font-size:12px;color:var(--gray-500);margin-bottom:6px;}
+  .pace-track{height:7px;background:var(--gray-100);border-radius:4px;overflow:hidden;}
+  .pace-fill{height:100%;background:var(--green);border-radius:4px;transition:width .5s;}
+  .km-track{display:flex;gap:6px;padding:0 14px 14px;overflow-x:auto;flex-shrink:0;}
+  .km-track::-webkit-scrollbar{display:none;}
+  .km-chip{min-width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;}
+  .km-done{background:var(--green-light);color:var(--green-dark);}
+  .km-cur{background:var(--green);color:#fff;}
+  .km-todo{background:var(--gray-100);color:var(--gray-500);}
+  .run-controls{display:flex;align-items:center;justify-content:center;gap:18px;padding:10px 14px 20px;flex-shrink:0;margin-top:auto;}
+  .ctrl-stop{width:54px;height:54px;border-radius:50%;background:var(--red-light);border:1px solid #f09595;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;}
+  .ctrl-pause{width:68px;height:68px;border-radius:50%;background:var(--green);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:28px;color:#fff;transition:background .15s;}
+  .ctrl-pause.paused{background:var(--amber-light);}
+  .ctrl-extra{width:54px;height:54px;border-radius:50%;background:var(--gray-100);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;}
+  /* 완료 오버레이 */
+  .finish-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:none;align-items:center;justify-content:center;}
+  .finish-overlay.active{display:flex;}
+  .finish-card{background:#fff;border-radius:20px;padding:24px 20px;width:320px;max-width:90vw;}
+  .finish-emoji{font-size:36px;text-align:center;margin-bottom:8px;}
+  .finish-title{font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;}
+  .finish-sub{font-size:13px;color:var(--gray-500);text-align:center;margin-bottom:16px;}
+  .finish-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;}
+  .fstat{background:var(--gray-50);border-radius:var(--rs);padding:10px;text-align:center;}
+  .fstat-l{font-size:11px;color:var(--gray-500);margin-bottom:2px;}
+  .fstat-v{font-size:18px;font-weight:700;}
+  .fstat-v.g{color:var(--green);}
+  .finish-save{width:100%;height:48px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;margin-bottom:8px;}
+  .finish-discard{width:100%;height:40px;background:none;border:1px solid var(--gray-300);border-radius:var(--r);font-size:13px;font-family:inherit;cursor:pointer;color:var(--gray-500);}
+
+  .record-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+  .record-icon{width:42px;height:42px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .record-info{flex:1;}
+  .record-name{font-size:13px;font-weight:700;color:var(--gray-900);margin-bottom:2px;}
+  .record-meta{font-size:12px;color:var(--gray-500);}
+  .record-dist{font-size:16px;font-weight:700;color:var(--green);}
+
+  .mc-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);margin-bottom:10px;overflow:hidden;}
+  .mc-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;}
+  .mc-name{font-size:14px;font-weight:700;color:var(--gray-900);}
+  .mc-meta{font-size:12px;color:var(--gray-500);margin-top:2px;}
+  .mc-actions{display:flex;gap:6px;}
+  .mc-btn{padding:5px 10px;border-radius:var(--rp);font-size:11px;font-weight:500;border:none;cursor:pointer;font-family:inherit;}
+  .mc-btn-run{background:var(--green);color:#fff;}
+  .mc-btn-edit{background:var(--gray-100);color:var(--gray-700);}
+  .mc-btn-del{background:var(--red-light);color:var(--red);}
+  .mc-preview{height:70px;background:#dce8dc;position:relative;}
+  .mc-preview canvas{width:100%;height:100%;display:block;}
+  .mc-dist-badge{position:absolute;bottom:6px;right:8px;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--rp);}
+
+  .addr-dropdown-item{padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--gray-100);color:var(--gray-900);}
+  .addr-dropdown-item:last-child{border-bottom:none;}
+  .addr-dropdown-item:hover{background:var(--gray-50);}
+  .addr-dropdown-addr{font-size:11px;color:var(--gray-500);margin-top:2px;}
+
+  .all-record-card{background:var(--gray-50);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+  .all-record-icon{width:40px;height:40px;border-radius:50%;background:#fff;border:1px solid var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .all-record-info{flex:1;}
+  .all-record-name{font-size:13px;font-weight:700;margin-bottom:2px;}
+  .all-record-meta{font-size:11px;color:var(--gray-500);}
+  .all-record-dist{font-size:15px;font-weight:700;color:var(--green);}
+
+  .save-course-btn{background:var(--green-light);color:var(--green-dark);border:none;border-radius:var(--rp);padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
+  .save-course-btn:hover{background:#c5eede;}
+
+  /* 마이페이지 */
+  .my-profile-card{margin:14px;background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:var(--r);padding:20px;color:#fff;flex-shrink:0;}
+  .my-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:10px;cursor:pointer;border:2px solid rgba(255,255,255,.4);}
+  .my-name{font-size:20px;font-weight:700;margin-bottom:2px;}
+  .my-sub{font-size:13px;opacity:.8;}
+  .my-points{display:flex;gap:16px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2);}
+  .my-point-item{text-align:center;}
+  .my-point-val{font-size:20px;font-weight:700;}
+  .my-point-label{font-size:11px;opacity:.75;margin-top:1px;}
+
+  .my-section{padding:14px 16px 8px;font-size:14px;font-weight:700;color:var(--gray-900);}
+  .my-setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1px solid var(--gray-100);}
+  .my-setting-label{font-size:14px;color:var(--gray-900);}
+  .my-setting-value{font-size:13px;color:var(--gray-500);}
+  .my-setting-input{border:1px solid var(--gray-300);border-radius:var(--rs);padding:6px 10px;font-size:13px;font-family:inherit;outline:none;text-align:right;width:120px;}
+  .my-setting-input:focus{border-color:var(--green);}
+
+  .goal-bar-wrap{padding:0 16px 14px;background:#fff;}
+  .goal-bar-track{height:8px;background:var(--gray-100);border-radius:4px;overflow:hidden;margin-top:6px;}
+  .goal-bar-fill{height:100%;background:var(--green);border-radius:4px;transition:width .5s;}
+  .goal-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--gray-500);margin-top:4px;}
+
+  .trophy-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 16px 16px;}
+  .trophy-item{text-align:center;}
+  .trophy-icon{font-size:28px;margin-bottom:4px;filter:grayscale(1);opacity:.4;}
+  .trophy-icon.earned{filter:none;opacity:1;}
+  .trophy-name{font-size:10px;color:var(--gray-500);}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">런룹</div>
+    <button class="loc-btn" onclick="detectLocation()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
+      <span id="locText">내 위치</span>
+    </button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab" onclick="switchTab('home',this)">🏠 홈</button>
+  <button class="tab active" onclick="switchTab('ai',this)">✦ AI</button>
+  <button class="tab" onclick="switchTab('draw',this)">✏ 그리기</button>
+  <button class="tab" onclick="switchTab('mycourse',this)">📍 코스</button>
+  <button class="tab" onclick="switchTab('mypage',this)">👤 MY</button>
+</div>
+
+<!-- 홈 화면 -->
+<div id="screen-home" class="screen">
+  <!-- 날씨 카드 -->
+  <div id="weatherCard" style="margin:14px 14px 0;background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:var(--r);padding:18px;color:#fff;flex-shrink:0;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <div style="font-size:12px;opacity:.8;margin-bottom:4px;" id="wLocation">위치 불러오는 중…</div>
+        <div style="font-size:42px;font-weight:700;line-height:1;" id="wTemp">—</div>
+        <div style="font-size:14px;margin-top:4px;opacity:.9;" id="wDesc">—</div>
+      </div>
+      <div style="font-size:52px;line-height:1;" id="wIcon">🌤</div>
+    </div>
+    <div style="display:flex;gap:16px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2);">
+      <div style="font-size:12px;opacity:.85;"><span style="opacity:.7;">습도</span> <span id="wHumid" style="font-weight:500;">—</span></div>
+      <div style="font-size:12px;opacity:.85;"><span style="opacity:.7;">바람</span> <span id="wWind" style="font-weight:500;">—</span></div>
+      <div style="font-size:12px;opacity:.85;"><span style="opacity:.7;">체감</span> <span id="wFeel" style="font-weight:500;">—</span></div>
+      <div style="font-size:12px;opacity:.85;" id="wRunAdvice">🏃 런닝 좋은 날씨!</div>
+    </div>
+  </div>
+
+  <!-- 이번주 요약 -->
+  <div style="padding:16px 14px 8px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+    <div style="font-size:14px;font-weight:700;color:var(--gray-900);">이번 주 요약</div>
+    <div style="font-size:12px;color:var(--green);cursor:pointer;" onclick="openAllRecords()">전체 기록 보기 →</div>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 14px;flex-shrink:0;">
+    <div style="background:#fff;border-radius:var(--r);padding:12px;text-align:center;border:1px solid var(--gray-100);">
+      <div style="font-size:11px;color:var(--gray-500);margin-bottom:4px;">총 거리</div>
+      <div style="font-size:20px;font-weight:700;color:var(--green);" id="weekDist">0<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small></div>
+    </div>
+    <div style="background:#fff;border-radius:var(--r);padding:12px;text-align:center;border:1px solid var(--gray-100);">
+      <div style="font-size:11px;color:var(--gray-500);margin-bottom:4px;">런닝 횟수</div>
+      <div style="font-size:20px;font-weight:700;color:var(--gray-900);" id="weekCount">0<small style="font-size:11px;font-weight:400;color:var(--gray-500)">회</small></div>
+    </div>
+    <div style="background:#fff;border-radius:var(--r);padding:12px;text-align:center;border:1px solid var(--gray-100);">
+      <div style="font-size:11px;color:var(--gray-500);margin-bottom:4px;">칼로리</div>
+      <div style="font-size:20px;font-weight:700;color:var(--amber);" id="weekCal">0<small style="font-size:11px;font-weight:400;color:var(--gray-500)">kcal</small></div>
+    </div>
+  </div>
+
+  <!-- 기록 리스트 -->
+  <div style="padding:0 14px 8px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+    <div style="font-size:14px;font-weight:700;color:var(--gray-900);">최근 기록</div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:0 14px 14px;" id="recordList">
+    <div style="text-align:center;padding:32px 0;color:var(--gray-500);">
+      <div style="font-size:32px;margin-bottom:8px;">👟</div>
+      <div style="font-size:14px;font-weight:500;color:var(--gray-700);">아직 기록이 없어요</div>
+      <div style="font-size:13px;margin-top:4px;">AI 추천 탭에서 첫 런닝을 시작해보세요!</div>
+    </div>
+  </div>
+</div>
+
+<!-- AI 추천 -->
+<div id="screen-ai" class="screen active">
+  <!-- 검색바 -->
+  <div style="background:#fff;padding:10px 14px;border-bottom:1px solid var(--gray-100);flex-shrink:0;display:flex;gap:8px;align-items:center;">
+    <div style="position:relative;flex:1;">
+      <input type="text" class="addr-input" id="addrInput" placeholder="🔍 출발지 검색 (예: 합정동, 홍대)" autocomplete="off"
+        oninput="searchAddress(this.value)" style="padding-right:36px;">
+      <div id="addrDropdown" style="display:none;position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-radius:var(--rs);z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;"></div>
+    </div>
+    <button onclick="useMyLocation()" style="width:40px;height:40px;background:var(--green-light);border:none;border-radius:var(--rs);cursor:pointer;font-size:18px;flex-shrink:0;">📍</button>
+  </div>
+
+  <!-- AI 추천 지도 -->
+  <div style="position:relative;flex-shrink:0;height:200px;">
+    <div id="aiMapEl" style="width:100%;height:100%;"></div>
+    <div class="map-loading" id="aiMapLoading">
+      <div class="ml-spin"></div><span>지도 불러오는 중…</span>
+    </div>
+    <!-- 출발지 선택 안내 -->
+    <div id="aiMapGuide" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:500;padding:6px 14px;border-radius:var(--rp);white-space:nowrap;">
+      📍 지도를 클릭해 출발지를 선택하세요
+    </div>
+    <!-- 선택된 출발지 표시 -->
+    <div id="aiSelectedAddr" style="display:none;position:absolute;top:8px;left:8px;right:8px;background:#fff;border-radius:var(--rs);padding:8px 12px;font-size:12px;font-weight:500;color:var(--gray-900);box-shadow:0 2px 8px rgba(0,0,0,.12);">
+      <span style="color:var(--green);">📍 출발지: </span><span id="aiSelectedAddrText">—</span>
+    </div>
+  </div>
+
+  <!-- 거리 + 추천 버튼 -->
+  <div style="background:#fff;padding:10px 14px 12px;border-bottom:1px solid var(--gray-100);flex-shrink:0;">
+    <div class="km-row">
+      <span class="km-label">목표 거리</span>
+      <input type="range" class="km-slider" id="kmSlider" min="1" max="20" step="0.5" value="5"
+        oninput="document.getElementById('kmVal').textContent=parseFloat(this.value).toFixed(1)+'km'">
+      <span class="km-val" id="kmVal">5.0km</span>
+    </div>
+    <button class="gen-btn" id="genBtn" onclick="generateCourses()">
+      <span id="genText">AI 코스 추천받기</span>
+      <div class="spinner" id="genSpinner"></div>
+    </button>
+  </div>
+
+  <div class="course-scroll">
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">🗺️</div>
+      <div class="empty-title">출발지를 선택해주세요</div>
+      <div class="empty-desc">지도에서 출발지를 클릭하거나<br>주소를 검색한 후 AI 추천을 받아보세요</div>
+    </div>
+    <div class="course-list" id="courseList" style="display:none;"></div>
+  </div>
+  <div class="start-bar">
+    <button class="start-btn" id="startBtn" disabled onclick="startRun()">코스를 선택해주세요</button>
+  </div>
+</div>
+
+<!-- 직접 그리기 -->
+<div id="screen-draw" class="screen">
+  <div id="drawMapEl" style="flex:1;min-height:0;position:relative;">
+    <div class="map-loading" id="mapLoading">
+      <div class="ml-spin"></div>
+      <span>지도 불러오는 중…</span>
+    </div>
+  </div>
+
+  <div class="draw-hud">
+    <div class="hud-col">
+      <div class="hud-pill acc">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
+        <span id="hudDist">0.0km</span>
+      </div>
+      <div class="hud-pill" onclick="undoDraw()">↩ 실행취소</div>
+    </div>
+    <div class="hud-col">
+      <div class="hud-pill dan" onclick="clearDraw()">🗑 지우기</div>
+    </div>
+  </div>
+
+  <div class="draw-stats">
+    <div class="sgrid">
+      <div class="scell"><div class="scell-l">총 거리</div><div class="scell-v g" id="dDist">0.0<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small></div></div>
+      <div class="scell"><div class="scell-l">예상 시간</div><div class="scell-v" id="dTime">—</div></div>
+      <div class="scell"><div class="scell-l">칼로리</div><div class="scell-v" id="dCal">—</div></div>
+    </div>
+    <div class="conds" id="conds">
+      <div class="ctag cg">🚶 보도 확보</div>
+      <div class="ctag ca">🚗 차량 보통</div>
+    </div>
+  </div>
+
+  <div class="save-bar">
+    <button class="save-btn" id="saveBtn" disabled onclick="saveCourse()">지도를 클릭해서 코스를 그어보세요</button>
+  </div>
+</div>
+
+
+<!-- 내 코스 화면 -->
+<div id="screen-mycourse" class="screen">
+  <div style="padding:14px 16px 10px;background:#fff;border-bottom:1px solid var(--gray-100);flex-shrink:0;display:flex;justify-content:space-between;align-items:center;">
+    <div style="font-size:15px;font-weight:700;color:var(--gray-900);">내가 만든 코스</div>
+    <div style="font-size:12px;color:var(--gray-500);" id="myCourseCount">0개</div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:12px;" id="myCourseList">
+    <div id="myCourseEmpty" style="text-align:center;padding:48px 0;color:var(--gray-500);">
+      <div style="font-size:36px;margin-bottom:10px;">🗺️</div>
+      <div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">저장된 코스가 없어요</div>
+      <div style="font-size:13px;line-height:1.6;">그리기 탭에서 코스를 그리고<br>저장해보세요!</div>
+    </div>
+  </div>
+</div>
+
+<!-- 마이페이지 -->
+<div id="screen-mypage" class="screen">
+  <div style="flex:1;overflow-y:auto;">
+
+    <!-- 프로필 카드 -->
+    <div class="my-profile-card">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div class="my-avatar" id="myAvatar" onclick="changeAvatar()">🏃</div>
+        <div style="flex:1;">
+          <div class="my-name" id="myNameDisplay">런너</div>
+          <div class="my-sub" id="myJoinDate">런룹과 함께 달리는 중</div>
+        </div>
+      </div>
+      <div class="my-points">
+        <div class="my-point-item">
+          <div class="my-point-val" id="myTotalPoints">0</div>
+          <div class="my-point-label">🏆 포인트</div>
+        </div>
+        <div class="my-point-item">
+          <div class="my-point-val" id="myTotalDist">0km</div>
+          <div class="my-point-label">총 거리</div>
+        </div>
+        <div class="my-point-item">
+          <div class="my-point-val" id="myTotalRuns">0회</div>
+          <div class="my-point-label">총 런닝</div>
+        </div>
+        <div class="my-point-item">
+          <div class="my-point-val" id="myStreak">0일</div>
+          <div class="my-point-label">🔥 연속</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 주간 목표 -->
+    <div class="my-section">주간 목표</div>
+    <div style="background:#fff;border-bottom:1px solid var(--gray-100);">
+      <div class="my-setting-row">
+        <span class="my-setting-label">주간 목표 거리</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" class="my-setting-input" id="weeklyGoalInput" value="20" min="1" max="200" onchange="saveGoal()" style="width:70px;">
+          <span style="font-size:13px;color:var(--gray-500);">km</span>
+        </div>
+      </div>
+      <div class="goal-bar-wrap">
+        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--gray-700);">
+          <span>이번 주 진행</span>
+          <span id="goalProgress" style="color:var(--green);font-weight:500;">0 / 20km</span>
+        </div>
+        <div class="goal-bar-track"><div class="goal-bar-fill" id="goalBarFill" style="width:0%"></div></div>
+        <div class="goal-bar-label"><span>0%</span><span id="goalPct">0%</span></div>
+      </div>
+    </div>
+
+    <!-- 프로필 설정 -->
+    <div class="my-section">프로필 설정</div>
+    <div style="background:#fff;border-bottom:1px solid var(--gray-100);">
+      <div class="my-setting-row">
+        <span class="my-setting-label">이름</span>
+        <input type="text" class="my-setting-input" id="myNameInput" placeholder="이름 입력" onchange="saveProfile()">
+      </div>
+      <div class="my-setting-row">
+        <span class="my-setting-label">몸무게</span>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" class="my-setting-input" id="myWeightInput" placeholder="70" min="30" max="200" onchange="saveProfile()" style="width:70px;">
+          <span style="font-size:13px;color:var(--gray-500);">kg</span>
+        </div>
+      </div>
+      <div class="my-setting-row">
+        <span class="my-setting-label">1km 포인트</span>
+        <span class="my-setting-value">100점 🏆</span>
+      </div>
+    </div>
+
+    <!-- 트로피 -->
+    <div class="my-section">트로피</div>
+    <div class="trophy-grid">
+      <div class="trophy-item"><div class="trophy-icon" id="t1">🥇</div><div class="trophy-name">첫 런닝</div></div>
+      <div class="trophy-item"><div class="trophy-icon" id="t2">🔥</div><div class="trophy-name">3일 연속</div></div>
+      <div class="trophy-item"><div class="trophy-icon" id="t3">⚡</div><div class="trophy-name">5km 완주</div></div>
+      <div class="trophy-item"><div class="trophy-icon" id="t4">🌟</div><div class="trophy-name">10km 완주</div></div>
+      <div class="trophy-item"><div class="trophy-icon" id="t5">💎</div><div class="trophy-name">총 50km</div></div>
+      <div class="trophy-item"><div class="trophy-icon" id="t6">🏆</div><div class="trophy-name">총 100km</div></div>
+      <div class="trophy-item"><div class="trophy-icon" id="t7">🌈</div><div class="trophy-name">7일 연속</div></div>
+      <div class="trophy-item"><div class="trophy-icon" id="t8">🚀</div><div class="trophy-name">목표 달성</div></div>
+    </div>
+
+    <div style="height:20px;"></div>
+  </div>
+</div>
+
+<!-- 코스 이름 변경 모달 -->
+<div id="renameModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1001;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:24px 20px;width:300px;max-width:90vw;">
+    <div style="font-size:16px;font-weight:700;margin-bottom:16px;">코스 이름 변경</div>
+    <input type="text" id="renameInput" style="width:100%;height:42px;border:1px solid var(--gray-300);border-radius:var(--rs);padding:0 12px;font-size:14px;font-family:inherit;outline:none;margin-bottom:14px;" placeholder="코스 이름 입력">
+    <div style="display:flex;gap:8px;">
+      <button onclick="closeRename()" style="flex:1;height:42px;background:var(--gray-100);border:none;border-radius:var(--rs);font-size:14px;font-family:inherit;cursor:pointer;color:var(--gray-700);">취소</button>
+      <button onclick="confirmRename()" style="flex:1;height:42px;background:var(--green);border:none;border-radius:var(--rs);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;color:#fff;">저장</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- 전체 기록 모달 -->
+<div id="allRecordsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1001;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;max-height:85vh;display:flex;flex-direction:column;">
+    <div style="padding:16px 18px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gray-100);">
+      <div style="font-size:16px;font-weight:700;">전체 런닝 기록</div>
+      <button onclick="closeAllRecords()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-500);">×</button>
+    </div>
+    <!-- 통계 요약 -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px;border-bottom:1px solid var(--gray-100);flex-shrink:0;">
+      <div style="text-align:center;">
+        <div style="font-size:11px;color:var(--gray-500);margin-bottom:2px;">총 거리</div>
+        <div style="font-size:18px;font-weight:700;color:var(--green);" id="allTotalDist">0km</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:11px;color:var(--gray-500);margin-bottom:2px;">총 횟수</div>
+        <div style="font-size:18px;font-weight:700;" id="allTotalCount">0회</div>
+      </div>
+      <div style="text-align:center;">
+        <div style="font-size:11px;color:var(--gray-500);margin-bottom:2px;">총 칼로리</div>
+        <div style="font-size:18px;font-weight:700;color:var(--amber);" id="allTotalCal">0kcal</div>
+      </div>
+    </div>
+    <!-- 기록 목록 -->
+    <div style="flex:1;overflow-y:auto;padding:12px 16px;" id="allRecordsList"></div>
+    <!-- 전체 삭제 -->
+    <div style="padding:10px 16px 20px;border-top:1px solid var(--gray-100);">
+      <button onclick="clearAllRecords()" style="width:100%;height:42px;background:none;border:1px solid var(--gray-300);border-radius:var(--rs);font-size:13px;font-family:inherit;cursor:pointer;color:var(--red);">전체 기록 삭제</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- 런닝 진행 화면 -->
+<div class="run-screen" id="runScreen">
+  <div class="run-header">
+    <div class="run-title" id="runTitle">한강 산책로 루프</div>
+    <div class="run-live"><div class="live-dot"></div>라이브</div>
+  </div>
+  <div class="run-map" id="runMap">
+    <div id="runKakaoMap" style="width:100%;height:100%;"></div>
+    <canvas id="runCanvas" style="width:100%;height:100%;display:block;position:absolute;top:0;left:0;pointer-events:none;display:none;"></canvas>
+  </div>
+  <div class="run-stats">
+    <div class="rstat"><div class="rstat-l">달린 거리</div><div><span class="rstat-v g" id="rDist">0.00</span><span class="rstat-u"> km</span></div></div>
+    <div class="rstat"><div class="rstat-l">경과 시간</div><div><span class="rstat-v" id="rTime">00:00</span></div></div>
+    <div class="rstat"><div class="rstat-l">현재 페이스</div><div><span class="rstat-v" id="rPace">—</span><span class="rstat-u" id="rPaceU"></span></div></div>
+    <div class="rstat"><div class="rstat-l">소모 칼로리</div><div><span class="rstat-v" id="rCal">0</span><span class="rstat-u"> kcal</span></div></div>
+  </div>
+  <div class="pace-wrap">
+    <div class="pace-top"><span>목표 페이스 6'30"/km</span><span id="paceStatus" style="color:var(--green)">대기 중</span></div>
+    <div class="pace-track"><div class="pace-fill" id="paceFill" style="width:0%"></div></div>
+  </div>
+  <div class="km-track" id="kmTrack"></div>
+  <div class="run-controls">
+    <div class="ctrl-stop" onclick="stopRun()">⏹</div>
+    <button class="ctrl-pause" id="pauseBtn" onclick="togglePause()">⏸</button>
+    <div class="ctrl-extra">🎵</div>
+  </div>
+</div>
+
+<!-- 런닝 완료 오버레이 -->
+<div class="finish-overlay" id="finishOverlay">
+  <div class="finish-card">
+    <div class="finish-emoji">🎉</div>
+    <div class="finish-title">런닝 완료!</div>
+    <div class="finish-sub" id="finishSub">오늘 · 한강 산책로 루프</div>
+    <div class="finish-grid">
+      <div class="fstat"><div class="fstat-l">총 거리</div><div class="fstat-v g" id="fDist">—</div></div>
+      <div class="fstat"><div class="fstat-l">총 시간</div><div class="fstat-v" id="fTime">—</div></div>
+      <div class="fstat"><div class="fstat-l">평균 페이스</div><div class="fstat-v" id="fPace">—</div></div>
+      <div class="fstat"><div class="fstat-l">칼로리</div><div class="fstat-v" id="fCal">—</div></div>
+    </div>
+    <button class="finish-save" onclick="saveRecord()">기록 저장 →</button>
+    <button class="finish-discard" onclick="closeFinish()">저장 안 함</button>
+  </div>
+</div>
+
+
+<!-- 카카오맵 SDK — onload 콜백으로 로드 완료 후 실행 -->
+<script type="text/javascript"
+  src="//dapi.kakao.com/v2/maps/sdk.js?appkey=056307d59b47ef5080ae7fc5f1413f51&libraries=services&autoload=false">
+</script>
+
+<script>
+const S = {
+  tab:'ai', courses:[], sel:-1,
+  lat:37.5503, lng:126.9200,
+  map:null, polyline:null, myMarker:null,
+  path:[], dots:[], distKm:0,
+  kakaoReady: false
+};
+
+/* 카카오 SDK 로드 완료 후 초기화 */
+kakao.maps.load(function() {
+  S.kakaoReady = true;
+  if (S.tab === 'draw') initMap();
+  if (S.tab === 'ai') initAiMap();
+});
+
+/* ── AI 추천 지도 ── */
+let aiMap = null, aiMarker = null;
+
+function initAiMap() {
+  if (aiMap) { kakao.maps.event.trigger(aiMap, 'resize'); return; }
+  const container = document.getElementById('aiMapEl');
+  const center = new kakao.maps.LatLng(S.lat, S.lng);
+  aiMap = new kakao.maps.Map(container, { center, level: 5 });
+  document.getElementById('aiMapLoading').style.display = 'none';
+
+  // 현재 위치 표시
+  setAiMarker(center, '현재 위치');
+
+  // 클릭으로 출발지 선택
+  kakao.maps.event.addListener(aiMap, 'click', function(e) {
+    const latlng = e.latLng;
+    // 역지오코딩으로 주소 가져오기
+    const geocoder = new kakao.maps.services.Geocoder();
+    geocoder.coord2Address(latlng.getLng(), latlng.getLat(), (result, status) => {
+      const addr = status === kakao.maps.services.Status.OK
+        ? (result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name)
+        : `${latlng.getLat().toFixed(4)}, ${latlng.getLng().toFixed(4)}`;
+      setAiMarker(latlng, addr);
+    });
+  });
+}
+
+function setAiMarker(latlng, addrName) {
+  S.lat = latlng.getLat ? latlng.getLat() : parseFloat(latlng.lat);
+  S.lng = latlng.getLng ? latlng.getLng() : parseFloat(latlng.lng);
+  if (aiMarker) aiMarker.setMap(null);
+  aiMarker = new kakao.maps.CustomOverlay({
+    map: aiMap,
+    position: latlng,
+    content: '<div style="display:flex;flex-direction:column;align-items:center;"><div style="width:14px;height:14px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div><div style="width:2px;height:8px;background:#1D9E75;"></div></div>',
+    zIndex: 5
+  });
+  aiMap.setCenter(latlng);
+  // 출발지 표시
+  document.getElementById('aiSelectedAddr').style.display = 'block';
+  document.getElementById('aiSelectedAddrText').textContent = addrName;
+  document.getElementById('aiMapGuide').style.display = 'none';
+  document.getElementById('addrInput').value = addrName;
+  // 드롭다운 닫기
+  document.getElementById('addrDropdown').style.display = 'none';
+}
+
+function useMyLocation() {
+  if (!navigator.geolocation) { toast('위치 감지 불가'); return; }
+  toast('위치 감지 중…');
+  navigator.geolocation.getCurrentPosition(pos => {
+    const latlng = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+    S.lat = pos.coords.latitude; S.lng = pos.coords.longitude;
+    if (aiMap) {
+      setAiMarker(latlng, '현재 위치');
+    }
+    toast('현재 위치로 설정됐어요!');
+  }, () => toast('위치 권한을 허용해주세요'));
+}
+
+/* ── 주소 검색 ── */
+let addrSearchTimer = null;
+
+function searchAddress(query) {
+  clearTimeout(addrSearchTimer);
+  const dropdown = document.getElementById('addrDropdown');
+  if (!query || query.length < 2) { dropdown.style.display = 'none'; return; }
+
+  addrSearchTimer = setTimeout(() => {
+    if (!S.kakaoReady) return;
+    const ps = new kakao.maps.services.Places();
+    ps.keywordSearch(query, (data, status) => {
+      if (status !== kakao.maps.services.Status.OK) {
+        dropdown.style.display = 'none'; return;
+      }
+      dropdown.innerHTML = data.slice(0, 5).map(p => `
+        <div class="addr-dropdown-item" onclick="selectAddress('${p.place_name.replace(/'/g,"\'")}', ${p.y}, ${p.x})">
+          <div>${p.place_name}</div>
+          <div class="addr-dropdown-addr">${p.address_name}</div>
+        </div>`).join('');
+      dropdown.style.display = 'block';
+    });
+  }, 300);
+}
+
+function selectAddress(name, lat, lng) {
+  if (!aiMap) return;
+  const latlng = new kakao.maps.LatLng(parseFloat(lat), parseFloat(lng));
+  setAiMarker(latlng, name);
+}
+
+document.addEventListener('click', e => {
+  if (!e.target.closest('#addrInput') && !e.target.closest('#addrDropdown')) {
+    const dd = document.getElementById('addrDropdown');
+    if (dd) dd.style.display = 'none';
+  }
+});
+
+/* 위치 감지 */
+function detectLocation() {
+  if (!navigator.geolocation) { toast('위치 감지 불가'); return; }
+  document.getElementById('locText').textContent = '감지 중…';
+  navigator.geolocation.getCurrentPosition(pos => {
+    S.lat = pos.coords.latitude;
+    S.lng = pos.coords.longitude;
+    document.getElementById('locText').textContent = '현재 위치 ✓';
+    document.getElementById('addrInput').value = '현재 위치';
+    if (S.map) {
+      const latlng = new kakao.maps.LatLng(S.lat, S.lng);
+      S.map.setCenter(latlng);
+      S.map.setLevel(4);
+      if (S.myMarker) S.myMarker.setMap(null);
+      S.myMarker = new kakao.maps.CustomOverlay({
+        map: S.map, position: latlng,
+        content: '<div style="width:14px;height:14px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(29,158,117,.25)"></div>',
+        zIndex: 3
+      });
+    }
+    toast('내 위치로 이동했어요!');
+  }, () => {
+    document.getElementById('locText').textContent = '내 위치';
+    toast('위치 권한을 허용해주세요 (크롬 주소창 자물쇠 클릭)');
+  }, { enableHighAccuracy: true, timeout: 10000 });
+}
+
+/* 페이지 로드 시 자동 위치 감지 */
+window.addEventListener('load', () => {
+  setTimeout(detectLocation, 500);
+  // 홈 탭을 기본으로 설정
+  const homTab = document.querySelector('.tab');
+  switchTab('home', homTab);
+  // AI 탭 active 해제, 홈 탭 active
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  homTab.classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-home').classList.add('active');
+  S.tab = 'home';
+  fetchWeather();
+  renderRecords();
+});
+
+// 모달 바깥 클릭 시 닫기
+document.getElementById('allRecordsModal').addEventListener('click', function(e) {
+  if (e.target === this) closeAllRecords();
+});
+
+/* 탭 전환 */
+function switchTab(tab, el) {
+  S.tab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-'+tab).classList.add('active');
+  if (tab === 'draw') {
+    setTimeout(() => { if (S.kakaoReady) initMap(); }, 100);
+  }
+  if (tab === 'ai') {
+    setTimeout(() => { if (S.kakaoReady) initAiMap(); }, 100);
+  }
+  if (tab === 'home') {
+    fetchWeather();
+    renderRecords();
+  }
+  if (tab === 'mycourse') renderMyCourses();
+  if (tab === 'mypage') renderMyPage();
+}
+
+/* 지도 초기화 */
+function initMap() {
+  if (S.map) {
+    kakao.maps.event.trigger(S.map, 'resize');
+    return;
+  }
+  const el = document.getElementById('drawMapEl');
+  const options = {
+    center: new kakao.maps.LatLng(S.lat, S.lng),
+    level: 4
+  };
+  S.map = new kakao.maps.Map(el, options);
+  document.getElementById('mapLoading').style.display = 'none';
+
+  // 내 위치 표시 (파란 원)
+  new kakao.maps.CustomOverlay({
+    map: S.map,
+    position: new kakao.maps.LatLng(S.lat, S.lng),
+    content: '<div style="width:14px;height:14px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(29,158,117,.25)"></div>',
+    zIndex: 3
+  });
+
+  // 지도 클릭 시 경로 추가
+  kakao.maps.event.addListener(S.map, 'click', function(e) {
+    addPoint(e.latLng);
+  });
+}
+
+/* 경로 점 추가 */
+function addPoint(latlng) {
+  S.path.push(latlng);
+  const isFirst = S.path.length === 1;
+  const dot = new kakao.maps.Circle({
+    map: S.map,
+    center: latlng,
+    radius: isFirst ? 8 : 5,
+    strokeWeight: isFirst ? 2 : 0,
+    strokeColor: '#1D9E75',
+    fillColor: isFirst ? '#fff' : '#1D9E75',
+    fillOpacity: 1
+  });
+  S.dots.push(dot);
+
+  if (S.polyline) S.polyline.setMap(null);
+  if (S.path.length > 1) {
+    S.polyline = new kakao.maps.Polyline({
+      map: S.map,
+      path: S.path,
+      strokeWeight: 4,
+      strokeColor: '#1D9E75',
+      strokeOpacity: 0.9,
+      strokeStyle: 'solid'
+    });
+    S.distKm = S.polyline.getLength() / 1000;
+    refreshStats(S.distKm);
+  }
+}
+
+/* 실행취소 */
+function undoDraw() {
+  if (!S.path.length) return;
+  S.path.pop();
+  const d = S.dots.pop();
+  if (d) d.setMap(null);
+  if (S.polyline) S.polyline.setMap(null);
+  S.polyline = null;
+  if (S.path.length > 1) {
+    S.polyline = new kakao.maps.Polyline({
+      map: S.map, path: S.path,
+      strokeWeight: 4, strokeColor: '#1D9E75', strokeOpacity: .9
+    });
+    S.distKm = S.polyline.getLength() / 1000;
+  } else {
+    S.distKm = 0;
+  }
+  refreshStats(S.distKm);
+}
+
+/* 전체 지우기 */
+function clearDraw() {
+  S.path = [];
+  S.dots.forEach(d => d.setMap(null));
+  S.dots = [];
+  if (S.polyline) { S.polyline.setMap(null); S.polyline = null; }
+  S.distKm = 0;
+  refreshStats(0);
+}
+
+/* 통계 업데이트 */
+function refreshStats(km) {
+  document.getElementById('hudDist').textContent = km.toFixed(2) + 'km';
+  document.getElementById('dDist').innerHTML = km.toFixed(2) + '<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small>';
+  document.getElementById('dTime').textContent = km > 0 ? Math.round(km * 7) + '분' : '—';
+  document.getElementById('dCal').textContent = km > 0 ? Math.round(km * 65) + 'kcal' : '—';
+  const sb = document.getElementById('saveBtn');
+  if (km > 0.05) {
+    sb.disabled = false;
+    sb.textContent = km.toFixed(2) + 'km 코스 저장하기';
+  } else {
+    sb.disabled = true;
+    sb.textContent = '지도를 클릭해서 코스를 그어보세요';
+  }
+}
+
+function saveCourse() {
+  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
+  const num = courses.length + 1;
+  courses.push({
+    id: Date.now(),
+    name: '코스 ' + num,
+    dist: S.distKm.toFixed(2),
+    date: new Date().toLocaleDateString('ko-KR', {month:'long',day:'numeric'}),
+    points: S.path.map(p => ({ lat: p.getLat(), lng: p.getLng() }))
+  });
+  localStorage.setItem('myCourses', JSON.stringify(courses));
+  toast('코스 ' + num + '이(가) 저장됐어요! 📍');
+  clearDraw();
+}
+
+/* AI 추천 코스 */
+const COURSES = [
+  { name:'한강 산책로 루프', tags:[{l:'안전',c:'tg'},{l:'평지',c:'tb'},{l:'공원',c:'tg'}], meta:'차량 없음 · 조명 완비 · 화장실 3곳', pt:'river', color:'#1D9E75', pace:6.2 },
+  { name:'홍대 플랫 코스', tags:[{l:'평지',c:'tb'},{l:'야간 가능',c:'tg'},{l:'혼잡',c:'ta'}], meta:'편의점 다수 · 보도 넓음 · 조명 양호', pt:'urban', color:'#378ADD', pace:6.5 },
+  { name:'망원 공원 힐 루프', tags:[{l:'공원',c:'tg'},{l:'경사 포함',c:'ta'}], meta:'잔디밭 · 오르막 2곳 · 뷰 좋음', pt:'park', color:'#639922', pace:6.8 }
+];
+
+async function generateCourses() {
+  const btn = document.getElementById('genBtn');
+  const txt = document.getElementById('genText');
+  const sp = document.getElementById('genSpinner');
+  btn.disabled = true; txt.textContent = '코스 생성 중…'; sp.style.display = 'block';
+  const km = parseFloat(document.getElementById('kmSlider').value);
+  await new Promise(r => setTimeout(r, 900));
+  S.courses = COURSES.map(c => ({...c, km: (km * (0.93 + Math.random() * .14)).toFixed(1)}));
+  S.sel = 0;
+  renderCourses();
+  btn.disabled = false; txt.textContent = '다시 생성'; sp.style.display = 'none';
+}
+
+function renderCourses() {
+  const list = document.getElementById('courseList');
+  const em = document.getElementById('emptyState');
+  list.innerHTML = ''; list.style.display = 'flex'; em.style.display = 'none';
+  S.courses.forEach((c, i) => {
+    const pm = Math.floor(c.pace), ps = String(Math.round((c.pace % 1) * 60)).padStart(2, '0');
+    const card = document.createElement('div');
+    card.className = 'course-card' + (i === S.sel ? ' selected' : '');
+    card.innerHTML = `
+      <div class="cmap"><canvas id="m${i}"></canvas>
+        <div class="cbadge">AI 추천</div>
+        <div class="crank">${['최추천','2순위','3순위'][i]}</div>
+      </div>
+      <div class="cinfo">
+        <div class="cname">${c.name}</div>
+        <div class="cmeta">${c.km}km · ${pm}'${ps}"/km · ${c.meta}</div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+          <div class="tags">${c.tags.map(t => `<span class="tag ${t.c}">${t.l}</span>`).join('')}</div>
+          <button class="save-course-btn" onclick="event.stopPropagation();saveAiCourse(${i})">📍 저장</button>
+        </div>
+      </div>`;
+    card.onclick = () => selCourse(i);
+    list.appendChild(card);
+    requestAnimationFrame(() => {
+      const cv = document.getElementById('m' + i);
+      if (cv) miniMap(cv, c.pt, c.color);
+    });
+  });
+  updStartBtn();
+}
+
+function selCourse(i) {
+  S.sel = i;
+  document.querySelectorAll('.course-card').forEach((c, j) => {
+    c.className = 'course-card' + (j === i ? ' selected' : '');
+  });
+  updStartBtn();
+}
+
+function updStartBtn() {
+  const b = document.getElementById('startBtn');
+  if (S.sel >= 0 && S.courses.length) {
+    b.disabled = false;
+    b.textContent = S.courses[S.sel].name + ' · 런닝 시작!';
+  } else {
+    b.disabled = true;
+    b.textContent = '코스를 선택해주세요';
+  }
+}
+
+/* ── 런닝 상태 ── */
+const R = {
+  running: false, elapsed: 0, dist: 0,
+  totalKm: 5, interval: null, courseName: '', watchId: null
+};
+
+function startRun() {
+  const c = S.courses[S.sel];
+  R.totalKm = parseFloat(c.km);
+  R.courseName = c.name;
+  R.elapsed = 0; R.dist = 0; R.running = true;
+  document.getElementById('runTitle').textContent = c.name;
+  document.getElementById('runScreen').classList.add('active');
+  buildKmTrack(R.totalKm);
+  clearInterval(R.interval);
+  R.interval = setInterval(runTick, 1000);
+  initRunMap(null);
+}
+
+function buildKmTrack(total) {
+  const wrap = document.getElementById('kmTrack');
+  wrap.innerHTML = '';
+  for (let i = 1; i <= Math.ceil(total); i++) {
+    const d = document.createElement('div');
+    d.className = 'km-chip km-todo';
+    d.id = 'kc' + i;
+    d.textContent = i + 'km';
+    wrap.appendChild(d);
+  }
+}
+
+function runTick() {
+  if (!R.running) return;
+  R.elapsed++;
+  R.dist = Math.min(R.dist + (1/390), R.totalKm); // 6분30초 페이스 기준
+  updateRunStats();
+  if (!runMap) drawRunCanvas(); // GPS 없을 때만 캔버스 사용
+  if (R.dist >= R.totalKm) { clearInterval(R.interval); stopRun(); }
+}
+
+function fmtTime(s) {
+  return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
+}
+
+function updateRunStats() {
+  document.getElementById('rDist').textContent = R.dist.toFixed(2);
+  document.getElementById('rTime').textContent = fmtTime(R.elapsed);
+  document.getElementById('rCal').textContent = Math.round(R.dist * 65);
+  if (R.dist > 0.05 && R.elapsed > 0) {
+    const pace = R.elapsed / R.dist;
+    const pm = Math.floor(pace/60), ps = Math.round(pace%60);
+    document.getElementById('rPace').textContent = pm + "'" + String(ps).padStart(2,'0');
+    document.getElementById('rPaceU').textContent = '"/km';
+    const pct = Math.min((390 / pace) * 100, 100);
+    document.getElementById('paceFill').style.width = pct + '%';
+    document.getElementById('paceStatus').textContent = pace <= 390 ? '목표 달성 중 🎯' : '페이스 올리기 💪';
+    document.getElementById('paceStatus').style.color = pace <= 390 ? 'var(--green)' : 'var(--amber)';
+  }
+  for (let i = 1; i <= Math.ceil(R.totalKm); i++) {
+    const el = document.getElementById('kc' + i);
+    if (!el) continue;
+    el.className = 'km-chip ' + (R.dist >= i ? 'km-done' : R.dist >= i-1 ? 'km-cur' : 'km-todo');
+  }
+}
+
+function togglePause() {
+  R.running = !R.running;
+  const btn = document.getElementById('pauseBtn');
+  btn.textContent = R.running ? '⏸' : '▶️';
+  btn.className = 'ctrl-pause' + (R.running ? '' : ' paused');
+}
+
+function stopRun() {
+  clearInterval(R.interval);
+  if (R.watchId) { navigator.geolocation.clearWatch(R.watchId); R.watchId = null; }
+  R.running = false;
+  showFinish();
+}
+
+function showFinish() {
+  document.getElementById('fDist').textContent = R.dist.toFixed(2) + 'km';
+  document.getElementById('fTime').textContent = fmtTime(R.elapsed);
+  document.getElementById('fCal').textContent = Math.round(R.dist * 65) + 'kcal';
+  document.getElementById('finishSub').textContent = '오늘 · ' + R.courseName;
+  if (R.dist > 0.05) {
+    const pace = R.elapsed / R.dist;
+    document.getElementById('fPace').textContent = Math.floor(pace/60) + "'" + String(Math.round(pace%60)).padStart(2,'0') + '"';
+  }
+  document.getElementById('finishOverlay').classList.add('active');
+}
+
+function saveRecord() {
+  // 기록 저장
+  const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
+  const now = new Date();
+  records.unshift({
+    name: R.courseName,
+    dist: R.dist.toFixed(2),
+    time: fmtTime(R.elapsed),
+    cal: Math.round(R.dist * 65),
+    date: now.toLocaleDateString('ko-KR', {month:'long', day:'numeric', weekday:'short'}),
+    pace: R.dist > 0.05 ? (()=>{ const p=R.elapsed/R.dist; return Math.floor(p/60)+"'"+String(Math.round(p%60)).padStart(2,'0')+'"'; })() : '—'
+  });
+  localStorage.setItem('runRecords', JSON.stringify(records));
+  const earnedPts = Math.round(R.dist * 100);
+  document.getElementById('finishOverlay').classList.remove('active');
+  document.getElementById('runScreen').classList.remove('active');
+  toast(`기록 저장 완료! +${earnedPts}포인트 🏆`);
+}
+
+/* 기록 렌더링 */
+function renderRecords() {
+  const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
+  const wrap = document.getElementById('recordList');
+  // 이번 주 요약
+  const weekTotal = records.reduce((s,r) => s + parseFloat(r.dist), 0);
+  const weekCal = records.reduce((s,r) => s + r.cal, 0);
+  document.getElementById('weekDist').innerHTML = weekTotal.toFixed(1) + '<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small>';
+  document.getElementById('weekCount').innerHTML = records.length + '<small style="font-size:11px;font-weight:400;color:var(--gray-500)">회</small>';
+  document.getElementById('weekCal').innerHTML = weekCal + '<small style="font-size:11px;font-weight:400;color:var(--gray-500)">kcal</small>';
+
+  if (!records.length) {
+    wrap.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--gray-500);"><div style="font-size:32px;margin-bottom:8px;">👟</div><div style="font-size:14px;font-weight:500;color:var(--gray-700);">아직 기록이 없어요</div><div style="font-size:13px;margin-top:4px;">AI 추천 탭에서 첫 런닝을 시작해보세요!</div></div>';
+    return;
+  }
+  const emojis = ['🏃','🌟','💪','🔥','⚡'];
+  wrap.innerHTML = records.map((r,i) => `
+    <div class="record-card">
+      <div class="record-icon">${emojis[i % emojis.length]}</div>
+      <div class="record-info">
+        <div class="record-name">${r.name}</div>
+        <div class="record-meta">${r.date} · ${r.time} · 페이스 ${r.pace}/km</div>
+      </div>
+      <div class="record-dist">${r.dist}km</div>
+    </div>`).join('');
+}
+
+/* 날씨 불러오기 */
+async function fetchWeather() {
+  // OpenWeatherMap API 키 없이도 동작하는 데모
+  // 실제 키: https://openweathermap.org 에서 무료 발급
+  const OWM_KEY = 'c4e77c4cac686498d868b622be22e841'; // ← 여기에 OpenWeatherMap API 키 입력
+
+  if (!OWM_KEY) {
+    // 데모 날씨
+    document.getElementById('wLocation').textContent = '서울 마포구';
+    document.getElementById('wTemp').textContent = '22°';
+    document.getElementById('wDesc').textContent = '맑음 · 런닝하기 좋아요!';
+    document.getElementById('wIcon').textContent = '☀️';
+    document.getElementById('wHumid').textContent = '45%';
+    document.getElementById('wWind').textContent = '2m/s';
+    document.getElementById('wFeel').textContent = '21°';
+    document.getElementById('wRunAdvice').textContent = '🏃 런닝 최적 날씨!';
+    return;
+  }
+
+  try {
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${S.lat}&lon=${S.lng}&appid=${OWM_KEY}&units=metric&lang=kr`);
+    const d = await res.json();
+    const temp = Math.round(d.main.temp);
+    const feel = Math.round(d.main.feels_like);
+    const humid = d.main.humidity;
+    const wind = d.wind.speed.toFixed(1);
+    const desc = d.weather[0].description;
+    const icon = getWeatherEmoji(d.weather[0].id);
+
+    document.getElementById('wLocation').textContent = d.name;
+    document.getElementById('wTemp').textContent = temp + '°';
+    document.getElementById('wDesc').textContent = desc;
+    document.getElementById('wIcon').textContent = icon;
+    document.getElementById('wHumid').textContent = humid + '%';
+    document.getElementById('wWind').textContent = wind + 'm/s';
+    document.getElementById('wFeel').textContent = feel + '°';
+
+    // 런닝 추천 메시지
+    let advice = '🏃 런닝 최적 날씨!';
+    if (temp > 32) advice = '🥵 너무 더워요, 수분 보충 필수!';
+    else if (temp < 0) advice = '🥶 너무 추워요, 방한 준비 필요';
+    else if (humid > 80) advice = '💧 습도 높아요, 가볍게 뛰세요';
+    else if (wind > 8) advice = '💨 바람 강해요, 코스 조정 추천';
+    document.getElementById('wRunAdvice').textContent = advice;
+  } catch(e) {
+    document.getElementById('wDesc').textContent = '날씨 정보를 불러오지 못했어요';
+  }
+}
+
+/* ── 전체 기록 모달 ── */
+function openAllRecords() {
+  const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
+  const totalDist = records.reduce((s,r) => s + parseFloat(r.dist), 0);
+  const totalCal = records.reduce((s,r) => s + r.cal, 0);
+  document.getElementById('allTotalDist').textContent = totalDist.toFixed(1) + 'km';
+  document.getElementById('allTotalCount').textContent = records.length + '회';
+  document.getElementById('allTotalCal').textContent = totalCal + 'kcal';
+
+  const emojis = ['🏃','🌟','💪','🔥','⚡','🎯','🏅','✨'];
+  const list = document.getElementById('allRecordsList');
+  if (!records.length) {
+    list.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--gray-500);"><div style="font-size:32px;margin-bottom:8px;">👟</div><div style="font-size:14px;">아직 기록이 없어요</div></div>';
+  } else {
+    list.innerHTML = records.map((r, i) => `
+      <div class="all-record-card">
+        <div class="all-record-icon">${emojis[i % emojis.length]}</div>
+        <div class="all-record-info">
+          <div class="all-record-name">${r.name}</div>
+          <div class="all-record-meta">${r.date} · ${r.time} · 페이스 ${r.pace}/km · ${r.cal}kcal</div>
+        </div>
+        <div class="all-record-dist">${r.dist}km</div>
+      </div>`).join('');
+  }
+  document.getElementById('allRecordsModal').style.display = 'flex';
+}
+
+function closeAllRecords() {
+  document.getElementById('allRecordsModal').style.display = 'none';
+}
+
+function clearAllRecords() {
+  if (!confirm('모든 런닝 기록을 삭제할까요?')) return;
+  localStorage.removeItem('runRecords');
+  closeAllRecords();
+  renderRecords();
+  toast('전체 기록이 삭제됐어요');
+}
+
+/* ── 내 코스 관리 ── */
+let renameTargetId = null;
+
+function renderMyCourses() {
+  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
+  const list = document.getElementById('myCourseList');
+  const empty = document.getElementById('myCourseEmpty');
+  const count = document.getElementById('myCourseCount');
+
+  count.textContent = courses.length + '개';
+
+  if (!courses.length) {
+    empty.style.display = 'block';
+    // 카드들 제거
+    list.querySelectorAll('.mc-card').forEach(c => c.remove());
+    return;
+  }
+  empty.style.display = 'none';
+
+  // 기존 카드 제거 후 재렌더
+  list.querySelectorAll('.mc-card').forEach(c => c.remove());
+
+  courses.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'mc-card';
+    card.id = 'mc-' + c.id;
+    card.innerHTML = `
+      <div class="mc-preview">
+        <canvas id="mcp-${c.id}"></canvas>
+        <div class="mc-dist-badge">${c.dist}km</div>
+      </div>
+      <div class="mc-header">
+        <div>
+          <div class="mc-name">${c.name}</div>
+          <div class="mc-meta">${c.date} 저장 · ${c.dist}km · 약 ${Math.round(parseFloat(c.dist)*7)}분</div>
+        </div>
+        <div class="mc-actions">
+          <button class="mc-btn mc-btn-run" onclick="startMyCoursRun(${c.id})">▶ 시작</button>
+          <button class="mc-btn mc-btn-edit" onclick="openRename(${c.id}, '${c.name}')">✏</button>
+          <button class="mc-btn mc-btn-del" onclick="deleteMyCourse(${c.id})">🗑</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(card);
+    requestAnimationFrame(() => drawMyCoursePreview(c));
+  });
+}
+
+function drawMyCoursePreview(course) {
+  const cv = document.getElementById('mcp-' + course.id);
+  if (!cv) return;
+  const dpr = window.devicePixelRatio || 1;
+  const rw = cv.offsetWidth || cv.parentElement.offsetWidth;
+  const rh = 70;
+  cv.width = rw * dpr; cv.height = rh * dpr;
+  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+  ctx.fillStyle = '#dce8dc'; ctx.fillRect(0,0,rw,rh);
+  ctx.strokeStyle = '#c4d8c4'; ctx.lineWidth = 0.5;
+  for (let x=0;x<rw;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,rh);ctx.stroke();}
+  for (let y=0;y<rh;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(rh,y);ctx.stroke();}
+
+  if (!course.points || course.points.length < 2) return;
+  const lats = course.points.map(p => p.lat);
+  const lngs = course.points.map(p => p.lng);
+  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
+  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
+  const pad = 10;
+
+  const toX = lng => pad + (lng - minLng) / (maxLng - minLng + 0.00001) * (rw - pad*2);
+  const toY = lat => rh - pad - (lat - minLat) / (maxLat - minLat + 0.00001) * (rh - pad*2);
+
+  ctx.strokeStyle = '#1D9E75'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(toX(course.points[0].lng), toY(course.points[0].lat));
+  course.points.forEach(p => ctx.lineTo(toX(p.lng), toY(p.lat)));
+  ctx.stroke();
+
+  ctx.fillStyle = '#fff'; ctx.strokeStyle = '#1D9E75'; ctx.lineWidth = 1.5;
+  ctx.beginPath(); ctx.arc(toX(course.points[0].lng), toY(course.points[0].lat), 4, 0, Math.PI*2);
+  ctx.fill(); ctx.stroke();
+}
+
+function openRename(id, currentName) {
+  renameTargetId = id;
+  document.getElementById('renameInput').value = currentName;
+  const modal = document.getElementById('renameModal');
+  modal.style.display = 'flex';
+  setTimeout(() => document.getElementById('renameInput').focus(), 100);
+}
+
+function closeRename() {
+  document.getElementById('renameModal').style.display = 'none';
+  renameTargetId = null;
+}
+
+function confirmRename() {
+  const newName = document.getElementById('renameInput').value.trim();
+  if (!newName) { toast('이름을 입력해주세요'); return; }
+  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
+  const idx = courses.findIndex(c => c.id === renameTargetId);
+  if (idx >= 0) {
+    courses[idx].name = newName;
+    localStorage.setItem('myCourses', JSON.stringify(courses));
+  }
+  closeRename();
+  renderMyCourses();
+  toast('이름이 변경됐어요!');
+}
+
+function deleteMyCourse(id) {
+  if (!confirm('이 코스를 삭제할까요?')) return;
+  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]').filter(c => c.id !== id);
+  localStorage.setItem('myCourses', JSON.stringify(courses));
+  renderMyCourses();
+  toast('코스가 삭제됐어요');
+}
+
+function startMyCoursRun(id) {
+  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
+  const c = courses.find(x => x.id === id);
+  if (!c) return;
+  R.totalKm = parseFloat(c.dist);
+  R.courseName = c.name;
+  R.elapsed = 0; R.dist = 0; R.running = true;
+  document.getElementById('runTitle').textContent = c.name;
+  document.getElementById('runScreen').classList.add('active');
+  buildKmTrack(R.totalKm);
+  clearInterval(R.interval);
+  R.interval = setInterval(runTick, 1000);
+  initRunMap(c.points || null);
+}
+
+function getWeatherEmoji(id) {
+  if (id >= 200 && id < 300) return '⛈';
+  if (id >= 300 && id < 400) return '🌦';
+  if (id >= 500 && id < 600) return '🌧';
+  if (id >= 600 && id < 700) return '❄️';
+  if (id >= 700 && id < 800) return '🌫';
+  if (id === 800) return '☀️';
+  if (id === 801) return '🌤';
+  if (id <= 804) return '☁️';
+  return '🌤';
+}
+
+function closeFinish() {
+  document.getElementById('finishOverlay').classList.remove('active');
+  document.getElementById('runScreen').classList.remove('active');
+}
+
+/* ── 런닝 중 실제 카카오맵 ── */
+let runMap = null, runMarker = null, runPolyline = null, runPath = [];
+
+function initRunMap(savedPoints) {
+  const container = document.getElementById('runKakaoMap');
+  const center = new kakao.maps.LatLng(S.lat, S.lng);
+
+  if (runMap) {
+    runMap.setCenter(center);
+    // 기존 오버레이 초기화
+    if (runMarker) runMarker.setMap(null);
+    if (runPolyline) runPolyline.setMap(null);
+    runPath = [];
+  } else {
+    runMap = new kakao.maps.Map(container, { center, level: 4 });
+  }
+
+  setTimeout(() => kakao.maps.event.trigger(runMap, 'resize'), 100);
+
+  // 내 위치 마커 (초록 점)
+  runMarker = new kakao.maps.CustomOverlay({
+    map: runMap,
+    position: center,
+    content: '<div style="width:16px;height:16px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(29,158,117,.3)"></div>',
+    zIndex: 5
+  });
+
+  // 저장된 코스 경로가 있으면 점선으로 표시
+  if (savedPoints && savedPoints.length > 1) {
+    const path = savedPoints.map(p => new kakao.maps.LatLng(p.lat, p.lng));
+    new kakao.maps.Polyline({
+      map: runMap, path,
+      strokeWeight: 3, strokeColor: '#9FE1CB',
+      strokeOpacity: 0.8, strokeStyle: 'shortdash'
+    });
+    // 시작점 마커
+    new kakao.maps.CustomOverlay({
+      map: runMap,
+      position: path[0],
+      content: '<div style="width:10px;height:10px;background:#fff;border:2px solid #1D9E75;border-radius:50%;"></div>',
+      zIndex: 3
+    });
+  }
+
+  // GPS watchPosition으로 실시간 위치 추적
+  if (R.watchId) navigator.geolocation.clearWatch(R.watchId);
+  if (navigator.geolocation) {
+    R.watchId = navigator.geolocation.watchPosition(pos => {
+      const latlng = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+      runPath.push(latlng);
+      // 마커 이동
+      if (runMarker) runMarker.setMap(null);
+      runMarker = new kakao.maps.CustomOverlay({
+        map: runMap, position: latlng,
+        content: '<div style="width:16px;height:16px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(29,158,117,.3)"></div>',
+        zIndex: 5
+      });
+      // 지도 중심 이동
+      runMap.setCenter(latlng);
+      // 달린 경로 그리기
+      if (runPolyline) runPolyline.setMap(null);
+      if (runPath.length > 1) {
+        runPolyline = new kakao.maps.Polyline({
+          map: runMap, path: runPath,
+          strokeWeight: 4, strokeColor: '#1D9E75', strokeOpacity: 0.95
+        });
+        // 실제 GPS 거리 계산
+        const gpsDist = runPolyline.getLength() / 1000;
+        if (gpsDist > R.dist) R.dist = gpsDist;
+      }
+    }, null, { enableHighAccuracy: true, maximumAge: 2000, timeout: 5000 });
+  }
+}
+
+/* 런닝 중 경로 캔버스 (GPS 없을 때 폴백) */
+function initRunCanvas() {
+  const cv = document.getElementById('runCanvas');
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = cv.offsetWidth * dpr;
+  cv.height = cv.offsetHeight * dpr;
+  const ctx = cv.getContext('2d');
+  ctx.scale(dpr, dpr);
+}
+
+function drawRunCanvas() {
+  const cv = document.getElementById('runCanvas');
+  const ctx = cv.getContext('2d');
+  const w = cv.offsetWidth, h = cv.offsetHeight;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = '#dce8dc'; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle = '#c4d8c4'; ctx.lineWidth = 0.5;
+  for (let x=0;x<w;x+=28){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
+  for (let y=0;y<h;y+=28){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
+  ctx.fillStyle = '#c8dff0'; ctx.fillRect(0, h*.7, w, h*.18);
+  ctx.strokeStyle = '#d8ccc0'; ctx.lineWidth = 6;
+  [h*.35, h*.58].forEach(y => { ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke(); });
+  [w*.3, w*.65].forEach(x => { ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke(); });
+
+  // 전체 코스 (점선)
+  const pts = [{x:.1,y:.55},{x:.25,y:.42},{x:.45,y:.38},{x:.65,y:.42},{x:.82,y:.5},{x:.88,y:.62},{x:.75,y:.72},{x:.55,y:.76},{x:.35,y:.72},{x:.18,y:.65},{x:.1,y:.55}];
+  ctx.setLineDash([5,5]); ctx.strokeStyle = '#9FE1CB'; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(pts[0].x*w, pts[0].y*h);
+  pts.slice(1).forEach(p => ctx.lineTo(p.x*w, p.y*h)); ctx.stroke(); ctx.setLineDash([]);
+
+  // 달린 구간
+  const prog = R.dist / R.totalKm;
+  const total = pts.length - 1;
+  const idx = prog * total;
+  const floor = Math.floor(idx), frac = idx - floor;
+  const drawn = pts.slice(0, floor+1);
+  if (floor < total) {
+    const a = pts[floor], b = pts[floor+1];
+    drawn.push({ x: a.x+(b.x-a.x)*frac, y: a.y+(b.y-a.y)*frac });
+  }
+  if (drawn.length > 1) {
+    ctx.strokeStyle = '#1D9E75'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(drawn[0].x*w, drawn[0].y*h);
+    drawn.slice(1).forEach(p => ctx.lineTo(p.x*w, p.y*h)); ctx.stroke();
+  }
+  // 현재 위치 점
+  const cur = drawn[drawn.length-1] || pts[0];
+  ctx.fillStyle = 'rgba(29,158,117,.2)'; ctx.beginPath(); ctx.arc(cur.x*w,cur.y*h,12,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#1D9E75'; ctx.beginPath(); ctx.arc(cur.x*w,cur.y*h,5,0,Math.PI*2); ctx.fill();
+  // 시작점
+  ctx.fillStyle='#fff'; ctx.strokeStyle='#1D9E75'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(pts[0].x*w,pts[0].y*h,5,0,Math.PI*2); ctx.fill(); ctx.stroke();
+}
+
+/* 미니맵 (AI 추천 카드) */
+function miniMap(cv, type, color) {
+  const dpr = window.devicePixelRatio || 1;
+  const rw = cv.offsetWidth || cv.parentElement.offsetWidth;
+  const rh = 85;
+  cv.width = rw * dpr; cv.height = rh * dpr;
+  const c = cv.getContext('2d'); c.scale(dpr, dpr);
+  c.fillStyle = '#dce8dc'; c.fillRect(0,0,rw,rh);
+  c.strokeStyle = '#c4d8c4'; c.lineWidth = 0.5;
+  for (let x=0;x<rw;x+=20){c.beginPath();c.moveTo(x,0);c.lineTo(x,rh);c.stroke();}
+  for (let y=0;y<rh;y+=20){c.beginPath();c.moveTo(0,y);c.lineTo(rw,y);c.stroke();}
+  if (type==='river'){c.fillStyle='#c8dff0';c.fillRect(0,rh*.62,rw,rh*.2);}
+  else if (type==='park'){c.fillStyle='#c0d8b0';c.fillRect(rw*.08,rh*.08,rw*.3,rh*.55);}
+  c.strokeStyle=color; c.lineWidth=2.5; c.lineJoin='round'; c.lineCap='round';
+  c.beginPath();
+  if (type==='river'){
+    c.moveTo(rw*.1,rh*.6);c.bezierCurveTo(rw*.3,rh*.5,rw*.7,rh*.5,rw*.9,rh*.6);
+    c.bezierCurveTo(rw*.7,rh*.7,rw*.3,rh*.7,rw*.1,rh*.6);
+  } else if (type==='urban'){
+    c.moveTo(rw*.15,rh*.28);c.lineTo(rw*.8,rh*.28);c.lineTo(rw*.8,rh*.7);
+    c.lineTo(rw*.2,rh*.7);c.lineTo(rw*.2,rh*.48);c.lineTo(rw*.6,rh*.48);
+  } else {
+    c.moveTo(rw*.5,rh*.14);c.bezierCurveTo(rw*.85,rh*.2,rw*.88,rh*.65,rw*.5,rh*.78);
+    c.bezierCurveTo(rw*.12,rh*.65,rw*.15,rh*.2,rw*.5,rh*.14);
+  }
+  c.stroke();
+  const sx = type==='park' ? rw*.5 : rw*.1, sy = type==='park' ? rh*.14 : rh*.6;
+  c.fillStyle='#fff'; c.strokeStyle=color; c.lineWidth=1.5;
+  c.beginPath();c.arc(sx,sy,4,0,Math.PI*2);c.fill();c.stroke();
+}
+
+/* 토스트 */
+let tt;
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+/* ══════════════════════════════════════
+   AI 코스 → 내 코스 저장
+══════════════════════════════════════ */
+function saveAiCourse(idx) {
+  const c = S.courses[idx];
+  if (!c) return;
+  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
+  // 중복 체크
+  if (courses.find(x => x.name === c.name)) {
+    toast('이미 저장된 코스예요!'); return;
+  }
+  courses.push({
+    id: Date.now(),
+    name: c.name,
+    dist: c.dist,
+    date: new Date().toLocaleDateString('ko-KR', {month:'long', day:'numeric'}),
+    points: [],
+    fromAi: true,
+    tags: c.tags
+  });
+  localStorage.setItem('myCourses', JSON.stringify(courses));
+  toast(c.name + ' 코스가 저장됐어요! 📍');
+}
+
+/* ══════════════════════════════════════
+   마이페이지
+══════════════════════════════════════ */
+const avatarList = ['🏃','🧗','🚴','🏊','🤸','💪','🦅','⚡','🌟','🔥'];
+let avatarIdx = 0;
+
+function changeAvatar() {
+  avatarIdx = (avatarIdx + 1) % avatarList.length;
+  document.getElementById('myAvatar').textContent = avatarList[avatarIdx];
+  const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
+  profile.avatar = avatarList[avatarIdx];
+  localStorage.setItem('runProfile', JSON.stringify(profile));
+}
+
+function saveProfile() {
+  const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
+  const nameVal = document.getElementById('myNameInput').value.trim();
+  const weightVal = document.getElementById('myWeightInput').value;
+  if (nameVal) profile.name = nameVal;
+  if (weightVal) profile.weight = parseFloat(weightVal);
+  localStorage.setItem('runProfile', JSON.stringify(profile));
+  if (nameVal) document.getElementById('myNameDisplay').textContent = nameVal;
+  toast('프로필이 저장됐어요!');
+}
+
+function saveGoal() {
+  const goal = parseFloat(document.getElementById('weeklyGoalInput').value) || 20;
+  localStorage.setItem('weeklyGoal', goal);
+  updateGoalBar();
+  toast('목표가 설정됐어요! 💪');
+}
+
+function updateGoalBar() {
+  const goal = parseFloat(localStorage.getItem('weeklyGoal') || '20');
+  const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
+  const weekDist = records.reduce((s, r) => s + parseFloat(r.dist), 0);
+  const pct = Math.min(Math.round((weekDist / goal) * 100), 100);
+  document.getElementById('goalProgress').textContent = weekDist.toFixed(1) + ' / ' + goal + 'km';
+  document.getElementById('goalBarFill').style.width = pct + '%';
+  document.getElementById('goalPct').textContent = pct + '%';
+  document.getElementById('weeklyGoalInput').value = goal;
+
+  // 홈 화면 주간 목표 바도 업데이트
+  const hGoal = document.getElementById('weekGoalBar');
+  if (hGoal) hGoal.style.width = pct + '%';
+}
+
+function renderMyPage() {
+  const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
+  const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
+
+  // 프로필
+  if (profile.name) {
+    document.getElementById('myNameDisplay').textContent = profile.name;
+    document.getElementById('myNameInput').value = profile.name;
+  }
+  if (profile.avatar) {
+    document.getElementById('myAvatar').textContent = profile.avatar;
+    avatarIdx = avatarList.indexOf(profile.avatar);
+  }
+  if (profile.weight) document.getElementById('myWeightInput').value = profile.weight;
+
+  // 통계
+  const totalDist = records.reduce((s, r) => s + parseFloat(r.dist), 0);
+  const totalPoints = Math.round(totalDist * 100);
+  document.getElementById('myTotalPoints').textContent = totalPoints.toLocaleString();
+  document.getElementById('myTotalDist').textContent = totalDist.toFixed(1) + 'km';
+  document.getElementById('myTotalRuns').textContent = records.length + '회';
+
+  // 연속 런닝 (간단 계산)
+  const streak = Math.min(records.length, 7);
+  document.getElementById('myStreak').textContent = streak + '일';
+
+  // 목표 바
+  updateGoalBar();
+
+  // 트로피 체크
+  if (records.length >= 1) document.getElementById('t1').classList.add('earned');
+  if (streak >= 3) document.getElementById('t2').classList.add('earned');
+  if (records.some(r => parseFloat(r.dist) >= 5)) document.getElementById('t3').classList.add('earned');
+  if (records.some(r => parseFloat(r.dist) >= 10)) document.getElementById('t4').classList.add('earned');
+  if (totalDist >= 50) document.getElementById('t5').classList.add('earned');
+  if (totalDist >= 100) document.getElementById('t6').classList.add('earned');
+  if (streak >= 7) document.getElementById('t7').classList.add('earned');
+  const goal = parseFloat(localStorage.getItem('weeklyGoal') || '20');
+  const weekDist = records.reduce((s, r) => s + parseFloat(r.dist), 0);
+  if (weekDist >= goal) document.getElementById('t8').classList.add('earned');
+}
+
+window.addEventListener('resize', () => {
+  if (S.map) kakao.maps.event.trigger(S.map, 'resize');
+});
+</script>
+</body>
+</html>
