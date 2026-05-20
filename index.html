@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>런룹 Runloop</title>
+<title>루프 Runloop</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
   :root {
@@ -214,26 +214,138 @@
   .trophy-icon{font-size:28px;margin-bottom:4px;filter:grayscale(1);opacity:.4;}
   .trophy-icon.earned{filter:none;opacity:1;}
   .trophy-name{font-size:10px;color:var(--gray-500);}
+
+  .mood-btn{flex:1;padding:7px 0;background:var(--gray-50);border:1px solid var(--gray-100);border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s;}
+  .mood-btn.selected{background:var(--green-light);border-color:var(--green);color:var(--green-dark);font-weight:500;}
+  .record-memo{font-size:12px;color:var(--gray-500);margin-top:4px;font-style:italic;}
+  .record-mood{font-size:13px;margin-left:4px;}
+
+  #onboarding.active{display:flex;}
+  .ob-avatar-item{width:100%;aspect-ratio:1;background:var(--gray-50);border:2px solid var(--gray-100);border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:all .15s;}
+  .ob-avatar-item.selected{background:var(--green-light);border-color:var(--green);}
+  .ob-goal-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--gray-50);border:2px solid var(--gray-100);border-radius:var(--r);cursor:pointer;transition:all .15s;}
+  .ob-goal-item.selected{background:var(--green-light);border-color:var(--green);}
+
+  .near-course-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s;}
+  .near-course-card:hover{border-color:var(--green);}
+  .near-course-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .near-course-info{flex:1;min-width:0;}
+  .near-course-name{font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .near-course-meta{font-size:12px;color:var(--gray-500);}
+  .near-course-dist{font-size:14px;font-weight:700;color:var(--green);flex-shrink:0;}
 </style>
 </head>
 <body>
 
+<!-- ══ 온보딩 화면 ══ -->
+<div id="onboarding" style="display:none;position:fixed;inset:0;background:#fff;z-index:2000;flex-direction:column;max-width:430px;margin:0 auto;">
+
+  <!-- 스텝 인디케이터 -->
+  <div style="padding:20px 24px 0;display:flex;gap:6px;">
+    <div id="ob-dot-1" style="flex:1;height:4px;border-radius:2px;background:var(--green);transition:background .3s;"></div>
+    <div id="ob-dot-2" style="flex:1;height:4px;border-radius:2px;background:var(--gray-100);transition:background .3s;"></div>
+    <div id="ob-dot-3" style="flex:1;height:4px;border-radius:2px;background:var(--gray-100);transition:background .3s;"></div>
+  </div>
+
+  <!-- 스텝 1: 닉네임 -->
+  <div id="ob-step-1" style="flex:1;display:flex;flex-direction:column;padding:40px 24px 32px;">
+    <div style="font-size:32px;margin-bottom:16px;">👋</div>
+    <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;line-height:1.3;">런룹에 오신 걸<br>환영해요!</div>
+    <div style="font-size:14px;color:var(--gray-500);margin-bottom:40px;line-height:1.6;">함께 달리며 더 건강한 일상을<br>만들어봐요.</div>
+    <div style="font-size:13px;font-weight:500;color:var(--gray-700);margin-bottom:8px;">닉네임을 입력해주세요</div>
+    <input type="text" id="ob-name" placeholder="예: 달리기 좋아하는 훈" maxlength="12"
+      style="width:100%;height:52px;border:2px solid var(--gray-100);border-radius:var(--r);padding:0 16px;font-size:16px;font-family:inherit;outline:none;transition:border-color .2s;"
+      oninput="this.style.borderColor=this.value?'var(--green)':'var(--gray-100)'"
+    >
+    <div style="font-size:12px;color:var(--gray-500);margin-top:8px;">최대 12자 · 언제든 변경 가능해요</div>
+    <div style="margin-top:auto;">
+      <button onclick="obNext(1)" style="width:100%;height:52px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">다음 →</button>
+    </div>
+  </div>
+
+  <!-- 스텝 2: 아바타 -->
+  <div id="ob-step-2" style="flex:1;display:none;flex-direction:column;padding:40px 24px 32px;">
+    <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;">나를 표현할<br>아바타를 골라요</div>
+    <div style="font-size:14px;color:var(--gray-500);margin-bottom:32px;">언제든 바꿀 수 있어요!</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:32px;">
+      <div class="ob-avatar-item selected" onclick="selectObAvatar(this,'🏃')">🏃</div>
+      <div class="ob-avatar-item" onclick="selectObAvatar(this,'🧗')">🧗</div>
+      <div class="ob-avatar-item" onclick="selectObAvatar(this,'🚴')">🚴</div>
+      <div class="ob-avatar-item" onclick="selectObAvatar(this,'🏊')">🏊</div>
+      <div class="ob-avatar-item" onclick="selectObAvatar(this,'🤸')">🤸</div>
+      <div class="ob-avatar-item" onclick="selectObAvatar(this,'💪')">💪</div>
+      <div class="ob-avatar-item" onclick="selectObAvatar(this,'🦅')">🦅</div>
+      <div class="ob-avatar-item" onclick="selectObAvatar(this,'⚡')">⚡</div>
+      <div class="ob-avatar-item" onclick="selectObAvatar(this,'🌟')">🌟</div>
+      <div class="ob-avatar-item" onclick="selectObAvatar(this,'🔥')">🔥</div>
+    </div>
+    <div style="margin-top:auto;display:flex;gap:10px;">
+      <button onclick="obBack(2)" style="width:52px;height:52px;background:var(--gray-100);border:none;border-radius:var(--r);font-size:20px;cursor:pointer;">←</button>
+      <button onclick="obNext(2)" style="flex:1;height:52px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">다음 →</button>
+    </div>
+  </div>
+
+  <!-- 스텝 3: 목표 설정 -->
+  <div id="ob-step-3" style="flex:1;display:none;flex-direction:column;padding:40px 24px 32px;">
+    <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;">주간 런닝 목표를<br>설정해요</div>
+    <div style="font-size:14px;color:var(--gray-500);margin-bottom:32px;">나중에 MY 탭에서 바꿀 수 있어요</div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;">
+      <div class="ob-goal-item selected" onclick="selectObGoal(this,10)">
+        <div style="font-size:22px;">🌱</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;">가볍게 시작</div>
+          <div style="font-size:12px;color:var(--gray-500);">주 10km · 주 2~3회</div>
+        </div>
+        <div style="margin-left:auto;font-size:18px;" id="ob-check-10">✓</div>
+      </div>
+      <div class="ob-goal-item" onclick="selectObGoal(this,20)">
+        <div style="font-size:22px;">🏃</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;">꾸준하게</div>
+          <div style="font-size:12px;color:var(--gray-500);">주 20km · 주 3~4회</div>
+        </div>
+        <div style="margin-left:auto;font-size:18px;opacity:0;" id="ob-check-20">✓</div>
+      </div>
+      <div class="ob-goal-item" onclick="selectObGoal(this,35)">
+        <div style="font-size:22px;">💪</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;">열심히</div>
+          <div style="font-size:12px;color:var(--gray-500);">주 35km · 주 4~5회</div>
+        </div>
+        <div style="margin-left:auto;font-size:18px;opacity:0;" id="ob-check-35">✓</div>
+      </div>
+      <div class="ob-goal-item" onclick="selectObGoal(this,50)">
+        <div style="font-size:22px;">🔥</div>
+        <div>
+          <div style="font-size:14px;font-weight:700;">진지하게</div>
+          <div style="font-size:12px;color:var(--gray-500);">주 50km · 주 5~6회</div>
+        </div>
+        <div style="margin-left:auto;font-size:18px;opacity:0;" id="ob-check-50">✓</div>
+      </div>
+    </div>
+
+    <div style="margin-top:auto;display:flex;gap:10px;">
+      <button onclick="obBack(3)" style="width:52px;height:52px;background:var(--gray-100);border:none;border-radius:var(--r);font-size:20px;cursor:pointer;">←</button>
+      <button onclick="obFinish()" style="flex:1;height:52px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">시작하기 🚀</button>
+    </div>
+  </div>
+
+</div>
+
 <div class="header">
   <div class="header-top">
-    <div class="logo">런룹</div>
-    <button class="loc-btn" onclick="detectLocation()">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="10" r="3"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z"/></svg>
-      <span id="locText">내 위치</span>
-    </button>
+    <div class="logo">루프</div>
+    <div id="headerDate" style="font-size:13px;font-weight:500;color:var(--gray-500);"></div>
   </div>
 </div>
 
 <div class="tabs">
-  <button class="tab" onclick="switchTab('home',this)">🏠 홈</button>
-  <button class="tab active" onclick="switchTab('ai',this)">✦ AI</button>
-  <button class="tab" onclick="switchTab('draw',this)">✏ 그리기</button>
-  <button class="tab" onclick="switchTab('mycourse',this)">📍 코스</button>
-  <button class="tab" onclick="switchTab('mypage',this)">👤 MY</button>
+  <button class="tab" onclick="switchTab('home',this)">홈</button>
+  <button class="tab active" onclick="switchTab('ai',this)">추천</button>
+  <button class="tab" onclick="switchTab('draw',this)">그리기</button>
+  <button class="tab" onclick="switchTab('mycourse',this)">코스</button>
+  <button class="tab" onclick="switchTab('mypage',this)">MY</button>
 </div>
 
 <!-- 홈 화면 -->
@@ -248,18 +360,15 @@
       </div>
       <div style="font-size:52px;line-height:1;" id="wIcon">🌤</div>
     </div>
-    <div style="display:flex;gap:16px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2);">
-      <div style="font-size:12px;opacity:.85;"><span style="opacity:.7;">습도</span> <span id="wHumid" style="font-weight:500;">—</span></div>
-      <div style="font-size:12px;opacity:.85;"><span style="opacity:.7;">바람</span> <span id="wWind" style="font-weight:500;">—</span></div>
-      <div style="font-size:12px;opacity:.85;"><span style="opacity:.7;">체감</span> <span id="wFeel" style="font-weight:500;">—</span></div>
-      <div style="font-size:12px;opacity:.85;" id="wRunAdvice">🏃 런닝 좋은 날씨!</div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2);">
+      <div style="font-size:14px;opacity:.95;line-height:1.5;" id="wSummary">오늘 날씨를 불러오는 중이에요 ☁️</div>
     </div>
   </div>
 
   <!-- 이번주 요약 -->
   <div style="padding:16px 14px 8px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
     <div style="font-size:14px;font-weight:700;color:var(--gray-900);">이번 주 요약</div>
-    <div style="font-size:12px;color:var(--green);cursor:pointer;" onclick="openAllRecords()">전체 기록 보기 →</div>
+    
   </div>
   <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 14px;flex-shrink:0;">
     <div style="background:#fff;border-radius:var(--r);padding:12px;text-align:center;border:1px solid var(--gray-100);">
@@ -276,17 +385,19 @@
     </div>
   </div>
 
-  <!-- 기록 리스트 -->
-  <div style="padding:0 14px 8px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
-    <div style="font-size:14px;font-weight:700;color:var(--gray-900);">최근 기록</div>
+  <!-- 오늘의 추천 코스 -->
+  <div style="padding:14px 14px 8px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+    <div style="font-size:14px;font-weight:700;color:var(--gray-900);">오늘의 추천 코스</div>
+    <div style="font-size:12px;color:var(--green);cursor:pointer;" onclick="loadNearCourses()">새로고침</div>
   </div>
-  <div style="flex:1;overflow-y:auto;padding:0 14px 14px;" id="recordList">
-    <div style="text-align:center;padding:32px 0;color:var(--gray-500);">
-      <div style="font-size:32px;margin-bottom:8px;">👟</div>
-      <div style="font-size:14px;font-weight:500;color:var(--gray-700);">아직 기록이 없어요</div>
-      <div style="font-size:13px;margin-top:4px;">AI 추천 탭에서 첫 런닝을 시작해보세요!</div>
+  <div id="nearCourseList" style="padding:0 14px;flex-shrink:0;">
+    <div style="text-align:center;padding:20px 0;color:var(--gray-500);">
+      <div class="ml-spin" style="margin:0 auto 8px;"></div>
+      <div style="font-size:13px;">주변 코스를 찾는 중이에요…</div>
     </div>
   </div>
+
+  <div style="height:14px;flex-shrink:0;"></div>
 </div>
 
 <!-- AI 추천 -->
@@ -405,12 +516,13 @@
 
     <!-- 프로필 카드 -->
     <div class="my-profile-card">
-      <div style="display:flex;align-items:center;gap:14px;">
-        <div class="my-avatar" id="myAvatar" onclick="changeAvatar()">🏃</div>
+      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
+        <div class="my-avatar" id="myAvatar" onclick="openAvatarEdit()" title="탭해서 변경">🏃</div>
         <div style="flex:1;">
           <div class="my-name" id="myNameDisplay">런너</div>
-          <div class="my-sub" id="myJoinDate">런룹과 함께 달리는 중</div>
+          <div class="my-sub">런룹과 함께 달리는 중 🏃</div>
         </div>
+        <button onclick="openProfileEdit()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);border-radius:var(--rs);padding:6px 12px;color:#fff;font-size:12px;font-family:inherit;cursor:pointer;">편집</button>
       </div>
       <div class="my-points">
         <div class="my-point-item">
@@ -433,59 +545,81 @@
     </div>
 
     <!-- 주간 목표 -->
-    <div class="my-section">주간 목표</div>
-    <div style="background:#fff;border-bottom:1px solid var(--gray-100);">
-      <div class="my-setting-row">
-        <span class="my-setting-label">주간 목표 거리</span>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <input type="number" class="my-setting-input" id="weeklyGoalInput" value="20" min="1" max="200" onchange="saveGoal()" style="width:70px;">
-          <span style="font-size:13px;color:var(--gray-500);">km</span>
+    <div class="my-section">이번 주 목표</div>
+    <div style="background:#fff;padding:14px 16px;border-bottom:1px solid var(--gray-100);">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div>
+          <span style="font-size:22px;font-weight:700;color:var(--green);" id="goalProgress2">0</span>
+          <span style="font-size:14px;color:var(--gray-500);"> / </span>
+          <span style="font-size:16px;font-weight:500;color:var(--gray-700);" id="goalMax2">20km</span>
         </div>
+        <button onclick="openGoalEdit()" style="background:var(--green-light);border:none;border-radius:var(--rs);padding:6px 12px;color:var(--green-dark);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;">목표 변경</button>
       </div>
-      <div class="goal-bar-wrap">
-        <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--gray-700);">
-          <span>이번 주 진행</span>
-          <span id="goalProgress" style="color:var(--green);font-weight:500;">0 / 20km</span>
-        </div>
-        <div class="goal-bar-track"><div class="goal-bar-fill" id="goalBarFill" style="width:0%"></div></div>
-        <div class="goal-bar-label"><span>0%</span><span id="goalPct">0%</span></div>
-      </div>
+      <div class="goal-bar-track"><div class="goal-bar-fill" id="goalBarFill" style="width:0%"></div></div>
+      <div style="font-size:11px;color:var(--gray-500);margin-top:5px;" id="goalPct">0% 달성</div>
     </div>
 
-    <!-- 프로필 설정 -->
-    <div class="my-section">프로필 설정</div>
-    <div style="background:#fff;border-bottom:1px solid var(--gray-100);">
-      <div class="my-setting-row">
-        <span class="my-setting-label">이름</span>
-        <input type="text" class="my-setting-input" id="myNameInput" placeholder="이름 입력" onchange="saveProfile()">
-      </div>
-      <div class="my-setting-row">
-        <span class="my-setting-label">몸무게</span>
-        <div style="display:flex;align-items:center;gap:6px;">
-          <input type="number" class="my-setting-input" id="myWeightInput" placeholder="70" min="30" max="200" onchange="saveProfile()" style="width:70px;">
-          <span style="font-size:13px;color:var(--gray-500);">kg</span>
-        </div>
-      </div>
-      <div class="my-setting-row">
-        <span class="my-setting-label">1km 포인트</span>
-        <span class="my-setting-value">100점 🏆</span>
-      </div>
+    <!-- 런닝 기록 -->
+    <div style="padding:16px 16px 8px;display:flex;justify-content:space-between;align-items:center;">
+      <div class="my-section" style="padding:0;">런닝 기록</div>
+      <div style="font-size:12px;color:var(--green);cursor:pointer;" onclick="openAllRecords()">전체 보기 →</div>
     </div>
-
-    <!-- 트로피 -->
-    <div class="my-section">트로피</div>
-    <div class="trophy-grid">
-      <div class="trophy-item"><div class="trophy-icon" id="t1">🥇</div><div class="trophy-name">첫 런닝</div></div>
-      <div class="trophy-item"><div class="trophy-icon" id="t2">🔥</div><div class="trophy-name">3일 연속</div></div>
-      <div class="trophy-item"><div class="trophy-icon" id="t3">⚡</div><div class="trophy-name">5km 완주</div></div>
-      <div class="trophy-item"><div class="trophy-icon" id="t4">🌟</div><div class="trophy-name">10km 완주</div></div>
-      <div class="trophy-item"><div class="trophy-icon" id="t5">💎</div><div class="trophy-name">총 50km</div></div>
-      <div class="trophy-item"><div class="trophy-icon" id="t6">🏆</div><div class="trophy-name">총 100km</div></div>
-      <div class="trophy-item"><div class="trophy-icon" id="t7">🌈</div><div class="trophy-name">7일 연속</div></div>
-      <div class="trophy-item"><div class="trophy-icon" id="t8">🚀</div><div class="trophy-name">목표 달성</div></div>
+    <div style="padding:0 16px 20px;" id="myPageRecordList">
+      <div style="text-align:center;padding:32px 0;color:var(--gray-500);">
+        <div style="font-size:28px;margin-bottom:8px;">👟</div>
+        <div style="font-size:13px;color:var(--gray-700);">아직 기록이 없어요</div>
+        <div style="font-size:12px;margin-top:4px;">추천 탭에서 첫 런닝을 시작해보세요!</div>
+      </div>
     </div>
 
     <div style="height:20px;"></div>
+  </div>
+</div>
+
+<!-- 프로필 편집 모달 -->
+<div id="profileEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1002;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:24px 20px 32px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div style="font-size:16px;font-weight:700;">프로필 편집</div>
+      <button onclick="closeProfileEdit()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-500);">×</button>
+    </div>
+    <!-- 아바타 선택 -->
+    <div style="font-size:12px;font-weight:500;color:var(--gray-500);margin-bottom:10px;">아바타</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px;" id="editAvatarGrid">
+      <div class="ob-avatar-item" onclick="selectEditAvatar(this,'🏃')">🏃</div>
+      <div class="ob-avatar-item" onclick="selectEditAvatar(this,'🧗')">🧗</div>
+      <div class="ob-avatar-item" onclick="selectEditAvatar(this,'🚴')">🚴</div>
+      <div class="ob-avatar-item" onclick="selectEditAvatar(this,'🏊')">🏊</div>
+      <div class="ob-avatar-item" onclick="selectEditAvatar(this,'🤸')">🤸</div>
+      <div class="ob-avatar-item" onclick="selectEditAvatar(this,'💪')">💪</div>
+      <div class="ob-avatar-item" onclick="selectEditAvatar(this,'🦅')">🦅</div>
+      <div class="ob-avatar-item" onclick="selectEditAvatar(this,'⚡')">⚡</div>
+      <div class="ob-avatar-item" onclick="selectEditAvatar(this,'🌟')">🌟</div>
+      <div class="ob-avatar-item" onclick="selectEditAvatar(this,'🔥')">🔥</div>
+    </div>
+    <!-- 닉네임 -->
+    <div style="font-size:12px;font-weight:500;color:var(--gray-500);margin-bottom:8px;">닉네임</div>
+    <input type="text" id="editNameInput" maxlength="12"
+      style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:var(--rs);padding:0 14px;font-size:15px;font-family:inherit;outline:none;margin-bottom:16px;"
+      oninput="this.style.borderColor='var(--green)'">
+    <button onclick="saveProfileEdit()" style="width:100%;height:48px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">저장</button>
+  </div>
+</div>
+
+<!-- 목표 변경 모달 -->
+<div id="goalEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1002;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:24px 20px 32px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+      <div style="font-size:16px;font-weight:700;">주간 목표 변경</div>
+      <button onclick="closeGoalEdit()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-500);">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;" id="goalEditOptions">
+      <div class="ob-goal-item" onclick="selectGoalOption(this,10)"><div style="font-size:20px;">🌱</div><div><div style="font-size:14px;font-weight:700;">가볍게</div><div style="font-size:12px;color:var(--gray-500);">주 10km</div></div><div style="margin-left:auto;color:var(--green);font-weight:700;opacity:0;" id="gc-10">✓</div></div>
+      <div class="ob-goal-item" onclick="selectGoalOption(this,20)"><div style="font-size:20px;">🏃</div><div><div style="font-size:14px;font-weight:700;">꾸준하게</div><div style="font-size:12px;color:var(--gray-500);">주 20km</div></div><div style="margin-left:auto;color:var(--green);font-weight:700;opacity:0;" id="gc-20">✓</div></div>
+      <div class="ob-goal-item" onclick="selectGoalOption(this,35)"><div style="font-size:20px;">💪</div><div><div style="font-size:14px;font-weight:700;">열심히</div><div style="font-size:12px;color:var(--gray-500);">주 35km</div></div><div style="margin-left:auto;color:var(--green);font-weight:700;opacity:0;" id="gc-35">✓</div></div>
+      <div class="ob-goal-item" onclick="selectGoalOption(this,50)"><div style="font-size:20px;">🔥</div><div><div style="font-size:14px;font-weight:700;">진지하게</div><div style="font-size:12px;color:var(--gray-500);">주 50km</div></div><div style="margin-left:auto;color:var(--green);font-weight:700;opacity:0;" id="gc-50">✓</div></div>
+    </div>
+    <button onclick="saveGoalEdit()" style="width:100%;height:48px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">저장</button>
   </div>
 </div>
 
@@ -509,23 +643,8 @@
       <div style="font-size:16px;font-weight:700;">전체 런닝 기록</div>
       <button onclick="closeAllRecords()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-500);">×</button>
     </div>
-    <!-- 통계 요약 -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 16px;border-bottom:1px solid var(--gray-100);flex-shrink:0;">
-      <div style="text-align:center;">
-        <div style="font-size:11px;color:var(--gray-500);margin-bottom:2px;">총 거리</div>
-        <div style="font-size:18px;font-weight:700;color:var(--green);" id="allTotalDist">0km</div>
-      </div>
-      <div style="text-align:center;">
-        <div style="font-size:11px;color:var(--gray-500);margin-bottom:2px;">총 횟수</div>
-        <div style="font-size:18px;font-weight:700;" id="allTotalCount">0회</div>
-      </div>
-      <div style="text-align:center;">
-        <div style="font-size:11px;color:var(--gray-500);margin-bottom:2px;">총 칼로리</div>
-        <div style="font-size:18px;font-weight:700;color:var(--amber);" id="allTotalCal">0kcal</div>
-      </div>
-    </div>
     <!-- 기록 목록 -->
-    <div style="flex:1;overflow-y:auto;padding:12px 16px;" id="allRecordsList"></div>
+    <div style="flex:1;overflow-y:auto;padding:14px 16px;" id="allRecordsList"></div>
     <!-- 전체 삭제 -->
     <div style="padding:10px 16px 20px;border-top:1px solid var(--gray-100);">
       <button onclick="clearAllRecords()" style="width:100%;height:42px;background:none;border:1px solid var(--gray-300);border-radius:var(--rs);font-size:13px;font-family:inherit;cursor:pointer;color:var(--red);">전체 기록 삭제</button>
@@ -574,6 +693,26 @@
       <div class="fstat"><div class="fstat-l">총 시간</div><div class="fstat-v" id="fTime">—</div></div>
       <div class="fstat"><div class="fstat-l">평균 페이스</div><div class="fstat-v" id="fPace">—</div></div>
       <div class="fstat"><div class="fstat-l">칼로리</div><div class="fstat-v" id="fCal">—</div></div>
+    </div>
+    <!-- 제목 편집 -->
+    <div style="margin-bottom:10px;">
+      <div style="font-size:11px;color:var(--gray-500);margin-bottom:5px;">기록 제목</div>
+      <input type="text" id="finishTitle" style="width:100%;height:40px;border:1px solid var(--gray-300);border-radius:var(--rs);padding:0 12px;font-size:14px;font-family:inherit;outline:none;" placeholder="오늘 런닝 제목을 입력해보세요">
+    </div>
+    <!-- 한 줄 메모 -->
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;color:var(--gray-500);margin-bottom:5px;">오늘의 한 줄 메모</div>
+      <textarea id="finishMemo" rows="2" style="width:100%;border:1px solid var(--gray-300);border-radius:var(--rs);padding:10px 12px;font-size:13px;font-family:inherit;outline:none;resize:none;line-height:1.5;" placeholder="오늘 컨디션은 어땠나요? 자유롭게 기록해보세요 ✏️"></textarea>
+    </div>
+    <!-- 오늘 기분 -->
+    <div style="margin-bottom:14px;">
+      <div style="font-size:11px;color:var(--gray-500);margin-bottom:6px;">오늘 컨디션</div>
+      <div style="display:flex;gap:8px;" id="moodRow">
+        <button class="mood-btn" onclick="selectMood(this,'🔥')">🔥 최고</button>
+        <button class="mood-btn" onclick="selectMood(this,'😊')">😊 좋음</button>
+        <button class="mood-btn" onclick="selectMood(this,'😐')">😐 보통</button>
+        <button class="mood-btn" onclick="selectMood(this,'😓')">😓 힘듦</button>
+      </div>
     </div>
     <button class="finish-save" onclick="saveRecord()">기록 저장 →</button>
     <button class="finish-discard" onclick="closeFinish()">저장 안 함</button>
@@ -703,11 +842,11 @@ document.addEventListener('click', e => {
 /* 위치 감지 */
 function detectLocation() {
   if (!navigator.geolocation) { toast('위치 감지 불가'); return; }
-  document.getElementById('locText').textContent = '감지 중…';
+  // 위치 감지 중
   navigator.geolocation.getCurrentPosition(pos => {
     S.lat = pos.coords.latitude;
     S.lng = pos.coords.longitude;
-    document.getElementById('locText').textContent = '현재 위치 ✓';
+    // 위치 감지 완료
     document.getElementById('addrInput').value = '현재 위치';
     if (S.map) {
       const latlng = new kakao.maps.LatLng(S.lat, S.lng);
@@ -722,25 +861,44 @@ function detectLocation() {
     }
     toast('내 위치로 이동했어요!');
   }, () => {
-    document.getElementById('locText').textContent = '내 위치';
+    // 위치 감지 실패
     toast('위치 권한을 허용해주세요 (크롬 주소창 자물쇠 클릭)');
   }, { enableHighAccuracy: true, timeout: 10000 });
 }
 
 /* 페이지 로드 시 자동 위치 감지 */
 window.addEventListener('load', () => {
-  setTimeout(detectLocation, 500);
-  // 홈 탭을 기본으로 설정
+  checkOnboarding();
+  // 날짜 표시
+  const now = new Date();
+  const days = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
+  const dateStr = days[now.getDay()] + ', ' + (now.getMonth()+1) + '월 ' + now.getDate() + '일';
+  document.getElementById('headerDate').textContent = dateStr;
   const homTab = document.querySelector('.tab');
   switchTab('home', homTab);
-  // AI 탭 active 해제, 홈 탭 active
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   homTab.classList.add('active');
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-home').classList.add('active');
   S.tab = 'home';
-  fetchWeather();
   renderRecords();
+  loadNearCourses();
+  // 위치 감지 먼저 → 완료되면 날씨 불러오기
+  if (navigator.geolocation) {
+    // 위치 감지 중
+    navigator.geolocation.getCurrentPosition(pos => {
+      S.lat = pos.coords.latitude;
+      S.lng = pos.coords.longitude;
+      // 위치 감지 완료
+      document.getElementById('addrInput').value = '현재 위치';
+      fetchWeather();
+    }, () => {
+      // 위치 실패 시 기본값으로 날씨
+      fetchWeather();
+    }, { enableHighAccuracy: true, timeout: 5000 });
+  } else {
+    fetchWeather();
+  }
 });
 
 // 모달 바깥 클릭 시 닫기
@@ -764,6 +922,7 @@ function switchTab(tab, el) {
   if (tab === 'home') {
     fetchWeather();
     renderRecords();
+    loadNearCourses();
   }
   if (tab === 'mycourse') renderMyCourses();
   if (tab === 'mypage') renderMyPage();
@@ -1046,26 +1205,125 @@ function showFinish() {
     const pace = R.elapsed / R.dist;
     document.getElementById('fPace').textContent = Math.floor(pace/60) + "'" + String(Math.round(pace%60)).padStart(2,'0') + '"';
   }
+  // 입력 초기화
+  document.getElementById('finishTitle').value = R.courseName;
+  document.getElementById('finishMemo').value = '';
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('finishOverlay').classList.add('active');
 }
 
 function saveRecord() {
-  // 기록 저장
+  const memo = document.getElementById('finishMemo').value.trim();
+  const title = document.getElementById('finishTitle').value.trim();
+  const selectedMood = document.querySelector('.mood-btn.selected');
+  const mood = selectedMood ? selectedMood.textContent.trim() : '';
+
   const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
   const now = new Date();
   records.unshift({
-    name: R.courseName,
+    name: title || R.courseName,
     dist: R.dist.toFixed(2),
     time: fmtTime(R.elapsed),
     cal: Math.round(R.dist * 65),
     date: now.toLocaleDateString('ko-KR', {month:'long', day:'numeric', weekday:'short'}),
-    pace: R.dist > 0.05 ? (()=>{ const p=R.elapsed/R.dist; return Math.floor(p/60)+"'"+String(Math.round(p%60)).padStart(2,'0')+'"'; })() : '—'
+    pace: R.dist > 0.05 ? (()=>{ const p=R.elapsed/R.dist; return Math.floor(p/60)+"'"+String(Math.round(p%60)).padStart(2,'0')+'"'; })() : '—',
+    memo: memo,
+    mood: mood
   });
   localStorage.setItem('runRecords', JSON.stringify(records));
   const earnedPts = Math.round(R.dist * 100);
   document.getElementById('finishOverlay').classList.remove('active');
   document.getElementById('runScreen').classList.remove('active');
   toast(`기록 저장 완료! +${earnedPts}포인트 🏆`);
+}
+
+/* ── 오늘의 추천 코스 (위치 기반) ── */
+function loadNearCourses() {
+  const wrap = document.getElementById('nearCourseList');
+  if (!wrap) return;
+  wrap.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--gray-500);"><div class="ml-spin" style="margin:0 auto 8px;"></div><div style="font-size:13px;">주변 코스를 찾는 중이에요…</div></div>';
+
+  if (!S.kakaoReady) { setTimeout(loadNearCourses, 1000); return; }
+
+  const ps = new kakao.maps.services.Places();
+  const keywords = ['공원', '한강', '산책로'];
+  const results = [];
+  let done = 0;
+
+  keywords.forEach(kw => {
+    ps.keywordSearch(kw, (data, status) => {
+      done++;
+      if (status === kakao.maps.services.Status.OK) {
+        data.slice(0, 2).forEach(p => {
+          const dist = getDistKm(S.lat, S.lng, parseFloat(p.y), parseFloat(p.x));
+          if (dist < 5) results.push({ ...p, distFromMe: dist });
+        });
+      }
+      if (done === keywords.length) renderNearCourses(results);
+    }, {
+      location: new kakao.maps.LatLng(S.lat, S.lng),
+      radius: 5000,
+      sort: kakao.maps.services.SortBy.DISTANCE
+    });
+  });
+}
+
+function getDistKm(lat1, lng1, lat2, lng2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function renderNearCourses(results) {
+  const wrap = document.getElementById('nearCourseList');
+  if (!results.length) {
+    wrap.innerHTML = '<div style="text-align:center;padding:16px;color:var(--gray-500);font-size:13px;">주변에서 코스를 찾지 못했어요</div>';
+    return;
+  }
+
+  // 중복 제거 + 거리순 정렬 + 최대 3개
+  const seen = new Set();
+  const unique = results
+    .filter(r => { if (seen.has(r.id)) return false; seen.add(r.id); return true; })
+    .sort((a, b) => a.distFromMe - b.distFromMe)
+    .slice(0, 3);
+
+  const icons = ['🌳','🏞','🌿','🏃','💧'];
+  const courseKm = [3.2, 5.0, 4.5, 2.8, 6.1];
+  const tags = ['평지 · 산책로', '공원 루프', '한강변', '야간 가능', '뷰 좋음'];
+
+  wrap.innerHTML = unique.map((p, i) => {
+    const km = courseKm[i % courseKm.length];
+    const time = Math.round(km * 7);
+    const dist = p.distFromMe < 1
+      ? Math.round(p.distFromMe * 1000) + 'm'
+      : p.distFromMe.toFixed(1) + 'km';
+    return `
+      <div class="near-course-card" onclick="goToAiWithLocation('${p.place_name}', ${p.y}, ${p.x})">
+        <div class="near-course-icon" style="background:var(--green-light);">${icons[i % icons.length]}</div>
+        <div class="near-course-info">
+          <div class="near-course-name">${p.place_name} 코스</div>
+          <div class="near-course-meta">출발지까지 ${dist} · 약 ${km}km · ${time}분 · ${tags[i % tags.length]}</div>
+        </div>
+        <div class="near-course-dist">${km}km</div>
+      </div>`;
+  }).join('');
+}
+
+function goToAiWithLocation(name, lat, lng) {
+  // AI 추천 탭으로 이동하고 해당 위치로 설정
+  const aiTab = document.querySelectorAll('.tab')[1];
+  switchTab('ai', aiTab);
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  aiTab.classList.add('active');
+  setTimeout(() => {
+    if (S.kakaoReady && aiMap) {
+      const latlng = new kakao.maps.LatLng(parseFloat(lat), parseFloat(lng));
+      setAiMarker(latlng, name + ' 근처');
+    }
+  }, 300);
 }
 
 /* 기록 렌더링 */
@@ -1102,15 +1360,11 @@ async function fetchWeather() {
   const OWM_KEY = 'c4e77c4cac686498d868b622be22e841'; // ← 여기에 OpenWeatherMap API 키 입력
 
   if (!OWM_KEY) {
-    // 데모 날씨
     document.getElementById('wLocation').textContent = '서울 마포구';
     document.getElementById('wTemp').textContent = '22°';
-    document.getElementById('wDesc').textContent = '맑음 · 런닝하기 좋아요!';
+    document.getElementById('wDesc').textContent = '맑음';
     document.getElementById('wIcon').textContent = '☀️';
-    document.getElementById('wHumid').textContent = '45%';
-    document.getElementById('wWind').textContent = '2m/s';
-    document.getElementById('wFeel').textContent = '21°';
-    document.getElementById('wRunAdvice').textContent = '🏃 런닝 최적 날씨!';
+    document.getElementById('wSummary').textContent = makeWeatherSummary(22, 45, 2, 800);
     return;
   }
 
@@ -1121,24 +1375,14 @@ async function fetchWeather() {
     const feel = Math.round(d.main.feels_like);
     const humid = d.main.humidity;
     const wind = d.wind.speed.toFixed(1);
-    const desc = d.weather[0].description;
+    const desc = getWeatherDesc(d.weather[0].id);
     const icon = getWeatherEmoji(d.weather[0].id);
 
     document.getElementById('wLocation').textContent = d.name;
     document.getElementById('wTemp').textContent = temp + '°';
     document.getElementById('wDesc').textContent = desc;
     document.getElementById('wIcon').textContent = icon;
-    document.getElementById('wHumid').textContent = humid + '%';
-    document.getElementById('wWind').textContent = wind + 'm/s';
-    document.getElementById('wFeel').textContent = feel + '°';
-
-    // 런닝 추천 메시지
-    let advice = '🏃 런닝 최적 날씨!';
-    if (temp > 32) advice = '🥵 너무 더워요, 수분 보충 필수!';
-    else if (temp < 0) advice = '🥶 너무 추워요, 방한 준비 필요';
-    else if (humid > 80) advice = '💧 습도 높아요, 가볍게 뛰세요';
-    else if (wind > 8) advice = '💨 바람 강해요, 코스 조정 추천';
-    document.getElementById('wRunAdvice').textContent = advice;
+    document.getElementById('wSummary').textContent = makeWeatherSummary(temp, humid, parseFloat(wind), d.weather[0].id);
   } catch(e) {
     document.getElementById('wDesc').textContent = '날씨 정보를 불러오지 못했어요';
   }
@@ -1147,12 +1391,6 @@ async function fetchWeather() {
 /* ── 전체 기록 모달 ── */
 function openAllRecords() {
   const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
-  const totalDist = records.reduce((s,r) => s + parseFloat(r.dist), 0);
-  const totalCal = records.reduce((s,r) => s + r.cal, 0);
-  document.getElementById('allTotalDist').textContent = totalDist.toFixed(1) + 'km';
-  document.getElementById('allTotalCount').textContent = records.length + '회';
-  document.getElementById('allTotalCal').textContent = totalCal + 'kcal';
-
   const emojis = ['🏃','🌟','💪','🔥','⚡','🎯','🏅','✨'];
   const list = document.getElementById('allRecordsList');
   if (!records.length) {
@@ -1315,6 +1553,34 @@ function startMyCoursRun(id) {
   initRunMap(c.points || null);
 }
 
+function makeWeatherSummary(temp, humid, wind, weatherId) {
+  let parts = [];
+
+  // 날씨 상태
+  if (weatherId >= 200 && weatherId < 300) return '천둥번개가 치고 있어요. 오늘은 실내 운동이 좋을 것 같아요 ⛈';
+  if (weatherId >= 500 && weatherId < 600) return '비가 내리고 있어요. 우비나 방수 재킷을 챙겨요 🌧';
+  if (weatherId >= 600 && weatherId < 700) return '눈이 오고 있어요. 미끄럼 조심하세요 ❄️';
+  if (weatherId >= 700 && weatherId < 800) return '안개가 꼈어요. 시야 확보에 주의하며 천천히 뛰어요 🌫';
+
+  // 기온
+  if (temp >= 33) parts.push('매우 덥고 더운 날씨예요. 한낮 런닝은 피하고 수분을 충분히 챙기세요 🥵');
+  else if (temp >= 28) parts.push('덥고 습한 날씨예요. 이른 아침이나 저녁 런닝을 추천해요 ☀️');
+  else if (temp >= 20) {
+    if (humid > 75) parts.push('따뜻하지만 습해요. 통기성 좋은 옷을 입고 뛰어요 💧');
+    else if (wind > 6) parts.push('적당히 따뜻하고 바람이 불어요. 코스 방향을 고려해보세요 💨');
+    else parts.push('런닝하기 딱 좋은 날씨예요. 가볍게 나가볼까요? 🏃');
+  } else if (temp >= 10) {
+    if (wind > 8) parts.push('선선하고 바람이 강해요. 바람막이 챙기는 걸 추천해요 🌬');
+    else parts.push('선선하고 쾌적해요. 런닝하기 최적의 날씨예요 🌿');
+  } else if (temp >= 0) {
+    parts.push('꽤 쌀쌀해요. 레이어링으로 따뜻하게 입고 나가세요 🧤');
+  } else {
+    parts.push('매우 춥네요. 방한 준비 철저히 하고 몸 충분히 풀고 시작하세요 🥶');
+  }
+
+  return parts[0] || '오늘도 좋은 런닝 하세요! 🏃';
+}
+
 function getWeatherEmoji(id) {
   if (id >= 200 && id < 300) return '⛈';
   if (id >= 300 && id < 400) return '🌦';
@@ -1325,6 +1591,33 @@ function getWeatherEmoji(id) {
   if (id === 801) return '🌤';
   if (id <= 804) return '☁️';
   return '🌤';
+}
+
+function getWeatherDesc(id) {
+  if (id >= 200 && id < 210) return '천둥번개';
+  if (id >= 210 && id < 230) return '뇌우';
+  if (id >= 230 && id < 300) return '뇌우와 비';
+  if (id >= 300 && id < 310) return '가랑비';
+  if (id >= 310 && id < 400) return '이슬비';
+  if (id === 500) return '가벼운 비';
+  if (id === 501) return '비';
+  if (id === 502 || id === 503) return '강한 비';
+  if (id === 504) return '매우 강한 비';
+  if (id >= 510 && id < 600) return '소나기';
+  if (id >= 600 && id < 610) return '눈';
+  if (id >= 610 && id < 620) return '진눈깨비';
+  if (id >= 620 && id < 700) return '소나기 눈';
+  if (id === 701) return '안개';
+  if (id === 711) return '연기';
+  if (id === 721) return '실안개';
+  if (id === 731 || id === 761) return '모래바람';
+  if (id === 741) return '짙은 안개';
+  if (id === 800) return '맑음';
+  if (id === 801) return '구름 조금';
+  if (id === 802) return '구름 약간';
+  if (id === 803) return '구름 많음';
+  if (id === 804) return '흐림';
+  return '맑음';
 }
 
 function closeFinish() {
@@ -1502,6 +1795,160 @@ function toast(msg) {
 /* ══════════════════════════════════════
    AI 코스 → 내 코스 저장
 ══════════════════════════════════════ */
+/* ══════════════════════════════════════
+   온보딩
+══════════════════════════════════════ */
+let obSelectedAvatar = '🏃';
+let obSelectedGoal = 10;
+
+function checkOnboarding() {
+  const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
+  const el = document.getElementById('onboarding');
+  if (!profile.onboarded) {
+    el.style.display = 'flex';
+    el.classList.add('active');
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+function obNext(step) {
+  if (step === 1) {
+    const name = document.getElementById('ob-name').value.trim();
+    if (!name) { document.getElementById('ob-name').focus(); document.getElementById('ob-name').style.borderColor='var(--red)'; return; }
+    document.getElementById('ob-step-1').style.display = 'none';
+    document.getElementById('ob-step-2').style.display = 'flex';
+    document.getElementById('ob-dot-2').style.background = 'var(--green)';
+  } else if (step === 2) {
+    document.getElementById('ob-step-2').style.display = 'none';
+    document.getElementById('ob-step-3').style.display = 'flex';
+    document.getElementById('ob-dot-3').style.background = 'var(--green)';
+  }
+}
+
+function obBack(step) {
+  if (step === 2) {
+    document.getElementById('ob-step-2').style.display = 'none';
+    document.getElementById('ob-step-1').style.display = 'flex';
+    document.getElementById('ob-dot-2').style.background = 'var(--gray-100)';
+  } else if (step === 3) {
+    document.getElementById('ob-step-3').style.display = 'none';
+    document.getElementById('ob-step-2').style.display = 'flex';
+    document.getElementById('ob-dot-3').style.background = 'var(--gray-100)';
+  }
+}
+
+function selectObAvatar(el, avatar) {
+  obSelectedAvatar = avatar;
+  document.querySelectorAll('#ob-step-2 .ob-avatar-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function selectObGoal(el, km) {
+  obSelectedGoal = km;
+  document.querySelectorAll('.ob-goal-item').forEach(i => {
+    i.classList.remove('selected');
+    const check = i.querySelector('[id^="ob-check"]');
+    if (check) check.style.opacity = '0';
+  });
+  el.classList.add('selected');
+  const check = document.getElementById('ob-check-' + km);
+  if (check) check.style.opacity = '1';
+}
+
+function obFinish() {
+  const name = document.getElementById('ob-name').value.trim() || '런너';
+  const profile = {
+    name, avatar: obSelectedAvatar,
+    goal: obSelectedGoal, onboarded: true
+  };
+  localStorage.setItem('runProfile', JSON.stringify(profile));
+  localStorage.setItem('weeklyGoal', obSelectedGoal);
+  const ob = document.getElementById('onboarding');
+  ob.classList.remove('active');
+  ob.style.display = 'none';
+  renderMyPage();
+  toast(`환영해요, ${name}님! 🎉`);
+}
+
+/* ── 프로필 편집 모달 ── */
+let editSelectedAvatar = '🏃';
+
+function openProfileEdit() {
+  const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
+  editSelectedAvatar = profile.avatar || '🏃';
+  document.getElementById('editNameInput').value = profile.name || '';
+  // 현재 아바타 선택 표시
+  document.querySelectorAll('#editAvatarGrid .ob-avatar-item').forEach(el => {
+    el.classList.toggle('selected', el.textContent === editSelectedAvatar);
+  });
+  document.getElementById('profileEditModal').style.display = 'flex';
+}
+
+function closeProfileEdit() {
+  document.getElementById('profileEditModal').style.display = 'none';
+}
+
+function selectEditAvatar(el, avatar) {
+  editSelectedAvatar = avatar;
+  document.querySelectorAll('#editAvatarGrid .ob-avatar-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
+function openAvatarEdit() { openProfileEdit(); }
+
+function saveProfileEdit() {
+  const name = document.getElementById('editNameInput').value.trim();
+  if (!name) { toast('닉네임을 입력해주세요'); return; }
+  const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
+  profile.name = name;
+  profile.avatar = editSelectedAvatar;
+  localStorage.setItem('runProfile', JSON.stringify(profile));
+  closeProfileEdit();
+  renderMyPage();
+  toast('프로필이 저장됐어요!');
+}
+
+/* ── 목표 변경 모달 ── */
+let editSelectedGoal = 20;
+
+function openGoalEdit() {
+  editSelectedGoal = parseInt(localStorage.getItem('weeklyGoal') || '20');
+  [10,20,35,50].forEach(v => {
+    const el = document.getElementById('gc-' + v);
+    const row = el ? el.closest('.ob-goal-item') : null;
+    if (el) el.style.opacity = v === editSelectedGoal ? '1' : '0';
+    if (row) row.classList.toggle('selected', v === editSelectedGoal);
+  });
+  document.getElementById('goalEditModal').style.display = 'flex';
+}
+
+function closeGoalEdit() {
+  document.getElementById('goalEditModal').style.display = 'none';
+}
+
+function selectGoalOption(el, km) {
+  editSelectedGoal = km;
+  document.querySelectorAll('#goalEditOptions .ob-goal-item').forEach(i => i.classList.remove('selected'));
+  el.classList.add('selected');
+  [10,20,35,50].forEach(v => {
+    const c = document.getElementById('gc-' + v);
+    if (c) c.style.opacity = v === km ? '1' : '0';
+  });
+}
+
+function saveGoalEdit() {
+  localStorage.setItem('weeklyGoal', editSelectedGoal);
+  closeGoalEdit();
+  renderMyPage();
+  toast('목표가 변경됐어요! 💪');
+}
+
+function selectMood(el, mood) {
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+}
+
 function saveAiCourse(idx) {
   const c = S.courses[idx];
   if (!c) return;
@@ -1560,14 +2007,14 @@ function updateGoalBar() {
   const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
   const weekDist = records.reduce((s, r) => s + parseFloat(r.dist), 0);
   const pct = Math.min(Math.round((weekDist / goal) * 100), 100);
-  document.getElementById('goalProgress').textContent = weekDist.toFixed(1) + ' / ' + goal + 'km';
-  document.getElementById('goalBarFill').style.width = pct + '%';
-  document.getElementById('goalPct').textContent = pct + '%';
-  document.getElementById('weeklyGoalInput').value = goal;
-
-  // 홈 화면 주간 목표 바도 업데이트
-  const hGoal = document.getElementById('weekGoalBar');
-  if (hGoal) hGoal.style.width = pct + '%';
+  const fill = document.getElementById('goalBarFill');
+  const pctEl = document.getElementById('goalPct');
+  const p2 = document.getElementById('goalProgress2');
+  const m2 = document.getElementById('goalMax2');
+  if (fill) fill.style.width = pct + '%';
+  if (pctEl) pctEl.textContent = pct + '% 달성';
+  if (p2) p2.textContent = weekDist.toFixed(1);
+  if (m2) m2.textContent = goal + 'km';
 }
 
 function renderMyPage() {
@@ -1575,15 +2022,8 @@ function renderMyPage() {
   const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
 
   // 프로필
-  if (profile.name) {
-    document.getElementById('myNameDisplay').textContent = profile.name;
-    document.getElementById('myNameInput').value = profile.name;
-  }
-  if (profile.avatar) {
-    document.getElementById('myAvatar').textContent = profile.avatar;
-    avatarIdx = avatarList.indexOf(profile.avatar);
-  }
-  if (profile.weight) document.getElementById('myWeightInput').value = profile.weight;
+  if (profile.name) document.getElementById('myNameDisplay').textContent = profile.name;
+  if (profile.avatar) document.getElementById('myAvatar').textContent = profile.avatar;
 
   // 통계
   const totalDist = records.reduce((s, r) => s + parseFloat(r.dist), 0);
@@ -1599,17 +2039,30 @@ function renderMyPage() {
   // 목표 바
   updateGoalBar();
 
-  // 트로피 체크
-  if (records.length >= 1) document.getElementById('t1').classList.add('earned');
-  if (streak >= 3) document.getElementById('t2').classList.add('earned');
-  if (records.some(r => parseFloat(r.dist) >= 5)) document.getElementById('t3').classList.add('earned');
-  if (records.some(r => parseFloat(r.dist) >= 10)) document.getElementById('t4').classList.add('earned');
-  if (totalDist >= 50) document.getElementById('t5').classList.add('earned');
-  if (totalDist >= 100) document.getElementById('t6').classList.add('earned');
-  if (streak >= 7) document.getElementById('t7').classList.add('earned');
-  const goal = parseFloat(localStorage.getItem('weeklyGoal') || '20');
-  const weekDist = records.reduce((s, r) => s + parseFloat(r.dist), 0);
-  if (weekDist >= goal) document.getElementById('t8').classList.add('earned');
+  // 최근 기록 렌더링 (최대 5개)
+  const myRecList = document.getElementById('myPageRecordList');
+  if (myRecList) {
+    if (!records.length) {
+      myRecList.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--gray-500);"><div style="font-size:28px;margin-bottom:8px;">👟</div><div style="font-size:13px;color:var(--gray-700);">아직 기록이 없어요</div><div style="font-size:12px;margin-top:4px;">추천 탭에서 첫 런닝을 시작해보세요!</div></div>';
+    } else {
+      const emojis = ['🏃','🌟','💪','🔥','⚡'];
+      myRecList.innerHTML = records.slice(0, 5).map((r, i) => `
+        <div style="background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:14px;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:${r.memo ? '10px' : '0'};">
+            <div style="width:40px;height:40px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;">${r.mood ? r.mood.split(' ')[0] : emojis[i % emojis.length]}</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.name}</div>
+              <div style="font-size:12px;color:var(--gray-500);">${r.date}</div>
+            </div>
+            <div style="text-align:right;flex-shrink:0;">
+              <div style="font-size:16px;font-weight:700;color:var(--green);">${r.dist}km</div>
+              <div style="font-size:11px;color:var(--gray-500);">${r.time}</div>
+            </div>
+          </div>
+          ${r.memo ? `<div style="font-size:12px;color:var(--gray-700);padding:8px 10px;background:var(--gray-50);border-radius:var(--rs);border-left:3px solid var(--green);line-height:1.5;">✏️ ${r.memo}</div>` : ''}
+        </div>`).join('');
+    }
+  }
 }
 
 window.addEventListener('resize', () => {
