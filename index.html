@@ -4,6 +4,26 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>루프 Runloop</title>
+
+<!-- PWA 설정 -->
+<link rel="manifest" href="/manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="루프">
+<meta name="theme-color" content="#1D9E75">
+
+<!-- 아이오에스 아이콘 -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%231D9E75'/><text x='90' y='125' font-size='90' text-anchor='middle'>🏃</text></svg>">
+
+<!-- 서비스 워커 등록 -->
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+</script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
   :root {
@@ -74,7 +94,7 @@
 
   /* 그리기 탭 */
   #drawMapEl{flex:1;min-height:0;position:relative;}
-  .draw-hud{position:absolute;top:12px;left:12px;right:12px;display:flex;justify-content:space-between;pointer-events:none;z-index:10;}
+  .draw-hud{position:absolute;bottom:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none;z-index:10;}
   .hud-col{display:flex;flex-direction:column;gap:6px;pointer-events:auto;}
   .hud-pill{background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:var(--rp);padding:7px 14px;font-size:13px;font-weight:500;color:var(--gray-900);display:flex;align-items:center;gap:6px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.1);white-space:nowrap;}
   .hud-pill.acc{background:var(--green);color:#fff;border-color:var(--green);}
@@ -1077,7 +1097,7 @@ function renderCourses() {
     card.innerHTML = `
       <div class="cmap"><canvas id="m${i}"></canvas>
         <div class="cbadge">AI 추천</div>
-        <div class="crank">${['최추천','2순위','3순위'][i]}</div>
+        <div class="crank">${['추천','2순위','3순위'][i]}</div>
       </div>
       <div class="cinfo">
         <div class="cname">${c.name}</div>
@@ -1297,7 +1317,8 @@ function renderNearCourses(results) {
     .sort((a, b) => a.distFromMe - b.distFromMe)
     .slice(0, 3);
 
-  const icons = ['🌳','🏞','🌿','🏃','💧'];
+  const icons = ['🌳','🏞️','🌿','🏃','💧'];
+  const iconBgs = ['#E1F5EE','#E6F1FB','#EAF3DE','#FFF0E0','#E6F4F9'];
   const courseKm = [3.2, 5.0, 4.5, 2.8, 6.1];
   const tags = ['평지 · 산책로', '공원 루프', '한강변', '야간 가능', '뷰 좋음'];
 
@@ -1309,7 +1330,7 @@ function renderNearCourses(results) {
       : p.distFromMe.toFixed(1) + 'km';
     return `
       <div class="near-course-card" onclick="goToAiWithLocation('${p.place_name}', ${p.y}, ${p.x})">
-        <div class="near-course-icon" style="background:var(--green-light);">${icons[i % icons.length]}</div>
+        <div class="near-course-icon" style="background:${iconBgs[i % iconBgs.length]};">${icons[i % icons.length]}</div>
         <div class="near-course-info">
           <div class="near-course-name">${p.place_name} 코스</div>
           <div class="near-course-meta">출발지까지 ${dist} · 약 ${km}km · ${time}분 · ${tags[i % tags.length]}</div>
@@ -1367,7 +1388,7 @@ async function fetchWeather() {
   const OWM_KEY = 'c4e77c4cac686498d868b622be22e841'; // ← 여기에 OpenWeatherMap API 키 입력
 
   if (!OWM_KEY) {
-    document.getElementById('wLocation').textContent = '서울 마포구';
+    document.getElementById('wLocation').textContent = '현재 위치';
     document.getElementById('wTemp').textContent = '22°';
     document.getElementById('wDesc').textContent = '맑음';
     document.getElementById('wIcon').textContent = '☀️';
@@ -1385,7 +1406,19 @@ async function fetchWeather() {
     const desc = getWeatherDesc(d.weather[0].id);
     const icon = getWeatherEmoji(d.weather[0].id);
 
-    document.getElementById('wLocation').textContent = d.name;
+    // 역지오코딩으로 한국어 주소
+    try {
+      const geoRes = await fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${S.lat}&lon=${S.lng}&limit=1&appid=${OWM_KEY}`);
+      const geoData = await geoRes.json();
+      if (geoData.length > 0) {
+        const local = geoData[0].local_names?.ko || geoData[0].name;
+        document.getElementById('wLocation').textContent = local;
+      } else {
+        document.getElementById('wLocation').textContent = d.name;
+      }
+    } catch(e) {
+      document.getElementById('wLocation').textContent = d.name;
+    }
     document.getElementById('wTemp').textContent = temp + '°';
     document.getElementById('wDesc').textContent = desc;
     document.getElementById('wIcon').textContent = icon;
