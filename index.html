@@ -1246,7 +1246,11 @@ function loadNearCourses() {
   if (!wrap) return;
   wrap.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--gray-500);"><div class="ml-spin" style="margin:0 auto 8px;"></div><div style="font-size:13px;">주변 코스를 찾는 중이에요…</div></div>';
 
-  if (!S.kakaoReady) { setTimeout(loadNearCourses, 1000); return; }
+  if (!S.kakaoReady) { setTimeout(loadNearCourses, 800); return; }
+  // 위치가 기본값이면 위치 먼저 잡고 재시도
+  if (S.lat === 37.5503 && S.lng === 126.9200) {
+    setTimeout(loadNearCourses, 1500); return;
+  }
 
   const ps = new kakao.maps.services.Places();
   const keywords = ['공원', '한강', '산책로'];
