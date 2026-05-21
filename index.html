@@ -208,7 +208,7 @@ if ('serviceWorker' in navigator) {
   .my-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:10px;cursor:pointer;border:2px solid rgba(255,255,255,.4);}
   .my-name{font-size:20px;font-weight:700;margin-bottom:2px;}
   .my-sub{font-size:13px;opacity:.8;}
-  .my-points{display:flex;gap:16px;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2);}
+  .my-points{display:flex;gap:0;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2);}
   .my-point-item{text-align:center;}
   .my-point-val{font-size:20px;font-weight:700;}
   .my-point-label{font-size:11px;opacity:.75;margin-top:1px;}
@@ -554,21 +554,28 @@ if ('serviceWorker' in navigator) {
 
     <!-- 그리기 모드 바텀시트 -->
     <div id="drawBottomContent" style="display:none;padding:0 16px 12px;">
+      <!-- 경로 모드 토글 -->
+      <div style="display:flex;background:var(--gray-50);border-radius:var(--rs);padding:3px;margin-bottom:10px;">
+        <button id="routeAutoBtn" onclick="setRouteMode('auto')"
+          style="flex:1;height:30px;border:none;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;background:var(--green);color:#fff;transition:all .2s;">
+          🚶 도보 경로
+        </button>
+        <button id="routeFreeBtn" onclick="setRouteMode('free')"
+          style="flex:1;height:30px;border:none;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;background:transparent;color:var(--gray-500);transition:all .2s;">
+          ✏ 자유 그리기
+        </button>
+      </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-        <div class="sgrid" style="flex:1;margin-bottom:0;">
-          <div class="scell"><div class="scell-l">총 거리</div><div class="scell-v g" id="dDist">0.0<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small></div></div>
-          <div class="scell"><div class="scell-l">예상 시간</div><div class="scell-v" id="dTime">—</div></div>
-          <div class="scell"><div class="scell-l">칼로리</div><div class="scell-v" id="dCal">—</div></div>
+        <div style="display:flex;gap:8px;flex:1;">
+          <div class="scell" style="flex:1;"><div class="scell-l">총 거리</div><div class="scell-v g" id="dDist">0.0<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small></div></div>
+          <div class="scell" style="flex:1;"><div class="scell-l">예상 시간</div><div class="scell-v" id="dTime">—</div></div>
         </div>
         <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
           <button onclick="undoDraw()" style="height:34px;padding:0 10px;background:var(--gray-100);border:none;border-radius:var(--rs);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;color:var(--gray-700);white-space:nowrap;">↩ 취소</button>
           <button onclick="clearDraw()" style="height:34px;padding:0 10px;background:var(--red-light);border:none;border-radius:var(--rs);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;color:var(--red);white-space:nowrap;">🗑 지우기</button>
         </div>
       </div>
-      <div class="conds" id="conds">
-        <div class="ctag cg">🚶 보도 확보</div>
-        <div class="ctag ca">🚗 차량 보통</div>
-      </div>
+      <div class="conds" id="conds"></div>
       <button class="save-btn" id="saveBtn" disabled onclick="saveCourse()" style="margin-top:10px;">지도를 클릭해서 코스를 그어보세요</button>
     </div>
   </div>
@@ -596,30 +603,31 @@ if ('serviceWorker' in navigator) {
 
     <!-- 프로필 카드 -->
     <div class="my-profile-card">
-      <div style="display:flex;align-items:center;gap:16px;margin-bottom:16px;">
-        <div class="my-avatar" id="myAvatar" onclick="openAvatarEdit()" title="탭해서 변경">🏃</div>
-        <div style="flex:1;">
-          <div class="my-name" id="myNameDisplay">런너</div>
-          <div class="my-sub">런룹과 함께 달리는 중 🏃</div>
-        </div>
-        <button onclick="openProfileEdit()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);border-radius:var(--rs);padding:6px 12px;color:#fff;font-size:12px;font-family:inherit;cursor:pointer;">편집</button>
+      <!-- 상단: 편집 버튼 -->
+      <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
+        <button onclick="openProfileEdit()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);border-radius:var(--rs);padding:5px 12px;color:#fff;font-size:12px;font-family:inherit;cursor:pointer;">편집</button>
       </div>
-      <div class="my-points">
-        <div class="my-point-item">
-          <div class="my-point-val" id="myTotalPoints">0</div>
-          <div class="my-point-label">🏆 포인트</div>
-        </div>
-        <div class="my-point-item">
+      <!-- 중앙: 아바타 + 이름 -->
+      <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:16px;">
+        <div class="my-avatar" id="myAvatar" onclick="openAvatarEdit()" title="탭해서 변경" style="width:72px;height:72px;font-size:36px;margin-bottom:10px;">🏃</div>
+        <div class="my-name" id="myNameDisplay" style="text-align:center;">런너</div>
+        <div class="my-sub" id="myJoinDays" style="text-align:center;margin-top:3px;">루프와 함께 달리는 중</div>
+      </div>
+      <!-- 하단: 3개 통계 가운데 정렬 -->
+      <div class="my-points" style="justify-content:center;gap:0;">
+        <div class="my-point-item" style="flex:1;text-align:center;">
           <div class="my-point-val" id="myTotalDist">0km</div>
           <div class="my-point-label">총 거리</div>
         </div>
-        <div class="my-point-item">
+        <div style="width:1px;background:rgba(255,255,255,.2);margin:0 4px;"></div>
+        <div class="my-point-item" style="flex:1;text-align:center;">
           <div class="my-point-val" id="myTotalRuns">0회</div>
-          <div class="my-point-label">총 런닝</div>
+          <div class="my-point-label">런닝 횟수</div>
         </div>
-        <div class="my-point-item">
-          <div class="my-point-val" id="myStreak">0일</div>
-          <div class="my-point-label">🔥 연속</div>
+        <div style="width:1px;background:rgba(255,255,255,.2);margin:0 4px;"></div>
+        <div class="my-point-item" style="flex:1;text-align:center;">
+          <div class="my-point-val" id="myAvgPace">—</div>
+          <div class="my-point-label">평균 페이스</div>
         </div>
       </div>
     </div>
@@ -810,7 +818,7 @@ const S = {
   tab:'ai', courses:[], sel:-1,
   lat:37.5503, lng:126.9200,
   map:null, polyline:null, myMarker:null,
-  path:[], dots:[], segments:[], distKm:0,
+  path:[], dots:[], segments:[], distKm:0, crossings:0, clickedPoints:[],
   kakaoReady: false
 };
 
@@ -911,14 +919,32 @@ function setCreateMode(mode) {
     aiBtn.style.background = 'transparent'; aiBtn.style.color = 'var(--gray-500)';
     drawContent.style.display = 'block';
     aiContent.style.display = 'none';
-    // searchBar 항상 표시
-    if (guide) guide.style.display = 'none'; // 그리기 모드엔 안내 없음
-    // AI 마커 숨기기
+    if (guide) guide.style.display = 'none';
     if (createAiMarker) createAiMarker.setMap(null);
-    // 그리기 경로 복원
     if (S.polyline) S.polyline.setMap(createMap);
     S.dots.forEach(d => d.setMap(createMap));
+    // 바텀시트 자동으로 열기
+    openBottomSheet();
   }
+}
+
+/* ── 경로 모드 ── */
+let routeMode = 'auto'; // 'auto' or 'free'
+
+function setRouteMode(mode) {
+  routeMode = mode;
+  const autoBtn = document.getElementById('routeAutoBtn');
+  const freeBtn = document.getElementById('routeFreeBtn');
+  if (!autoBtn || !freeBtn) return;
+  if (mode === 'auto') {
+    autoBtn.style.background = 'var(--green)'; autoBtn.style.color = '#fff';
+    freeBtn.style.background = 'transparent'; freeBtn.style.color = 'var(--gray-500)';
+  } else {
+    freeBtn.style.background = 'var(--green)'; freeBtn.style.color = '#fff';
+    autoBtn.style.background = 'transparent'; autoBtn.style.color = 'var(--gray-500)';
+  }
+  // 모드 바꾸면 경로 초기화
+  clearDraw();
 }
 
 function moveToMyLocation() {
@@ -1208,6 +1234,9 @@ async function addPoint(latlng) {
   });
   S.dots.push(dot);
 
+  // 클릭한 점 저장
+  S.clickedPoints.push(latlng);
+
   if (isFirst) {
     S.path.push(latlng);
     S.segments.push([latlng]);
@@ -1215,9 +1244,25 @@ async function addPoint(latlng) {
     return;
   }
 
-  const prev = S.path[S.path.length - 1];
+  // 이전 점은 사용자가 클릭한 마지막 점 기준
+  const prev = S.clickedPoints[S.clickedPoints.length - 2];
 
-  // 카카오 도보 길찾기 API
+  // 자유 그리기 모드면 직선으로 연결
+  if (routeMode === 'free') {
+    S.path.push(latlng);
+    S.segments.push([latlng]);
+    if (S.polyline) S.polyline.setMap(null);
+    S.polyline = new kakao.maps.Polyline({
+      map: createMap, path: S.path,
+      strokeWeight: 4, strokeColor: '#1D9E75',
+      strokeOpacity: 0.9, strokeStyle: 'solid'
+    });
+    S.distKm = S.polyline.getLength() / 1000;
+    refreshStats(S.distKm);
+    return;
+  }
+
+  // 도보 경로 모드
   try {
     toast('경로 계산 중…');
     const res = await fetch(
@@ -1227,27 +1272,38 @@ async function addPoint(latlng) {
     const data = await res.json();
 
     if (data.routes && data.routes[0].result_code === 0) {
-      // 경로 포인트 추출
+      // 경로 포인트 추출 + 횡단보도 수 카운트
       const points = [];
+      let segCrossings = 0;
       data.routes[0].sections.forEach(section => {
+        // 횡단보도는 guides에서 CROSSWALK 타입으로 옴
+        if (section.guides) {
+          section.guides.forEach(g => {
+            if (g.type === 27) segCrossings++; // 27 = 횡단보도
+          });
+        }
         section.roads.forEach(road => {
           for (let i = 0; i < road.vertexes.length; i += 2) {
             points.push(new kakao.maps.LatLng(road.vertexes[i+1], road.vertexes[i]));
           }
         });
       });
+      S.crossings += segCrossings;
       S.segments.push(points);
       S.path.push(...points);
       S.path.push(latlng);
     } else {
-      // 길찾기 실패 시 직선으로 폴백
-      S.path.push(latlng);
-      S.segments.push([prev, latlng]);
-      toast('이 구간은 직선으로 연결했어요');
+      // 길찾기 실패 — 연결 안 하고 알림
+      S.clickedPoints.pop(); // 클릭 취소
+      S.dots.pop()?.setMap(null); // 마커 제거
+      toast('이 구간은 길이 없어요. 자유 그리기를 사용해보세요 ✏');
+      return;
     }
   } catch(e) {
-    S.path.push(latlng);
-    S.segments.push([prev, latlng]);
+    S.clickedPoints.pop();
+    S.dots.pop()?.setMap(null);
+    toast('경로를 찾지 못했어요. 자유 그리기를 사용해보세요 ✏');
+    return;
   }
 
   // 전체 경로 폴리라인 업데이트
@@ -1264,6 +1320,9 @@ async function addPoint(latlng) {
 /* 실행취소 — 클릭 한 번 단위로 */
 function undoDraw() {
   if (!S.segments || S.segments.length === 0) return;
+
+  // 클릭한 점도 제거
+  S.clickedPoints.pop();
 
   // 마지막 세그먼트 제거 (클릭 한 번에 해당하는 구간)
   const lastSeg = S.segments.pop();
@@ -1287,13 +1346,14 @@ function undoDraw() {
     S.distKm = S.polyline.getLength() / 1000;
   } else {
     S.distKm = 0;
+    S.crossings = 0;
   }
   refreshStats(S.distKm);
 }
 
 /* 전체 지우기 */
 function clearDraw() {
-  S.path = []; S.segments = [];
+  S.path = []; S.segments = []; S.crossings = 0; S.clickedPoints = [];
   S.dots.forEach(d => d.setMap(null));
   S.dots = [];
   if (S.polyline) { S.polyline.setMap(null); S.polyline = null; }
@@ -1302,18 +1362,53 @@ function clearDraw() {
 }
 
 /* 통계 업데이트 */
+/* ── 칼로리 계산 ── */
+function getAvgPaceSecPerKm() {
+  const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
+  const valid = records.filter(r => r.pace && r.pace !== '—' && parseFloat(r.dist) > 0.5);
+  if (valid.length === 0) return 420;
+  const paces = valid.map(r => {
+    const match = r.pace.match(/(\d+)'(\d+)/);
+    return match ? parseInt(match[1]) * 60 + parseInt(match[2]) : 420;
+  });
+  return Math.round(paces.reduce((a, b) => a + b, 0) / paces.length);
+}
+
+function getMET(paceSecPerKm) {
+  const kmph = 3600 / paceSecPerKm;
+  if (kmph >= 12) return 11;
+  if (kmph >= 10) return 10;
+  if (kmph >= 8.5) return 8.5;
+  if (kmph >= 7.5) return 7.5;
+  if (kmph >= 6.5) return 6.5;
+  return 6;
+}
+
+function calcCalories(km) {
+  if (!km || km <= 0) return 0;
+  const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
+  const weight = profile.weight || 65;
+  const avgPace = getAvgPaceSecPerKm();
+  const met = getMET(avgPace);
+  const hours = (km * avgPace) / 3600;
+  return Math.round(met * weight * hours);
+}
+
+function getPaceLabel() {
+  const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
+  const valid = records.filter(r => r.pace && r.pace !== '—');
+  if (valid.length === 0) return '기본값';
+  if (valid.length < 3) return '학습 중';
+  return '내 평균 페이스';
+}
+
 function refreshStats(km) {
   // hudDist 제거됨
   document.getElementById('dDist').innerHTML = km.toFixed(2) + '<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small>';
   document.getElementById('dTime').textContent = km > 0 ? Math.round(km * 7) + '분' : '—';
-  if (km > 0) {
-    const cal = calcCalories(km);
-    const label = getPaceLabel();
-    document.getElementById('dCal').textContent = '약 ' + cal + 'kcal';
-    document.getElementById('dCal').title = label + ' 기준';
-  } else {
-    document.getElementById('dCal').textContent = '—';
-  }
+  // dCal 요소 없어도 오류 안 남
+  const crossEl = document.getElementById('dCal');
+  if (crossEl) crossEl.textContent = '—';
   const sb = document.getElementById('saveBtn');
   if (km > 0.05) {
     sb.disabled = false;
@@ -1325,6 +1420,7 @@ function refreshStats(km) {
 }
 
 function saveCourse() {
+  if (S.path.length < 2) { toast('코스를 더 그어주세요!'); return; }
   const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
   const num = courses.length + 1;
   courses.push({
@@ -1337,6 +1433,16 @@ function saveCourse() {
   localStorage.setItem('myCourses', JSON.stringify(courses));
   toast('코스 ' + num + '이(가) 저장됐어요! 📍');
   clearDraw();
+  // 코스 탭으로 이동
+  setTimeout(() => {
+    const tabs = document.querySelectorAll('.tab');
+    const courseTab = Array.from(tabs).find(t => t.textContent.trim() === '코스');
+    if (courseTab) {
+      switchTab('mycourse', courseTab);
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      courseTab.classList.add('active');
+    }
+  }, 300);
 }
 
 /* AI 추천 코스 */
@@ -1629,8 +1735,9 @@ function renderRecords() {
   document.getElementById('weekCount').innerHTML = records.length + '<small style="font-size:11px;font-weight:400;color:var(--gray-500)">회</small>';
   document.getElementById('weekCal').innerHTML = weekCal + '<small style="font-size:11px;font-weight:400;color:var(--gray-500)">kcal</small>';
 
+  if (!wrap) return;
   if (!records.length) {
-    wrap.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--gray-500);"><div style="font-size:32px;margin-bottom:8px;">👟</div><div style="font-size:14px;font-weight:500;color:var(--gray-700);">아직 기록이 없어요</div><div style="font-size:13px;margin-top:4px;">AI 추천 탭에서 첫 런닝을 시작해보세요!</div></div>';
+    wrap.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--gray-500);"><div style="font-size:32px;margin-bottom:8px;">👟</div><div style="font-size:14px;font-weight:500;color:var(--gray-700);">아직 기록이 없어요</div><div style="font-size:13px;margin-top:4px;">코스 탭에서 첫 런닝을 시작해보세요!</div></div>';
     return;
   }
   const emojis = ['🏃','🌟','💪','🔥','⚡'];
@@ -1670,13 +1777,21 @@ async function fetchWeather() {
     const desc = getWeatherDesc(d.weather[0].id);
     const icon = getWeatherEmoji(d.weather[0].id);
 
-    // 역지오코딩으로 한국어 주소
+    // 카카오 역지오코딩으로 구 단위 한국어 주소
     try {
-      const geoRes = await fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${S.lat}&lon=${S.lng}&limit=1&appid=${OWM_KEY}`);
-      const geoData = await geoRes.json();
-      if (geoData.length > 0) {
-        const local = geoData[0].local_names?.ko || geoData[0].name;
-        document.getElementById('wLocation').textContent = local;
+      if (S.kakaoReady) {
+        const geocoder = new kakao.maps.services.Geocoder();
+        geocoder.coord2Address(S.lng, S.lat, (result, status) => {
+          if (status === kakao.maps.services.Status.OK) {
+            const addr = result[0].address;
+            const loc = addr.region_2depth_name
+              ? addr.region_1depth_name + ' ' + addr.region_2depth_name
+              : addr.region_1depth_name;
+            document.getElementById('wLocation').textContent = loc;
+          } else {
+            document.getElementById('wLocation').textContent = d.name;
+          }
+        });
       } else {
         document.getElementById('wLocation').textContent = d.name;
       }
@@ -2425,13 +2540,28 @@ function renderMyPage() {
   // 통계
   const totalDist = records.reduce((s, r) => s + parseFloat(r.dist), 0);
   const totalPoints = Math.round(totalDist * 100);
-  document.getElementById('myTotalPoints').textContent = totalPoints.toLocaleString();
   document.getElementById('myTotalDist').textContent = totalDist.toFixed(1) + 'km';
   document.getElementById('myTotalRuns').textContent = records.length + '회';
 
-  // 연속 런닝 (간단 계산)
-  const streak = Math.min(records.length, 7);
-  document.getElementById('myStreak').textContent = streak + '일';
+  // 평균 페이스
+  const avgPaceSec = getAvgPaceSecPerKm();
+  const avgPm = Math.floor(avgPaceSec / 60), avgPs = String(avgPaceSec % 60).padStart(2, '0');
+  const validCount = records.filter(r => r.pace && r.pace !== '—').length;
+  const avgPaceEl = document.getElementById('myAvgPace');
+  if (avgPaceEl) {
+    avgPaceEl.textContent = validCount > 0 ? `${avgPm}'${avgPs}"` : '—';
+  }
+
+  // 가입일 기반 "루프와 함께 N일째"
+  const joinDaysEl = document.getElementById('myJoinDays');
+  if (joinDaysEl) {
+    if (!profile.joinDate) {
+      profile.joinDate = new Date().toISOString();
+      localStorage.setItem('runProfile', JSON.stringify(profile));
+    }
+    const days = Math.max(1, Math.floor((Date.now() - new Date(profile.joinDate)) / (1000 * 60 * 60 * 24)));
+    joinDaysEl.textContent = `루프와 함께한 지 ${days}일째 🏃`;
+  }
 
   // 목표 바
   updateGoalBar();
