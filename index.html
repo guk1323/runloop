@@ -332,13 +332,13 @@ if ('serviceWorker' in navigator) {
 
     <div style="font-size:12px;color:var(--gray-500);margin-bottom:16px;text-align:center;">입력하지 않아도 괜찮아요 — 나중에 MY탭에서 수정 가능해요</div>
     <div style="display:flex;gap:10px;margin-top:auto;">
-      <button onclick="obBack(3)" style="width:52px;height:52px;background:var(--gray-100);border:none;border-radius:var(--r);font-size:20px;cursor:pointer;">←</button>
-      <button onclick="obNext(3)" style="flex:1;height:52px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">다음 →</button>
+      <button onclick="obBack(2)" style="width:52px;height:52px;background:var(--gray-100);border:none;border-radius:var(--r);font-size:20px;cursor:pointer;">←</button>
+      <button onclick="obNext(2)" style="flex:1;height:52px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">다음 →</button>
     </div>
   </div>
 
   <!-- 스텝 3: 아바타 -->
-  <div id="ob-step-2" style="flex:1;display:none;flex-direction:column;padding:40px 24px 32px;">
+  <div id="ob-step-3a" style="flex:1;display:none;flex-direction:column;padding:40px 24px 32px;">
     <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;">나를 표현할<br>아바타를 골라요</div>
     <div style="font-size:14px;color:var(--gray-500);margin-bottom:32px;">언제든 바꿀 수 있어요!</div>
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:32px;">
@@ -2128,6 +2128,26 @@ function toast(msg) {
 /* ══════════════════════════════════════
    온보딩
 ══════════════════════════════════════ */
+let obSelectedGender = '';
+
+function selectGender(g) {
+  obSelectedGender = g;
+  const male = document.getElementById('ob-male');
+  const female = document.getElementById('ob-female');
+  if (male) {
+    male.style.borderColor = g === 'male' ? 'var(--green)' : 'var(--gray-100)';
+    male.style.background = g === 'male' ? 'var(--green-light)' : 'var(--gray-50)';
+    male.style.color = g === 'male' ? 'var(--green-dark)' : 'var(--gray-700)';
+    male.style.fontWeight = g === 'male' ? '700' : '400';
+  }
+  if (female) {
+    female.style.borderColor = g === 'female' ? 'var(--green)' : 'var(--gray-100)';
+    female.style.background = g === 'female' ? 'var(--green-light)' : 'var(--gray-50)';
+    female.style.color = g === 'female' ? 'var(--green-dark)' : 'var(--gray-700)';
+    female.style.fontWeight = g === 'female' ? '700' : '400';
+  }
+}
+
 let obSelectedAvatar = '🏃';
 let obSelectedGoal = 10;
 
