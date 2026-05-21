@@ -253,6 +253,8 @@ if ('serviceWorker' in navigator) {
   .near-course-name{font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .near-course-meta{font-size:12px;color:var(--gray-500);}
   .near-course-dist{font-size:14px;font-weight:700;color:var(--green);flex-shrink:0;}
+
+  #screen-ai { overflow: hidden; }
 </style>
 </head>
 <body>
@@ -421,57 +423,65 @@ if ('serviceWorker' in navigator) {
 </div>
 
 <!-- AI 추천 -->
-<div id="screen-ai" class="screen active">
-  <!-- 검색바 -->
-  <div style="background:#fff;padding:10px 14px;border-bottom:1px solid var(--gray-100);flex-shrink:0;display:flex;gap:8px;align-items:center;">
-    <div style="position:relative;flex:1;">
-      <input type="text" class="addr-input" id="addrInput" placeholder="🔍 출발지 검색 (예: 합정동, 홍대)" autocomplete="off"
-        oninput="searchAddress(this.value)" style="padding-right:36px;">
-      <div id="addrDropdown" style="display:none;position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-radius:var(--rs);z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;"></div>
-    </div>
-    <button onclick="useMyLocation()" style="width:40px;height:40px;background:var(--green-light);border:none;border-radius:var(--rs);cursor:pointer;font-size:18px;flex-shrink:0;">📍</button>
-  </div>
+<div id="screen-ai" class="screen active" style="position:relative;">
 
-  <!-- AI 추천 지도 -->
-  <div style="position:relative;flex-shrink:0;height:200px;">
+  <!-- 지도 (전체 화면) -->
+  <div style="position:relative;flex:1;min-height:0;">
+    <!-- 상단 검색바 오버레이 -->
+    <div style="position:absolute;top:10px;left:10px;right:10px;z-index:20;display:flex;gap:8px;">
+      <div style="position:relative;flex:1;">
+        <input type="text" class="addr-input" id="addrInput" placeholder="🔍 출발지 검색" autocomplete="off"
+          oninput="searchAddress(this.value)"
+          style="padding-right:36px;box-shadow:0 2px 8px rgba(0,0,0,.15);border-color:transparent;">
+        <div id="addrDropdown" style="display:none;position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-radius:var(--rs);z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;"></div>
+      </div>
+      <button onclick="useMyLocation()" style="width:40px;height:40px;background:#fff;border:none;border-radius:var(--rs);cursor:pointer;font-size:18px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);">📍</button>
+    </div>
+
+    <!-- 선택된 출발지 표시 -->
+    <div id="aiSelectedAddr" style="display:none;position:absolute;top:62px;left:10px;right:10px;z-index:20;background:#fff;border-radius:var(--rs);padding:7px 12px;font-size:12px;font-weight:500;color:var(--gray-900);box-shadow:0 2px 8px rgba(0,0,0,.12);">
+      <span style="color:var(--green);">📍 출발지: </span><span id="aiSelectedAddrText">—</span>
+    </div>
+
     <div id="aiMapEl" style="width:100%;height:100%;"></div>
     <div class="map-loading" id="aiMapLoading">
       <div class="ml-spin"></div><span>지도 불러오는 중…</span>
     </div>
+
     <!-- 출발지 선택 안내 -->
-    <div id="aiMapGuide" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:500;padding:6px 14px;border-radius:var(--rp);white-space:nowrap;">
+    <div id="aiMapGuide" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:500;padding:6px 14px;border-radius:var(--rp);white-space:nowrap;z-index:10;">
       📍 지도를 클릭해 출발지를 선택하세요
     </div>
-    <!-- 선택된 출발지 표시 -->
-    <div id="aiSelectedAddr" style="display:none;position:absolute;top:8px;left:8px;right:8px;background:#fff;border-radius:var(--rs);padding:8px 12px;font-size:12px;font-weight:500;color:var(--gray-900);box-shadow:0 2px 8px rgba(0,0,0,.12);">
-      <span style="color:var(--green);">📍 출발지: </span><span id="aiSelectedAddrText">—</span>
-    </div>
   </div>
 
-  <!-- 거리 + 추천 버튼 -->
-  <div style="background:#fff;padding:10px 14px 12px;border-bottom:1px solid var(--gray-100);flex-shrink:0;">
-    <div class="km-row">
-      <span class="km-label">목표 거리</span>
-      <input type="range" class="km-slider" id="kmSlider" min="1" max="20" step="0.5" value="5"
-        oninput="document.getElementById('kmVal').textContent=parseFloat(this.value).toFixed(1)+'km'">
-      <span class="km-val" id="kmVal">5.0km</span>
+  <!-- 바텀시트 -->
+  <div id="aiBottomSheet" style="background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.1);flex-shrink:0;transition:transform .3s;">
+    <!-- 핸들 -->
+    <div style="display:flex;justify-content:center;padding:10px 0 6px;cursor:pointer;" onclick="toggleBottomSheet()">
+      <div style="width:36px;height:4px;background:var(--gray-300);border-radius:2px;"></div>
     </div>
-    <button class="gen-btn" id="genBtn" onclick="generateCourses()">
-      <span id="genText">AI 코스 추천받기</span>
-      <div class="spinner" id="genSpinner"></div>
-    </button>
-  </div>
-
-  <div class="course-scroll">
-    <div class="empty-state" id="emptyState">
-      <div class="empty-icon">🗺️</div>
-      <div class="empty-title">출발지를 선택해주세요</div>
-      <div class="empty-desc">지도에서 출발지를 클릭하거나<br>주소를 검색한 후 AI 추천을 받아보세요</div>
+    <!-- 거리 슬라이더 + 추천 버튼 -->
+    <div style="padding:0 16px 12px;">
+      <div class="km-row" style="margin-top:0;">
+        <span class="km-label">목표 거리</span>
+        <input type="range" class="km-slider" id="kmSlider" min="1" max="20" step="0.5" value="5"
+          oninput="document.getElementById('kmVal').textContent=parseFloat(this.value).toFixed(1)+'km'">
+        <span class="km-val" id="kmVal">5.0km</span>
+      </div>
+      <button class="gen-btn" id="genBtn" onclick="generateCourses()">
+        <span id="genText">AI 코스 추천받기</span>
+        <div class="spinner" id="genSpinner"></div>
+      </button>
     </div>
-    <div class="course-list" id="courseList" style="display:none;"></div>
-  </div>
-  <div class="start-bar">
-    <button class="start-btn" id="startBtn" disabled onclick="startRun()">코스를 선택해주세요</button>
+    <!-- 코스 목록 (스크롤) -->
+    <div id="aiCourseArea" style="max-height:0;overflow:hidden;transition:max-height .3s;">
+      <div class="empty-state" id="emptyState" style="padding:20px;flex:none;">
+        <div class="empty-icon">🗺️</div>
+        <div class="empty-title">출발지를 선택해주세요</div>
+        <div class="empty-desc">지도를 클릭하거나 주소를 검색해보세요</div>
+      </div>
+      <div class="course-list" id="courseList" style="display:none;max-height:320px;overflow-y:auto;"></div>
+    </div>
   </div>
 </div>
 
@@ -498,10 +508,17 @@ if ('serviceWorker' in navigator) {
   </div>
 
   <div class="draw-stats">
-    <div class="sgrid">
-      <div class="scell"><div class="scell-l">총 거리</div><div class="scell-v g" id="dDist">0.0<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small></div></div>
-      <div class="scell"><div class="scell-l">예상 시간</div><div class="scell-v" id="dTime">—</div></div>
-      <div class="scell"><div class="scell-l">칼로리</div><div class="scell-v" id="dCal">—</div></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+      <div class="sgrid" style="flex:1;margin-bottom:0;">
+        <div class="scell"><div class="scell-l">총 거리</div><div class="scell-v g" id="dDist">0.0<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small></div></div>
+        <div class="scell"><div class="scell-l">예상 시간</div><div class="scell-v" id="dTime">—</div></div>
+        <div class="scell"><div class="scell-l">칼로리</div><div class="scell-v" id="dCal">—</div></div>
+      </div>
+      <!-- 실행취소 + 지우기 버튼 -->
+      <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
+        <button onclick="undoDraw()" style="height:34px;padding:0 10px;background:var(--gray-100);border:none;border-radius:var(--rs);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;color:var(--gray-700);white-space:nowrap;">↩ 취소</button>
+        <button onclick="clearDraw()" style="height:34px;padding:0 10px;background:var(--red-light);border:none;border-radius:var(--rs);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;color:var(--red);white-space:nowrap;">🗑 지우기</button>
+      </div>
     </div>
     <div class="conds" id="conds">
       <div class="ctag cg">🚶 보도 확보</div>
@@ -510,7 +527,7 @@ if ('serviceWorker' in navigator) {
   </div>
 
   <div class="save-bar">
-    <button class="save-btn" id="saveBtn" disabled onclick="saveCourse()">지도를 클릭해서 코스를 그어보세요</button>
+    <button class="save-btn" id="saveBtn" disabled onclick="saveCourse()">코스를 그어보세요 — 저장하면 코스탭에서 뛸 수 있어요</button>
   </div>
 </div>
 
@@ -750,7 +767,7 @@ const S = {
   tab:'ai', courses:[], sel:-1,
   lat:37.5503, lng:126.9200,
   map:null, polyline:null, myMarker:null,
-  path:[], dots:[], distKm:0,
+  path:[], dots:[], segments:[], distKm:0,
   kakaoReady: false
 };
 
@@ -760,6 +777,20 @@ kakao.maps.load(function() {
   if (S.tab === 'draw') initMap();
   if (S.tab === 'ai') initAiMap();
 });
+
+/* ── 바텀시트 토글 ── */
+let bottomSheetOpen = false;
+
+function toggleBottomSheet() {
+  bottomSheetOpen = !bottomSheetOpen;
+  const area = document.getElementById('aiCourseArea');
+  area.style.maxHeight = bottomSheetOpen ? '380px' : '0';
+}
+
+function openBottomSheet() {
+  bottomSheetOpen = true;
+  document.getElementById('aiCourseArea').style.maxHeight = '380px';
+}
 
 /* ── AI 추천 지도 ── */
 let aiMap = null, aiMarker = null;
@@ -976,12 +1007,12 @@ function initMap() {
 }
 
 /* 경로 점 추가 */
-function addPoint(latlng) {
-  S.path.push(latlng);
-  const isFirst = S.path.length === 1;
+async function addPoint(latlng) {
+  const isFirst = S.path.length === 0;
+
+  // 점 마커 추가
   const dot = new kakao.maps.Circle({
-    map: S.map,
-    center: latlng,
+    map: S.map, center: latlng,
     radius: isFirst ? 8 : 5,
     strokeWeight: isFirst ? 2 : 0,
     strokeColor: '#1D9E75',
@@ -990,19 +1021,57 @@ function addPoint(latlng) {
   });
   S.dots.push(dot);
 
-  if (S.polyline) S.polyline.setMap(null);
-  if (S.path.length > 1) {
-    S.polyline = new kakao.maps.Polyline({
-      map: S.map,
-      path: S.path,
-      strokeWeight: 4,
-      strokeColor: '#1D9E75',
-      strokeOpacity: 0.9,
-      strokeStyle: 'solid'
-    });
-    S.distKm = S.polyline.getLength() / 1000;
-    refreshStats(S.distKm);
+  if (isFirst) {
+    S.path.push(latlng);
+    S.segments.push([latlng]);
+    refreshStats(0);
+    return;
   }
+
+  const prev = S.path[S.path.length - 1];
+
+  // 카카오 도보 길찾기 API
+  try {
+    toast('경로 계산 중…');
+    const res = await fetch(
+      `https://apis-navi.kakaomobility.com/v1/directions?origin=${prev.getLng()},${prev.getLat()}&destination=${latlng.getLng()},${latlng.getLat()}&priority=RECOMMEND`,
+      { headers: { 'Authorization': 'KakaoAK d0bd1c06205b2f05bacf888d68c632b3' } }
+    );
+    const data = await res.json();
+
+    if (data.routes && data.routes[0].result_code === 0) {
+      // 경로 포인트 추출
+      const points = [];
+      data.routes[0].sections.forEach(section => {
+        section.roads.forEach(road => {
+          for (let i = 0; i < road.vertexes.length; i += 2) {
+            points.push(new kakao.maps.LatLng(road.vertexes[i+1], road.vertexes[i]));
+          }
+        });
+      });
+      S.segments.push(points);
+      S.path.push(...points);
+      S.path.push(latlng);
+    } else {
+      // 길찾기 실패 시 직선으로 폴백
+      S.path.push(latlng);
+      S.segments.push([prev, latlng]);
+      toast('이 구간은 직선으로 연결했어요');
+    }
+  } catch(e) {
+    S.path.push(latlng);
+    S.segments.push([prev, latlng]);
+  }
+
+  // 전체 경로 폴리라인 업데이트
+  if (S.polyline) S.polyline.setMap(null);
+  S.polyline = new kakao.maps.Polyline({
+    map: S.map, path: S.path,
+    strokeWeight: 4, strokeColor: '#1D9E75',
+    strokeOpacity: 0.9, strokeStyle: 'solid'
+  });
+  S.distKm = S.polyline.getLength() / 1000;
+  refreshStats(S.distKm);
 }
 
 /* 실행취소 */
@@ -1114,7 +1183,7 @@ function renderCourses() {
       if (cv) miniMap(cv, c.pt, c.color);
     });
   });
-  updStartBtn();
+  openBottomSheet();
 }
 
 function selCourse(i) {
@@ -1125,16 +1194,7 @@ function selCourse(i) {
   updStartBtn();
 }
 
-function updStartBtn() {
-  const b = document.getElementById('startBtn');
-  if (S.sel >= 0 && S.courses.length) {
-    b.disabled = false;
-    b.textContent = S.courses[S.sel].name + ' · 런닝 시작!';
-  } else {
-    b.disabled = true;
-    b.textContent = '코스를 선택해주세요';
-  }
-}
+// updStartBtn 제거 — 코스 탭에서 시작
 
 /* ── 런닝 상태 ── */
 const R = {
