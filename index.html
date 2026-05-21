@@ -2147,30 +2147,38 @@ function obNext(step) {
     const name = document.getElementById('ob-name').value.trim();
     if (!name) { document.getElementById('ob-name').focus(); document.getElementById('ob-name').style.borderColor='var(--red)'; return; }
     document.getElementById('ob-step-1').style.display = 'none';
-    document.getElementById('ob-step-3a').style.display = 'flex';
+    document.getElementById('ob-step-2b').style.display = 'flex';
     document.getElementById('ob-dot-2').style.background = 'var(--green)';
   } else if (step === 2) {
-    document.getElementById('ob-step-2').style.display = 'none';
-    document.getElementById('ob-step-3').style.display = 'flex';
+    document.getElementById('ob-step-2b').style.display = 'none';
+    document.getElementById('ob-step-3a').style.display = 'flex';
     document.getElementById('ob-dot-3').style.background = 'var(--green)';
+  } else if (step === 3) {
+    document.getElementById('ob-step-3a').style.display = 'none';
+    document.getElementById('ob-step-4').style.display = 'flex';
+    document.getElementById('ob-dot-4').style.background = 'var(--green)';
   }
 }
 
 function obBack(step) {
   if (step === 2) {
-    document.getElementById('ob-step-2').style.display = 'none';
+    document.getElementById('ob-step-2b').style.display = 'none';
     document.getElementById('ob-step-1').style.display = 'flex';
     document.getElementById('ob-dot-2').style.background = 'var(--gray-100)';
   } else if (step === 3) {
-    document.getElementById('ob-step-3').style.display = 'none';
-    document.getElementById('ob-step-3a').style.display = 'flex';
+    document.getElementById('ob-step-3a').style.display = 'none';
+    document.getElementById('ob-step-2b').style.display = 'flex';
     document.getElementById('ob-dot-3').style.background = 'var(--gray-100)';
+  } else if (step === 4) {
+    document.getElementById('ob-step-4').style.display = 'none';
+    document.getElementById('ob-step-3a').style.display = 'flex';
+    document.getElementById('ob-dot-4').style.background = 'var(--gray-100)';
   }
 }
 
 function selectObAvatar(el, avatar) {
   obSelectedAvatar = avatar;
-  document.querySelectorAll('#ob-step-2 .ob-avatar-item').forEach(i => i.classList.remove('selected'));
+  document.querySelectorAll('#ob-step-3a .ob-avatar-item').forEach(i => i.classList.remove('selected'));
   el.classList.add('selected');
 }
 
