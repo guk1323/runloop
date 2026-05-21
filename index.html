@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>루프 Runloop</title>
 
 <!-- PWA 설정 -->
@@ -94,11 +94,7 @@ if ('serviceWorker' in navigator) {
 
   /* 그리기 탭 */
   #drawMapEl{flex:1;min-height:0;position:relative;}
-  .draw-hud{position:absolute;bottom:12px;left:12px;right:12px;display:flex;justify-content:space-between;align-items:flex-end;pointer-events:none;z-index:10;}
-  .hud-col{display:flex;flex-direction:column;gap:6px;pointer-events:auto;}
-  .hud-pill{background:#fff;border:1px solid rgba(0,0,0,.12);border-radius:var(--rp);padding:7px 14px;font-size:13px;font-weight:500;color:var(--gray-900);display:flex;align-items:center;gap:6px;cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.1);white-space:nowrap;}
-  .hud-pill.acc{background:var(--green);color:#fff;border-color:var(--green);}
-  .hud-pill.dan{background:var(--red-light);color:var(--red);border-color:#f09595;}
+
 
   .draw-stats{background:#fff;border-top:1px solid var(--gray-100);padding:12px 16px;flex-shrink:0;}
   .sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;}
@@ -128,14 +124,14 @@ if ('serviceWorker' in navigator) {
   .course-scroll::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:2px;}
 
   /* ── 런닝 화면 ── */
-  .run-screen{position:fixed;inset:0;background:#fff;z-index:999;display:none;flex-direction:column;max-width:430px;margin:0 auto;}
+  .run-screen{position:fixed;inset:0;background:#fff;z-index:999;display:none;flex-direction:column;max-width:430px;margin:0 auto;overflow:hidden;}
   .run-screen.active{display:flex;}
   .run-header{padding:14px 18px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gray-100);}
   .run-title{font-size:16px;font-weight:700;color:var(--gray-900);}
   .run-live{display:flex;align-items:center;gap:5px;background:#FEECEC;color:var(--red);padding:5px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;}
   .live-dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:blink 1s infinite;}
   @keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
-  .run-map{height:220px;background:#dce8dc;position:relative;flex-shrink:0;}
+  .run-map{height:200px;background:#dce8dc;position:relative;flex-shrink:0;}
   .run-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 14px;flex-shrink:0;}
   .rstat{background:var(--gray-50);border-radius:var(--r);padding:12px 14px;}
   .rstat-l{font-size:11px;color:var(--gray-500);margin-bottom:4px;}
@@ -152,7 +148,7 @@ if ('serviceWorker' in navigator) {
   .km-done{background:var(--green-light);color:var(--green-dark);}
   .km-cur{background:var(--green);color:#fff;}
   .km-todo{background:var(--gray-100);color:var(--gray-500);}
-  .run-controls{display:flex;align-items:center;justify-content:center;gap:18px;padding:10px 14px 20px;flex-shrink:0;margin-top:auto;}
+  .run-controls{display:flex;align-items:center;justify-content:center;gap:18px;padding:16px 14px 20px;flex-shrink:0;}
   .ctrl-stop{width:54px;height:54px;border-radius:50%;background:var(--red-light);border:1px solid #f09595;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;}
   .ctrl-pause{width:68px;height:68px;border-radius:50%;background:var(--green);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:28px;color:#fff;transition:background .15s;}
   .ctrl-pause.paused{background:var(--amber-light);}
@@ -267,6 +263,7 @@ if ('serviceWorker' in navigator) {
     <div id="ob-dot-1" style="flex:1;height:4px;border-radius:2px;background:var(--green);transition:background .3s;"></div>
     <div id="ob-dot-2" style="flex:1;height:4px;border-radius:2px;background:var(--gray-100);transition:background .3s;"></div>
     <div id="ob-dot-3" style="flex:1;height:4px;border-radius:2px;background:var(--gray-100);transition:background .3s;"></div>
+    <div id="ob-dot-4" style="flex:1;height:4px;border-radius:2px;background:var(--gray-100);transition:background .3s;"></div>
   </div>
 
   <!-- 스텝 1: 닉네임 -->
@@ -285,7 +282,62 @@ if ('serviceWorker' in navigator) {
     </div>
   </div>
 
-  <!-- 스텝 2: 아바타 -->
+  <!-- 스텝 2: 신체 정보 -->
+  <div id="ob-step-2b" style="flex:1;display:none;flex-direction:column;padding:40px 24px 32px;">
+    <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;">기본 정보를<br>알려주세요</div>
+    <div style="font-size:14px;color:var(--gray-500);margin-bottom:32px;">더 정확한 칼로리 계산에 사용돼요 🔥</div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:32px;">
+      <!-- 나이 -->
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">나이</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="number" id="ob-age" placeholder="25" min="10" max="100"
+            style="flex:1;height:48px;border:2px solid var(--gray-100);border-radius:var(--rs);padding:0 14px;font-size:16px;font-family:inherit;outline:none;transition:border-color .2s;"
+            oninput="this.style.borderColor=this.value?'var(--green)':'var(--gray-100)'">
+          <span style="font-size:14px;color:var(--gray-500);">세</span>
+        </div>
+      </div>
+      <!-- 키 -->
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">키</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="number" id="ob-height" placeholder="170" min="100" max="250"
+            style="flex:1;height:48px;border:2px solid var(--gray-100);border-radius:var(--rs);padding:0 14px;font-size:16px;font-family:inherit;outline:none;transition:border-color .2s;"
+            oninput="this.style.borderColor=this.value?'var(--green)':'var(--gray-100)'">
+          <span style="font-size:14px;color:var(--gray-500);">cm</span>
+        </div>
+      </div>
+      <!-- 몸무게 -->
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">몸무게</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="number" id="ob-weight" placeholder="70" min="30" max="200"
+            style="flex:1;height:48px;border:2px solid var(--gray-100);border-radius:var(--rs);padding:0 14px;font-size:16px;font-family:inherit;outline:none;transition:border-color .2s;"
+            oninput="this.style.borderColor=this.value?'var(--green)':'var(--gray-100)'">
+          <span style="font-size:14px;color:var(--gray-500);">kg</span>
+        </div>
+      </div>
+      <!-- 성별 -->
+      <div>
+        <div style="font-size:13px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">성별</div>
+        <div style="display:flex;gap:10px;">
+          <button id="ob-male" onclick="selectGender('male')"
+            style="flex:1;height:48px;border:2px solid var(--gray-100);border-radius:var(--rs);font-size:14px;font-family:inherit;cursor:pointer;background:var(--gray-50);transition:all .15s;">남성</button>
+          <button id="ob-female" onclick="selectGender('female')"
+            style="flex:1;height:48px;border:2px solid var(--gray-100);border-radius:var(--rs);font-size:14px;font-family:inherit;cursor:pointer;background:var(--gray-50);transition:all .15s;">여성</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="font-size:12px;color:var(--gray-500);margin-bottom:16px;text-align:center;">입력하지 않아도 괜찮아요 — 나중에 MY탭에서 수정 가능해요</div>
+    <div style="display:flex;gap:10px;margin-top:auto;">
+      <button onclick="obBack(3)" style="width:52px;height:52px;background:var(--gray-100);border:none;border-radius:var(--r);font-size:20px;cursor:pointer;">←</button>
+      <button onclick="obNext(3)" style="flex:1;height:52px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">다음 →</button>
+    </div>
+  </div>
+
+  <!-- 스텝 3: 아바타 -->
   <div id="ob-step-2" style="flex:1;display:none;flex-direction:column;padding:40px 24px 32px;">
     <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;">나를 표현할<br>아바타를 골라요</div>
     <div style="font-size:14px;color:var(--gray-500);margin-bottom:32px;">언제든 바꿀 수 있어요!</div>
@@ -302,13 +354,13 @@ if ('serviceWorker' in navigator) {
       <div class="ob-avatar-item" onclick="selectObAvatar(this,'🔥')">🔥</div>
     </div>
     <div style="margin-top:auto;display:flex;gap:10px;">
-      <button onclick="obBack(2)" style="width:52px;height:52px;background:var(--gray-100);border:none;border-radius:var(--r);font-size:20px;cursor:pointer;">←</button>
-      <button onclick="obNext(2)" style="flex:1;height:52px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">다음 →</button>
+      <button onclick="obBack(3)" style="width:52px;height:52px;background:var(--gray-100);border:none;border-radius:var(--r);font-size:20px;cursor:pointer;">←</button>
+      <button onclick="obNext(3)" style="flex:1;height:52px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">다음 →</button>
     </div>
   </div>
 
-  <!-- 스텝 3: 목표 설정 -->
-  <div id="ob-step-3" style="flex:1;display:none;flex-direction:column;padding:40px 24px 32px;">
+  <!-- 스텝 4: 목표 설정 -->
+  <div id="ob-step-4" style="flex:1;display:none;flex-direction:column;padding:40px 24px 32px;">
     <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;">주간 런닝 목표를<br>설정해요</div>
     <div style="font-size:14px;color:var(--gray-500);margin-bottom:32px;">나중에 MY 탭에서 바꿀 수 있어요</div>
 
@@ -348,7 +400,7 @@ if ('serviceWorker' in navigator) {
     </div>
 
     <div style="margin-top:auto;display:flex;gap:10px;">
-      <button onclick="obBack(3)" style="width:52px;height:52px;background:var(--gray-100);border:none;border-radius:var(--r);font-size:20px;cursor:pointer;">←</button>
+      <button onclick="obBack(4)" style="width:52px;height:52px;background:var(--gray-100);border:none;border-radius:var(--r);font-size:20px;cursor:pointer;">←</button>
       <button onclick="obFinish()" style="flex:1;height:52px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">시작하기 🚀</button>
     </div>
   </div>
@@ -364,8 +416,7 @@ if ('serviceWorker' in navigator) {
 
 <div class="tabs">
   <button class="tab" onclick="switchTab('home',this)">홈</button>
-  <button class="tab active" onclick="switchTab('ai',this)">추천</button>
-  <button class="tab" onclick="switchTab('draw',this)">그리기</button>
+  <button class="tab active" onclick="switchTab('create',this)">코스 만들기</button>
   <button class="tab" onclick="switchTab('mycourse',this)">코스</button>
   <button class="tab" onclick="switchTab('mypage',this)">MY</button>
 </div>
@@ -422,46 +473,65 @@ if ('serviceWorker' in navigator) {
   <div style="height:14px;flex-shrink:0;"></div>
 </div>
 
-<!-- AI 추천 -->
-<div id="screen-ai" class="screen active" style="position:relative;">
+<!-- 코스 만들기 (AI 추천 + 직접 그리기 통합) -->
+<div id="screen-create" class="screen active" style="position:relative;">
 
-  <!-- 지도 (전체 화면) -->
+  <!-- 공유 지도 -->
   <div style="position:relative;flex:1;min-height:0;">
-    <!-- 상단 검색바 오버레이 -->
-    <div style="position:absolute;top:10px;left:10px;right:10px;z-index:20;display:flex;gap:8px;">
-      <div style="position:relative;flex:1;">
-        <input type="text" class="addr-input" id="addrInput" placeholder="🔍 출발지 검색" autocomplete="off"
-          oninput="searchAddress(this.value)"
-          style="padding-right:36px;box-shadow:0 2px 8px rgba(0,0,0,.15);border-color:transparent;">
-        <div id="addrDropdown" style="display:none;position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-radius:var(--rs);z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;"></div>
+
+    <!-- 상단: 모드 토글 + 검색 -->
+    <div style="position:absolute;top:10px;left:10px;right:10px;z-index:20;display:flex;flex-direction:column;gap:6px;">
+      <!-- 모드 토글 -->
+      <div style="display:flex;background:#fff;border-radius:var(--rs);box-shadow:0 2px 8px rgba(0,0,0,.15);padding:3px;">
+        <button id="modeAiBtn" onclick="setCreateMode('ai')"
+          style="flex:1;height:32px;border:none;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;background:var(--green);color:#fff;transition:all .2s;">
+          ✦ AI 추천
+        </button>
+        <button id="modeDrawBtn" onclick="setCreateMode('draw')"
+          style="flex:1;height:32px;border:none;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;background:transparent;color:var(--gray-500);transition:all .2s;">
+          ✏ 직접 그리기
+        </button>
       </div>
-      <button onclick="useMyLocation()" style="width:40px;height:40px;background:#fff;border:none;border-radius:var(--rs);cursor:pointer;font-size:18px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);">📍</button>
+      <!-- 검색바 (항상 표시) -->
+      <div id="aiSearchBar" style="display:flex;gap:6px;">
+        <div style="position:relative;flex:1;">
+          <input type="text" class="addr-input" id="addrInput" placeholder="🔍 출발지 검색" autocomplete="off"
+            oninput="searchAddress(this.value)"
+            style="box-shadow:0 2px 8px rgba(0,0,0,.15);border-color:transparent;">
+          <div id="addrDropdown" style="display:none;position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-radius:var(--rs);z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;"></div>
+        </div>
+        <button onclick="moveToMyLocation()" style="width:40px;height:40px;background:#fff;border:none;border-radius:var(--rs);cursor:pointer;font-size:18px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);">📍</button>
+      </div>
     </div>
 
     <!-- 선택된 출발지 표시 -->
-    <div id="aiSelectedAddr" style="display:none;position:absolute;top:62px;left:10px;right:10px;z-index:20;background:#fff;border-radius:var(--rs);padding:7px 12px;font-size:12px;font-weight:500;color:var(--gray-900);box-shadow:0 2px 8px rgba(0,0,0,.12);">
-      <span style="color:var(--green);">📍 출발지: </span><span id="aiSelectedAddrText">—</span>
+    <div id="aiSelectedAddr" style="display:none;position:absolute;top:102px;left:10px;right:10px;z-index:20;background:#fff;border-radius:var(--rs);padding:7px 12px;font-size:12px;font-weight:500;color:var(--gray-900);box-shadow:0 2px 8px rgba(0,0,0,.12);display:none;align-items:center;justify-content:space-between;">
+      <div><span style="color:var(--green);">📍 출발지: </span><span id="aiSelectedAddrText">—</span></div>
+      <button onclick="clearSelectedAddr()" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--gray-500);padding:0 0 0 8px;line-height:1;">×</button>
     </div>
 
-    <div id="aiMapEl" style="width:100%;height:100%;"></div>
-    <div class="map-loading" id="aiMapLoading">
+    <!-- 통합 지도 -->
+    <div id="createMapEl" style="width:100%;height:100%;"></div>
+    <div class="map-loading" id="createMapLoading">
       <div class="ml-spin"></div><span>지도 불러오는 중…</span>
     </div>
 
-    <!-- 출발지 선택 안내 -->
+    <!-- 출발지 안내 (AI 모드) -->
     <div id="aiMapGuide" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:500;padding:6px 14px;border-radius:var(--rp);white-space:nowrap;z-index:10;">
       📍 지도를 클릭해 출발지를 선택하세요
     </div>
+
   </div>
 
   <!-- 바텀시트 -->
-  <div id="aiBottomSheet" style="background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.1);flex-shrink:0;transition:transform .3s;">
+  <div id="createBottomSheet" style="background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.1);flex-shrink:0;">
     <!-- 핸들 -->
     <div style="display:flex;justify-content:center;padding:10px 0 6px;cursor:pointer;" onclick="toggleBottomSheet()">
       <div style="width:36px;height:4px;background:var(--gray-300);border-radius:2px;"></div>
     </div>
-    <!-- 거리 슬라이더 + 추천 버튼 -->
-    <div style="padding:0 16px 12px;">
+
+    <!-- AI 모드 바텀시트 -->
+    <div id="aiBottomContent" style="padding:0 16px 12px;">
       <div class="km-row" style="margin-top:0;">
         <span class="km-label">목표 거리</span>
         <input type="range" class="km-slider" id="kmSlider" min="1" max="20" step="0.5" value="5"
@@ -472,62 +542,35 @@ if ('serviceWorker' in navigator) {
         <span id="genText">AI 코스 추천받기</span>
         <div class="spinner" id="genSpinner"></div>
       </button>
-    </div>
-    <!-- 코스 목록 (스크롤) -->
-    <div id="aiCourseArea" style="max-height:0;overflow:hidden;transition:max-height .3s;">
-      <div class="empty-state" id="emptyState" style="padding:20px;flex:none;">
-        <div class="empty-icon">🗺️</div>
-        <div class="empty-title">출발지를 선택해주세요</div>
-        <div class="empty-desc">지도를 클릭하거나 주소를 검색해보세요</div>
-      </div>
-      <div class="course-list" id="courseList" style="display:none;max-height:320px;overflow-y:auto;"></div>
-    </div>
-  </div>
-</div>
-
-<!-- 직접 그리기 -->
-<div id="screen-draw" class="screen">
-  <div id="drawMapEl" style="flex:1;min-height:0;position:relative;">
-    <div class="map-loading" id="mapLoading">
-      <div class="ml-spin"></div>
-      <span>지도 불러오는 중…</span>
-    </div>
-  </div>
-
-  <div class="draw-hud">
-    <div class="hud-col">
-      <div class="hud-pill acc">
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
-        <span id="hudDist">0.0km</span>
-      </div>
-      <div class="hud-pill" onclick="undoDraw()">↩ 실행취소</div>
-    </div>
-    <div class="hud-col">
-      <div class="hud-pill dan" onclick="clearDraw()">🗑 지우기</div>
-    </div>
-  </div>
-
-  <div class="draw-stats">
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
-      <div class="sgrid" style="flex:1;margin-bottom:0;">
-        <div class="scell"><div class="scell-l">총 거리</div><div class="scell-v g" id="dDist">0.0<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small></div></div>
-        <div class="scell"><div class="scell-l">예상 시간</div><div class="scell-v" id="dTime">—</div></div>
-        <div class="scell"><div class="scell-l">칼로리</div><div class="scell-v" id="dCal">—</div></div>
-      </div>
-      <!-- 실행취소 + 지우기 버튼 -->
-      <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
-        <button onclick="undoDraw()" style="height:34px;padding:0 10px;background:var(--gray-100);border:none;border-radius:var(--rs);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;color:var(--gray-700);white-space:nowrap;">↩ 취소</button>
-        <button onclick="clearDraw()" style="height:34px;padding:0 10px;background:var(--red-light);border:none;border-radius:var(--rs);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;color:var(--red);white-space:nowrap;">🗑 지우기</button>
+      <div id="aiCourseArea" style="max-height:0;overflow:hidden;transition:max-height .3s;margin-top:8px;">
+        <div class="empty-state" id="emptyState" style="padding:16px;flex:none;">
+          <div class="empty-icon">🗺️</div>
+          <div class="empty-title">출발지를 선택해주세요</div>
+          <div class="empty-desc">지도를 클릭하거나 주소를 검색해보세요</div>
+        </div>
+        <div class="course-list" id="courseList" style="display:none;max-height:280px;overflow-y:auto;"></div>
       </div>
     </div>
-    <div class="conds" id="conds">
-      <div class="ctag cg">🚶 보도 확보</div>
-      <div class="ctag ca">🚗 차량 보통</div>
-    </div>
-  </div>
 
-  <div class="save-bar">
-    <button class="save-btn" id="saveBtn" disabled onclick="saveCourse()">코스를 그어보세요 — 저장하면 코스탭에서 뛸 수 있어요</button>
+    <!-- 그리기 모드 바텀시트 -->
+    <div id="drawBottomContent" style="display:none;padding:0 16px 12px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+        <div class="sgrid" style="flex:1;margin-bottom:0;">
+          <div class="scell"><div class="scell-l">총 거리</div><div class="scell-v g" id="dDist">0.0<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small></div></div>
+          <div class="scell"><div class="scell-l">예상 시간</div><div class="scell-v" id="dTime">—</div></div>
+          <div class="scell"><div class="scell-l">칼로리</div><div class="scell-v" id="dCal">—</div></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
+          <button onclick="undoDraw()" style="height:34px;padding:0 10px;background:var(--gray-100);border:none;border-radius:var(--rs);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;color:var(--gray-700);white-space:nowrap;">↩ 취소</button>
+          <button onclick="clearDraw()" style="height:34px;padding:0 10px;background:var(--red-light);border:none;border-radius:var(--rs);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;color:var(--red);white-space:nowrap;">🗑 지우기</button>
+        </div>
+      </div>
+      <div class="conds" id="conds">
+        <div class="ctag cg">🚶 보도 확보</div>
+        <div class="ctag ca">🚗 차량 보통</div>
+      </div>
+      <button class="save-btn" id="saveBtn" disabled onclick="saveCourse()" style="margin-top:10px;">지도를 클릭해서 코스를 그어보세요</button>
+    </div>
   </div>
 </div>
 
@@ -542,7 +585,7 @@ if ('serviceWorker' in navigator) {
     <div id="myCourseEmpty" style="text-align:center;padding:48px 0;color:var(--gray-500);">
       <div style="font-size:36px;margin-bottom:10px;">🗺️</div>
       <div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">저장된 코스가 없어요</div>
-      <div style="font-size:13px;line-height:1.6;">그리기 탭에서 코스를 그리고<br>저장해보세요!</div>
+      <div style="font-size:13px;line-height:1.6;">코스 만들기 탭에서 코스를 만들고<br>저장해보세요!</div>
     </div>
   </div>
 </div>
@@ -594,6 +637,7 @@ if ('serviceWorker' in navigator) {
       </div>
       <div class="goal-bar-track"><div class="goal-bar-fill" id="goalBarFill" style="width:0%"></div></div>
       <div style="font-size:11px;color:var(--gray-500);margin-top:5px;" id="goalPct">0% 달성</div>
+      <div style="font-size:11px;color:var(--gray-500);margin-top:8px;" id="myPaceInfo">평균 페이스 계산 중…</div>
     </div>
 
     <!-- 런닝 기록 -->
@@ -715,7 +759,6 @@ if ('serviceWorker' in navigator) {
   <div class="run-controls">
     <div class="ctrl-stop" onclick="stopRun()">⏹</div>
     <button class="ctrl-pause" id="pauseBtn" onclick="togglePause()">⏸</button>
-    <div class="ctrl-extra">🎵</div>
   </div>
 </div>
 
@@ -774,8 +817,7 @@ const S = {
 /* 카카오 SDK 로드 완료 후 초기화 */
 kakao.maps.load(function() {
   S.kakaoReady = true;
-  if (S.tab === 'draw') initMap();
-  if (S.tab === 'ai') initAiMap();
+  if (S.tab === 'create') initCreateMap();
 });
 
 /* ── 바텀시트 토글 ── */
@@ -792,14 +834,121 @@ function openBottomSheet() {
   document.getElementById('aiCourseArea').style.maxHeight = '380px';
 }
 
+/* ── 코스 만들기 — 통합 지도 ── */
+let createMap = null, createAiMarker = null;
+let createMode = 'ai'; // 'ai' or 'draw'
+
+function initCreateMap() {
+  if (createMap) {
+    kakao.maps.event.trigger(createMap, 'resize');
+    return;
+  }
+
+  const initWith = (lat, lng) => {
+    const container = document.getElementById('createMapEl');
+    createMap = new kakao.maps.Map(container, {
+      center: new kakao.maps.LatLng(lat, lng),
+      level: 4, draggable: true, scrollwheel: true
+    });
+    document.getElementById('createMapLoading').style.display = 'none';
+
+    // 내 위치 마커
+    S.myMarker = new kakao.maps.CustomOverlay({
+      map: createMap,
+      position: new kakao.maps.LatLng(lat, lng),
+      content: '<div style="width:14px;height:14px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(29,158,117,.25)"></div>',
+      zIndex: 3
+    });
+
+    // 클릭 이벤트
+    kakao.maps.event.addListener(createMap, 'click', function(e) {
+      if (createMode === 'ai') {
+        const latlng = e.latLng;
+        const geocoder = new kakao.maps.services.Geocoder();
+        geocoder.coord2Address(latlng.getLng(), latlng.getLat(), (result, status) => {
+          const addr = status === kakao.maps.services.Status.OK
+            ? (result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name)
+            : `${latlng.getLat().toFixed(4)}, ${latlng.getLng().toFixed(4)}`;
+          setAiMarker(latlng, addr);
+        });
+      } else {
+        addPoint(e.latLng);
+      }
+    });
+  };
+
+  if (navigator.geolocation && S.lat === 37.5503 && S.lng === 126.9200) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      S.lat = pos.coords.latitude; S.lng = pos.coords.longitude;
+      initWith(S.lat, S.lng);
+    }, () => initWith(S.lat, S.lng), { enableHighAccuracy: true, timeout: 5000 });
+  } else {
+    initWith(S.lat, S.lng);
+  }
+}
+
+function setCreateMode(mode) {
+  createMode = mode;
+  const aiBtn = document.getElementById('modeAiBtn');
+  const drawBtn = document.getElementById('modeDrawBtn');
+  const aiContent = document.getElementById('aiBottomContent');
+  const drawContent = document.getElementById('drawBottomContent');
+  const searchBar = document.getElementById('aiSearchBar');
+  const guide = document.getElementById('aiMapGuide');
+
+  if (mode === 'ai') {
+    aiBtn.style.background = 'var(--green)'; aiBtn.style.color = '#fff';
+    drawBtn.style.background = 'transparent'; drawBtn.style.color = 'var(--gray-500)';
+    aiContent.style.display = 'block';
+    drawContent.style.display = 'none';
+    // searchBar 항상 표시
+    if (guide) guide.style.display = 'block';
+    // 그리기 경로 숨기기 (지도에서만 제거, 데이터는 유지)
+    if (S.polyline) S.polyline.setMap(null);
+    S.dots.forEach(d => d.setMap(null));
+  } else {
+    drawBtn.style.background = 'var(--green)'; drawBtn.style.color = '#fff';
+    aiBtn.style.background = 'transparent'; aiBtn.style.color = 'var(--gray-500)';
+    drawContent.style.display = 'block';
+    aiContent.style.display = 'none';
+    // searchBar 항상 표시
+    if (guide) guide.style.display = 'none'; // 그리기 모드엔 안내 없음
+    // AI 마커 숨기기
+    if (createAiMarker) createAiMarker.setMap(null);
+    // 그리기 경로 복원
+    if (S.polyline) S.polyline.setMap(createMap);
+    S.dots.forEach(d => d.setMap(createMap));
+  }
+}
+
+function moveToMyLocation() {
+  const map = createMap || S.map;
+  if (!map) return;
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      S.lat = pos.coords.latitude; S.lng = pos.coords.longitude;
+      const latlng = new kakao.maps.LatLng(S.lat, S.lng);
+      map.setCenter(latlng); map.setLevel(4);
+      if (S.myMarker) S.myMarker.setMap(null);
+      S.myMarker = new kakao.maps.CustomOverlay({
+        map, position: latlng,
+        content: '<div style="width:14px;height:14px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(29,158,117,.25)"></div>',
+        zIndex: 3
+      });
+      toast('현재 위치로 이동했어요!');
+    }, () => toast('위치 권한을 허용해주세요'), { enableHighAccuracy: true, timeout: 8000 });
+  }
+}
+
 /* ── AI 추천 지도 ── */
 let aiMap = null, aiMarker = null;
 
 function initAiMap() {
-  if (aiMap) { kakao.maps.event.trigger(aiMap, 'resize'); return; }
+  // 통합 지도로 대체됨
+  if (createMap) return;
   const container = document.getElementById('aiMapEl');
   const center = new kakao.maps.LatLng(S.lat, S.lng);
-  aiMap = new kakao.maps.Map(container, { center, level: 5 });
+  // createMap 사용
   document.getElementById('aiMapLoading').style.display = 'none';
 
   // 현재 위치 표시
@@ -819,19 +968,26 @@ function initAiMap() {
   });
 }
 
+function clearSelectedAddr() {
+  document.getElementById('aiSelectedAddr').style.display = 'none';
+  document.getElementById('aiMapGuide').style.display = 'block';
+  document.getElementById('addrInput').value = '';
+  if (createAiMarker) { createAiMarker.setMap(null); createAiMarker = null; }
+}
+
 function setAiMarker(latlng, addrName) {
   S.lat = latlng.getLat ? latlng.getLat() : parseFloat(latlng.lat);
   S.lng = latlng.getLng ? latlng.getLng() : parseFloat(latlng.lng);
-  if (aiMarker) aiMarker.setMap(null);
-  aiMarker = new kakao.maps.CustomOverlay({
-    map: aiMap,
+  if (createAiMarker) createAiMarker.setMap(null);
+  createAiMarker = new kakao.maps.CustomOverlay({
+    map: createMap,
     position: latlng,
     content: '<div style="display:flex;flex-direction:column;align-items:center;"><div style="width:14px;height:14px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div><div style="width:2px;height:8px;background:#1D9E75;"></div></div>',
     zIndex: 5
   });
-  aiMap.setCenter(latlng);
+  if (createMap) createMap.setCenter(latlng);
   // 출발지 표시
-  document.getElementById('aiSelectedAddr').style.display = 'block';
+  document.getElementById('aiSelectedAddr').style.display = 'flex';
   document.getElementById('aiSelectedAddrText').textContent = addrName;
   document.getElementById('aiMapGuide').style.display = 'none';
   document.getElementById('addrInput').value = addrName;
@@ -878,9 +1034,18 @@ function searchAddress(query) {
 }
 
 function selectAddress(name, lat, lng) {
-  if (!aiMap) return;
+  const map = createMap || aiMap;
+  if (!map) return;
   const latlng = new kakao.maps.LatLng(parseFloat(lat), parseFloat(lng));
-  setAiMarker(latlng, name);
+  S.lat = parseFloat(lat);
+  S.lng = parseFloat(lng);
+  map.setCenter(latlng);
+  map.setLevel(4);
+  document.getElementById('addrInput').value = name;
+  document.getElementById('addrDropdown').style.display = 'none';
+  if (createMode === 'ai') {
+    setAiMarker(latlng, name);
+  }
 }
 
 document.addEventListener('click', e => {
@@ -963,11 +1128,8 @@ function switchTab(tab, el) {
   el.classList.add('active');
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-'+tab).classList.add('active');
-  if (tab === 'draw') {
-    setTimeout(() => { if (S.kakaoReady) initMap(); }, 100);
-  }
-  if (tab === 'ai') {
-    setTimeout(() => { if (S.kakaoReady) initAiMap(); }, 100);
+  if (tab === 'create') {
+    setTimeout(() => { if (S.kakaoReady) initCreateMap(); }, 100);
   }
   if (tab === 'home') {
     fetchWeather();
@@ -979,31 +1141,56 @@ function switchTab(tab, el) {
 }
 
 /* 지도 초기화 */
+// moveToMyLocation 통합됨 (위에 정의)
+
 function initMap() {
   if (S.map) {
     kakao.maps.event.trigger(S.map, 'resize');
+    // 지도 이미 있으면 현재 위치로 이동만
+    if (S.lat !== 37.5503 || S.lng !== 126.9200) {
+      S.map.setCenter(new kakao.maps.LatLng(S.lat, S.lng));
+    }
     return;
   }
-  const el = document.getElementById('drawMapEl');
-  const options = {
-    center: new kakao.maps.LatLng(S.lat, S.lng),
-    level: 4
+
+  // 지도 초기화 전 현재 위치 먼저 확인
+  const initWithLocation = (lat, lng) => {
+    const el = document.getElementById('drawMapEl');
+    S.map = new kakao.maps.Map(el, {
+      center: new kakao.maps.LatLng(lat, lng),
+      level: 4,
+      draggable: true,
+      scrollwheel: true
+    });
+    document.getElementById('mapLoading').style.display = 'none';
+
+    // 내 위치 마커
+    if (S.myMarker) S.myMarker.setMap(null);
+    S.myMarker = new kakao.maps.CustomOverlay({
+      map: S.map,
+      position: new kakao.maps.LatLng(lat, lng),
+      content: '<div style="width:14px;height:14px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(29,158,117,.25)"></div>',
+      zIndex: 3
+    });
+
+    // 지도 클릭 시 경로 추가
+    kakao.maps.event.addListener(S.map, 'click', function(e) {
+      addPoint(e.latLng);
+    });
   };
-  S.map = new kakao.maps.Map(el, options);
-  document.getElementById('mapLoading').style.display = 'none';
 
-  // 내 위치 표시 (파란 원)
-  new kakao.maps.CustomOverlay({
-    map: S.map,
-    position: new kakao.maps.LatLng(S.lat, S.lng),
-    content: '<div style="width:14px;height:14px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(29,158,117,.25)"></div>',
-    zIndex: 3
-  });
-
-  // 지도 클릭 시 경로 추가
-  kakao.maps.event.addListener(S.map, 'click', function(e) {
-    addPoint(e.latLng);
-  });
+  // GPS로 현재 위치 잡고 초기화
+  if (navigator.geolocation && (S.lat === 37.5503 && S.lng === 126.9200)) {
+    navigator.geolocation.getCurrentPosition(pos => {
+      S.lat = pos.coords.latitude;
+      S.lng = pos.coords.longitude;
+      initWithLocation(S.lat, S.lng);
+    }, () => {
+      initWithLocation(S.lat, S.lng);
+    }, { enableHighAccuracy: true, timeout: 5000 });
+  } else {
+    initWithLocation(S.lat, S.lng);
+  }
 }
 
 /* 경로 점 추가 */
@@ -1012,7 +1199,7 @@ async function addPoint(latlng) {
 
   // 점 마커 추가
   const dot = new kakao.maps.Circle({
-    map: S.map, center: latlng,
+    map: createMap, center: latlng,
     radius: isFirst ? 8 : 5,
     strokeWeight: isFirst ? 2 : 0,
     strokeColor: '#1D9E75',
@@ -1066,7 +1253,7 @@ async function addPoint(latlng) {
   // 전체 경로 폴리라인 업데이트
   if (S.polyline) S.polyline.setMap(null);
   S.polyline = new kakao.maps.Polyline({
-    map: S.map, path: S.path,
+    map: createMap, path: S.path,
     strokeWeight: 4, strokeColor: '#1D9E75',
     strokeOpacity: 0.9, strokeStyle: 'solid'
   });
@@ -1074,17 +1261,27 @@ async function addPoint(latlng) {
   refreshStats(S.distKm);
 }
 
-/* 실행취소 */
+/* 실행취소 — 클릭 한 번 단위로 */
 function undoDraw() {
-  if (!S.path.length) return;
-  S.path.pop();
+  if (!S.segments || S.segments.length === 0) return;
+
+  // 마지막 세그먼트 제거 (클릭 한 번에 해당하는 구간)
+  const lastSeg = S.segments.pop();
+  if (lastSeg) {
+    S.path.splice(S.path.length - lastSeg.length, lastSeg.length);
+  }
+
+  // 마지막 점 마커 제거
   const d = S.dots.pop();
   if (d) d.setMap(null);
+
+  // 폴리라인 업데이트
   if (S.polyline) S.polyline.setMap(null);
   S.polyline = null;
+
   if (S.path.length > 1) {
     S.polyline = new kakao.maps.Polyline({
-      map: S.map, path: S.path,
+      map: createMap, path: S.path,
       strokeWeight: 4, strokeColor: '#1D9E75', strokeOpacity: .9
     });
     S.distKm = S.polyline.getLength() / 1000;
@@ -1096,7 +1293,7 @@ function undoDraw() {
 
 /* 전체 지우기 */
 function clearDraw() {
-  S.path = [];
+  S.path = []; S.segments = [];
   S.dots.forEach(d => d.setMap(null));
   S.dots = [];
   if (S.polyline) { S.polyline.setMap(null); S.polyline = null; }
@@ -1106,10 +1303,17 @@ function clearDraw() {
 
 /* 통계 업데이트 */
 function refreshStats(km) {
-  document.getElementById('hudDist').textContent = km.toFixed(2) + 'km';
+  // hudDist 제거됨
   document.getElementById('dDist').innerHTML = km.toFixed(2) + '<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small>';
   document.getElementById('dTime').textContent = km > 0 ? Math.round(km * 7) + '분' : '—';
-  document.getElementById('dCal').textContent = km > 0 ? Math.round(km * 65) + 'kcal' : '—';
+  if (km > 0) {
+    const cal = calcCalories(km);
+    const label = getPaceLabel();
+    document.getElementById('dCal').textContent = '약 ' + cal + 'kcal';
+    document.getElementById('dCal').title = label + ' 기준';
+  } else {
+    document.getElementById('dCal').textContent = '—';
+  }
   const sb = document.getElementById('saveBtn');
   if (km > 0.05) {
     sb.disabled = false;
@@ -1247,7 +1451,7 @@ function fmtTime(s) {
 function updateRunStats() {
   document.getElementById('rDist').textContent = R.dist.toFixed(2);
   document.getElementById('rTime').textContent = fmtTime(R.elapsed);
-  document.getElementById('rCal').textContent = Math.round(R.dist * 65);
+  document.getElementById('rCal').textContent = calcCalories(R.dist);
   if (R.dist > 0.05 && R.elapsed > 0) {
     const pace = R.elapsed / R.dist;
     const pm = Math.floor(pace/60), ps = Math.round(pace%60);
@@ -1282,7 +1486,7 @@ function stopRun() {
 function showFinish() {
   document.getElementById('fDist').textContent = R.dist.toFixed(2) + 'km';
   document.getElementById('fTime').textContent = fmtTime(R.elapsed);
-  document.getElementById('fCal').textContent = Math.round(R.dist * 65) + 'kcal';
+  document.getElementById('fCal').textContent = calcCalories(R.dist) + 'kcal';
   document.getElementById('finishSub').textContent = '오늘 · ' + R.courseName;
   if (R.dist > 0.05) {
     const pace = R.elapsed / R.dist;
@@ -1307,7 +1511,7 @@ function saveRecord() {
     name: title || R.courseName,
     dist: R.dist.toFixed(2),
     time: fmtTime(R.elapsed),
-    cal: Math.round(R.dist * 65),
+    cal: calcCalories(R.dist),
     date: now.toLocaleDateString('ko-KR', {month:'long', day:'numeric', weekday:'short'}),
     pace: R.dist > 0.05 ? (()=>{ const p=R.elapsed/R.dist; return Math.floor(p/60)+"'"+String(Math.round(p%60)).padStart(2,'0')+'"'; })() : '—',
     memo: memo,
@@ -1943,7 +2147,7 @@ function obNext(step) {
     const name = document.getElementById('ob-name').value.trim();
     if (!name) { document.getElementById('ob-name').focus(); document.getElementById('ob-name').style.borderColor='var(--red)'; return; }
     document.getElementById('ob-step-1').style.display = 'none';
-    document.getElementById('ob-step-2').style.display = 'flex';
+    document.getElementById('ob-step-3a').style.display = 'flex';
     document.getElementById('ob-dot-2').style.background = 'var(--green)';
   } else if (step === 2) {
     document.getElementById('ob-step-2').style.display = 'none';
@@ -1959,7 +2163,7 @@ function obBack(step) {
     document.getElementById('ob-dot-2').style.background = 'var(--gray-100)';
   } else if (step === 3) {
     document.getElementById('ob-step-3').style.display = 'none';
-    document.getElementById('ob-step-2').style.display = 'flex';
+    document.getElementById('ob-step-3a').style.display = 'flex';
     document.getElementById('ob-dot-3').style.background = 'var(--gray-100)';
   }
 }
@@ -1984,9 +2188,16 @@ function selectObGoal(el, km) {
 
 function obFinish() {
   const name = document.getElementById('ob-name').value.trim() || '런너';
+  const age = document.getElementById('ob-age').value;
+  const height = document.getElementById('ob-height').value;
+  const weight = document.getElementById('ob-weight').value;
   const profile = {
     name, avatar: obSelectedAvatar,
-    goal: obSelectedGoal, onboarded: true
+    goal: obSelectedGoal, onboarded: true,
+    age: age ? parseInt(age) : null,
+    height: height ? parseInt(height) : null,
+    weight: weight ? parseInt(weight) : null,
+    gender: obSelectedGender || null
   };
   localStorage.setItem('runProfile', JSON.stringify(profile));
   localStorage.setItem('weeklyGoal', obSelectedGoal);
@@ -2155,6 +2366,24 @@ function updateGoalBar() {
   if (pctEl) pctEl.textContent = pct + '% 달성';
   if (p2) p2.textContent = weekDist.toFixed(1);
   if (m2) m2.textContent = goal + 'km';
+
+  // 페이스 정보
+  const paceEl = document.getElementById('myPaceInfo');
+  if (paceEl) {
+    const avgPace = getAvgPaceSecPerKm();
+    const pm = Math.floor(avgPace / 60), ps = String(avgPace % 60).padStart(2, '0');
+    const label = getPaceLabel();
+    const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
+    const validCount = records.filter(r => r.pace && r.pace !== '—').length;
+    if (validCount === 0) {
+      paceEl.textContent = '런닝 기록이 쌓이면 페이스 기반 칼로리를 계산해요 🏃';
+    } else if (validCount < 3) {
+      paceEl.textContent = `페이스 학습 중 (${validCount}/3회) — 현재 ${pm}'${ps}"/km 기준`;
+    } else {
+      paceEl.textContent = `평균 페이스 ${pm}'${ps}"/km 기준으로 칼로리를 계산해요 ✓`;
+      paceEl.style.color = 'var(--green)';
+    }
+  }
 }
 
 function renderMyPage() {
@@ -2206,6 +2435,7 @@ function renderMyPage() {
 }
 
 window.addEventListener('resize', () => {
+  if (createMap) kakao.maps.event.trigger(createMap, 'resize');
   if (S.map) kakao.maps.event.trigger(S.map, 'resize');
 });
 </script>
