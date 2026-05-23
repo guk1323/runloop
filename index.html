@@ -525,7 +525,7 @@ if ('serviceWorker' in navigator) {
       <div id="aiSearchBar" style="display:flex;gap:6px;">
         <div style="position:relative;flex:1;">
           <input type="text" class="addr-input" id="addrInput" placeholder="주소·장소 검색" autocomplete="off"
-            oninput="searchAddress(this.value)"
+            onfocus="prepareAddressSearchInput(this)" onclick="prepareAddressSearchInput(this)" oninput="searchAddress(this.value)"
             style="box-shadow:0 2px 8px rgba(0,0,0,.15);border-color:transparent;">
           <div id="addrDropdown" style="display:none;position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-radius:var(--rs);z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;"></div>
         </div>
@@ -1622,6 +1622,16 @@ let addrSearchTimer = null;
 let addrSearchSeq = 0;
 let addrSearchResults = [];
 
+function prepareAddressSearchInput(input) {
+  if (!input) return;
+  if (input.value.trim() === '현재 위치') {
+    input.value = '';
+    addrSearchResults = [];
+    const dropdown = document.getElementById('addrDropdown');
+    if (dropdown) dropdown.style.display = 'none';
+  }
+}
+
 function searchAddress(query) {
   clearTimeout(addrSearchTimer);
   addrSearchSeq++;
@@ -1643,10 +1653,12 @@ function searchAddress(query) {
     renderAddressDropdownMessage('검색 중…');
     Promise.all([
       searchKakaoAddresses(trimmed),
-      searchKakaoPlaces(trimmed)
-    ]).then(([addresses, places]) => {
+      isStationLikeQuery(trimmed) ? searchKakaoPlaces(trimmed, { categoryGroupCode: 'SW8', size: 5 }) : Promise.resolve([]),
+      isStationLikeQuery(trimmed) ? searchKakaoPlaces(trimmed + ' 지하철역', { categoryGroupCode: 'SW8', size: 5 }) : Promise.resolve([]),
+      searchKakaoPlaces(trimmed, { size: 10 })
+    ]).then(([addresses, stations, stationAliases, places]) => {
       if (seq !== addrSearchSeq) return;
-      renderAddressDropdown(mergeAddressResults(trimmed, addresses, places));
+      renderAddressDropdown(mergeAddressResults(trimmed, addresses, stations, stationAliases, places));
     }).catch(() => {
       if (seq !== addrSearchSeq) return;
       renderAddressDropdownMessage('검색 결과를 불러오지 못했어요. 다시 입력해주세요.');
@@ -1700,10 +1712,11 @@ function searchKakaoAddresses(query) {
   });
 }
 
-function searchKakaoPlaces(query) {
+function searchKakaoPlaces(query, config = {}) {
   return new Promise(resolve => {
     const ps = new kakao.maps.services.Places();
-    const options = { size: 7 };
+    const options = { size: config.size || 7 };
+    if (config.categoryGroupCode) options.category_group_code = config.categoryGroupCode;
     if (Number.isFinite(S.lat) && Number.isFinite(S.lng)) {
       options.location = new kakao.maps.LatLng(S.lat, S.lng);
       if (kakao.maps.services.SortBy) options.sort = kakao.maps.services.SortBy.DISTANCE;
@@ -1713,10 +1726,12 @@ function searchKakaoPlaces(query) {
         resolve([]);
         return;
       }
-      resolve(data.slice(0, 7).map(p => ({
-        type: '장소',
+      resolve(data.slice(0, options.size).map(p => ({
+        type: isSubwayPlace(p) ? '역' : '장소',
         name: p.place_name,
         sub: p.road_address_name || p.address_name || p.category_name || '',
+        category: p.category_name || '',
+        distance: parseFloat(p.distance || ''),
         lat: parseFloat(p.y),
         lng: parseFloat(p.x)
       })).filter(isValidSearchResult));
@@ -1724,12 +1739,10 @@ function searchKakaoPlaces(query) {
   });
 }
 
-function mergeAddressResults(query, addresses, places) {
-  const addressFirst = isAddressLikeQuery(query);
-  const ordered = addressFirst ? addresses.concat(places) : places.concat(addresses);
+function mergeAddressResults(query, ...groups) {
   const seen = new Set();
   const merged = [];
-  ordered.forEach(item => {
+  groups.flat().forEach(item => {
     const key = [
       item.name.replace(/\s+/g, ''),
       Math.round(item.lat * 100000),
@@ -1739,7 +1752,9 @@ function mergeAddressResults(query, addresses, places) {
     seen.add(key);
     merged.push(item);
   });
-  return merged.slice(0, 7);
+  return merged
+    .sort((a, b) => scoreSearchResult(query, b) - scoreSearchResult(query, a))
+    .slice(0, 7);
 }
 
 function renderAddressDropdown(results) {
@@ -1771,8 +1786,62 @@ function isValidSearchResult(item) {
   return item && item.name && Number.isFinite(item.lat) && Number.isFinite(item.lng);
 }
 
+function scoreSearchResult(query, item) {
+  const q = normalizeSearchText(query);
+  const name = normalizeSearchText(item.name);
+  const sub = normalizeSearchText(item.sub || '');
+  const category = normalizeSearchText(item.category || '');
+  const addressLike = isAddressLikeQuery(query);
+  const stationLike = isStationLikeQuery(query);
+  let score = 0;
+
+  if (name === q) score += 1200;
+  else if (name.startsWith(q)) score += 720;
+  else if (name.includes(q)) score += 320;
+  if (sub.includes(q)) score += 90;
+
+  if (stationLike) {
+    if (isStationResult(item)) score += 900;
+    if (item.type === '역') score += 550;
+    if (name === q) score += 500;
+    if (isBranchLikeStationResult(query, item)) score -= 850;
+  } else if (addressLike) {
+    if (item.type === '주소') score += 650;
+  } else if (item.type !== '주소') {
+    score += 120;
+  }
+
+  if (category.includes('지하철') || category.includes('전철')) score += 250;
+  if (Number.isFinite(item.distance)) score -= Math.min(item.distance / 5000, 80);
+  return score;
+}
+
+function normalizeSearchText(value) {
+  return String(value || '').replace(/\s+/g, '').toLowerCase();
+}
+
 function isAddressLikeQuery(query) {
   return /(\d|시|군|구|동|읍|면|로|길|번지|아파트|단지)/.test(query);
+}
+
+function isStationLikeQuery(query) {
+  return normalizeSearchText(query).endsWith('역');
+}
+
+function isSubwayPlace(place) {
+  const category = place && place.category_name ? place.category_name : '';
+  return /지하철|전철|역/.test(category) || normalizeSearchText(place && place.place_name).endsWith('역');
+}
+
+function isStationResult(item) {
+  return item.type === '역' || isStationLikeQuery(item.name) || /지하철|전철|역/.test(item.category || '');
+}
+
+function isBranchLikeStationResult(query, item) {
+  const q = normalizeSearchText(query);
+  const name = normalizeSearchText(item.name);
+  if (!q || name === q || !name.includes(q)) return false;
+  return /(역점|점|지점|센터|병원|약국|의원|카페|식당|주차장|영업소)$/.test(name);
 }
 
 function getAddressTypeLabel(type) {
