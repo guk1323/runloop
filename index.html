@@ -603,6 +603,15 @@ if ('serviceWorker' in navigator) {
         <span style="font-size:15px;">✋</span>
         <span id="drawGuideText">지도를 길게 누른 채 드래그해서 경로를 그려요</span>
       </div>
+      <button id="snapToggleBtn" onclick="toggleSnapMode()" style="width:100%;height:34px;display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--gray-100);border-radius:var(--rs);padding:0 12px;margin-bottom:10px;font-size:12px;font-family:inherit;cursor:pointer;color:var(--gray-700);">
+        <span id="snapToggleLabel" style="font-weight:700;color:var(--green);">길 따라가기</span>
+        <span style="display:flex;align-items:center;gap:8px;">
+          <span id="snapToggleDesc" style="color:var(--gray-500);">보행자 길에 맞춰 정리</span>
+          <span id="snapToggleKnob" style="width:34px;height:20px;border-radius:999px;background:var(--green);position:relative;display:inline-block;transition:background .2s;">
+            <span style="position:absolute;right:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .2s,right .2s;"></span>
+          </span>
+        </span>
+      </button>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
         <div style="display:flex;gap:8px;flex:1;">
           <div class="scell" style="flex:1;"><div class="scell-l">총 거리</div><div class="scell-v g" id="dDist">0.0<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small></div></div>
@@ -967,6 +976,7 @@ function setCreateMode(mode) {
     aiBtn.style.background = 'transparent'; aiBtn.style.color = 'var(--gray-500)';
     drawContent.style.display = 'block';
     aiContent.style.display = 'none';
+    updateSnapToggle();
     if (guide) guide.style.display = 'none';
     if (createAiMarker) createAiMarker.setMap(null);
     if (S.polyline) S.polyline.setMap(createMap);
@@ -983,11 +993,38 @@ let dragLastLatlng = null;
 let drawRawSegment = [];
 let drawBusy = false;
 let drawSnapToken = 0;
+let snapToRoad = localStorage.getItem('runloopSnapToRoad') !== 'false';
 const DRAG_MIN_METERS = 8;
+
+function toggleSnapMode() {
+  snapToRoad = !snapToRoad;
+  localStorage.setItem('runloopSnapToRoad', snapToRoad ? 'true' : 'false');
+  updateSnapToggle();
+  setDrawGuide(snapToRoad
+    ? '길 따라가기를 켰어요. 손을 떼면 보행자 길로 정리해요'
+    : '자유 그리기예요. 내가 그린 그대로 저장해요');
+}
+
+function updateSnapToggle() {
+  const label = document.getElementById('snapToggleLabel');
+  const desc = document.getElementById('snapToggleDesc');
+  const knob = document.getElementById('snapToggleKnob');
+  if (!label || !desc || !knob) return;
+  const dot = knob.querySelector('span');
+  label.textContent = snapToRoad ? '길 따라가기' : '자유 그리기';
+  label.style.color = snapToRoad ? 'var(--green)' : 'var(--gray-700)';
+  desc.textContent = snapToRoad ? '보행자 길에 맞춰 정리' : '내가 그린 그대로';
+  knob.style.background = snapToRoad ? 'var(--green)' : 'var(--gray-300)';
+  if (dot) {
+    dot.style.right = snapToRoad ? '2px' : '16px';
+    dot.style.left = snapToRoad ? '16px' : '2px';
+  }
+}
 
 function initDrawDrag() {
   const mapEl = document.getElementById('createMapEl');
   if (!mapEl) return;
+  updateSnapToggle();
   if (mapEl.dataset.drawReady === '1') return;
   mapEl.dataset.drawReady = '1';
 
@@ -1017,8 +1054,9 @@ function initDrawDrag() {
     dragLastLatlng = latlng;
     renderDrawPolyline(getDrawPreviewPath());
 
-    const guide = document.getElementById('drawGuideText');
-    if (guide) guide.textContent = '손을 떼면 T맵 보행자 길로 보정해요';
+    setDrawGuide(snapToRoad
+      ? '손을 떼면 T맵 보행자 길로 보정해요'
+      : '자유 그리기예요. 손을 떼면 그대로 이어져요');
   }
 
   // 드래그 중 — mousemove / touchmove
@@ -1051,7 +1089,12 @@ function initDrawDrag() {
         : '다음 지점까지 드래그해서 코스를 만들어요');
       return;
     }
-    snapAndCommitDrawSegment(segment);
+    if (snapToRoad) {
+      snapAndCommitDrawSegment(segment);
+    } else {
+      commitDrawSegment(segment, 'manual');
+      setDrawGuide('내가 그린 그대로 이어졌어요. 계속 그려도 좋아요');
+    }
   }
 
   // 마우스 이벤트
