@@ -49,11 +49,13 @@ if ('serviceWorker' in navigator) {
   .logo-mark::after{content:'';position:absolute;right:5px;top:5px;width:6px;height:6px;background:var(--coral);border-radius:50%;}
   .loc-btn{display:flex;align-items:center;gap:5px;background:var(--coral-light);color:var(--ink);padding:6px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;cursor:pointer;border:1px solid rgba(79,143,184,.18);font-family:inherit;}
 
-  .tabs{display:flex;background:var(--paper);border-bottom:1px solid var(--gray-100);flex-shrink:0;}
-  .tab{flex:1;padding:11px 0;text-align:center;font-size:13px;font-weight:500;color:var(--gray-500);cursor:pointer;border-bottom:2px solid transparent;border:none;background:none;font-family:inherit;transition:all .2s;}
-  .tab.active{color:var(--ink);border-bottom:2px solid var(--coral);}
+  .tabs{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:430px;height:70px;padding:6px 10px calc(6px + env(safe-area-inset-bottom));display:flex;gap:4px;background:rgba(255,253,248,.96);border-top:1px solid var(--gray-100);box-shadow:0 -8px 22px rgba(39,49,58,.08);backdrop-filter:blur(12px);z-index:140;flex-shrink:0;}
+  .tab{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;font-size:11px;font-weight:700;color:var(--gray-500);cursor:pointer;border:none;border-radius:var(--rs);background:none;font-family:inherit;transition:all .2s;}
+  .tab-icon{font-size:18px;line-height:1;color:var(--gray-500);}
+  .tab.active{color:var(--ink);background:var(--coral-light);}
+  .tab.active .tab-icon{color:var(--coral-dark);}
 
-  .screen{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;}
+  .screen{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;padding-bottom:76px;}
   .screen.active{display:flex;}
 
   /* AI 탭 */
@@ -266,8 +268,6 @@ if ('serviceWorker' in navigator) {
   .near-course-name{font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .near-course-meta{font-size:12px;color:var(--gray-500);}
   .near-course-dist{font-size:14px;font-weight:700;color:var(--coral);flex-shrink:0;}
-
-  #screen-ai { overflow: hidden; }
 </style>
 </head>
 <body>
@@ -432,14 +432,14 @@ if ('serviceWorker' in navigator) {
 </div>
 
 <div class="tabs">
-  <button class="tab" onclick="switchTab('home',this)">홈</button>
-  <button class="tab active" onclick="switchTab('create',this)">코스 만들기</button>
-  <button class="tab" onclick="switchTab('mycourse',this)">코스</button>
-  <button class="tab" onclick="switchTab('mypage',this)">MY</button>
+  <button class="tab active" data-tab="home" onclick="switchTab('home',this)"><span class="tab-icon">⌂</span><span>홈</span></button>
+  <button class="tab" data-tab="create" onclick="switchTab('create',this)"><span class="tab-icon">＋</span><span>만들기</span></button>
+  <button class="tab" data-tab="mycourse" onclick="switchTab('mycourse',this)"><span class="tab-icon">⌁</span><span>코스</span></button>
+  <button class="tab" data-tab="mypage" onclick="switchTab('mypage',this)"><span class="tab-icon">●</span><span>MY</span></button>
 </div>
 
 <!-- 홈 화면 -->
-<div id="screen-home" class="screen" style="overflow-y:auto;">
+<div id="screen-home" class="screen active" style="overflow-y:auto;">
   <div style="padding:14px;display:flex;flex-direction:column;gap:12px;">
 
     <!-- ── 날씨 카드 ── -->
@@ -482,42 +482,6 @@ if ('serviceWorker' in navigator) {
       <div style="margin-top:10px;font-size:12px;color:var(--gray-500);border-top:1px solid var(--gray-100);padding-top:10px;" id="wSummary">날씨 불러오는 중…</div>
     </div>
 
-    <!-- ── 이번 주 요약 (차트 포함) ── -->
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:15px;font-weight:700;color:var(--gray-900);">이번 주 러닝</div>
-      <div style="font-size:12px;color:var(--coral);font-weight:500;cursor:pointer;" onclick="openAllRecords()">전체 기록 →</div>
-    </div>
-    <div style="background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:16px;">
-      <!-- 수치 3개 -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
-        <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
-          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">총 거리</div>
-          <div style="font-size:20px;font-weight:700;color:var(--coral);line-height:1;" id="weekDist">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">km</small></div>
-        </div>
-        <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
-          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">런닝 횟수</div>
-          <div style="font-size:20px;font-weight:700;color:var(--gray-900);line-height:1;" id="weekCount">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">회</small></div>
-        </div>
-        <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
-          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">저장 코스</div>
-            <div style="font-size:20px;font-weight:700;color:var(--gray-700);line-height:1;" id="homeCourseCount">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">개</small></div>
-        </div>
-      </div>
-      <!-- 요일별 바 차트 -->
-      <div style="display:flex;align-items:flex-end;gap:5px;height:56px;margin-bottom:5px;" id="weekBarChart"></div>
-      <div style="display:flex;gap:5px;" id="weekBarLabels"></div>
-      <!-- 목표 프로그레스 -->
-      <div style="margin-top:12px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
-          <div style="font-size:11px;color:var(--gray-500);">주간 목표 달성률</div>
-          <div style="font-size:11px;font-weight:700;color:var(--coral);" id="homeGoalText">0 / 20km</div>
-        </div>
-        <div style="height:5px;background:var(--gray-100);border-radius:3px;overflow:hidden;">
-          <div id="homeGoalFill" style="height:100%;background:var(--coral);border-radius:3px;width:0%;transition:width .5s;"></div>
-        </div>
-      </div>
-    </div>
-
     <!-- ── 오늘의 추천 코스 ── -->
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <div style="font-size:15px;font-weight:700;color:var(--gray-900);">오늘 달릴 곳</div>
@@ -535,7 +499,7 @@ if ('serviceWorker' in navigator) {
 </div>
 
 <!-- 코스 만들기 (AI 추천 + 직접 그리기 통합) -->
-<div id="screen-create" class="screen active" style="position:relative;">
+<div id="screen-create" class="screen" style="position:relative;">
 
   <!-- 공유 지도 -->
   <div style="position:relative;flex:1;min-height:0;">
@@ -693,6 +657,39 @@ if ('serviceWorker' in navigator) {
         <div class="my-point-item" style="flex:1;text-align:center;">
           <div class="my-point-val" id="myAvgPace">—</div>
           <div class="my-point-label">평균 페이스</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 이번 주 러닝 -->
+    <div style="padding:16px 16px 8px;display:flex;justify-content:space-between;align-items:center;">
+      <div class="my-section" style="padding:0;">이번 주 러닝</div>
+      <div style="font-size:12px;color:var(--coral);font-weight:500;cursor:pointer;" onclick="openAllRecords()">전체 기록 →</div>
+    </div>
+    <div style="background:#fff;border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100);padding:16px;">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
+        <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
+          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">총 거리</div>
+          <div style="font-size:20px;font-weight:700;color:var(--coral);line-height:1;" id="weekDist">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">km</small></div>
+        </div>
+        <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
+          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">런닝 횟수</div>
+          <div style="font-size:20px;font-weight:700;color:var(--gray-900);line-height:1;" id="weekCount">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">회</small></div>
+        </div>
+        <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
+          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">저장 코스</div>
+          <div style="font-size:20px;font-weight:700;color:var(--gray-700);line-height:1;" id="homeCourseCount">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">개</small></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:flex-end;gap:5px;height:56px;margin-bottom:5px;" id="weekBarChart"></div>
+      <div style="display:flex;gap:5px;" id="weekBarLabels"></div>
+      <div style="margin-top:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+          <div style="font-size:11px;color:var(--gray-500);">주간 목표 달성률</div>
+          <div style="font-size:11px;font-weight:700;color:var(--coral);" id="homeGoalText">0 / 20km</div>
+        </div>
+        <div style="height:5px;background:var(--gray-100);border-radius:3px;overflow:hidden;">
+          <div id="homeGoalFill" style="height:100%;background:var(--coral);border-radius:3px;width:0%;transition:width .5s;"></div>
         </div>
       </div>
     </div>
@@ -895,7 +892,7 @@ if ('serviceWorker' in navigator) {
 
 <script>
 const S = {
-  tab:'ai', courses:[], sel:-1,
+  tab:'home', courses:[], sel:-1,
   lat:37.5503, lng:126.9200,
   map:null, polyline:null, myMarker:null,
   path:[], dots:[], segments:[], segmentPolylines:[], overlapPolylines:[], distKm:0, crossings:0, clickedPoints:[],
@@ -1779,7 +1776,7 @@ window.addEventListener('load', () => {
   const days = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
   const dateStr = days[now.getDay()] + ', ' + (now.getMonth()+1) + '월 ' + now.getDate() + '일';
   document.getElementById('headerDate').textContent = dateStr;
-  const homTab = document.querySelector('.tab');
+  const homTab = document.querySelector('[data-tab="home"]');
   switchTab('home', homTab);
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   homTab.classList.add('active');
@@ -1818,7 +1815,8 @@ document.getElementById('recordDetailModal').addEventListener('click', function(
 function switchTab(tab, el) {
   S.tab = tab;
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  el.classList.add('active');
+  const tabBtn = el || document.querySelector(`[data-tab="${tab}"]`);
+  if (tabBtn) tabBtn.classList.add('active');
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-'+tab).classList.add('active');
   if (tab === 'create') {
@@ -1830,7 +1828,10 @@ function switchTab(tab, el) {
     loadNearCourses();
   }
   if (tab === 'mycourse') renderMyCourses();
-  if (tab === 'mypage') renderMyPage();
+  if (tab === 'mypage') {
+    renderRecords();
+    renderMyPage();
+  }
 }
 
 /* 지도 초기화 */
@@ -2013,12 +2014,9 @@ function saveCourse() {
   clearDraw();
   // 코스 탭으로 이동
   setTimeout(() => {
-    const tabs = document.querySelectorAll('.tab');
-    const courseTab = Array.from(tabs).find(t => t.textContent.trim() === '코스');
+    const courseTab = document.querySelector('[data-tab="mycourse"]');
     if (courseTab) {
       switchTab('mycourse', courseTab);
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      courseTab.classList.add('active');
     }
   }, 300);
 }
@@ -2339,12 +2337,11 @@ function saveNearCourse(name, km) {
 
 function goToAiWithLocation(name, lat, lng) {
   // AI 추천 탭으로 이동하고 해당 위치로 설정
-  const aiTab = document.querySelectorAll('.tab')[1];
-  switchTab('ai', aiTab);
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  aiTab.classList.add('active');
+  const createTab = document.querySelector('[data-tab="create"]');
+  switchTab('create', createTab);
+  setCreateMode('ai');
   setTimeout(() => {
-    if (S.kakaoReady && aiMap) {
+    if (S.kakaoReady && createMap) {
       const latlng = new kakao.maps.LatLng(parseFloat(lat), parseFloat(lng));
       setAiMarker(latlng, name + ' 근처');
     }

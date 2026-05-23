@@ -18,3 +18,4 @@
 - Running screen controls should take less vertical space so the map is easier to see while moving.
 - Indoor GPS can be noisy. The app should expose GPS accuracy and avoid counting low-accuracy jumps as real distance.
 - Saved run records need a detail view, not only a list item.
+- Main navigation should use a bottom tab bar because Runloop is primarily a mobile/PWA experience.
