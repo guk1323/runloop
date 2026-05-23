@@ -187,19 +187,26 @@ if ('serviceWorker' in navigator) {
   .record-meta{font-size:12px;color:var(--gray-500);}
   .record-dist{font-size:16px;font-weight:700;color:var(--coral);}
 
-  .mc-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);margin-bottom:10px;overflow:hidden;}
-  .mc-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
-  .mc-header > div:first-child{min-width:0;}
-  .mc-name{font-size:14px;font-weight:700;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .mc-meta{font-size:12px;color:var(--gray-500);margin-top:2px;}
-  .mc-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+  .mc-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);margin-bottom:10px;padding:14px;overflow:hidden;}
+  .mc-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
+  .mc-title{min-width:0;flex:1;}
+  .mc-title-row{display:flex;align-items:center;gap:7px;min-width:0;}
+  .mc-name{font-size:15px;font-weight:800;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mc-type{flex-shrink:0;font-size:10px;font-weight:800;color:var(--coral);background:var(--coral-light);border-radius:999px;padding:3px 7px;}
+  .mc-meta{font-size:12px;color:var(--gray-500);margin-top:4px;}
+  .mc-distance{text-align:right;flex-shrink:0;min-width:58px;}
+  .mc-distance-value{font-size:22px;font-weight:800;color:var(--coral);line-height:1;}
+  .mc-distance-unit{font-size:11px;color:var(--gray-500);margin-top:1px;}
+  .mc-stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100);padding:10px 0;margin-bottom:12px;}
+  .mc-stat{padding:0 10px;border-right:1px solid var(--gray-100);min-width:0;}
+  .mc-stat:last-child{border-right:none;}
+  .mc-stat-label{font-size:10px;color:var(--gray-500);font-weight:700;margin-bottom:3px;}
+  .mc-stat-value{font-size:12px;color:var(--gray-900);font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mc-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;}
   .mc-btn{height:32px;padding:0 11px;border-radius:var(--rs);font-size:12px;font-weight:700;border:1px solid transparent;cursor:pointer;font-family:inherit;white-space:nowrap;}
   .mc-btn-run{background:var(--ink);color:#fff;}
   .mc-btn-edit{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
   .mc-btn-del{background:#fff;color:var(--red);border-color:var(--red-light);}
-  .mc-preview{height:70px;background:#dce8dc;position:relative;}
-  .mc-preview canvas{width:100%;height:100%;display:block;}
-  .mc-dist-badge{position:absolute;bottom:6px;right:8px;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--rp);}
 
   .addr-dropdown-item{padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--gray-100);color:var(--gray-900);}
   .addr-dropdown-item:last-child{border-bottom:none;}
@@ -2866,68 +2873,78 @@ function renderMyCourses() {
   list.querySelectorAll('.mc-card').forEach(c => c.remove());
 
   courses.forEach(c => {
+    const meta = getMyCourseCardMeta(c);
     const card = document.createElement('div');
     card.className = 'mc-card';
     card.id = 'mc-' + c.id;
     card.innerHTML = `
-      <div class="mc-preview">
-        <canvas id="mcp-${c.id}"></canvas>
-        <div class="mc-dist-badge">${c.dist}km</div>
+      <div class="mc-card-top">
+        <div class="mc-title">
+          <div class="mc-title-row">
+            <div class="mc-name">${escapeHtml(c.name || '코스')}</div>
+            <span class="mc-type">${escapeHtml(meta.type)}</span>
+          </div>
+          <div class="mc-meta">${escapeHtml(meta.summary)}</div>
+        </div>
+        <div class="mc-distance">
+          <div class="mc-distance-value">${meta.distance}</div>
+          <div class="mc-distance-unit">km</div>
+        </div>
       </div>
-      <div class="mc-header">
-        <div>
-          <div class="mc-name">${c.name}</div>
-          <div class="mc-meta">${c.date} 저장 · ${c.dist}km · 약 ${Math.round(parseFloat(c.dist)*7)}분</div>
-        </div>
-        <div class="mc-actions">
-          <button class="mc-btn mc-btn-run" onclick="startMyCoursRun(${c.id})">시작</button>
-          <button class="mc-btn mc-btn-edit" onclick="openRename(${c.id}, '${c.name}')">이름</button>
-          <button class="mc-btn mc-btn-del" onclick="deleteMyCourse(${c.id})">삭제</button>
-        </div>
+      <div class="mc-stats">
+        <div class="mc-stat"><div class="mc-stat-label">예상 시간</div><div class="mc-stat-value">${meta.minutes}</div></div>
+        <div class="mc-stat"><div class="mc-stat-label">방식</div><div class="mc-stat-value">${escapeHtml(meta.method)}</div></div>
+        <div class="mc-stat"><div class="mc-stat-label">저장일</div><div class="mc-stat-value">${escapeHtml(c.date || '-')}</div></div>
+      </div>
+      <div class="mc-actions">
+        <button class="mc-btn mc-btn-run" onclick="startMyCoursRun(${c.id})">시작</button>
+        <button class="mc-btn mc-btn-edit" onclick="openRename(${c.id})">이름</button>
+        <button class="mc-btn mc-btn-del" onclick="deleteMyCourse(${c.id})">삭제</button>
       </div>
     `;
     list.appendChild(card);
-    requestAnimationFrame(() => drawMyCoursePreview(c));
   });
 }
 
-function drawMyCoursePreview(course) {
-  const cv = document.getElementById('mcp-' + course.id);
-  if (!cv) return;
-  const dpr = window.devicePixelRatio || 1;
-  const rw = cv.offsetWidth || cv.parentElement.offsetWidth;
-  const rh = 70;
-  cv.width = rw * dpr; cv.height = rh * dpr;
-  const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
-  ctx.fillStyle = '#EEEADF'; ctx.fillRect(0,0,rw,rh);
-  ctx.strokeStyle = '#D8D2C3'; ctx.lineWidth = 0.5;
-  for (let x=0;x<rw;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,rh);ctx.stroke();}
-  for (let y=0;y<rh;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(rh,y);ctx.stroke();}
+function getMyCourseCardMeta(course) {
+  const dist = parseFloat(course.dist);
+  const distance = Number.isFinite(dist) ? dist.toFixed(2) : '0.00';
+  const minutes = Number.isFinite(dist) ? `약 ${Math.max(1, Math.round(dist * 7))}분` : '-';
+  const segments = Array.isArray(course.segments) ? course.segments : [];
+  const manualDist = parseFloat(course.manualDist || '0');
+  const manualRatio = Number.isFinite(dist) && dist > 0 ? manualDist / dist : 0;
 
-  if (!course.points || course.points.length < 2) return;
-  const lats = course.points.map(p => p.lat);
-  const lngs = course.points.map(p => p.lng);
-  const minLat = Math.min(...lats), maxLat = Math.max(...lats);
-  const minLng = Math.min(...lngs), maxLng = Math.max(...lngs);
-  const pad = 10;
+  if (course.fromAi) {
+    const tags = Array.isArray(course.tags) ? course.tags.map(t => t.l).filter(Boolean).slice(0, 2).join(' · ') : '';
+    return {
+      type: '추천',
+      method: 'AI 추천',
+      distance,
+      minutes,
+      summary: tags || '추천 코스에서 저장'
+    };
+  }
 
-  const toX = lng => pad + (lng - minLng) / (maxLng - minLng + 0.00001) * (rw - pad*2);
-  const toY = lat => rh - pad - (lat - minLat) / (maxLat - minLat + 0.00001) * (rh - pad*2);
+  if (segments.length) {
+    const method = manualRatio > 0.6 ? '내가 그린 길' : manualRatio > 0.15 ? '혼합' : '길 따라가기';
+    const summary = manualRatio > 0.15 && manualDist > 0
+      ? `직접 구간 ${manualDist.toFixed(2)}km 포함`
+      : '보행자 길에 맞춰 정리';
+    return { type: '직접', method, distance, minutes, summary };
+  }
 
-  ctx.strokeStyle = DRAW_ROUTE_COLOR; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
-  ctx.beginPath();
-  ctx.moveTo(toX(course.points[0].lng), toY(course.points[0].lat));
-  course.points.forEach(p => ctx.lineTo(toX(p.lng), toY(p.lat)));
-  ctx.stroke();
+  if (Array.isArray(course.points) && course.points.length > 1) {
+    return { type: '직접', method: '직접 그리기', distance, minutes, summary: '내가 저장한 경로' };
+  }
 
-  ctx.fillStyle = '#fff'; ctx.strokeStyle = DRAW_ROUTE_MARKER_COLOR; ctx.lineWidth = 1.5;
-  ctx.beginPath(); ctx.arc(toX(course.points[0].lng), toY(course.points[0].lat), 4, 0, Math.PI*2);
-  ctx.fill(); ctx.stroke();
+  return { type: '저장', method: '기본', distance, minutes, summary: '저장한 코스' };
 }
 
-function openRename(id, currentName) {
+function openRename(id) {
   renameTargetId = id;
-  document.getElementById('renameInput').value = currentName;
+  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
+  const current = courses.find(c => c.id === id);
+  document.getElementById('renameInput').value = current ? current.name : '';
   const modal = document.getElementById('renameModal');
   modal.style.display = 'flex';
   setTimeout(() => document.getElementById('renameInput').focus(), 100);
