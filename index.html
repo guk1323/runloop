@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>루프 Runloop</title>
+<title>Runloop</title>
 
 <!-- PWA 설정 -->
 <link rel="manifest" href="/manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="루프">
-<meta name="theme-color" content="#1D9E75">
+<meta name="apple-mobile-web-app-title" content="Runloop">
+<meta name="theme-color" content="#F7F7F2">
 
 <!-- 아이오에스 아이콘 -->
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%231D9E75'/><text x='90' y='125' font-size='90' text-anchor='middle'>🏃</text></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23F7F7F2'/><circle cx='128' cy='50' r='18' fill='%23C7F464'/><path d='M52 98c21-42 80-42 78 0-2 39-54 43-66 14-10-25 18-48 47-28' fill='none' stroke='%23171A18' stroke-width='16' stroke-linecap='round' stroke-linejoin='round'/><circle cx='53' cy='109' r='10' fill='%23FF6B5E'/></svg>">
 
 <!-- 서비스 워커 등록 -->
 <script>
@@ -27,64 +27,70 @@ if ('serviceWorker' in navigator) {
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
   :root {
-    --green:#1D9E75;--green-light:#E1F5EE;--green-dark:#0F6E56;
-    --amber:#BA7517;--amber-light:#FAEEDA;
+    --ink:#171A18;--paper:#FFFEFA;--cream:#F7F7F2;
+    --coral:#FF6B5E;--coral-dark:#D84F45;--coral-light:#FFF0EC;
+    --lime:#C7F464;--mint:#58BFA3;--route:#2F7F73;
+    --green:var(--ink);--green-light:var(--coral-light);--green-dark:#0B0D0C;
+    --amber:#A76A12;--amber-light:#FFF5DB;
     --red:#A32D2D;--red-light:#FCEBEB;
-    --gray-50:#F8F8F6;--gray-100:#F0EFEA;--gray-300:#D3D1C7;
-    --gray-500:#888780;--gray-700:#444441;--gray-900:#1A1A18;
-    --r:12px;--rs:8px;--rp:999px;
+    --gray-50:#F7F7F2;--gray-100:#EDE9DE;--gray-300:#D6D0C3;
+    --gray-500:#827E75;--gray-700:#46443F;--gray-900:var(--ink);
+    --r:8px;--rs:8px;--rp:999px;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-  html,body{height:100%;font-family:'Noto Sans KR',sans-serif;background:var(--gray-50);color:var(--gray-900);}
-  body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100dvh;overflow:hidden;}
+  html,body{height:100%;font-family:'Noto Sans KR',sans-serif;background:var(--cream);color:var(--gray-900);}
+  body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100dvh;overflow:hidden;background:var(--paper);box-shadow:0 0 0 1px rgba(23,26,24,.06);}
 
-  .header{background:#fff;border-bottom:1px solid var(--gray-100);padding:14px 18px 10px;flex-shrink:0;z-index:100;}
+  .header{background:var(--paper);border-bottom:1px solid var(--gray-100);padding:14px 18px 10px;flex-shrink:0;z-index:100;}
   .header-top{display:flex;justify-content:space-between;align-items:center;}
-  .logo{font-size:20px;font-weight:700;color:var(--green);letter-spacing:-0.5px;}
-  .loc-btn{display:flex;align-items:center;gap:5px;background:var(--green-light);color:var(--green-dark);padding:6px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;cursor:pointer;border:none;font-family:inherit;}
+  .logo{display:flex;align-items:center;gap:8px;font-size:20px;font-weight:700;color:var(--ink);letter-spacing:0;}
+  .logo-mark{width:28px;height:28px;border-radius:9px;background:var(--ink);position:relative;display:inline-block;box-shadow:inset 0 -6px 0 rgba(199,244,100,.85);}
+  .logo-mark::before{content:'';position:absolute;left:7px;top:8px;width:14px;height:8px;border:2px solid var(--paper);border-top-color:transparent;border-radius:999px;transform:rotate(-13deg);}
+  .logo-mark::after{content:'';position:absolute;right:5px;top:5px;width:6px;height:6px;background:var(--coral);border-radius:50%;}
+  .loc-btn{display:flex;align-items:center;gap:5px;background:var(--coral-light);color:var(--ink);padding:6px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;cursor:pointer;border:1px solid rgba(255,107,94,.16);font-family:inherit;}
 
-  .tabs{display:flex;background:#fff;border-bottom:1px solid var(--gray-100);flex-shrink:0;}
+  .tabs{display:flex;background:var(--paper);border-bottom:1px solid var(--gray-100);flex-shrink:0;}
   .tab{flex:1;padding:11px 0;text-align:center;font-size:13px;font-weight:500;color:var(--gray-500);cursor:pointer;border-bottom:2px solid transparent;border:none;background:none;font-family:inherit;transition:all .2s;}
-  .tab.active{color:var(--green);border-bottom:2px solid var(--green);}
+  .tab.active{color:var(--ink);border-bottom:2px solid var(--coral);}
 
   .screen{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;}
   .screen.active{display:flex;}
 
   /* AI 탭 */
-  .ai-top{background:#fff;padding:14px 16px;border-bottom:1px solid var(--gray-100);flex-shrink:0;}
+  .ai-top{background:var(--paper);padding:14px 16px;border-bottom:1px solid var(--gray-100);flex-shrink:0;}
   .slabel{font-size:11px;font-weight:500;color:var(--gray-500);margin-bottom:7px;letter-spacing:.3px;}
   .addr-input{width:100%;height:40px;border:1px solid var(--gray-300);border-radius:var(--rs);padding:0 12px;font-size:14px;font-family:inherit;outline:none;background:var(--gray-50);transition:border-color .2s;}
-  .addr-input:focus{border-color:var(--green);background:#fff;}
+  .addr-input:focus{border-color:var(--coral);background:#fff;}
   .addr-input::placeholder{color:var(--gray-500);}
   .km-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
   .km-label{font-size:13px;color:var(--gray-700);white-space:nowrap;}
-  .km-slider{flex:1;accent-color:var(--green);}
-  .km-val{font-size:15px;font-weight:700;color:var(--green);min-width:46px;text-align:right;}
-  .gen-btn{margin-top:10px;width:100%;height:42px;background:var(--green);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s;}
-  .gen-btn:hover{background:var(--green-dark);}
+  .km-slider{flex:1;accent-color:var(--coral);}
+  .km-val{font-size:15px;font-weight:700;color:var(--coral);min-width:46px;text-align:right;}
+  .gen-btn{margin-top:10px;width:100%;height:42px;background:var(--ink);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s,transform .15s;box-shadow:0 8px 18px rgba(23,26,24,.13);}
+  .gen-btn:hover{background:#000;transform:translateY(-1px);}
   .gen-btn:disabled{background:var(--gray-300);cursor:not-allowed;}
 
   .course-scroll{flex:1;overflow-y:auto;}
   .course-list{padding:12px;display:flex;flex-direction:column;gap:10px;}
-  .course-card{background:#fff;border-radius:var(--r);border:1.5px solid var(--gray-100);overflow:hidden;cursor:pointer;transition:border-color .15s;}
+  .course-card{background:var(--paper);border-radius:var(--r);border:1.5px solid var(--gray-100);overflow:hidden;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
   .course-card:hover{border-color:var(--gray-300);}
-  .course-card.selected{border-color:var(--green);}
-  .cmap{height:85px;position:relative;overflow:hidden;background:#dce8dc;}
+  .course-card.selected{border-color:var(--coral);box-shadow:0 8px 20px rgba(255,107,94,.12);}
+  .cmap{height:85px;position:relative;overflow:hidden;background:#EEEADF;}
   .cmap canvas{width:100%;height:100%;display:block;}
-  .cbadge{position:absolute;top:7px;left:7px;background:rgba(29,158,117,.9);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--rp);}
+  .cbadge{position:absolute;top:7px;left:7px;background:rgba(23,26,24,.88);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--rp);}
   .crank{position:absolute;top:7px;right:7px;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--rp);}
   .cinfo{padding:10px 14px 12px;}
   .cname{font-size:14px;font-weight:700;margin-bottom:3px;}
   .cmeta{font-size:12px;color:var(--gray-500);margin-bottom:7px;}
   .tags{display:flex;gap:5px;flex-wrap:wrap;}
   .tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:var(--rp);}
-  .tg{background:var(--green-light);color:var(--green-dark);}
+  .tg{background:var(--coral-light);color:var(--ink);}
   .tb{background:#E6F1FB;color:#185FA5;}
   .ta{background:var(--amber-light);color:var(--amber);}
 
-  .start-bar{padding:10px 16px 14px;background:#fff;border-top:1px solid var(--gray-100);flex-shrink:0;}
-  .start-btn{width:100%;height:48px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s;}
-  .start-btn:hover{background:var(--green-dark);}
+  .start-bar{padding:10px 16px 14px;background:var(--paper);border-top:1px solid var(--gray-100);flex-shrink:0;}
+  .start-btn{width:100%;height:48px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s,transform .15s;box-shadow:0 8px 18px rgba(23,26,24,.13);}
+  .start-btn:hover{background:#000;transform:translateY(-1px);}
   .start-btn:disabled{background:var(--gray-300);cursor:not-allowed;}
 
   .empty-state{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:var(--gray-500);padding:32px;text-align:center;}
@@ -96,24 +102,24 @@ if ('serviceWorker' in navigator) {
   #drawMapEl{flex:1;min-height:0;position:relative;}
 
 
-  .draw-stats{background:#fff;border-top:1px solid var(--gray-100);padding:12px 16px;flex-shrink:0;}
+  .draw-stats{background:var(--paper);border-top:1px solid var(--gray-100);padding:12px 16px;flex-shrink:0;}
   .sgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;}
   .scell{text-align:center;background:var(--gray-50);border-radius:var(--rs);padding:8px 4px;}
   .scell-l{font-size:10px;color:var(--gray-500);margin-bottom:2px;}
   .scell-v{font-size:17px;font-weight:700;}
-  .scell-v.g{color:var(--green);}
+  .scell-v.g{color:var(--coral);}
   .conds{display:flex;gap:5px;flex-wrap:wrap;}
   .ctag{display:flex;align-items:center;gap:4px;padding:4px 10px;border-radius:var(--rp);font-size:12px;font-weight:500;}
-  .cg{background:var(--green-light);color:var(--green-dark);}
+  .cg{background:var(--coral-light);color:var(--ink);}
   .ca{background:var(--amber-light);color:var(--amber);}
 
-  .save-bar{padding:10px 16px 14px;background:#fff;border-top:1px solid var(--gray-100);flex-shrink:0;}
-  .save-btn{width:100%;height:48px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s;}
-  .save-btn:hover{background:var(--green-dark);}
+  .save-bar{padding:10px 16px 14px;background:var(--paper);border-top:1px solid var(--gray-100);flex-shrink:0;}
+  .save-btn{width:100%;height:48px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;transition:background .15s,transform .15s;box-shadow:0 8px 18px rgba(23,26,24,.13);}
+  .save-btn:hover{background:#000;transform:translateY(-1px);}
   .save-btn:disabled{background:var(--gray-300);cursor:not-allowed;}
 
-  .map-loading{position:absolute;inset:0;background:#e8f0e8;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:5;font-size:14px;color:var(--gray-700);}
-  .ml-spin{width:28px;height:28px;border:3px solid var(--gray-300);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;}
+  .map-loading{position:absolute;inset:0;background:#F3F0E6;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:5;font-size:14px;color:var(--gray-700);}
+  .ml-spin{width:28px;height:28px;border:3px solid var(--gray-300);border-top-color:var(--coral);border-radius:50%;animation:spin .8s linear infinite;}
   .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;}
   @keyframes spin{to{transform:rotate(360deg);}}
 
@@ -124,39 +130,39 @@ if ('serviceWorker' in navigator) {
   .course-scroll::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:2px;}
 
   /* ── 런닝 화면 ── */
-  .run-screen{position:fixed;inset:0;background:#fff;z-index:999;display:none;flex-direction:column;max-width:430px;margin:0 auto;overflow:hidden;}
+  .run-screen{position:fixed;inset:0;background:var(--paper);z-index:999;display:none;flex-direction:column;max-width:430px;margin:0 auto;overflow:hidden;}
   .run-screen.active{display:flex;}
   .run-header{padding:14px 18px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gray-100);}
   .run-title{font-size:16px;font-weight:700;color:var(--gray-900);}
   .run-live{display:flex;align-items:center;gap:5px;background:#FEECEC;color:var(--red);padding:5px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;}
   .live-dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:blink 1s infinite;}
   @keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
-  .run-map{height:200px;background:#dce8dc;position:relative;flex-shrink:0;}
+  .run-map{height:200px;background:#EEEADF;position:relative;flex-shrink:0;}
   .run-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 14px;flex-shrink:0;}
   .rstat{background:var(--gray-50);border-radius:var(--r);padding:12px 14px;}
   .rstat-l{font-size:11px;color:var(--gray-500);margin-bottom:4px;}
   .rstat-v{font-size:26px;font-weight:700;color:var(--gray-900);line-height:1;}
-  .rstat-v.g{color:var(--green);}
+  .rstat-v.g{color:var(--coral);}
   .rstat-u{font-size:13px;font-weight:400;color:var(--gray-500);}
   .pace-wrap{padding:0 14px 12px;flex-shrink:0;}
   .pace-top{display:flex;justify-content:space-between;font-size:12px;color:var(--gray-500);margin-bottom:6px;}
   .pace-track{height:7px;background:var(--gray-100);border-radius:4px;overflow:hidden;}
-  .pace-fill{height:100%;background:var(--green);border-radius:4px;transition:width .5s;}
+  .pace-fill{height:100%;background:var(--coral);border-radius:4px;transition:width .5s;}
   .km-track{display:flex;gap:6px;padding:0 14px 14px;overflow-x:auto;flex-shrink:0;}
   .km-track::-webkit-scrollbar{display:none;}
   .km-chip{min-width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;}
-  .km-done{background:var(--green-light);color:var(--green-dark);}
-  .km-cur{background:var(--green);color:#fff;}
+  .km-done{background:var(--lime);color:var(--ink);}
+  .km-cur{background:var(--ink);color:#fff;}
   .km-todo{background:var(--gray-100);color:var(--gray-500);}
   .run-controls{display:flex;align-items:center;justify-content:center;gap:18px;padding:16px 14px 20px;flex-shrink:0;}
   .ctrl-stop{width:54px;height:54px;border-radius:50%;background:var(--red-light);border:1px solid #f09595;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;}
-  .ctrl-pause{width:68px;height:68px;border-radius:50%;background:var(--green);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:28px;color:#fff;transition:background .15s;}
+  .ctrl-pause{width:68px;height:68px;border-radius:50%;background:var(--ink);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:28px;color:#fff;transition:background .15s;}
   .ctrl-pause.paused{background:var(--amber-light);}
   .ctrl-extra{width:54px;height:54px;border-radius:50%;background:var(--gray-100);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;}
   /* 완료 오버레이 */
   .finish-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:none;align-items:center;justify-content:center;}
   .finish-overlay.active{display:flex;}
-  .finish-card{background:#fff;border-radius:20px;padding:24px 20px;width:320px;max-width:90vw;}
+  .finish-card{background:#fff;border-radius:var(--r);padding:24px 20px;width:320px;max-width:90vw;}
   .finish-emoji{font-size:36px;text-align:center;margin-bottom:8px;}
   .finish-title{font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;}
   .finish-sub{font-size:13px;color:var(--gray-500);text-align:center;margin-bottom:16px;}
@@ -164,16 +170,16 @@ if ('serviceWorker' in navigator) {
   .fstat{background:var(--gray-50);border-radius:var(--rs);padding:10px;text-align:center;}
   .fstat-l{font-size:11px;color:var(--gray-500);margin-bottom:2px;}
   .fstat-v{font-size:18px;font-weight:700;}
-  .fstat-v.g{color:var(--green);}
-  .finish-save{width:100%;height:48px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;margin-bottom:8px;}
+  .fstat-v.g{color:var(--coral);}
+  .finish-save{width:100%;height:48px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;margin-bottom:8px;}
   .finish-discard{width:100%;height:40px;background:none;border:1px solid var(--gray-300);border-radius:var(--r);font-size:13px;font-family:inherit;cursor:pointer;color:var(--gray-500);}
 
   .record-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
-  .record-icon{width:42px;height:42px;border-radius:50%;background:var(--green-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .record-icon{width:42px;height:42px;border-radius:50%;background:var(--coral-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
   .record-info{flex:1;}
   .record-name{font-size:13px;font-weight:700;color:var(--gray-900);margin-bottom:2px;}
   .record-meta{font-size:12px;color:var(--gray-500);}
-  .record-dist{font-size:16px;font-weight:700;color:var(--green);}
+  .record-dist{font-size:16px;font-weight:700;color:var(--coral);}
 
   .mc-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);margin-bottom:10px;overflow:hidden;}
   .mc-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;}
@@ -181,7 +187,7 @@ if ('serviceWorker' in navigator) {
   .mc-meta{font-size:12px;color:var(--gray-500);margin-top:2px;}
   .mc-actions{display:flex;gap:6px;}
   .mc-btn{padding:5px 10px;border-radius:var(--rp);font-size:11px;font-weight:500;border:none;cursor:pointer;font-family:inherit;}
-  .mc-btn-run{background:var(--green);color:#fff;}
+  .mc-btn-run{background:var(--ink);color:#fff;}
   .mc-btn-edit{background:var(--gray-100);color:var(--gray-700);}
   .mc-btn-del{background:var(--red-light);color:var(--red);}
   .mc-preview{height:70px;background:#dce8dc;position:relative;}
@@ -198,13 +204,13 @@ if ('serviceWorker' in navigator) {
   .all-record-info{flex:1;}
   .all-record-name{font-size:13px;font-weight:700;margin-bottom:2px;}
   .all-record-meta{font-size:11px;color:var(--gray-500);}
-  .all-record-dist{font-size:15px;font-weight:700;color:var(--green);}
+  .all-record-dist{font-size:15px;font-weight:700;color:var(--coral);}
 
-  .save-course-btn{background:var(--green-light);color:var(--green-dark);border:none;border-radius:var(--rp);padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
-  .save-course-btn:hover{background:#c5eede;}
+  .save-course-btn{background:var(--coral-light);color:var(--ink);border:none;border-radius:var(--rp);padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
+  .save-course-btn:hover{background:#FFE0DA;}
 
   /* 마이페이지 */
-  .my-profile-card{margin:14px;background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:var(--r);padding:20px;color:#fff;flex-shrink:0;}
+  .my-profile-card{margin:14px;background:linear-gradient(135deg,#171A18 0%,#30342B 58%,#FF6B5E 130%);border-radius:var(--r);padding:20px;color:#fff;flex-shrink:0;}
   .my-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:10px;cursor:pointer;border:2px solid rgba(255,255,255,.4);}
   .my-name{font-size:20px;font-weight:700;margin-bottom:2px;}
   .my-sub{font-size:13px;opacity:.8;}
@@ -218,11 +224,11 @@ if ('serviceWorker' in navigator) {
   .my-setting-label{font-size:14px;color:var(--gray-900);}
   .my-setting-value{font-size:13px;color:var(--gray-500);}
   .my-setting-input{border:1px solid var(--gray-300);border-radius:var(--rs);padding:6px 10px;font-size:13px;font-family:inherit;outline:none;text-align:right;width:120px;}
-  .my-setting-input:focus{border-color:var(--green);}
+  .my-setting-input:focus{border-color:var(--coral);}
 
   .goal-bar-wrap{padding:0 16px 14px;background:#fff;}
   .goal-bar-track{height:8px;background:var(--gray-100);border-radius:4px;overflow:hidden;margin-top:6px;}
-  .goal-bar-fill{height:100%;background:var(--green);border-radius:4px;transition:width .5s;}
+  .goal-bar-fill{height:100%;background:var(--coral);border-radius:4px;transition:width .5s;}
   .goal-bar-label{display:flex;justify-content:space-between;font-size:11px;color:var(--gray-500);margin-top:4px;}
 
   .trophy-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;padding:0 16px 16px;}
@@ -232,23 +238,23 @@ if ('serviceWorker' in navigator) {
   .trophy-name{font-size:10px;color:var(--gray-500);}
 
   .mood-btn{flex:1;padding:7px 0;background:var(--gray-50);border:1px solid var(--gray-100);border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s;}
-  .mood-btn.selected{background:var(--green-light);border-color:var(--green);color:var(--green-dark);font-weight:500;}
+  .mood-btn.selected{background:var(--coral-light);border-color:var(--coral);color:var(--ink);font-weight:500;}
   .record-memo{font-size:12px;color:var(--gray-500);margin-top:4px;font-style:italic;}
   .record-mood{font-size:13px;margin-left:4px;}
 
   #onboarding.active{display:flex;}
   .ob-avatar-item{width:100%;aspect-ratio:1;background:var(--gray-50);border:2px solid var(--gray-100);border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:all .15s;}
-  .ob-avatar-item.selected{background:var(--green-light);border-color:var(--green);}
+  .ob-avatar-item.selected{background:var(--coral-light);border-color:var(--coral);}
   .ob-goal-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--gray-50);border:2px solid var(--gray-100);border-radius:var(--r);cursor:pointer;transition:all .15s;}
-  .ob-goal-item.selected{background:var(--green-light);border-color:var(--green);}
+  .ob-goal-item.selected{background:var(--coral-light);border-color:var(--coral);}
 
   .near-course-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s;}
-  .near-course-card:hover{border-color:var(--green);}
+  .near-course-card:hover{border-color:var(--coral);}
   .near-course-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
   .near-course-info{flex:1;min-width:0;}
   .near-course-name{font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .near-course-meta{font-size:12px;color:var(--gray-500);}
-  .near-course-dist{font-size:14px;font-weight:700;color:var(--green);flex-shrink:0;}
+  .near-course-dist{font-size:14px;font-weight:700;color:var(--coral);flex-shrink:0;}
 
   #screen-ai { overflow: hidden; }
 </style>
@@ -260,7 +266,7 @@ if ('serviceWorker' in navigator) {
 
   <!-- 스텝 인디케이터 -->
   <div style="padding:20px 24px 0;display:flex;gap:6px;">
-    <div id="ob-dot-1" style="flex:1;height:4px;border-radius:2px;background:var(--green);transition:background .3s;"></div>
+    <div id="ob-dot-1" style="flex:1;height:4px;border-radius:2px;background:var(--coral);transition:background .3s;"></div>
     <div id="ob-dot-2" style="flex:1;height:4px;border-radius:2px;background:var(--gray-100);transition:background .3s;"></div>
     <div id="ob-dot-3" style="flex:1;height:4px;border-radius:2px;background:var(--gray-100);transition:background .3s;"></div>
     <div id="ob-dot-4" style="flex:1;height:4px;border-radius:2px;background:var(--gray-100);transition:background .3s;"></div>
@@ -274,11 +280,11 @@ if ('serviceWorker' in navigator) {
     <div style="font-size:13px;font-weight:500;color:var(--gray-700);margin-bottom:8px;">닉네임을 입력해주세요</div>
     <input type="text" id="ob-name" placeholder="예: 달리기 좋아하는 훈" maxlength="12"
       style="width:100%;height:52px;border:2px solid var(--gray-100);border-radius:var(--r);padding:0 16px;font-size:16px;font-family:inherit;outline:none;transition:border-color .2s;"
-      oninput="this.style.borderColor=this.value?'var(--green)':'var(--gray-100)'"
+      oninput="this.style.borderColor=this.value?'var(--coral)':'var(--gray-100)'"
     >
     <div style="font-size:12px;color:var(--gray-500);margin-top:8px;">최대 12자 · 언제든 변경 가능해요</div>
     <div style="margin-top:auto;">
-      <button onclick="obNext(1)" style="width:100%;height:52px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">다음 →</button>
+      <button onclick="obNext(1)" style="width:100%;height:52px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">다음 →</button>
     </div>
   </div>
 
@@ -294,7 +300,7 @@ if ('serviceWorker' in navigator) {
         <div style="display:flex;align-items:center;gap:10px;">
           <input type="number" id="ob-age" placeholder="25" min="10" max="100"
             style="flex:1;height:48px;border:2px solid var(--gray-100);border-radius:var(--rs);padding:0 14px;font-size:16px;font-family:inherit;outline:none;transition:border-color .2s;"
-            oninput="this.style.borderColor=this.value?'var(--green)':'var(--gray-100)'">
+            oninput="this.style.borderColor=this.value?'var(--coral)':'var(--gray-100)'">
           <span style="font-size:14px;color:var(--gray-500);">세</span>
         </div>
       </div>
@@ -304,7 +310,7 @@ if ('serviceWorker' in navigator) {
         <div style="display:flex;align-items:center;gap:10px;">
           <input type="number" id="ob-height" placeholder="170" min="100" max="250"
             style="flex:1;height:48px;border:2px solid var(--gray-100);border-radius:var(--rs);padding:0 14px;font-size:16px;font-family:inherit;outline:none;transition:border-color .2s;"
-            oninput="this.style.borderColor=this.value?'var(--green)':'var(--gray-100)'">
+            oninput="this.style.borderColor=this.value?'var(--coral)':'var(--gray-100)'">
           <span style="font-size:14px;color:var(--gray-500);">cm</span>
         </div>
       </div>
@@ -314,7 +320,7 @@ if ('serviceWorker' in navigator) {
         <div style="display:flex;align-items:center;gap:10px;">
           <input type="number" id="ob-weight" placeholder="70" min="30" max="200"
             style="flex:1;height:48px;border:2px solid var(--gray-100);border-radius:var(--rs);padding:0 14px;font-size:16px;font-family:inherit;outline:none;transition:border-color .2s;"
-            oninput="this.style.borderColor=this.value?'var(--green)':'var(--gray-100)'">
+            oninput="this.style.borderColor=this.value?'var(--coral)':'var(--gray-100)'">
           <span style="font-size:14px;color:var(--gray-500);">kg</span>
         </div>
       </div>
@@ -333,7 +339,7 @@ if ('serviceWorker' in navigator) {
     <div style="font-size:12px;color:var(--gray-500);margin-bottom:16px;text-align:center;">입력하지 않아도 괜찮아요 — 나중에 MY탭에서 수정 가능해요</div>
     <div style="display:flex;gap:10px;margin-top:auto;">
       <button onclick="obBack(2)" style="width:52px;height:52px;background:var(--gray-100);border:none;border-radius:var(--r);font-size:20px;cursor:pointer;">←</button>
-      <button onclick="obNext(2)" style="flex:1;height:52px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">다음 →</button>
+      <button onclick="obNext(2)" style="flex:1;height:52px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">다음 →</button>
     </div>
   </div>
 
@@ -355,7 +361,7 @@ if ('serviceWorker' in navigator) {
     </div>
     <div style="margin-top:auto;display:flex;gap:10px;">
       <button onclick="obBack(3)" style="width:52px;height:52px;background:var(--gray-100);border:none;border-radius:var(--r);font-size:20px;cursor:pointer;">←</button>
-      <button onclick="obNext(3)" style="flex:1;height:52px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">다음 →</button>
+      <button onclick="obNext(3)" style="flex:1;height:52px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">다음 →</button>
     </div>
   </div>
 
@@ -401,7 +407,7 @@ if ('serviceWorker' in navigator) {
 
     <div style="margin-top:auto;display:flex;gap:10px;">
       <button onclick="obBack(4)" style="width:52px;height:52px;background:var(--gray-100);border:none;border-radius:var(--r);font-size:20px;cursor:pointer;">←</button>
-      <button onclick="obFinish()" style="flex:1;height:52px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">시작하기 🚀</button>
+      <button onclick="obFinish()" style="flex:1;height:52px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">시작하기 🚀</button>
     </div>
   </div>
 
@@ -409,7 +415,7 @@ if ('serviceWorker' in navigator) {
 
 <div class="header">
   <div class="header-top">
-    <div class="logo">루프</div>
+    <div class="logo"><span class="logo-mark" aria-hidden="true"></span><span>Runloop</span></div>
     <div id="headerDate" style="font-size:13px;font-weight:500;color:var(--gray-500);"></div>
   </div>
 </div>
@@ -440,7 +446,7 @@ if ('serviceWorker' in navigator) {
       <!-- 2행: 온도 + 최고최저 + 미세먼지/체감 -->
       <div style="display:flex;align-items:baseline;justify-content:space-between;">
         <div style="display:flex;align-items:baseline;gap:6px;">
-          <span style="font-size:36px;font-weight:700;color:var(--gray-900);letter-spacing:-1px;line-height:1;" id="wTemp">—</span>
+          <span style="font-size:36px;font-weight:700;color:var(--gray-900);letter-spacing:0;line-height:1;" id="wTemp">—</span>
           <span style="font-size:13px;color:var(--gray-500);">°</span>
           <span id="wHiLo" style="font-size:12px;color:var(--gray-500);display:none;">
             <span style="color:#E24B4A;" id="wHigh">—</span>&thinsp;/&thinsp;<span style="color:#378ADD;" id="wLow">—</span>
@@ -468,14 +474,14 @@ if ('serviceWorker' in navigator) {
     <!-- ── 이번 주 요약 (차트 포함) ── -->
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <div style="font-size:15px;font-weight:700;color:var(--gray-900);">이번 주 요약</div>
-      <div style="font-size:12px;color:var(--green);font-weight:500;cursor:pointer;" onclick="openAllRecords()">전체 기록 →</div>
+      <div style="font-size:12px;color:var(--coral);font-weight:500;cursor:pointer;" onclick="openAllRecords()">전체 기록 →</div>
     </div>
     <div style="background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:16px;">
       <!-- 수치 3개 -->
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
         <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
           <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">총 거리</div>
-          <div style="font-size:20px;font-weight:700;color:var(--green);line-height:1;" id="weekDist">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">km</small></div>
+          <div style="font-size:20px;font-weight:700;color:var(--coral);line-height:1;" id="weekDist">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">km</small></div>
         </div>
         <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
           <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">런닝 횟수</div>
@@ -493,10 +499,10 @@ if ('serviceWorker' in navigator) {
       <div style="margin-top:12px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
           <div style="font-size:11px;color:var(--gray-500);">주간 목표 달성률</div>
-          <div style="font-size:11px;font-weight:700;color:var(--green);" id="homeGoalText">0 / 20km</div>
+          <div style="font-size:11px;font-weight:700;color:var(--coral);" id="homeGoalText">0 / 20km</div>
         </div>
         <div style="height:5px;background:var(--gray-100);border-radius:3px;overflow:hidden;">
-          <div id="homeGoalFill" style="height:100%;background:var(--green);border-radius:3px;width:0%;transition:width .5s;"></div>
+          <div id="homeGoalFill" style="height:100%;background:var(--coral);border-radius:3px;width:0%;transition:width .5s;"></div>
         </div>
       </div>
     </div>
@@ -504,7 +510,7 @@ if ('serviceWorker' in navigator) {
     <!-- ── 오늘의 추천 코스 ── -->
     <div style="display:flex;justify-content:space-between;align-items:center;">
       <div style="font-size:15px;font-weight:700;color:var(--gray-900);">오늘의 추천 코스</div>
-      <div style="font-size:12px;color:var(--green);font-weight:500;cursor:pointer;" onclick="loadNearCourses()">새로고침</div>
+      <div style="font-size:12px;color:var(--coral);font-weight:500;cursor:pointer;" onclick="loadNearCourses()">새로고침</div>
     </div>
     <div id="nearCourseList">
       <div style="text-align:center;padding:20px 0;color:var(--gray-500);">
@@ -528,7 +534,7 @@ if ('serviceWorker' in navigator) {
       <!-- 모드 토글 -->
       <div style="display:flex;background:#fff;border-radius:var(--rs);box-shadow:0 2px 8px rgba(0,0,0,.15);padding:3px;">
         <button id="modeAiBtn" onclick="setCreateMode('ai')"
-          style="flex:1;height:32px;border:none;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;background:var(--green);color:#fff;transition:all .2s;">
+          style="flex:1;height:32px;border:none;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;background:var(--ink);color:#fff;transition:all .2s;">
           ✦ AI 추천
         </button>
         <button id="modeDrawBtn" onclick="setCreateMode('draw')"
@@ -550,7 +556,7 @@ if ('serviceWorker' in navigator) {
 
     <!-- 선택된 출발지 표시 -->
     <div id="aiSelectedAddr" style="display:none;position:absolute;top:102px;left:10px;right:10px;z-index:20;background:#fff;border-radius:var(--rs);padding:7px 12px;font-size:12px;font-weight:500;color:var(--gray-900);box-shadow:0 2px 8px rgba(0,0,0,.12);display:none;align-items:center;justify-content:space-between;">
-      <div><span style="color:var(--green);">📍 출발지: </span><span id="aiSelectedAddrText">—</span></div>
+      <div><span style="color:var(--coral);">📍 출발지: </span><span id="aiSelectedAddrText">—</span></div>
       <button onclick="clearSelectedAddr()" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--gray-500);padding:0 0 0 8px;line-height:1;">×</button>
     </div>
 
@@ -604,10 +610,10 @@ if ('serviceWorker' in navigator) {
         <span id="drawGuideText">지도를 길게 누른 채 드래그해서 경로를 그려요</span>
       </div>
       <button id="snapToggleBtn" onclick="toggleSnapMode()" style="width:100%;height:34px;display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--gray-100);border-radius:var(--rs);padding:0 12px;margin-bottom:10px;font-size:12px;font-family:inherit;cursor:pointer;color:var(--gray-700);">
-        <span id="snapToggleLabel" style="font-weight:700;color:var(--green);">길 따라가기</span>
+        <span id="snapToggleLabel" style="font-weight:700;color:var(--coral);">길 따라가기</span>
         <span style="display:flex;align-items:center;gap:8px;">
           <span id="snapToggleDesc" style="color:var(--gray-500);">보행자 길에 맞춰 정리</span>
-          <span id="snapToggleKnob" style="width:34px;height:20px;border-radius:999px;background:var(--green);position:relative;display:inline-block;transition:background .2s;">
+          <span id="snapToggleKnob" style="width:34px;height:20px;border-radius:999px;background:var(--coral);position:relative;display:inline-block;transition:background .2s;">
             <span style="position:absolute;right:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:left .2s,right .2s;"></span>
           </span>
         </span>
@@ -658,7 +664,7 @@ if ('serviceWorker' in navigator) {
       <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:16px;">
         <div class="my-avatar" id="myAvatar" onclick="openAvatarEdit()" title="탭해서 변경" style="width:72px;height:72px;font-size:36px;margin-bottom:10px;">🏃</div>
         <div class="my-name" id="myNameDisplay" style="text-align:center;">런너</div>
-        <div class="my-sub" id="myJoinDays" style="text-align:center;margin-top:3px;">루프와 함께 달리는 중</div>
+        <div class="my-sub" id="myJoinDays" style="text-align:center;margin-top:3px;">런룹과 함께 달리는 중</div>
       </div>
       <!-- 하단: 3개 통계 가운데 정렬 -->
       <div class="my-points" style="justify-content:center;gap:0;">
@@ -684,11 +690,11 @@ if ('serviceWorker' in navigator) {
     <div style="background:#fff;padding:14px 16px;border-bottom:1px solid var(--gray-100);">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div>
-          <span style="font-size:22px;font-weight:700;color:var(--green);" id="goalProgress2">0</span>
+          <span style="font-size:22px;font-weight:700;color:var(--coral);" id="goalProgress2">0</span>
           <span style="font-size:14px;color:var(--gray-500);"> / </span>
           <span style="font-size:16px;font-weight:500;color:var(--gray-700);" id="goalMax2">20km</span>
         </div>
-        <button onclick="openGoalEdit()" style="background:var(--green-light);border:none;border-radius:var(--rs);padding:6px 12px;color:var(--green-dark);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;">목표 변경</button>
+        <button onclick="openGoalEdit()" style="background:var(--coral-light);border:none;border-radius:var(--rs);padding:6px 12px;color:var(--ink);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;">목표 변경</button>
       </div>
       <div class="goal-bar-track"><div class="goal-bar-fill" id="goalBarFill" style="width:0%"></div></div>
       <div style="font-size:11px;color:var(--gray-500);margin-top:5px;" id="goalPct">0% 달성</div>
@@ -698,7 +704,7 @@ if ('serviceWorker' in navigator) {
     <!-- 런닝 기록 -->
     <div style="padding:16px 16px 8px;display:flex;justify-content:space-between;align-items:center;">
       <div class="my-section" style="padding:0;">최근 런닝 기록</div>
-      <div style="font-size:12px;color:var(--green);cursor:pointer;" onclick="openAllRecords()">전체 보기 →</div>
+      <div style="font-size:12px;color:var(--coral);cursor:pointer;" onclick="openAllRecords()">전체 보기 →</div>
     </div>
     <div style="padding:0 16px 20px;" id="myPageRecordList">
       <div style="text-align:center;padding:32px 0;color:var(--gray-500);">
@@ -737,8 +743,8 @@ if ('serviceWorker' in navigator) {
     <div style="font-size:12px;font-weight:500;color:var(--gray-500);margin-bottom:8px;">닉네임</div>
     <input type="text" id="editNameInput" maxlength="12"
       style="width:100%;height:44px;border:1px solid var(--gray-300);border-radius:var(--rs);padding:0 14px;font-size:15px;font-family:inherit;outline:none;margin-bottom:16px;"
-      oninput="this.style.borderColor='var(--green)'">
-    <button onclick="saveProfileEdit()" style="width:100%;height:48px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">저장</button>
+      oninput="this.style.borderColor='var(--coral)'">
+    <button onclick="saveProfileEdit()" style="width:100%;height:48px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">저장</button>
   </div>
 </div>
 
@@ -750,12 +756,12 @@ if ('serviceWorker' in navigator) {
       <button onclick="closeGoalEdit()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-500);">×</button>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;" id="goalEditOptions">
-      <div class="ob-goal-item" onclick="selectGoalOption(this,10)"><div style="font-size:20px;">🌱</div><div><div style="font-size:14px;font-weight:700;">가볍게</div><div style="font-size:12px;color:var(--gray-500);">주 10km</div></div><div style="margin-left:auto;color:var(--green);font-weight:700;opacity:0;" id="gc-10">✓</div></div>
-      <div class="ob-goal-item" onclick="selectGoalOption(this,20)"><div style="font-size:20px;">🏃</div><div><div style="font-size:14px;font-weight:700;">꾸준하게</div><div style="font-size:12px;color:var(--gray-500);">주 20km</div></div><div style="margin-left:auto;color:var(--green);font-weight:700;opacity:0;" id="gc-20">✓</div></div>
-      <div class="ob-goal-item" onclick="selectGoalOption(this,35)"><div style="font-size:20px;">💪</div><div><div style="font-size:14px;font-weight:700;">열심히</div><div style="font-size:12px;color:var(--gray-500);">주 35km</div></div><div style="margin-left:auto;color:var(--green);font-weight:700;opacity:0;" id="gc-35">✓</div></div>
-      <div class="ob-goal-item" onclick="selectGoalOption(this,50)"><div style="font-size:20px;">🔥</div><div><div style="font-size:14px;font-weight:700;">진지하게</div><div style="font-size:12px;color:var(--gray-500);">주 50km</div></div><div style="margin-left:auto;color:var(--green);font-weight:700;opacity:0;" id="gc-50">✓</div></div>
+      <div class="ob-goal-item" onclick="selectGoalOption(this,10)"><div style="font-size:20px;">🌱</div><div><div style="font-size:14px;font-weight:700;">가볍게</div><div style="font-size:12px;color:var(--gray-500);">주 10km</div></div><div style="margin-left:auto;color:var(--coral);font-weight:700;opacity:0;" id="gc-10">✓</div></div>
+      <div class="ob-goal-item" onclick="selectGoalOption(this,20)"><div style="font-size:20px;">🏃</div><div><div style="font-size:14px;font-weight:700;">꾸준하게</div><div style="font-size:12px;color:var(--gray-500);">주 20km</div></div><div style="margin-left:auto;color:var(--coral);font-weight:700;opacity:0;" id="gc-20">✓</div></div>
+      <div class="ob-goal-item" onclick="selectGoalOption(this,35)"><div style="font-size:20px;">💪</div><div><div style="font-size:14px;font-weight:700;">열심히</div><div style="font-size:12px;color:var(--gray-500);">주 35km</div></div><div style="margin-left:auto;color:var(--coral);font-weight:700;opacity:0;" id="gc-35">✓</div></div>
+      <div class="ob-goal-item" onclick="selectGoalOption(this,50)"><div style="font-size:20px;">🔥</div><div><div style="font-size:14px;font-weight:700;">진지하게</div><div style="font-size:12px;color:var(--gray-500);">주 50km</div></div><div style="margin-left:auto;color:var(--coral);font-weight:700;opacity:0;" id="gc-50">✓</div></div>
     </div>
-    <button onclick="saveGoalEdit()" style="width:100%;height:48px;background:var(--green);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">저장</button>
+    <button onclick="saveGoalEdit()" style="width:100%;height:48px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">저장</button>
   </div>
 </div>
 
@@ -766,7 +772,7 @@ if ('serviceWorker' in navigator) {
     <input type="text" id="renameInput" style="width:100%;height:42px;border:1px solid var(--gray-300);border-radius:var(--rs);padding:0 12px;font-size:14px;font-family:inherit;outline:none;margin-bottom:14px;" placeholder="코스 이름 입력">
     <div style="display:flex;gap:8px;">
       <button onclick="closeRename()" style="flex:1;height:42px;background:var(--gray-100);border:none;border-radius:var(--rs);font-size:14px;font-family:inherit;cursor:pointer;color:var(--gray-700);">취소</button>
-      <button onclick="confirmRename()" style="flex:1;height:42px;background:var(--green);border:none;border-radius:var(--rs);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;color:#fff;">저장</button>
+      <button onclick="confirmRename()" style="flex:1;height:42px;background:var(--ink);border:none;border-radius:var(--rs);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;color:#fff;">저장</button>
     </div>
   </div>
 </div>
@@ -807,7 +813,7 @@ if ('serviceWorker' in navigator) {
     <div class="rstat"><div class="rstat-l">소모 칼로리</div><div><span class="rstat-v" id="rCal">0</span><span class="rstat-u"> kcal</span></div></div>
   </div>
   <div class="pace-wrap">
-    <div class="pace-top"><span>목표 페이스 6'30"/km</span><span id="paceStatus" style="color:var(--green)">대기 중</span></div>
+    <div class="pace-top"><span>목표 페이스 6'30"/km</span><span id="paceStatus" style="color:var(--coral)">대기 중</span></div>
     <div class="pace-track"><div class="pace-fill" id="paceFill" style="width:0%"></div></div>
   </div>
   <div class="km-track" id="kmTrack"></div>
@@ -920,7 +926,7 @@ function initCreateMap() {
     S.myMarker = new kakao.maps.CustomOverlay({
       map: createMap,
       position: new kakao.maps.LatLng(lat, lng),
-      content: '<div style="width:14px;height:14px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(29,158,117,.25)"></div>',
+      content: '<div style="width:14px;height:14px;background:#FF6B5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(255,107,94,.24)"></div>',
       zIndex: 3
     });
 
@@ -960,7 +966,7 @@ function setCreateMode(mode) {
   const guide = document.getElementById('aiMapGuide');
 
   if (mode === 'ai') {
-    aiBtn.style.background = 'var(--green)'; aiBtn.style.color = '#fff';
+    aiBtn.style.background = 'var(--ink)'; aiBtn.style.color = '#fff';
     drawBtn.style.background = 'transparent'; drawBtn.style.color = 'var(--gray-500)';
     aiContent.style.display = 'block';
     drawContent.style.display = 'none';
@@ -972,7 +978,7 @@ function setCreateMode(mode) {
     S.overlapPolylines.forEach(line => line.setMap(null));
     S.dots.forEach(d => d.setMap(null));
   } else {
-    drawBtn.style.background = 'var(--green)'; drawBtn.style.color = '#fff';
+    drawBtn.style.background = 'var(--ink)'; drawBtn.style.color = '#fff';
     aiBtn.style.background = 'transparent'; aiBtn.style.color = 'var(--gray-500)';
     drawContent.style.display = 'block';
     aiContent.style.display = 'none';
@@ -1012,9 +1018,9 @@ function updateSnapToggle() {
   if (!label || !desc || !knob) return;
   const dot = knob.querySelector('span');
   label.textContent = snapToRoad ? '길 따라가기' : '자유 그리기';
-  label.style.color = snapToRoad ? 'var(--green)' : 'var(--gray-700)';
+  label.style.color = snapToRoad ? 'var(--coral)' : 'var(--gray-700)';
   desc.textContent = snapToRoad ? '보행자 길에 맞춰 정리' : '내가 그린 그대로';
-  knob.style.background = snapToRoad ? 'var(--green)' : 'var(--gray-300)';
+  knob.style.background = snapToRoad ? 'var(--coral)' : 'var(--gray-300)';
   if (dot) {
     dot.style.right = snapToRoad ? '2px' : '16px';
     dot.style.left = snapToRoad ? '16px' : '2px';
@@ -1114,7 +1120,7 @@ function ensureDrawStartDot(latlng) {
   const startDot = new kakao.maps.Circle({
     map: createMap, center: latlng,
     radius: 6, strokeWeight: 2,
-    strokeColor: '#1D9E75', fillColor: '#fff', fillOpacity: 1
+    strokeColor: '#FF6B5E', fillColor: '#fff', fillOpacity: 1
   });
   S.dots.push(startDot);
 }
@@ -1146,7 +1152,7 @@ function renderDrawPolyline(path) {
   if (path && path.length > 1) {
     S.polyline = new kakao.maps.Polyline({
       map: createMap, path,
-      strokeWeight: 5, strokeColor: '#1D9E75',
+      strokeWeight: 5, strokeColor: '#2F7F73',
       strokeOpacity: 0.82, strokeStyle: 'solid'
     });
     renderSegmentPolylines();
@@ -1175,7 +1181,7 @@ function renderSegmentPolylines() {
       map: createMap,
       path: segment,
       strokeWeight: 5,
-      strokeColor: '#58BFA3',
+      strokeColor: '#FF6B5E',
       strokeOpacity: 0.95,
       strokeStyle: 'solid'
     }));
@@ -1190,7 +1196,7 @@ function renderOverlapPolylines(path) {
       map: createMap,
       path: overlapPath,
       strokeWeight: 7,
-      strokeColor: '#0F6E56',
+      strokeColor: '#171A18',
       strokeOpacity: 0.95,
       strokeStyle: 'solid'
     }));
@@ -1625,7 +1631,7 @@ function moveToMyLocation() {
       if (S.myMarker) S.myMarker.setMap(null);
       S.myMarker = new kakao.maps.CustomOverlay({
         map, position: latlng,
-        content: '<div style="width:14px;height:14px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(29,158,117,.25)"></div>',
+        content: '<div style="width:14px;height:14px;background:#FF6B5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(255,107,94,.24)"></div>',
         zIndex: 3
       });
       toast('현재 위치로 이동했어요!');
@@ -1675,7 +1681,7 @@ function setAiMarker(latlng, addrName) {
   createAiMarker = new kakao.maps.CustomOverlay({
     map: createMap,
     position: latlng,
-    content: '<div style="display:flex;flex-direction:column;align-items:center;"><div style="width:14px;height:14px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div><div style="width:2px;height:8px;background:#1D9E75;"></div></div>',
+    content: '<div style="display:flex;flex-direction:column;align-items:center;"><div style="width:14px;height:14px;background:#FF6B5E;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div><div style="width:2px;height:8px;background:#FF6B5E;"></div></div>',
     zIndex: 5
   });
   if (createMap) createMap.setCenter(latlng);
@@ -1764,7 +1770,7 @@ function detectLocation() {
       if (S.myMarker) S.myMarker.setMap(null);
       S.myMarker = new kakao.maps.CustomOverlay({
         map: S.map, position: latlng,
-        content: '<div style="width:14px;height:14px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(29,158,117,.25)"></div>',
+        content: '<div style="width:14px;height:14px;background:#FF6B5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(255,107,94,.24)"></div>',
         zIndex: 3
       });
     }
@@ -1862,7 +1868,7 @@ function initMap() {
     S.myMarker = new kakao.maps.CustomOverlay({
       map: S.map,
       position: new kakao.maps.LatLng(lat, lng),
-      content: '<div style="width:14px;height:14px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(29,158,117,.25)"></div>',
+      content: '<div style="width:14px;height:14px;background:#FF6B5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(255,107,94,.24)"></div>',
       zIndex: 3
     });
 
@@ -2024,7 +2030,7 @@ function saveCourse() {
 
 /* AI 추천 코스 */
 const COURSES = [
-  { name:'한강 산책로 루프', tags:[{l:'안전',c:'tg'},{l:'평지',c:'tb'},{l:'공원',c:'tg'}], meta:'차량 없음 · 조명 완비 · 화장실 3곳', pt:'river', color:'#1D9E75', pace:6.2 },
+  { name:'한강 산책로 루프', tags:[{l:'안전',c:'tg'},{l:'평지',c:'tb'},{l:'공원',c:'tg'}], meta:'차량 없음 · 조명 완비 · 화장실 3곳', pt:'river', color:'#171A18', pace:6.2 },
   { name:'홍대 플랫 코스', tags:[{l:'평지',c:'tb'},{l:'야간 가능',c:'tg'},{l:'혼잡',c:'ta'}], meta:'편의점 다수 · 보도 넓음 · 조명 양호', pt:'urban', color:'#378ADD', pace:6.5 },
   { name:'망원 공원 힐 루프', tags:[{l:'공원',c:'tg'},{l:'경사 포함',c:'ta'}], meta:'잔디밭 · 오르막 2곳 · 뷰 좋음', pt:'park', color:'#639922', pace:6.8 }
 ];
@@ -2143,7 +2149,7 @@ function updateRunStats() {
     const pct = Math.min((390 / pace) * 100, 100);
     document.getElementById('paceFill').style.width = pct + '%';
     document.getElementById('paceStatus').textContent = pace <= 390 ? '목표 달성 중 🎯' : '페이스 올리기 💪';
-    document.getElementById('paceStatus').style.color = pace <= 390 ? 'var(--green)' : 'var(--amber)';
+    document.getElementById('paceStatus').style.color = pace <= 390 ? 'var(--coral)' : 'var(--amber)';
   }
   for (let i = 1; i <= Math.ceil(R.totalKm); i++) {
     const el = document.getElementById('kc' + i);
@@ -2265,7 +2271,7 @@ function renderNearCourses(results) {
     .slice(0, 3);
 
   const icons = ['🌳','🏞️','🌿','🏃','💧'];
-  const iconBgs = ['#E1F5EE','#E6F1FB','#EAF3DE','#FFF0E0','#E6F4F9'];
+  const iconBgs = ['#FFF0EC','#E6F1FB','#F0F8DB','#FFF5DB','#E6F4F9'];
   const courseKm = [3.2, 5.0, 4.5, 2.8, 6.1];
   const tags = ['평지 · 산책로', '공원 루프', '한강변', '야간 가능', '뷰 좋음'];
 
@@ -2282,13 +2288,13 @@ function renderNearCourses(results) {
       ? Math.round(p.distFromMe * 1000) + 'm'
       : p.distFromMe.toFixed(1) + 'km';
     const tset = tagSets[i % tagSets.length];
-    const featured = i === 0 ? 'border:1.5px solid var(--green);' : 'border:1px solid var(--gray-100);';
+    const featured = i === 0 ? 'border:1.5px solid var(--coral);box-shadow:0 8px 20px rgba(255,107,94,.10);' : 'border:1px solid var(--gray-100);';
     return `
       <div style="background:#fff;border-radius:var(--r);${featured}overflow:hidden;margin-bottom:10px;">
         <div style="display:flex;gap:14px;padding:14px;">
           <div style="position:relative;flex-shrink:0;">
             <div style="width:52px;height:52px;border-radius:12px;background:${iconBgs[i % iconBgs.length]};display:flex;align-items:center;justify-content:center;font-size:24px;">${icons[i % icons.length]}</div>
-            <div style="position:absolute;top:-5px;right:-5px;background:var(--green);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:999px;">AI</div>
+            <div style="position:absolute;top:-5px;right:-5px;background:var(--ink);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:999px;">AI</div>
           </div>
           <div style="flex:1;min-width:0;">
             <div style="font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.place_name} 코스</div>
@@ -2296,7 +2302,7 @@ function renderNearCourses(results) {
             <div style="display:flex;gap:5px;">${tset.map(t=>`<span style="font-size:11px;font-weight:500;padding:3px 8px;border-radius:999px;" class="tag ${t.c}">${t.l}</span>`).join('')}</div>
           </div>
           <div style="text-align:right;flex-shrink:0;">
-            <div style="font-size:22px;font-weight:700;color:var(--green);line-height:1;">${km}</div>
+            <div style="font-size:22px;font-weight:700;color:var(--coral);line-height:1;">${km}</div>
             <div style="font-size:11px;color:var(--gray-500);">km</div>
           </div>
         </div>
@@ -2306,8 +2312,8 @@ function renderNearCourses(results) {
             <div style="font-size:12px;color:var(--gray-500);">🔥 <span style="font-weight:600;color:var(--gray-700);">${cal}kcal</span></div>
           </div>
           <div style="display:flex;gap:6px;">
-            <button onclick="event.stopPropagation();saveNearCourse('${p.place_name}',${km})" style="background:none;color:var(--green);font-size:12px;font-weight:500;padding:7px 10px;border-radius:999px;border:1px solid var(--green);cursor:pointer;font-family:inherit;">📍 저장</button>
-            <button onclick="goToAiWithLocation('${p.place_name}',${p.y},${p.x})" style="background:var(--green);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">▶ 시작</button>
+            <button onclick="event.stopPropagation();saveNearCourse('${p.place_name}',${km})" style="background:none;color:var(--ink);font-size:12px;font-weight:500;padding:7px 10px;border-radius:999px;border:1px solid var(--gray-300);cursor:pointer;font-family:inherit;">📍 저장</button>
+            <button onclick="goToAiWithLocation('${p.place_name}',${p.y},${p.x})" style="background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">▶ 시작</button>
           </div>
         </div>
       </div>`;
@@ -2375,7 +2381,7 @@ function renderRecords() {
     labelEl.innerHTML = '';
     ordered.forEach(o => {
       const barH = Math.round((o.dist / maxDist) * 48) + 4;
-      const barColor = o.isToday ? 'var(--green)' : o.dist > 0 ? '#9FE1CB' : 'var(--gray-100)';
+      const barColor = o.isToday ? 'var(--coral)' : o.dist > 0 ? '#C7F464' : 'var(--gray-100)';
       const wrap2 = document.createElement('div');
       wrap2.style.cssText = 'flex:1;display:flex;flex-direction:column;align-items:center;gap:0;height:100%;justify-content:flex-end;';
       const bar = document.createElement('div');
@@ -2384,7 +2390,7 @@ function renderRecords() {
       chartEl.appendChild(wrap2);
 
       const lbl = document.createElement('div');
-      lbl.style.cssText = `flex:1;text-align:center;font-size:10px;color:${o.isToday ? 'var(--green)' : 'var(--gray-500)'};font-weight:${o.isToday ? '700' : '500'};`;
+      lbl.style.cssText = `flex:1;text-align:center;font-size:10px;color:${o.isToday ? 'var(--coral)' : 'var(--gray-500)'};font-weight:${o.isToday ? '700' : '500'};`;
       lbl.textContent = o.day;
       labelEl.appendChild(lbl);
     });
@@ -2594,8 +2600,8 @@ function drawMyCoursePreview(course) {
   const rh = 70;
   cv.width = rw * dpr; cv.height = rh * dpr;
   const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
-  ctx.fillStyle = '#dce8dc'; ctx.fillRect(0,0,rw,rh);
-  ctx.strokeStyle = '#c4d8c4'; ctx.lineWidth = 0.5;
+  ctx.fillStyle = '#EEEADF'; ctx.fillRect(0,0,rw,rh);
+  ctx.strokeStyle = '#D8D2C3'; ctx.lineWidth = 0.5;
   for (let x=0;x<rw;x+=20){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,rh);ctx.stroke();}
   for (let y=0;y<rh;y+=20){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(rh,y);ctx.stroke();}
 
@@ -2609,13 +2615,13 @@ function drawMyCoursePreview(course) {
   const toX = lng => pad + (lng - minLng) / (maxLng - minLng + 0.00001) * (rw - pad*2);
   const toY = lat => rh - pad - (lat - minLat) / (maxLat - minLat + 0.00001) * (rh - pad*2);
 
-  ctx.strokeStyle = '#1D9E75'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.strokeStyle = '#2F7F73'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   ctx.beginPath();
   ctx.moveTo(toX(course.points[0].lng), toY(course.points[0].lat));
   course.points.forEach(p => ctx.lineTo(toX(p.lng), toY(p.lat)));
   ctx.stroke();
 
-  ctx.fillStyle = '#fff'; ctx.strokeStyle = '#1D9E75'; ctx.lineWidth = 1.5;
+  ctx.fillStyle = '#fff'; ctx.strokeStyle = '#FF6B5E'; ctx.lineWidth = 1.5;
   ctx.beginPath(); ctx.arc(toX(course.points[0].lng), toY(course.points[0].lat), 4, 0, Math.PI*2);
   ctx.fill(); ctx.stroke();
 }
@@ -2717,8 +2723,8 @@ function getPmGrade(val, type) {
 
 function getDustStyle(grade) {
   const map = {
-    '매우좋음': { label:'매우좋음', bg:'#E1F5EE', color:'#0F6E56' },
-    '좋음':     { label:'좋음',     bg:'#E1F5EE', color:'#1D9E75' },
+    '매우좋음': { label:'매우좋음', bg:'#F0F8DB', color:'#171A18' },
+    '좋음':     { label:'좋음',     bg:'#FFF0EC', color:'#D84F45' },
     '보통':     { label:'보통',     bg:'#F0EFEA', color:'#444441' },
     '나쁨':     { label:'나쁨',     bg:'#FAEEDA', color:'#BA7517' },
     '매우나쁨': { label:'매우나쁨', bg:'#FCEBEB', color:'#A32D2D' },
@@ -2777,11 +2783,11 @@ function initRunMap(savedPoints) {
 
   setTimeout(() => kakao.maps.event.trigger(runMap, 'resize'), 100);
 
-  // 내 위치 마커 (초록 점)
+  // 내 위치 마커
   runMarker = new kakao.maps.CustomOverlay({
     map: runMap,
     position: center,
-    content: '<div style="width:16px;height:16px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(29,158,117,.3)"></div>',
+    content: '<div style="width:16px;height:16px;background:#FF6B5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(255,107,94,.24)"></div>',
     zIndex: 5
   });
 
@@ -2790,14 +2796,14 @@ function initRunMap(savedPoints) {
     const path = savedPoints.map(p => new kakao.maps.LatLng(p.lat, p.lng));
     new kakao.maps.Polyline({
       map: runMap, path,
-      strokeWeight: 3, strokeColor: '#9FE1CB',
+      strokeWeight: 3, strokeColor: '#C7F464',
       strokeOpacity: 0.8, strokeStyle: 'shortdash'
     });
     // 시작점 마커
     new kakao.maps.CustomOverlay({
       map: runMap,
       position: path[0],
-      content: '<div style="width:10px;height:10px;background:#fff;border:2px solid #1D9E75;border-radius:50%;"></div>',
+      content: '<div style="width:10px;height:10px;background:#fff;border:2px solid #FF6B5E;border-radius:50%;"></div>',
       zIndex: 3
     });
   }
@@ -2835,7 +2841,7 @@ function initRunMap(savedPoints) {
       if (runMarker) runMarker.setMap(null);
       runMarker = new kakao.maps.CustomOverlay({
         map: runMap, position: latlng,
-        content: '<div style="width:16px;height:16px;background:#1D9E75;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(29,158,117,.3)"></div>',
+        content: '<div style="width:16px;height:16px;background:#FF6B5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(255,107,94,.24)"></div>',
         zIndex: 5
       });
       runMap.setCenter(latlng);
@@ -2845,7 +2851,7 @@ function initRunMap(savedPoints) {
       if (runPath.length > 1) {
         runPolyline = new kakao.maps.Polyline({
           map: runMap, path: runPath,
-          strokeWeight: 4, strokeColor: '#1D9E75', strokeOpacity: 0.95
+          strokeWeight: 4, strokeColor: '#2F7F73', strokeOpacity: 0.95
         });
       }
 
@@ -2873,8 +2879,8 @@ function drawRunCanvas() {
   const ctx = cv.getContext('2d');
   const w = cv.offsetWidth, h = cv.offsetHeight;
   ctx.clearRect(0,0,w,h);
-  ctx.fillStyle = '#dce8dc'; ctx.fillRect(0,0,w,h);
-  ctx.strokeStyle = '#c4d8c4'; ctx.lineWidth = 0.5;
+  ctx.fillStyle = '#EEEADF'; ctx.fillRect(0,0,w,h);
+  ctx.strokeStyle = '#D8D2C3'; ctx.lineWidth = 0.5;
   for (let x=0;x<w;x+=28){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
   for (let y=0;y<h;y+=28){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
   ctx.fillStyle = '#c8dff0'; ctx.fillRect(0, h*.7, w, h*.18);
@@ -2884,7 +2890,7 @@ function drawRunCanvas() {
 
   // 전체 코스 (점선)
   const pts = [{x:.1,y:.55},{x:.25,y:.42},{x:.45,y:.38},{x:.65,y:.42},{x:.82,y:.5},{x:.88,y:.62},{x:.75,y:.72},{x:.55,y:.76},{x:.35,y:.72},{x:.18,y:.65},{x:.1,y:.55}];
-  ctx.setLineDash([5,5]); ctx.strokeStyle = '#9FE1CB'; ctx.lineWidth = 2;
+  ctx.setLineDash([5,5]); ctx.strokeStyle = '#C7F464'; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(pts[0].x*w, pts[0].y*h);
   pts.slice(1).forEach(p => ctx.lineTo(p.x*w, p.y*h)); ctx.stroke(); ctx.setLineDash([]);
 
@@ -2899,16 +2905,16 @@ function drawRunCanvas() {
     drawn.push({ x: a.x+(b.x-a.x)*frac, y: a.y+(b.y-a.y)*frac });
   }
   if (drawn.length > 1) {
-    ctx.strokeStyle = '#1D9E75'; ctx.lineWidth = 3;
+    ctx.strokeStyle = '#2F7F73'; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(drawn[0].x*w, drawn[0].y*h);
     drawn.slice(1).forEach(p => ctx.lineTo(p.x*w, p.y*h)); ctx.stroke();
   }
   // 현재 위치 점
   const cur = drawn[drawn.length-1] || pts[0];
-  ctx.fillStyle = 'rgba(29,158,117,.2)'; ctx.beginPath(); ctx.arc(cur.x*w,cur.y*h,12,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle = '#1D9E75'; ctx.beginPath(); ctx.arc(cur.x*w,cur.y*h,5,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(255,107,94,.2)'; ctx.beginPath(); ctx.arc(cur.x*w,cur.y*h,12,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#FF6B5E'; ctx.beginPath(); ctx.arc(cur.x*w,cur.y*h,5,0,Math.PI*2); ctx.fill();
   // 시작점
-  ctx.fillStyle='#fff'; ctx.strokeStyle='#1D9E75'; ctx.lineWidth=2;
+  ctx.fillStyle='#fff'; ctx.strokeStyle='#FF6B5E'; ctx.lineWidth=2;
   ctx.beginPath(); ctx.arc(pts[0].x*w,pts[0].y*h,5,0,Math.PI*2); ctx.fill(); ctx.stroke();
 }
 
@@ -2964,15 +2970,15 @@ function selectGender(g) {
   const male = document.getElementById('ob-male');
   const female = document.getElementById('ob-female');
   if (male) {
-    male.style.borderColor = g === 'male' ? 'var(--green)' : 'var(--gray-100)';
-    male.style.background = g === 'male' ? 'var(--green-light)' : 'var(--gray-50)';
-    male.style.color = g === 'male' ? 'var(--green-dark)' : 'var(--gray-700)';
+    male.style.borderColor = g === 'male' ? 'var(--coral)' : 'var(--gray-100)';
+    male.style.background = g === 'male' ? 'var(--coral-light)' : 'var(--gray-50)';
+    male.style.color = g === 'male' ? 'var(--ink)' : 'var(--gray-700)';
     male.style.fontWeight = g === 'male' ? '700' : '400';
   }
   if (female) {
-    female.style.borderColor = g === 'female' ? 'var(--green)' : 'var(--gray-100)';
-    female.style.background = g === 'female' ? 'var(--green-light)' : 'var(--gray-50)';
-    female.style.color = g === 'female' ? 'var(--green-dark)' : 'var(--gray-700)';
+    female.style.borderColor = g === 'female' ? 'var(--coral)' : 'var(--gray-100)';
+    female.style.background = g === 'female' ? 'var(--coral-light)' : 'var(--gray-50)';
+    female.style.color = g === 'female' ? 'var(--ink)' : 'var(--gray-700)';
     female.style.fontWeight = g === 'female' ? '700' : '400';
   }
 }
@@ -2997,15 +3003,15 @@ function obNext(step) {
     if (!name) { document.getElementById('ob-name').focus(); document.getElementById('ob-name').style.borderColor='var(--red)'; return; }
     document.getElementById('ob-step-1').style.display = 'none';
     document.getElementById('ob-step-2b').style.display = 'flex';
-    document.getElementById('ob-dot-2').style.background = 'var(--green)';
+    document.getElementById('ob-dot-2').style.background = 'var(--coral)';
   } else if (step === 2) {
     document.getElementById('ob-step-2b').style.display = 'none';
     document.getElementById('ob-step-3a').style.display = 'flex';
-    document.getElementById('ob-dot-3').style.background = 'var(--green)';
+    document.getElementById('ob-dot-3').style.background = 'var(--coral)';
   } else if (step === 3) {
     document.getElementById('ob-step-3a').style.display = 'none';
     document.getElementById('ob-step-4').style.display = 'flex';
-    document.getElementById('ob-dot-4').style.background = 'var(--green)';
+    document.getElementById('ob-dot-4').style.background = 'var(--coral)';
   }
 }
 
@@ -3238,7 +3244,7 @@ function updateGoalBar() {
       paceEl.textContent = `페이스 학습 중 (${validCount}/3회) — 현재 ${pm}'${ps}"/km 기준`;
     } else {
       paceEl.textContent = `평균 페이스 ${pm}'${ps}"/km 기준으로 칼로리를 계산해요 ✓`;
-      paceEl.style.color = 'var(--green)';
+      paceEl.style.color = 'var(--coral)';
     }
   }
 }
@@ -3266,7 +3272,7 @@ function renderMyPage() {
     avgPaceEl.textContent = validCount > 0 ? `${avgPm}'${avgPs}"` : '—';
   }
 
-  // 가입일 기반 "루프와 함께 N일째"
+  // 가입일 기반 "런룹과 함께 N일째"
   const joinDaysEl = document.getElementById('myJoinDays');
   if (joinDaysEl) {
     if (!profile.joinDate) {
@@ -3274,7 +3280,7 @@ function renderMyPage() {
       localStorage.setItem('runProfile', JSON.stringify(profile));
     }
     const days = Math.max(1, Math.floor((Date.now() - new Date(profile.joinDate)) / (1000 * 60 * 60 * 24)));
-    joinDaysEl.textContent = `루프와 함께한 지 ${days}일째 🏃`;
+    joinDaysEl.textContent = `런룹과 함께한 지 ${days}일째 🏃`;
   }
 
   // 목표 바
@@ -3296,11 +3302,11 @@ function renderMyPage() {
               <div style="font-size:12px;color:var(--gray-500);">${r.date}</div>
             </div>
             <div style="text-align:right;flex-shrink:0;">
-              <div style="font-size:16px;font-weight:700;color:var(--green);">${r.dist}km</div>
+              <div style="font-size:16px;font-weight:700;color:var(--coral);">${r.dist}km</div>
               <div style="font-size:11px;color:var(--gray-500);">${r.time}</div>
             </div>
           </div>
-          ${r.memo ? `<div style="font-size:12px;color:var(--gray-700);padding:8px 10px;background:var(--gray-50);border-radius:var(--rs);border-left:3px solid var(--green);line-height:1.5;">✏️ ${r.memo}</div>` : ''}
+          ${r.memo ? `<div style="font-size:12px;color:var(--gray-700);padding:8px 10px;background:var(--gray-50);border-radius:var(--rs);border-left:3px solid var(--coral);line-height:1.5;">✏️ ${r.memo}</div>` : ''}
         </div>`).join('');
     }
   }
