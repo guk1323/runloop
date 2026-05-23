@@ -562,6 +562,7 @@ if ('serviceWorker' in navigator) {
 
     <!-- 통합 지도 -->
     <div id="createMapEl" style="width:100%;height:100%;"></div>
+    <canvas id="drawRouteCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:6;display:none;"></canvas>
     <div class="map-loading" id="createMapLoading">
       <div class="ml-spin"></div><span>지도 불러오는 중…</span>
     </div>
@@ -882,20 +883,12 @@ const TMAP_CONNECT_TOLERANCE_METERS = 24;
 const TMAP_SNAP_NOTICE_METERS = 45;
 const SMART_SNAP_MAX_DEVIATION_METERS = 100;
 const SMART_SNAP_MAX_END_GAP_METERS = 105;
-const OVERLAP_SEGMENT_TOLERANCE_METERS = 11;
-const OVERLAP_MIN_SEGMENT_METERS = 5;
-const OVERLAP_MIN_DIRECTION_DOT = 0.82;
-const OVERLAP_MIN_PROJECTION = 0.35;
-const OVERLAP_MIN_CLOSE_FRACTION = 0.58;
 const DRAW_ROUTE_COLOR = '#4F8FB8';
-const DRAW_ROUTE_MANUAL_COLOR = '#6FAED0';
-const DRAW_ROUTE_OVERLAP_COLORS = {
-  2: '#2F739A',
-  3: '#1F5C78',
-  4: '#153F56'
-};
 const DRAW_ROUTE_MARKER_COLOR = '#4F8FB8';
 const DRAW_ROUTE_PLANNED_COLOR = '#B9DDF1';
+const DRAW_CANVAS_COLOR = '79,143,184';
+const DRAW_CANVAS_BASE_ALPHA = 0.5;
+const DRAW_CANVAS_LINE_WIDTH = 6;
 
 /* 카카오 SDK 로드 완료 후 초기화 */
 kakao.maps.load(function() {
@@ -920,6 +913,9 @@ function openBottomSheet() {
 /* ── 코스 만들기 — 통합 지도 ── */
 let createMap = null, createAiMarker = null;
 let createMode = 'ai'; // 'ai' or 'draw'
+let drawCanvas = null;
+let drawCanvasCtx = null;
+let drawCanvasDpr = 1;
 
 function initCreateMap() {
   if (createMap) {
@@ -934,6 +930,7 @@ function initCreateMap() {
       level: 4, draggable: true, scrollwheel: true
     });
     document.getElementById('createMapLoading').style.display = 'none';
+    setupDrawCanvasOverlay();
 
     // 내 위치 마커
     S.myMarker = new kakao.maps.CustomOverlay({
@@ -989,6 +986,7 @@ function setCreateMode(mode) {
     if (S.polyline) S.polyline.setMap(null);
     S.segmentPolylines.forEach(line => line.setMap(null));
     S.overlapPolylines.forEach(line => line.setMap(null));
+    showDrawCanvas(false);
     S.dots.forEach(d => d.setMap(null));
   } else {
     drawBtn.style.background = 'var(--ink)'; drawBtn.style.color = '#fff';
@@ -1001,6 +999,8 @@ function setCreateMode(mode) {
     if (S.polyline) S.polyline.setMap(createMap);
     S.segmentPolylines.forEach(line => line.setMap(createMap));
     S.overlapPolylines.forEach(line => line.setMap(createMap));
+    showDrawCanvas(true);
+    renderDrawCanvas(getDrawPreviewPath());
     S.dots.forEach(d => d.setMap(createMap));
     openBottomSheet();
   }
@@ -1162,18 +1162,8 @@ function renderDrawPolyline(path) {
   if (S.polyline) { S.polyline.setMap(null); S.polyline = null; }
   clearSegmentPolylines();
   clearOverlapPolylines();
-  if (path && path.length > 1) {
-    S.polyline = new kakao.maps.Polyline({
-      map: createMap, path,
-      strokeWeight: 5, strokeColor: DRAW_ROUTE_COLOR,
-      strokeOpacity: 0.82, strokeStyle: 'solid'
-    });
-    renderSegmentPolylines();
-    renderOverlapPolylines(path);
-    S.distKm = S.polyline.getLength() / 1000;
-  } else {
-    S.distKm = 0;
-  }
+  renderDrawCanvas(path);
+  S.distKm = path && path.length > 1 ? pathLengthMeters(path) / 1000 : 0;
   refreshStats(S.distKm);
 }
 
@@ -1187,43 +1177,88 @@ function clearOverlapPolylines() {
   S.overlapPolylines = [];
 }
 
-function renderSegmentPolylines() {
-  S.segments.forEach(segment => {
-    if (!segment || segment.length < 2 || segment.mode !== 'manual') return;
-    S.segmentPolylines.push(new kakao.maps.Polyline({
-      map: createMap,
-      path: segment,
-      strokeWeight: 5,
-      strokeColor: DRAW_ROUTE_MANUAL_COLOR,
-      strokeOpacity: 0.9,
-      strokeStyle: 'solid'
-    }));
+function setupDrawCanvasOverlay() {
+  drawCanvas = document.getElementById('drawRouteCanvas');
+  if (!drawCanvas || !createMap) return;
+  drawCanvasCtx = drawCanvas.getContext('2d');
+  resizeDrawCanvas();
+  if (drawCanvas.dataset.ready === '1') return;
+  drawCanvas.dataset.ready = '1';
+  kakao.maps.event.addListener(createMap, 'idle', () => {
+    if (createMode === 'draw') renderDrawCanvas(getDrawPreviewPath());
+  });
+  window.addEventListener('resize', () => {
+    if (createMode === 'draw') renderDrawCanvas(getDrawPreviewPath());
   });
 }
 
-function renderOverlapPolylines(path) {
-  const overlapPaths = getOverlappedPaths(path);
-  overlapPaths.forEach(overlap => {
-    if (!overlap.path || overlap.path.length < 2) return;
-    const style = getOverlapStyle(overlap.count);
-    S.overlapPolylines.push(new kakao.maps.Polyline({
-      map: createMap,
-      path: overlap.path,
-      strokeWeight: style.weight,
-      strokeColor: style.color,
-      strokeOpacity: style.opacity,
-      strokeStyle: 'solid'
-    }));
-  });
+function showDrawCanvas(visible) {
+  setupDrawCanvasOverlay();
+  if (!drawCanvas) return;
+  drawCanvas.style.display = visible ? 'block' : 'none';
+  if (visible) renderDrawCanvas(getDrawPreviewPath());
 }
 
-function getOverlapStyle(count) {
-  const level = Math.min(Math.max(count || 2, 2), 4);
-  return {
-    color: DRAW_ROUTE_OVERLAP_COLORS[level],
-    weight: level === 2 ? 7 : level === 3 ? 8 : 9,
-    opacity: level === 2 ? 0.9 : 0.96
-  };
+function resizeDrawCanvas() {
+  if (!drawCanvas) return false;
+  const rect = drawCanvas.getBoundingClientRect();
+  if (!rect.width || !rect.height) return false;
+  const dpr = window.devicePixelRatio || 1;
+  const width = Math.round(rect.width * dpr);
+  const height = Math.round(rect.height * dpr);
+  if (drawCanvas.width !== width || drawCanvas.height !== height || drawCanvasDpr !== dpr) {
+    drawCanvas.width = width;
+    drawCanvas.height = height;
+    drawCanvasDpr = dpr;
+  }
+  if (drawCanvasCtx) drawCanvasCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  return true;
+}
+
+function clearDrawCanvas() {
+  setupDrawCanvasOverlay();
+  if (!drawCanvas || !drawCanvasCtx) return;
+  resizeDrawCanvas();
+  drawCanvasCtx.clearRect(0, 0, drawCanvas.width / drawCanvasDpr, drawCanvas.height / drawCanvasDpr);
+}
+
+function renderDrawCanvas(path) {
+  setupDrawCanvasOverlay();
+  if (!drawCanvas || !drawCanvasCtx) return;
+  if (createMode !== 'draw') {
+    clearDrawCanvas();
+    return;
+  }
+  drawCanvas.style.display = 'block';
+  resizeDrawCanvas();
+  const w = drawCanvas.width / drawCanvasDpr;
+  const h = drawCanvas.height / drawCanvasDpr;
+  drawCanvasCtx.clearRect(0, 0, w, h);
+  if (!path || path.length < 2) return;
+
+  drawCanvasCtx.save();
+  drawCanvasCtx.lineCap = 'round';
+  drawCanvasCtx.lineJoin = 'round';
+  drawCanvasCtx.lineWidth = DRAW_CANVAS_LINE_WIDTH;
+  drawCanvasCtx.strokeStyle = `rgba(${DRAW_CANVAS_COLOR},${DRAW_CANVAS_BASE_ALPHA})`;
+  for (let i = 1; i < path.length; i++) {
+    const a = latLngToCanvasPoint(path[i - 1]);
+    const b = latLngToCanvasPoint(path[i]);
+    if (!a || !b) continue;
+    drawCanvasCtx.beginPath();
+    drawCanvasCtx.moveTo(a.x, a.y);
+    drawCanvasCtx.lineTo(b.x, b.y);
+    drawCanvasCtx.stroke();
+  }
+  drawCanvasCtx.restore();
+}
+
+function latLngToCanvasPoint(latlng) {
+  if (!createMap || !latlng) return null;
+  const projection = createMap.getProjection();
+  if (!projection || !projection.containerPointFromCoords) return null;
+  const point = projection.containerPointFromCoords(latlng);
+  return point ? { x: point.x, y: point.y } : null;
 }
 
 async function snapAndCommitDrawSegment(rawSegment) {
@@ -1547,128 +1582,6 @@ function maxDistanceFromPath(points, path) {
     if (Number.isFinite(nearest)) max = Math.max(max, nearest);
   });
   return max;
-}
-
-function getOverlappedPaths(path) {
-  if (!path || path.length < 2) return [];
-  const overlapCounts = Array(path.length - 1).fill(1);
-  for (let i = 0; i < path.length - 1; i++) {
-    const a = path[i], b = path[i + 1];
-    if (latLngDistanceMeters(a, b) < OVERLAP_MIN_SEGMENT_METERS) continue;
-    let matches = 0;
-    for (let j = 0; j < path.length - 1; j++) {
-      if (i === j || Math.abs(i - j) <= 1) continue;
-      if (i === 0 && j === path.length - 2) continue;
-      const c = path[j], d = path[j + 1];
-      if (latLngDistanceMeters(c, d) < OVERLAP_MIN_SEGMENT_METERS) continue;
-      if (segmentsOverlapLikely(a, b, c, d)) {
-        matches++;
-      }
-    }
-    overlapCounts[i] = matches + 1;
-  }
-
-  const result = [];
-  let current = [];
-  let currentCount = 1;
-  for (let i = 0; i < path.length - 1; i++) {
-    const a = path[i], b = path[i + 1];
-    const count = overlapCounts[i];
-    if (count > 1) {
-      if (current.length > 1 && currentCount !== count) {
-        result.push({ path: current, count: currentCount });
-        current = [];
-      }
-      currentCount = count;
-      if (!current.length) current.push(a);
-      current.push(b);
-    } else if (current.length > 1) {
-      result.push({ path: current, count: currentCount });
-      current = [];
-      currentCount = 1;
-    } else {
-      current = [];
-      currentCount = 1;
-    }
-  }
-  if (current.length > 1) result.push({ path: current, count: currentCount });
-  return result;
-}
-
-function segmentsOverlapLikely(a, b, c, d) {
-  const direction = Math.abs(segmentDirectionDot(a, b, c, d));
-  if (direction < OVERLAP_MIN_DIRECTION_DOT) return false;
-  const projection = Math.min(
-    segmentProjectionOverlap(a, b, c, d),
-    segmentProjectionOverlap(c, d, a, b)
-  );
-  if (projection < OVERLAP_MIN_PROJECTION) return false;
-
-  const closeAB = segmentCloseFraction(a, b, c, d);
-  const closeCD = segmentCloseFraction(c, d, a, b);
-  return Math.min(closeAB, closeCD) >= OVERLAP_MIN_CLOSE_FRACTION ||
-         (Math.max(closeAB, closeCD) >= 0.82 && projection >= 0.55);
-}
-
-function segmentDirectionDot(a, b, c, d) {
-  const ab = segmentVectorMeters(a, b);
-  const cd = segmentVectorMeters(c, d);
-  const abLen = Math.hypot(ab.x, ab.y);
-  const cdLen = Math.hypot(cd.x, cd.y);
-  if (!abLen || !cdLen) return 0;
-  return (ab.x * cd.x + ab.y * cd.y) / (abLen * cdLen);
-}
-
-function segmentProjectionOverlap(a, b, c, d) {
-  const refLat = (a.getLat() + b.getLat() + c.getLat() + d.getLat()) / 4;
-  const axy = latLngToXY(a, refLat);
-  const bxy = latLngToXY(b, refLat);
-  const cxy = latLngToXY(c, refLat);
-  const dxy = latLngToXY(d, refLat);
-  const vx = bxy.x - axy.x;
-  const vy = bxy.y - axy.y;
-  const lenSq = vx * vx + vy * vy;
-  if (!lenSq) return 0;
-  const project = point => ((point.x - axy.x) * vx + (point.y - axy.y) * vy) / lenSq;
-  const t1 = project(cxy);
-  const t2 = project(dxy);
-  const start = Math.max(0, Math.min(t1, t2));
-  const end = Math.min(1, Math.max(t1, t2));
-  return Math.max(0, end - start);
-}
-
-function segmentCloseFraction(a, b, c, d) {
-  const samples = 5;
-  let close = 0;
-  for (let i = 0; i < samples; i++) {
-    const t = samples === 1 ? 0.5 : i / (samples - 1);
-    const point = interpolateLatLng(a, b, t);
-    if (pointLineDistanceMeters(point, c, d) <= OVERLAP_SEGMENT_TOLERANCE_METERS) {
-      close++;
-    }
-  }
-  return close / samples;
-}
-
-function interpolateLatLng(a, b, t) {
-  return {
-    getLat: () => a.getLat() + (b.getLat() - a.getLat()) * t,
-    getLng: () => a.getLng() + (b.getLng() - a.getLng()) * t
-  };
-}
-
-function segmentVectorMeters(a, b) {
-  const refLat = (a.getLat() + b.getLat()) / 2;
-  const axy = latLngToXY(a, refLat);
-  const bxy = latLngToXY(b, refLat);
-  return { x: bxy.x - axy.x, y: bxy.y - axy.y };
-}
-
-function latLngToXY(p, refLat) {
-  return {
-    x: p.getLng() * 111320 * Math.cos(refLat * Math.PI / 180),
-    y: p.getLat() * 111320
-  };
 }
 
 function pointLineDistanceMeters(point, a, b) {
@@ -2035,6 +1948,7 @@ function clearDraw() {
   if (S.polyline) { S.polyline.setMap(null); S.polyline = null; }
   clearSegmentPolylines();
   clearOverlapPolylines();
+  clearDrawCanvas();
   S.distKm = 0;
   refreshStats(0);
   const guide = document.getElementById('drawGuideText');
