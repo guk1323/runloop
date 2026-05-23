@@ -204,7 +204,10 @@ if ('serviceWorker' in navigator) {
   .addr-dropdown-item{padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--gray-100);color:var(--gray-900);}
   .addr-dropdown-item:last-child{border-bottom:none;}
   .addr-dropdown-item:hover{background:var(--gray-50);}
+  .addr-dropdown-main{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700;}
   .addr-dropdown-addr{font-size:11px;color:var(--gray-500);margin-top:2px;}
+  .addr-dropdown-type{flex-shrink:0;font-size:10px;font-weight:700;color:var(--coral);background:var(--coral-light);border-radius:999px;padding:2px 7px;}
+  .addr-dropdown-empty{padding:14px;font-size:12px;line-height:1.45;color:var(--gray-500);}
 
   .all-record-card{background:var(--gray-50);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;}
   .all-record-icon{width:40px;height:40px;border-radius:50%;background:#fff;border:1px solid var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
@@ -521,7 +524,7 @@ if ('serviceWorker' in navigator) {
       <!-- 검색바 (항상 표시) -->
       <div id="aiSearchBar" style="display:flex;gap:6px;">
         <div style="position:relative;flex:1;">
-          <input type="text" class="addr-input" id="addrInput" placeholder="🔍 출발지 검색" autocomplete="off"
+          <input type="text" class="addr-input" id="addrInput" placeholder="주소·장소 검색" autocomplete="off"
             oninput="searchAddress(this.value)"
             style="box-shadow:0 2px 8px rgba(0,0,0,.15);border-color:transparent;">
           <div id="addrDropdown" style="display:none;position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-radius:var(--rs);z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;"></div>
@@ -1616,27 +1619,39 @@ function useMyLocation() {
 
 /* ── 주소 검색 ── */
 let addrSearchTimer = null;
+let addrSearchSeq = 0;
+let addrSearchResults = [];
 
 function searchAddress(query) {
   clearTimeout(addrSearchTimer);
+  addrSearchSeq++;
   const dropdown = document.getElementById('addrDropdown');
-  if (!query || query.length < 2) { dropdown.style.display = 'none'; return; }
+  const trimmed = (query || '').trim();
+  if (!trimmed || trimmed.length < 2) {
+    addrSearchResults = [];
+    dropdown.style.display = 'none';
+    return;
+  }
 
   addrSearchTimer = setTimeout(() => {
-    if (!S.kakaoReady) return;
-    const ps = new kakao.maps.services.Places();
-    ps.keywordSearch(query, (data, status) => {
-      if (status !== kakao.maps.services.Status.OK) {
-        dropdown.style.display = 'none'; return;
-      }
-      dropdown.innerHTML = data.slice(0, 5).map(p => `
-        <div class="addr-dropdown-item" onclick="selectAddress('${p.place_name.replace(/'/g,"\'")}', ${p.y}, ${p.x})">
-          <div>${p.place_name}</div>
-          <div class="addr-dropdown-addr">${p.address_name}</div>
-        </div>`).join('');
-      dropdown.style.display = 'block';
+    const seq = addrSearchSeq;
+    if (!S.kakaoReady) {
+      renderAddressDropdownMessage('지도를 불러오는 중이에요. 잠시 후 다시 검색해주세요.');
+      return;
+    }
+
+    renderAddressDropdownMessage('검색 중…');
+    Promise.all([
+      searchKakaoAddresses(trimmed),
+      searchKakaoPlaces(trimmed)
+    ]).then(([addresses, places]) => {
+      if (seq !== addrSearchSeq) return;
+      renderAddressDropdown(mergeAddressResults(trimmed, addresses, places));
+    }).catch(() => {
+      if (seq !== addrSearchSeq) return;
+      renderAddressDropdownMessage('검색 결과를 불러오지 못했어요. 다시 입력해주세요.');
     });
-  }, 300);
+  }, 260);
 }
 
 function selectAddress(name, lat, lng) {
@@ -1652,6 +1667,117 @@ function selectAddress(name, lat, lng) {
   if (createMode === 'ai') {
     setAiMarker(latlng, name);
   }
+}
+
+function selectAddressResult(index) {
+  const item = addrSearchResults[index];
+  if (!item) return;
+  selectAddress(item.name, item.lat, item.lng);
+}
+
+function searchKakaoAddresses(query) {
+  return new Promise(resolve => {
+    const geocoder = new kakao.maps.services.Geocoder();
+    geocoder.addressSearch(query, (data, status) => {
+      if (status !== kakao.maps.services.Status.OK || !Array.isArray(data)) {
+        resolve([]);
+        return;
+      }
+      resolve(data.slice(0, 5).map(r => {
+        const road = r.road_address && r.road_address.address_name;
+        const jibun = r.address && r.address.address_name;
+        const name = road || r.address_name || jibun;
+        const sub = road && jibun && road !== jibun ? jibun : getAddressTypeLabel(r.address_type);
+        return {
+          type: '주소',
+          name,
+          sub,
+          lat: parseFloat(r.y),
+          lng: parseFloat(r.x)
+        };
+      }).filter(isValidSearchResult));
+    });
+  });
+}
+
+function searchKakaoPlaces(query) {
+  return new Promise(resolve => {
+    const ps = new kakao.maps.services.Places();
+    const options = { size: 7 };
+    if (Number.isFinite(S.lat) && Number.isFinite(S.lng)) {
+      options.location = new kakao.maps.LatLng(S.lat, S.lng);
+      if (kakao.maps.services.SortBy) options.sort = kakao.maps.services.SortBy.DISTANCE;
+    }
+    ps.keywordSearch(query, (data, status) => {
+      if (status !== kakao.maps.services.Status.OK || !Array.isArray(data)) {
+        resolve([]);
+        return;
+      }
+      resolve(data.slice(0, 7).map(p => ({
+        type: '장소',
+        name: p.place_name,
+        sub: p.road_address_name || p.address_name || p.category_name || '',
+        lat: parseFloat(p.y),
+        lng: parseFloat(p.x)
+      })).filter(isValidSearchResult));
+    }, options);
+  });
+}
+
+function mergeAddressResults(query, addresses, places) {
+  const addressFirst = isAddressLikeQuery(query);
+  const ordered = addressFirst ? addresses.concat(places) : places.concat(addresses);
+  const seen = new Set();
+  const merged = [];
+  ordered.forEach(item => {
+    const key = [
+      item.name.replace(/\s+/g, ''),
+      Math.round(item.lat * 100000),
+      Math.round(item.lng * 100000)
+    ].join(':');
+    if (seen.has(key)) return;
+    seen.add(key);
+    merged.push(item);
+  });
+  return merged.slice(0, 7);
+}
+
+function renderAddressDropdown(results) {
+  const dropdown = document.getElementById('addrDropdown');
+  addrSearchResults = results;
+  if (!results.length) {
+    renderAddressDropdownMessage('검색 결과가 없어요. 건물명, 역 이름, 동 이름을 조금 다르게 입력해보세요.');
+    return;
+  }
+  dropdown.innerHTML = results.map((item, i) => `
+    <div class="addr-dropdown-item" onclick="selectAddressResult(${i})">
+      <div class="addr-dropdown-main">
+        <span>${escapeHtml(item.name)}</span>
+        <span class="addr-dropdown-type">${escapeHtml(item.type)}</span>
+      </div>
+      <div class="addr-dropdown-addr">${escapeHtml(item.sub || '위치 선택')}</div>
+    </div>`).join('');
+  dropdown.style.display = 'block';
+}
+
+function renderAddressDropdownMessage(message) {
+  const dropdown = document.getElementById('addrDropdown');
+  addrSearchResults = [];
+  dropdown.innerHTML = `<div class="addr-dropdown-empty">${escapeHtml(message)}</div>`;
+  dropdown.style.display = 'block';
+}
+
+function isValidSearchResult(item) {
+  return item && item.name && Number.isFinite(item.lat) && Number.isFinite(item.lng);
+}
+
+function isAddressLikeQuery(query) {
+  return /(\d|시|군|구|동|읍|면|로|길|번지|아파트|단지)/.test(query);
+}
+
+function getAddressTypeLabel(type) {
+  const labels = { REGION: '행정동/지역', ROAD: '도로명 주소', REGION_ADDR: '지번 주소', ROAD_ADDR: '도로명 주소' };
+  return labels[type] || '주소';
 }
 
 document.addEventListener('click', e => {
