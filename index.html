@@ -14,7 +14,7 @@
 <meta name="theme-color" content="#F7F7F2">
 
 <!-- 아이오에스 아이콘 -->
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23F7F7F2'/><circle cx='128' cy='50' r='18' fill='%23C7F464'/><path d='M52 98c21-42 80-42 78 0-2 39-54 43-66 14-10-25 18-48 47-28' fill='none' stroke='%23171A18' stroke-width='16' stroke-linecap='round' stroke-linejoin='round'/><circle cx='53' cy='109' r='10' fill='%23FF6B5E'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23F5F2EA'/><circle cx='128' cy='50' r='18' fill='%23B9DDF1'/><path d='M52 98c21-42 80-42 78 0-2 39-54 43-66 14-10-25 18-48 47-28' fill='none' stroke='%2327313A' stroke-width='16' stroke-linecap='round' stroke-linejoin='round'/><circle cx='53' cy='109' r='10' fill='%234F8FB8'/></svg>">
 
 <!-- 서비스 워커 등록 -->
 <script>
@@ -27,11 +27,11 @@ if ('serviceWorker' in navigator) {
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
   :root {
-    --ink:#171A18;--paper:#FFFEFA;--cream:#F7F7F2;
-    --coral:#FF6B5E;--coral-dark:#D84F45;--coral-light:#FFF0EC;
-    --lime:#C7F464;--mint:#58BFA3;--route:#2F7F73;
-    --green:var(--ink);--green-light:var(--coral-light);--green-dark:#0B0D0C;
-    --amber:#A76A12;--amber-light:#FFF5DB;
+    --ink:#27313A;--paper:#FFFDF8;--cream:#F5F2EA;
+    --coral:#4F8FB8;--coral-dark:#1F5C78;--coral-light:#EAF4F8;
+    --lime:#B9DDF1;--mint:#6FAED0;--route:#4F8FB8;
+    --green:var(--ink);--green-light:var(--coral-light);--green-dark:#172631;
+    --amber:#98723E;--amber-light:#F8EEDC;
     --red:#A32D2D;--red-light:#FCEBEB;
     --gray-50:#F7F7F2;--gray-100:#EDE9DE;--gray-300:#D6D0C3;
     --gray-500:#827E75;--gray-700:#46443F;--gray-900:var(--ink);
@@ -44,10 +44,10 @@ if ('serviceWorker' in navigator) {
   .header{background:var(--paper);border-bottom:1px solid var(--gray-100);padding:14px 18px 10px;flex-shrink:0;z-index:100;}
   .header-top{display:flex;justify-content:space-between;align-items:center;}
   .logo{display:flex;align-items:center;gap:8px;font-size:20px;font-weight:700;color:var(--ink);letter-spacing:0;}
-  .logo-mark{width:28px;height:28px;border-radius:9px;background:var(--ink);position:relative;display:inline-block;box-shadow:inset 0 -6px 0 rgba(199,244,100,.85);}
+  .logo-mark{width:28px;height:28px;border-radius:9px;background:var(--ink);position:relative;display:inline-block;box-shadow:inset 0 -6px 0 rgba(79,143,184,.72);}
   .logo-mark::before{content:'';position:absolute;left:7px;top:8px;width:14px;height:8px;border:2px solid var(--paper);border-top-color:transparent;border-radius:999px;transform:rotate(-13deg);}
   .logo-mark::after{content:'';position:absolute;right:5px;top:5px;width:6px;height:6px;background:var(--coral);border-radius:50%;}
-  .loc-btn{display:flex;align-items:center;gap:5px;background:var(--coral-light);color:var(--ink);padding:6px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;cursor:pointer;border:1px solid rgba(255,107,94,.16);font-family:inherit;}
+  .loc-btn{display:flex;align-items:center;gap:5px;background:var(--coral-light);color:var(--ink);padding:6px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;cursor:pointer;border:1px solid rgba(79,143,184,.18);font-family:inherit;}
 
   .tabs{display:flex;background:var(--paper);border-bottom:1px solid var(--gray-100);flex-shrink:0;}
   .tab{flex:1;padding:11px 0;text-align:center;font-size:13px;font-weight:500;color:var(--gray-500);cursor:pointer;border-bottom:2px solid transparent;border:none;background:none;font-family:inherit;transition:all .2s;}
@@ -74,7 +74,7 @@ if ('serviceWorker' in navigator) {
   .course-list{padding:12px;display:flex;flex-direction:column;gap:10px;}
   .course-card{background:var(--paper);border-radius:var(--r);border:1.5px solid var(--gray-100);overflow:hidden;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
   .course-card:hover{border-color:var(--gray-300);}
-  .course-card.selected{border-color:var(--coral);box-shadow:0 8px 20px rgba(255,107,94,.12);}
+  .course-card.selected{border-color:var(--coral);box-shadow:0 8px 20px rgba(79,143,184,.12);}
   .cmap{height:85px;position:relative;overflow:hidden;background:#EEEADF;}
   .cmap canvas{width:100%;height:100%;display:block;}
   .cbadge{position:absolute;top:7px;left:7px;background:rgba(23,26,24,.88);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--rp);}
@@ -210,7 +210,7 @@ if ('serviceWorker' in navigator) {
   .save-course-btn:hover{background:#FFE0DA;}
 
   /* 마이페이지 */
-  .my-profile-card{margin:14px;background:linear-gradient(135deg,#171A18 0%,#30342B 58%,#FF6B5E 130%);border-radius:var(--r);padding:20px;color:#fff;flex-shrink:0;}
+  .my-profile-card{margin:14px;background:linear-gradient(135deg,#27313A 0%,#314858 68%,#4F8FB8 130%);border-radius:var(--r);padding:20px;color:#fff;flex-shrink:0;}
   .my-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:10px;cursor:pointer;border:2px solid rgba(255,255,255,.4);}
   .my-name{font-size:20px;font-weight:700;margin-bottom:2px;}
   .my-sub{font-size:13px;opacity:.8;}
@@ -432,7 +432,7 @@ if ('serviceWorker' in navigator) {
   <div style="padding:14px;display:flex;flex-direction:column;gap:12px;">
 
     <!-- ── 날씨 카드 ── -->
-    <div id="weatherCard" style="background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:16px 18px;">
+    <div id="weatherCard" style="background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:16px 18px;box-shadow:0 8px 22px rgba(39,49,58,.04);">
       <!-- 1행: 위치 + 날씨 상태 -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div style="font-size:12px;color:var(--gray-500);font-weight:500;display:flex;align-items:center;gap:3px;">
@@ -473,7 +473,7 @@ if ('serviceWorker' in navigator) {
 
     <!-- ── 이번 주 요약 (차트 포함) ── -->
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:15px;font-weight:700;color:var(--gray-900);">이번 주 요약</div>
+      <div style="font-size:15px;font-weight:700;color:var(--gray-900);">이번 주 러닝</div>
       <div style="font-size:12px;color:var(--coral);font-weight:500;cursor:pointer;" onclick="openAllRecords()">전체 기록 →</div>
     </div>
     <div style="background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:16px;">
@@ -488,8 +488,8 @@ if ('serviceWorker' in navigator) {
           <div style="font-size:20px;font-weight:700;color:var(--gray-900);line-height:1;" id="weekCount">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">회</small></div>
         </div>
         <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
-          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">칼로리</div>
-          <div style="font-size:20px;font-weight:700;color:var(--amber);line-height:1;" id="weekCal">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">kcal</small></div>
+          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">저장 코스</div>
+            <div style="font-size:20px;font-weight:700;color:var(--gray-700);line-height:1;" id="homeCourseCount">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">개</small></div>
         </div>
       </div>
       <!-- 요일별 바 차트 -->
@@ -509,7 +509,7 @@ if ('serviceWorker' in navigator) {
 
     <!-- ── 오늘의 추천 코스 ── -->
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:15px;font-weight:700;color:var(--gray-900);">오늘의 추천 코스</div>
+      <div style="font-size:15px;font-weight:700;color:var(--gray-900);">오늘 달릴 곳</div>
       <div style="font-size:12px;color:var(--coral);font-weight:500;cursor:pointer;" onclick="loadNearCourses()">새로고침</div>
     </div>
     <div id="nearCourseList">
@@ -882,7 +882,15 @@ const TMAP_CONNECT_TOLERANCE_METERS = 24;
 const TMAP_SNAP_NOTICE_METERS = 45;
 const SMART_SNAP_MAX_DEVIATION_METERS = 100;
 const SMART_SNAP_MAX_END_GAP_METERS = 105;
-const OVERLAP_GRID_SCALE = 30000;
+const OVERLAP_SEGMENT_TOLERANCE_METERS = 13;
+const OVERLAP_MIN_SEGMENT_METERS = 5;
+const OVERLAP_MIN_DIRECTION_DOT = 0.45;
+const OVERLAP_MIN_PROJECTION = 0.18;
+const DRAW_ROUTE_COLOR = '#4F8FB8';
+const DRAW_ROUTE_MANUAL_COLOR = '#6FAED0';
+const DRAW_ROUTE_OVERLAP_COLOR = '#1F5C78';
+const DRAW_ROUTE_MARKER_COLOR = '#4F8FB8';
+const DRAW_ROUTE_PLANNED_COLOR = '#B9DDF1';
 
 /* 카카오 SDK 로드 완료 후 초기화 */
 kakao.maps.load(function() {
@@ -926,7 +934,7 @@ function initCreateMap() {
     S.myMarker = new kakao.maps.CustomOverlay({
       map: createMap,
       position: new kakao.maps.LatLng(lat, lng),
-      content: '<div style="width:14px;height:14px;background:#FF6B5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(255,107,94,.24)"></div>',
+      content: '<div style="width:14px;height:14px;background:#4F8FB8;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(79,143,184,.22)"></div>',
       zIndex: 3
     });
 
@@ -1120,7 +1128,7 @@ function ensureDrawStartDot(latlng) {
   const startDot = new kakao.maps.Circle({
     map: createMap, center: latlng,
     radius: 6, strokeWeight: 2,
-    strokeColor: '#FF6B5E', fillColor: '#fff', fillOpacity: 1
+    strokeColor: DRAW_ROUTE_MARKER_COLOR, fillColor: '#fff', fillOpacity: 1
   });
   S.dots.push(startDot);
 }
@@ -1152,7 +1160,7 @@ function renderDrawPolyline(path) {
   if (path && path.length > 1) {
     S.polyline = new kakao.maps.Polyline({
       map: createMap, path,
-      strokeWeight: 5, strokeColor: '#2F7F73',
+      strokeWeight: 5, strokeColor: DRAW_ROUTE_COLOR,
       strokeOpacity: 0.82, strokeStyle: 'solid'
     });
     renderSegmentPolylines();
@@ -1181,8 +1189,8 @@ function renderSegmentPolylines() {
       map: createMap,
       path: segment,
       strokeWeight: 5,
-      strokeColor: '#FF6B5E',
-      strokeOpacity: 0.95,
+      strokeColor: DRAW_ROUTE_MANUAL_COLOR,
+      strokeOpacity: 0.9,
       strokeStyle: 'solid'
     }));
   });
@@ -1196,7 +1204,7 @@ function renderOverlapPolylines(path) {
       map: createMap,
       path: overlapPath,
       strokeWeight: 7,
-      strokeColor: '#171A18',
+      strokeColor: DRAW_ROUTE_OVERLAP_COLOR,
       strokeOpacity: 0.95,
       strokeStyle: 'solid'
     }));
@@ -1528,19 +1536,27 @@ function maxDistanceFromPath(points, path) {
 
 function getOverlappedPaths(path) {
   if (!path || path.length < 2) return [];
-  const counts = new Map();
+  const overlappedEdges = Array(path.length - 1).fill(false);
   for (let i = 0; i < path.length - 1; i++) {
-    const key = edgeKey(path[i], path[i + 1]);
-    counts.set(key, (counts.get(key) || 0) + 1);
+    const a = path[i], b = path[i + 1];
+    if (latLngDistanceMeters(a, b) < OVERLAP_MIN_SEGMENT_METERS) continue;
+    for (let j = 0; j < path.length - 1; j++) {
+      if (i === j || Math.abs(i - j) <= 1) continue;
+      if (i === 0 && j === path.length - 2) continue;
+      const c = path[j], d = path[j + 1];
+      if (latLngDistanceMeters(c, d) < OVERLAP_MIN_SEGMENT_METERS) continue;
+      if (segmentsOverlapLikely(a, b, c, d)) {
+        overlappedEdges[i] = true;
+        break;
+      }
+    }
   }
 
   const result = [];
   let current = [];
   for (let i = 0; i < path.length - 1; i++) {
     const a = path[i], b = path[i + 1];
-    const key = edgeKey(a, b);
-    const overlapped = counts.get(key) > 1 && latLngDistanceMeters(a, b) > 2;
-    if (overlapped) {
+    if (overlappedEdges[i]) {
       if (!current.length) current.push(a);
       current.push(b);
     } else if (current.length > 1) {
@@ -1554,14 +1570,62 @@ function getOverlappedPaths(path) {
   return result;
 }
 
-function edgeKey(a, b) {
-  const ak = pointGridKey(a);
-  const bk = pointGridKey(b);
-  return ak < bk ? ak + '|' + bk : bk + '|' + ak;
+function segmentsOverlapLikely(a, b, c, d) {
+  const direction = Math.abs(segmentDirectionDot(a, b, c, d));
+  if (direction < OVERLAP_MIN_DIRECTION_DOT) return false;
+  if (segmentProjectionOverlap(a, b, c, d) < OVERLAP_MIN_PROJECTION) return false;
+  const abMid = latLngMidpoint(a, b);
+  const cdMid = latLngMidpoint(c, d);
+  return pointLineDistanceMeters(abMid, c, d) <= OVERLAP_SEGMENT_TOLERANCE_METERS ||
+         pointLineDistanceMeters(cdMid, a, b) <= OVERLAP_SEGMENT_TOLERANCE_METERS;
 }
 
-function pointGridKey(p) {
-  return Math.round(p.getLat() * OVERLAP_GRID_SCALE) + ',' + Math.round(p.getLng() * OVERLAP_GRID_SCALE);
+function segmentDirectionDot(a, b, c, d) {
+  const ab = segmentVectorMeters(a, b);
+  const cd = segmentVectorMeters(c, d);
+  const abLen = Math.hypot(ab.x, ab.y);
+  const cdLen = Math.hypot(cd.x, cd.y);
+  if (!abLen || !cdLen) return 0;
+  return (ab.x * cd.x + ab.y * cd.y) / (abLen * cdLen);
+}
+
+function segmentProjectionOverlap(a, b, c, d) {
+  const refLat = (a.getLat() + b.getLat() + c.getLat() + d.getLat()) / 4;
+  const axy = latLngToXY(a, refLat);
+  const bxy = latLngToXY(b, refLat);
+  const cxy = latLngToXY(c, refLat);
+  const dxy = latLngToXY(d, refLat);
+  const vx = bxy.x - axy.x;
+  const vy = bxy.y - axy.y;
+  const lenSq = vx * vx + vy * vy;
+  if (!lenSq) return 0;
+  const project = point => ((point.x - axy.x) * vx + (point.y - axy.y) * vy) / lenSq;
+  const t1 = project(cxy);
+  const t2 = project(dxy);
+  const start = Math.max(0, Math.min(t1, t2));
+  const end = Math.min(1, Math.max(t1, t2));
+  return Math.max(0, end - start);
+}
+
+function segmentVectorMeters(a, b) {
+  const refLat = (a.getLat() + b.getLat()) / 2;
+  const axy = latLngToXY(a, refLat);
+  const bxy = latLngToXY(b, refLat);
+  return { x: bxy.x - axy.x, y: bxy.y - axy.y };
+}
+
+function latLngMidpoint(a, b) {
+  return {
+    getLat: () => (a.getLat() + b.getLat()) / 2,
+    getLng: () => (a.getLng() + b.getLng()) / 2
+  };
+}
+
+function latLngToXY(p, refLat) {
+  return {
+    x: p.getLng() * 111320 * Math.cos(refLat * Math.PI / 180),
+    y: p.getLat() * 111320
+  };
 }
 
 function pointLineDistanceMeters(point, a, b) {
@@ -1631,7 +1695,7 @@ function moveToMyLocation() {
       if (S.myMarker) S.myMarker.setMap(null);
       S.myMarker = new kakao.maps.CustomOverlay({
         map, position: latlng,
-        content: '<div style="width:14px;height:14px;background:#FF6B5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(255,107,94,.24)"></div>',
+        content: '<div style="width:14px;height:14px;background:#4F8FB8;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(79,143,184,.22)"></div>',
         zIndex: 3
       });
       toast('현재 위치로 이동했어요!');
@@ -1681,7 +1745,7 @@ function setAiMarker(latlng, addrName) {
   createAiMarker = new kakao.maps.CustomOverlay({
     map: createMap,
     position: latlng,
-    content: '<div style="display:flex;flex-direction:column;align-items:center;"><div style="width:14px;height:14px;background:#FF6B5E;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div><div style="width:2px;height:8px;background:#FF6B5E;"></div></div>',
+    content: '<div style="display:flex;flex-direction:column;align-items:center;"><div style="width:14px;height:14px;background:#4F8FB8;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div><div style="width:2px;height:8px;background:#4F8FB8;"></div></div>',
     zIndex: 5
   });
   if (createMap) createMap.setCenter(latlng);
@@ -1770,7 +1834,7 @@ function detectLocation() {
       if (S.myMarker) S.myMarker.setMap(null);
       S.myMarker = new kakao.maps.CustomOverlay({
         map: S.map, position: latlng,
-        content: '<div style="width:14px;height:14px;background:#FF6B5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(255,107,94,.24)"></div>',
+        content: '<div style="width:14px;height:14px;background:#4F8FB8;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(79,143,184,.22)"></div>',
         zIndex: 3
       });
     }
@@ -1868,7 +1932,7 @@ function initMap() {
     S.myMarker = new kakao.maps.CustomOverlay({
       map: S.map,
       position: new kakao.maps.LatLng(lat, lng),
-      content: '<div style="width:14px;height:14px;background:#FF6B5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(255,107,94,.24)"></div>',
+      content: '<div style="width:14px;height:14px;background:#4F8FB8;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(79,143,184,.22)"></div>',
       zIndex: 3
     });
 
@@ -2030,7 +2094,7 @@ function saveCourse() {
 
 /* AI 추천 코스 */
 const COURSES = [
-  { name:'한강 산책로 루프', tags:[{l:'안전',c:'tg'},{l:'평지',c:'tb'},{l:'공원',c:'tg'}], meta:'차량 없음 · 조명 완비 · 화장실 3곳', pt:'river', color:'#171A18', pace:6.2 },
+  { name:'한강 산책로 루프', tags:[{l:'안전',c:'tg'},{l:'평지',c:'tb'},{l:'공원',c:'tg'}], meta:'차량 없음 · 조명 완비 · 화장실 3곳', pt:'river', color:'#4F8FB8', pace:6.2 },
   { name:'홍대 플랫 코스', tags:[{l:'평지',c:'tb'},{l:'야간 가능',c:'tg'},{l:'혼잡',c:'ta'}], meta:'편의점 다수 · 보도 넓음 · 조명 양호', pt:'urban', color:'#378ADD', pace:6.5 },
   { name:'망원 공원 힐 루프', tags:[{l:'공원',c:'tg'},{l:'경사 포함',c:'ta'}], meta:'잔디밭 · 오르막 2곳 · 뷰 좋음', pt:'park', color:'#639922', pace:6.8 }
 ];
@@ -2288,7 +2352,7 @@ function renderNearCourses(results) {
       ? Math.round(p.distFromMe * 1000) + 'm'
       : p.distFromMe.toFixed(1) + 'km';
     const tset = tagSets[i % tagSets.length];
-    const featured = i === 0 ? 'border:1.5px solid var(--coral);box-shadow:0 8px 20px rgba(255,107,94,.10);' : 'border:1px solid var(--gray-100);';
+    const featured = i === 0 ? 'border:1.5px solid var(--coral);box-shadow:0 8px 20px rgba(79,143,184,.10);' : 'border:1px solid var(--gray-100);';
     return `
       <div style="background:#fff;border-radius:var(--r);${featured}overflow:hidden;margin-bottom:10px;">
         <div style="display:flex;gap:14px;padding:14px;">
@@ -2345,13 +2409,13 @@ function goToAiWithLocation(name, lat, lng) {
 /* 기록 렌더링 */
 function renderRecords() {
   const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
+  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
   const wrap = document.getElementById('recordList');
   // 이번 주 요약
   const weekTotal = records.reduce((s,r) => s + parseFloat(r.dist), 0);
-  const weekCal = records.reduce((s,r) => s + r.cal, 0);
   document.getElementById('weekDist').innerHTML = weekTotal.toFixed(1) + '<small style="font-size:10px;font-weight:400;color:var(--gray-500);">km</small>';
   document.getElementById('weekCount').innerHTML = records.length + '<small style="font-size:10px;font-weight:400;color:var(--gray-500);">회</small>';
-  document.getElementById('weekCal').innerHTML = weekCal + '<small style="font-size:10px;font-weight:400;color:var(--gray-500);">kcal</small>';
+  document.getElementById('homeCourseCount').innerHTML = courses.length + '<small style="font-size:10px;font-weight:400;color:var(--gray-500);">개</small>';
 
   // ── 요일별 바 차트 ──
   const chartEl  = document.getElementById('weekBarChart');
@@ -2381,7 +2445,7 @@ function renderRecords() {
     labelEl.innerHTML = '';
     ordered.forEach(o => {
       const barH = Math.round((o.dist / maxDist) * 48) + 4;
-      const barColor = o.isToday ? 'var(--coral)' : o.dist > 0 ? '#C7F464' : 'var(--gray-100)';
+      const barColor = o.isToday ? 'var(--coral)' : o.dist > 0 ? '#B9DDF1' : 'var(--gray-100)';
       const wrap2 = document.createElement('div');
       wrap2.style.cssText = 'flex:1;display:flex;flex-direction:column;align-items:center;gap:0;height:100%;justify-content:flex-end;';
       const bar = document.createElement('div');
@@ -2453,9 +2517,10 @@ async function fetchWeather() {
         geocoder.coord2Address(S.lng, S.lat, (result, status) => {
           if (status === kakao.maps.services.Status.OK) {
             const addr = result[0].address;
-            const loc = addr.region_2depth_name
-              ? addr.region_1depth_name + ' ' + addr.region_2depth_name
-              : addr.region_1depth_name;
+            const dong = addr.region_3depth_h_name || addr.region_3depth_name;
+            const loc = [addr.region_1depth_name, addr.region_2depth_name, dong]
+              .filter(Boolean)
+              .join(' ');
             document.getElementById('wLocation').textContent = loc;
           } else {
             document.getElementById('wLocation').textContent = d.name;
@@ -2615,13 +2680,13 @@ function drawMyCoursePreview(course) {
   const toX = lng => pad + (lng - minLng) / (maxLng - minLng + 0.00001) * (rw - pad*2);
   const toY = lat => rh - pad - (lat - minLat) / (maxLat - minLat + 0.00001) * (rh - pad*2);
 
-  ctx.strokeStyle = '#2F7F73'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  ctx.strokeStyle = DRAW_ROUTE_COLOR; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
   ctx.beginPath();
   ctx.moveTo(toX(course.points[0].lng), toY(course.points[0].lat));
   course.points.forEach(p => ctx.lineTo(toX(p.lng), toY(p.lat)));
   ctx.stroke();
 
-  ctx.fillStyle = '#fff'; ctx.strokeStyle = '#FF6B5E'; ctx.lineWidth = 1.5;
+  ctx.fillStyle = '#fff'; ctx.strokeStyle = DRAW_ROUTE_MARKER_COLOR; ctx.lineWidth = 1.5;
   ctx.beginPath(); ctx.arc(toX(course.points[0].lng), toY(course.points[0].lat), 4, 0, Math.PI*2);
   ctx.fill(); ctx.stroke();
 }
@@ -2723,7 +2788,7 @@ function getPmGrade(val, type) {
 
 function getDustStyle(grade) {
   const map = {
-    '매우좋음': { label:'매우좋음', bg:'#F0F8DB', color:'#171A18' },
+    '매우좋음': { label:'매우좋음', bg:'#EAF4F8', color:'#27313A' },
     '좋음':     { label:'좋음',     bg:'#FFF0EC', color:'#D84F45' },
     '보통':     { label:'보통',     bg:'#F0EFEA', color:'#444441' },
     '나쁨':     { label:'나쁨',     bg:'#FAEEDA', color:'#BA7517' },
@@ -2787,7 +2852,7 @@ function initRunMap(savedPoints) {
   runMarker = new kakao.maps.CustomOverlay({
     map: runMap,
     position: center,
-    content: '<div style="width:16px;height:16px;background:#FF6B5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(255,107,94,.24)"></div>',
+    content: '<div style="width:16px;height:16px;background:#4F8FB8;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(79,143,184,.22)"></div>',
     zIndex: 5
   });
 
@@ -2796,14 +2861,14 @@ function initRunMap(savedPoints) {
     const path = savedPoints.map(p => new kakao.maps.LatLng(p.lat, p.lng));
     new kakao.maps.Polyline({
       map: runMap, path,
-      strokeWeight: 3, strokeColor: '#C7F464',
+      strokeWeight: 3, strokeColor: DRAW_ROUTE_PLANNED_COLOR,
       strokeOpacity: 0.8, strokeStyle: 'shortdash'
     });
     // 시작점 마커
     new kakao.maps.CustomOverlay({
       map: runMap,
       position: path[0],
-      content: '<div style="width:10px;height:10px;background:#fff;border:2px solid #FF6B5E;border-radius:50%;"></div>',
+      content: '<div style="width:10px;height:10px;background:#fff;border:2px solid #4F8FB8;border-radius:50%;"></div>',
       zIndex: 3
     });
   }
@@ -2841,7 +2906,7 @@ function initRunMap(savedPoints) {
       if (runMarker) runMarker.setMap(null);
       runMarker = new kakao.maps.CustomOverlay({
         map: runMap, position: latlng,
-        content: '<div style="width:16px;height:16px;background:#FF6B5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(255,107,94,.24)"></div>',
+        content: '<div style="width:16px;height:16px;background:#4F8FB8;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(79,143,184,.22)"></div>',
         zIndex: 5
       });
       runMap.setCenter(latlng);
@@ -2851,7 +2916,7 @@ function initRunMap(savedPoints) {
       if (runPath.length > 1) {
         runPolyline = new kakao.maps.Polyline({
           map: runMap, path: runPath,
-          strokeWeight: 4, strokeColor: '#2F7F73', strokeOpacity: 0.95
+          strokeWeight: 4, strokeColor: DRAW_ROUTE_COLOR, strokeOpacity: 0.95
         });
       }
 
@@ -2890,7 +2955,7 @@ function drawRunCanvas() {
 
   // 전체 코스 (점선)
   const pts = [{x:.1,y:.55},{x:.25,y:.42},{x:.45,y:.38},{x:.65,y:.42},{x:.82,y:.5},{x:.88,y:.62},{x:.75,y:.72},{x:.55,y:.76},{x:.35,y:.72},{x:.18,y:.65},{x:.1,y:.55}];
-  ctx.setLineDash([5,5]); ctx.strokeStyle = '#C7F464'; ctx.lineWidth = 2;
+  ctx.setLineDash([5,5]); ctx.strokeStyle = DRAW_ROUTE_PLANNED_COLOR; ctx.lineWidth = 2;
   ctx.beginPath(); ctx.moveTo(pts[0].x*w, pts[0].y*h);
   pts.slice(1).forEach(p => ctx.lineTo(p.x*w, p.y*h)); ctx.stroke(); ctx.setLineDash([]);
 
@@ -2905,16 +2970,16 @@ function drawRunCanvas() {
     drawn.push({ x: a.x+(b.x-a.x)*frac, y: a.y+(b.y-a.y)*frac });
   }
   if (drawn.length > 1) {
-    ctx.strokeStyle = '#2F7F73'; ctx.lineWidth = 3;
+    ctx.strokeStyle = DRAW_ROUTE_COLOR; ctx.lineWidth = 3;
     ctx.beginPath(); ctx.moveTo(drawn[0].x*w, drawn[0].y*h);
     drawn.slice(1).forEach(p => ctx.lineTo(p.x*w, p.y*h)); ctx.stroke();
   }
   // 현재 위치 점
   const cur = drawn[drawn.length-1] || pts[0];
-  ctx.fillStyle = 'rgba(255,107,94,.2)'; ctx.beginPath(); ctx.arc(cur.x*w,cur.y*h,12,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle = '#FF6B5E'; ctx.beginPath(); ctx.arc(cur.x*w,cur.y*h,5,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(79,143,184,.18)'; ctx.beginPath(); ctx.arc(cur.x*w,cur.y*h,12,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = DRAW_ROUTE_MARKER_COLOR; ctx.beginPath(); ctx.arc(cur.x*w,cur.y*h,5,0,Math.PI*2); ctx.fill();
   // 시작점
-  ctx.fillStyle='#fff'; ctx.strokeStyle='#FF6B5E'; ctx.lineWidth=2;
+  ctx.fillStyle='#fff'; ctx.strokeStyle=DRAW_ROUTE_MARKER_COLOR; ctx.lineWidth=2;
   ctx.beginPath(); ctx.arc(pts[0].x*w,pts[0].y*h,5,0,Math.PI*2); ctx.fill(); ctx.stroke();
 }
 
