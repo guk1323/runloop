@@ -132,31 +132,35 @@ if ('serviceWorker' in navigator) {
   /* ── 런닝 화면 ── */
   .run-screen{position:fixed;inset:0;background:var(--paper);z-index:999;display:none;flex-direction:column;max-width:430px;margin:0 auto;overflow:hidden;}
   .run-screen.active{display:flex;}
-  .run-header{padding:14px 18px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gray-100);}
+  .run-header{padding:12px 18px 9px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gray-100);flex-shrink:0;}
   .run-title{font-size:16px;font-weight:700;color:var(--gray-900);}
   .run-live{display:flex;align-items:center;gap:5px;background:#FEECEC;color:var(--red);padding:5px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;}
   .live-dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:blink 1s infinite;}
   @keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
-  .run-map{height:200px;background:#EEEADF;position:relative;flex-shrink:0;}
-  .run-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:12px 14px;flex-shrink:0;}
-  .rstat{background:var(--gray-50);border-radius:var(--r);padding:12px 14px;}
+  .run-map{flex:1;min-height:280px;background:#EEEADF;position:relative;}
+  .gps-chip{position:absolute;top:10px;left:10px;z-index:6;background:rgba(255,255,255,.92);border:1px solid var(--gray-100);border-radius:999px;padding:6px 10px;font-size:11px;font-weight:700;color:var(--gray-700);box-shadow:0 2px 8px rgba(0,0,0,.08);}
+  .gps-chip.good{color:#2F739A;}
+  .gps-chip.warn{color:#BA7517;}
+  .gps-chip.bad{color:#A32D2D;}
+  .run-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;padding:10px 14px;flex-shrink:0;}
+  .rstat{background:var(--gray-50);border-radius:var(--rs);padding:9px 11px;}
   .rstat-l{font-size:11px;color:var(--gray-500);margin-bottom:4px;}
-  .rstat-v{font-size:26px;font-weight:700;color:var(--gray-900);line-height:1;}
+  .rstat-v{font-size:22px;font-weight:700;color:var(--gray-900);line-height:1;}
   .rstat-v.g{color:var(--coral);}
   .rstat-u{font-size:13px;font-weight:400;color:var(--gray-500);}
-  .pace-wrap{padding:0 14px 12px;flex-shrink:0;}
+  .pace-wrap{padding:0 14px 9px;flex-shrink:0;}
   .pace-top{display:flex;justify-content:space-between;font-size:12px;color:var(--gray-500);margin-bottom:6px;}
   .pace-track{height:7px;background:var(--gray-100);border-radius:4px;overflow:hidden;}
   .pace-fill{height:100%;background:var(--coral);border-radius:4px;transition:width .5s;}
-  .km-track{display:flex;gap:6px;padding:0 14px 14px;overflow-x:auto;flex-shrink:0;}
+  .km-track{display:flex;gap:6px;padding:0 14px 10px;overflow-x:auto;flex-shrink:0;}
   .km-track::-webkit-scrollbar{display:none;}
-  .km-chip{min-width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;flex-shrink:0;}
+  .km-chip{min-width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;}
   .km-done{background:var(--lime);color:var(--ink);}
   .km-cur{background:var(--ink);color:#fff;}
   .km-todo{background:var(--gray-100);color:var(--gray-500);}
-  .run-controls{display:flex;align-items:center;justify-content:center;gap:18px;padding:16px 14px 20px;flex-shrink:0;}
-  .ctrl-stop{width:54px;height:54px;border-radius:50%;background:var(--red-light);border:1px solid #f09595;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;}
-  .ctrl-pause{width:68px;height:68px;border-radius:50%;background:var(--ink);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:28px;color:#fff;transition:background .15s;}
+  .run-controls{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 14px 14px;flex-shrink:0;}
+  .ctrl-stop{width:42px;height:42px;border-radius:50%;background:var(--red-light);border:1px solid #f09595;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:17px;}
+  .ctrl-pause{width:52px;height:52px;border-radius:50%;background:var(--ink);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:21px;color:#fff;transition:background .15s;}
   .ctrl-pause.paused{background:var(--amber-light);}
   .ctrl-extra{width:54px;height:54px;border-radius:50%;background:var(--gray-100);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;}
   /* 완료 오버레이 */
@@ -174,7 +178,7 @@ if ('serviceWorker' in navigator) {
   .finish-save{width:100%;height:48px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;margin-bottom:8px;}
   .finish-discard{width:100%;height:40px;background:none;border:1px solid var(--gray-300);border-radius:var(--r);font-size:13px;font-family:inherit;cursor:pointer;color:var(--gray-500);}
 
-  .record-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+  .record-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;}
   .record-icon{width:42px;height:42px;border-radius:50%;background:var(--coral-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
   .record-info{flex:1;}
   .record-name{font-size:13px;font-weight:700;color:var(--gray-900);margin-bottom:2px;}
@@ -199,7 +203,7 @@ if ('serviceWorker' in navigator) {
   .addr-dropdown-item:hover{background:var(--gray-50);}
   .addr-dropdown-addr{font-size:11px;color:var(--gray-500);margin-top:2px;}
 
-  .all-record-card{background:var(--gray-50);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;}
+  .all-record-card{background:var(--gray-50);border-radius:var(--rs);padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;}
   .all-record-icon{width:40px;height:40px;border-radius:50%;background:#fff;border:1px solid var(--gray-100);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
   .all-record-info{flex:1;}
   .all-record-name{font-size:13px;font-weight:700;margin-bottom:2px;}
@@ -241,6 +245,13 @@ if ('serviceWorker' in navigator) {
   .mood-btn.selected{background:var(--coral-light);border-color:var(--coral);color:var(--ink);font-weight:500;}
   .record-memo{font-size:12px;color:var(--gray-500);margin-top:4px;font-style:italic;}
   .record-mood{font-size:13px;margin-left:4px;}
+  .record-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;}
+  .record-detail-stat{background:var(--gray-50);border-radius:var(--rs);padding:11px 12px;}
+  .record-detail-label{font-size:11px;color:var(--gray-500);margin-bottom:4px;}
+  .record-detail-value{font-size:18px;font-weight:800;color:var(--gray-900);}
+  .record-detail-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--gray-100);font-size:13px;}
+  .record-detail-row span:first-child{color:var(--gray-500);}
+  .record-detail-row span:last-child{font-weight:700;color:var(--gray-900);text-align:right;}
 
   #onboarding.active{display:flex;}
   .ob-avatar-item{width:100%;aspect-ratio:1;background:var(--gray-50);border:2px solid var(--gray-100);border-radius:var(--r);display:flex;align-items:center;justify-content:center;font-size:28px;cursor:pointer;transition:all .15s;}
@@ -605,10 +616,10 @@ if ('serviceWorker' in navigator) {
 
     <!-- 그리기 모드 바텀시트 -->
     <div id="drawBottomContent" style="display:none;padding:0 16px 12px;">
-      <!-- 드래그 안내 -->
+      <!-- 점 찍기 안내 -->
       <div style="display:flex;align-items:center;gap:7px;background:var(--gray-50);border-radius:var(--rs);padding:8px 12px;margin-bottom:10px;font-size:12px;color:var(--gray-500);">
         <span style="font-size:15px;">✋</span>
-        <span id="drawGuideText">지도를 길게 누른 채 드래그해서 경로를 그려요</span>
+        <span id="drawGuideText">지도에서 시작점과 다음 지점을 차례로 눌러요</span>
       </div>
       <button id="snapToggleBtn" onclick="toggleSnapMode()" style="width:100%;height:34px;display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--gray-100);border-radius:var(--rs);padding:0 12px;margin-bottom:10px;font-size:12px;font-family:inherit;cursor:pointer;color:var(--gray-700);">
         <span id="snapToggleLabel" style="font-weight:700;color:var(--coral);">길 따라가기</span>
@@ -630,7 +641,7 @@ if ('serviceWorker' in navigator) {
         </div>
       </div>
       <div class="conds" id="conds"></div>
-      <button class="save-btn" id="saveBtn" disabled onclick="saveCourse()" style="margin-top:10px;">지도를 드래그해서 코스를 그어보세요</button>
+      <button class="save-btn" id="saveBtn" disabled onclick="saveCourse()" style="margin-top:10px;">지도에서 점을 찍어 코스를 만들어보세요</button>
     </div>
   </div>
 </div>
@@ -795,6 +806,20 @@ if ('serviceWorker' in navigator) {
   </div>
 </div>
 
+<!-- 기록 상세 모달 -->
+<div id="recordDetailModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1002;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;max-height:85vh;display:flex;flex-direction:column;">
+    <div style="padding:16px 18px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gray-100);">
+      <div>
+        <div style="font-size:16px;font-weight:800;" id="recordDetailTitle">런닝 기록</div>
+        <div style="font-size:12px;color:var(--gray-500);margin-top:3px;" id="recordDetailDate">-</div>
+      </div>
+      <button onclick="closeRecordDetail()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-500);">×</button>
+    </div>
+    <div style="flex:1;overflow-y:auto;padding:14px 16px 18px;" id="recordDetailBody"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <!-- 런닝 진행 화면 -->
@@ -806,6 +831,7 @@ if ('serviceWorker' in navigator) {
   <div class="run-map" id="runMap">
     <div id="runKakaoMap" style="width:100%;height:100%;"></div>
     <canvas id="runCanvas" style="width:100%;height:100%;display:block;position:absolute;top:0;left:0;pointer-events:none;display:none;"></canvas>
+    <div class="gps-chip warn" id="gpsChip">GPS 대기</div>
   </div>
   <div class="run-stats">
     <div class="rstat"><div class="rstat-l">달린 거리</div><div><span class="rstat-v g" id="rDist">0.00</span><span class="rstat-u"> km</span></div></div>
@@ -940,9 +966,10 @@ function initCreateMap() {
       zIndex: 3
     });
 
-    // 드래그 그리기 이벤트 등록
     kakao.maps.event.addListener(createMap, 'click', function(e) {
-      if (createMode === 'ai') {
+      if (createMode === 'draw') {
+        handleDrawMapTap(e.latLng);
+      } else if (createMode === 'ai') {
         const latlng = e.latLng;
         const geocoder = new kakao.maps.services.Geocoder();
         geocoder.coord2Address(latlng.getLng(), latlng.getLat(), (result, status) => {
@@ -953,7 +980,7 @@ function initCreateMap() {
         });
       }
     });
-    initDrawDrag();
+    initDrawTap();
   };
 
   if (navigator.geolocation && S.lat === 37.5503 && S.lng === 126.9200) {
@@ -1006,22 +1033,19 @@ function setCreateMode(mode) {
   }
 }
 
-/* ── 드래그 그리기 ── */
-let isDragging = false;
-let dragLastLatlng = null;
+/* ── 점 찍기 그리기 ── */
 let drawRawSegment = [];
 let drawBusy = false;
 let drawSnapToken = 0;
 let snapToRoad = localStorage.getItem('runloopSnapToRoad') !== 'false';
-const DRAG_MIN_METERS = 8;
 
 function toggleSnapMode() {
   snapToRoad = !snapToRoad;
   localStorage.setItem('runloopSnapToRoad', snapToRoad ? 'true' : 'false');
   updateSnapToggle();
   setDrawGuide(snapToRoad
-    ? '길 따라가기를 켰어요. 손을 떼면 보행자 길로 정리해요'
-    : '자유 그리기예요. 내가 그린 그대로 저장해요');
+    ? '길 따라가기를 켰어요. 다음 점을 누르면 보행자 길로 정리해요'
+    : '자유 그리기예요. 누른 지점을 직선으로 이어요');
 }
 
 function updateSnapToggle() {
@@ -1040,92 +1064,38 @@ function updateSnapToggle() {
   }
 }
 
-function initDrawDrag() {
+function initDrawTap() {
   const mapEl = document.getElementById('createMapEl');
   if (!mapEl) return;
   updateSnapToggle();
-  if (mapEl.dataset.drawReady === '1') return;
-  mapEl.dataset.drawReady = '1';
+}
 
-  // 드래그 시작 — mousedown / touchstart
-  function onDragStart(e) {
-    if (createMode !== 'draw' || drawBusy) return;
-    e.preventDefault();
-    isDragging = true;
-    dragLastLatlng = null;
-    createMap.setDraggable(false); // 지도 이동 막기
-    createMap.setZoomable(false);
+function handleDrawMapTap(latlng) {
+  if (createMode !== 'draw' || drawBusy || !latlng) return;
+  drawSnapToken++;
+  drawRawSegment = [];
 
-    const latlng = getLatLngFromEvent(e);
-    if (!latlng) return;
-
-    if (S.path.length === 0) {
-      S.path = [latlng];
-      ensureDrawStartDot(latlng);
-      refreshStats(0);
-    }
-
-    const anchor = S.path[S.path.length - 1] || latlng;
-    drawRawSegment = [anchor];
-    if (latLngDistanceMeters(anchor, latlng) > 3) {
-      drawRawSegment.push(latlng);
-    }
-    dragLastLatlng = latlng;
-    renderDrawPolyline(getDrawPreviewPath());
-
-    setDrawGuide(snapToRoad
-      ? '손을 떼면 T맵 보행자 길로 보정해요'
-      : '자유 그리기예요. 손을 떼면 그대로 이어져요');
+  if (S.path.length === 0) {
+    S.path = [latlng];
+    ensureDrawStartDot(latlng);
+    renderDrawPolyline(S.path);
+    setDrawGuide('시작점이 잡혔어요. 다음 지점을 눌러 구간을 추가해요');
+    return;
   }
 
-  // 드래그 중 — mousemove / touchmove
-  function onDragMove(e) {
-    if (!isDragging || createMode !== 'draw') return;
-    e.preventDefault();
-    const latlng = getLatLngFromEvent(e);
-    if (!latlng) return;
-
-    if (dragLastLatlng && latLngDistanceMeters(dragLastLatlng, latlng) < DRAG_MIN_METERS) return;
-    dragLastLatlng = latlng;
-    drawRawSegment.push(latlng);
-    renderDrawPolyline(getDrawPreviewPath());
+  const anchor = S.path[S.path.length - 1];
+  if (latLngDistanceMeters(anchor, latlng) < 8) {
+    setDrawGuide('조금 더 떨어진 지점을 눌러주세요');
+    return;
   }
 
-  // 드래그 끝 — mouseup / touchend
-  function onDragEnd() {
-    if (!isDragging) return;
-    isDragging = false;
-    createMap.setDraggable(true);
-    createMap.setZoomable(true);
-    dragLastLatlng = null;
-
-    const segment = compactLatLngs(drawRawSegment, 3);
-    drawRawSegment = [];
-    if (segment.length < 2) {
-      renderDrawPolyline(S.path);
-      setDrawGuide(S.path.length > 1
-        ? '계속 드래그해서 경로를 이어 그어요'
-        : '다음 지점까지 드래그해서 코스를 만들어요');
-      return;
-    }
-    if (snapToRoad) {
-      snapAndCommitDrawSegment(segment);
-    } else {
-      commitDrawSegment(segment, 'manual');
-      setDrawGuide('내가 그린 그대로 이어졌어요. 계속 그려도 좋아요');
-    }
+  const segment = [anchor, latlng];
+  if (snapToRoad) {
+    snapAndCommitDrawSegment(segment);
+  } else {
+    commitDrawSegment(segment, 'manual');
+    setDrawGuide('내가 누른 지점대로 이어졌어요. 다음 점을 계속 찍어요');
   }
-
-  // 마우스 이벤트
-  mapEl.addEventListener('mousedown', onDragStart);
-  mapEl.addEventListener('mousemove', onDragMove);
-  mapEl.addEventListener('mouseup',   onDragEnd);
-  mapEl.addEventListener('mouseleave', onDragEnd);
-  // 터치 이벤트 (모바일)
-  mapEl.addEventListener('touchstart', onDragStart, { passive: false });
-  mapEl.addEventListener('touchmove',  onDragMove,  { passive: false });
-  mapEl.addEventListener('touchend',   onDragEnd);
-  mapEl.addEventListener('touchcancel', onDragEnd);
 }
 
 function ensureDrawStartDot(latlng) {
@@ -1274,19 +1244,19 @@ async function snapAndCommitDrawSegment(rawSegment) {
     if (decision.useSnapped) {
       commitDrawSegment(normalized.points, 'snapped');
       setDrawGuide(normalized.endSnapMeters > TMAP_SNAP_NOTICE_METERS
-        ? '가까운 보행자 길에 맞춰졌어요. 계속 이어 그어요'
-        : '보행자 길로 보정됐어요. 계속 드래그해서 이어 그어요');
+        ? '가까운 보행자 길에 맞춰졌어요. 다음 점을 계속 찍어요'
+        : '보행자 길로 보정됐어요. 다음 점을 계속 찍어요');
     } else {
       commitDrawSegment(rawSegment, 'manual');
       toast(decision.message);
-      setDrawGuide('사용자가 그린 길로 유지했어요. 계속 이어 그어요');
+      setDrawGuide('내가 찍은 길로 유지했어요. 다음 점을 계속 찍어요');
     }
   } catch (err) {
     if (token !== drawSnapToken) return;
     if (err.message === 'TMAP_TOO_FAR') {
       commitDrawSegment(rawSegment, 'manual');
       toast('지도에 없는 길로 판단해 직접 그린 선을 살렸어요');
-      setDrawGuide('사용자가 그린 길로 유지했어요. 계속 이어 그어요');
+      setDrawGuide('내가 찍은 길로 유지했어요. 다음 점을 계속 찍어요');
     } else if (err.message === 'NO_TMAP_KEY') {
       commitDrawSegment(rawSegment, 'manual');
       toast('TMAP 키를 넣으면 보행자 길로 자동 보정돼요');
@@ -1296,7 +1266,7 @@ async function snapAndCommitDrawSegment(rawSegment) {
     } else {
       commitDrawSegment(rawSegment, 'manual');
       toast('T맵 보정이 애매해서 직접 그린 선을 살렸어요');
-      setDrawGuide('사용자가 그린 길로 유지했어요. 계속 이어 그어요');
+      setDrawGuide('내가 찍은 길로 유지했어요. 다음 점을 계속 찍어요');
     }
   } finally {
     if (token === drawSnapToken) {
@@ -1637,7 +1607,7 @@ function setRouteMode() {} // 호환성 유지용 빈 함수
 
 /* 경로 점 추가 (호환성 유지) */
 function addPoint(latlng) {
-  // 드래그 방식으로 대체됨 — 사용 안 함
+  handleDrawMapTap(latlng);
 }
 
 function moveToMyLocation() {
@@ -1840,6 +1810,10 @@ document.getElementById('allRecordsModal').addEventListener('click', function(e)
   if (e.target === this) closeAllRecords();
 });
 
+document.getElementById('recordDetailModal').addEventListener('click', function(e) {
+  if (e.target === this) closeRecordDetail();
+});
+
 /* 탭 전환 */
 function switchTab(tab, el) {
   S.tab = tab;
@@ -1912,7 +1886,7 @@ function initMap() {
   }
 }
 
-/* 실행취소 — 마지막 드래그 세그먼트 단위로 */
+/* 실행취소 — 마지막 점 구간 단위로 */
 function undoDraw() {
   if (!S.segments || S.segments.length === 0) {
     clearDraw();
@@ -1933,8 +1907,8 @@ function undoDraw() {
 
   renderDrawPolyline(S.path);
   setDrawGuide(S.path.length > 1
-    ? '마지막 구간을 지웠어요. 계속 드래그해서 이어 그어요'
-    : '지도를 길게 누른 채 드래그해서 경로를 그려요');
+    ? '마지막 구간을 지웠어요. 다음 점을 계속 찍어요'
+    : '지도에서 시작점과 다음 지점을 차례로 눌러요');
 }
 
 /* 전체 지우기 */
@@ -1952,7 +1926,7 @@ function clearDraw() {
   S.distKm = 0;
   refreshStats(0);
   const guide = document.getElementById('drawGuideText');
-  if (guide) guide.textContent = '지도를 길게 누른 채 드래그해서 경로를 그려요';
+  if (guide) guide.textContent = '지도에서 시작점과 다음 지점을 차례로 눌러요';
 }
 
 /* 통계 업데이트 */
@@ -2009,7 +1983,7 @@ function refreshStats(km) {
     sb.textContent = km.toFixed(2) + 'km 코스 저장하기';
   } else {
     sb.disabled = true;
-    sb.textContent = '지도를 드래그해서 코스를 그어보세요';
+    sb.textContent = '지도에서 점을 찍어 코스를 만들어보세요';
   }
 }
 
@@ -2114,7 +2088,7 @@ function selCourse(i) {
 const R = {
   running: false, elapsed: 0, dist: 0,
   totalKm: 5, interval: null, courseName: '', watchId: null, gpsActive: false,
-  lastLat: null, lastLng: null
+  lastLat: null, lastLng: null, gpsAccuracy: null, lowAccuracyWarned: false
 };
 
 function startRun() {
@@ -2122,8 +2096,10 @@ function startRun() {
   R.totalKm = parseFloat(c.km);
   R.courseName = c.name;
   R.elapsed = 0; R.dist = 0; R.running = true;
+  R.gpsAccuracy = null; R.lowAccuracyWarned = false;
   document.getElementById('runTitle').textContent = c.name;
   document.getElementById('runScreen').classList.add('active');
+  updateGpsChip('GPS 대기', 'warn');
   buildKmTrack(R.totalKm);
   clearInterval(R.interval);
   R.interval = setInterval(runTick, 1000);
@@ -2179,6 +2155,13 @@ function updateRunStats() {
   }
 }
 
+function updateGpsChip(text, status = 'warn') {
+  const chip = document.getElementById('gpsChip');
+  if (!chip) return;
+  chip.textContent = text;
+  chip.className = 'gps-chip ' + status;
+}
+
 function togglePause() {
   R.running = !R.running;
   const btn = document.getElementById('pauseBtn');
@@ -2218,14 +2201,19 @@ function saveRecord() {
   const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
   const now = new Date();
   records.unshift({
+    id: Date.now(),
     name: title || R.courseName,
     dist: R.dist.toFixed(2),
     time: fmtTime(R.elapsed),
     cal: calcCalories(R.dist),
     date: now.toLocaleDateString('ko-KR', {month:'long', day:'numeric', weekday:'short'}),
+    createdAt: now.toISOString(),
     pace: R.dist > 0.05 ? (()=>{ const p=R.elapsed/R.dist; return Math.floor(p/60)+"'"+String(Math.round(p%60)).padStart(2,'0')+'"'; })() : '—',
     memo: memo,
-    mood: mood
+    mood: mood,
+    source: R.gpsActive ? 'web_gps' : 'web_sim',
+    gpsAccuracy: R.gpsAccuracy ? Math.round(R.gpsAccuracy) : null,
+    path: runPath.map(p => ({ lat: p.getLat(), lng: p.getLng() }))
   });
   localStorage.setItem('runRecords', JSON.stringify(records));
   const earnedPts = Math.round(R.dist * 100);
@@ -2432,7 +2420,7 @@ function renderRecords() {
   }
   const emojis = ['🏃','🌟','💪','🔥','⚡'];
   wrap.innerHTML = records.map((r,i) => `
-    <div class="record-card">
+    <div class="record-card" onclick="openRecordDetail(${i})">
       <div class="record-icon">${emojis[i % emojis.length]}</div>
       <div class="record-info">
         <div class="record-name">${r.name}</div>
@@ -2542,7 +2530,7 @@ function openAllRecords() {
     list.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--gray-500);"><div style="font-size:32px;margin-bottom:8px;">👟</div><div style="font-size:14px;">아직 기록이 없어요</div></div>';
   } else {
     list.innerHTML = records.map((r, i) => `
-      <div class="all-record-card">
+      <div class="all-record-card" onclick="openRecordDetail(${i})">
         <div class="all-record-icon">${emojis[i % emojis.length]}</div>
         <div class="all-record-info">
           <div class="all-record-name">${r.name}</div>
@@ -2556,6 +2544,62 @@ function openAllRecords() {
 
 function closeAllRecords() {
   document.getElementById('allRecordsModal').style.display = 'none';
+}
+
+function openRecordDetail(index) {
+  const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
+  const r = records[index];
+  if (!r) return;
+  const title = document.getElementById('recordDetailTitle');
+  const date = document.getElementById('recordDetailDate');
+  const body = document.getElementById('recordDetailBody');
+  const pathCount = Array.isArray(r.path) ? r.path.length : 0;
+  title.textContent = r.name || '런닝 기록';
+  date.textContent = [r.date, r.mood].filter(Boolean).join(' · ') || '-';
+  body.innerHTML = `
+    <div class="record-detail-grid">
+      <div class="record-detail-stat"><div class="record-detail-label">거리</div><div class="record-detail-value">${escapeHtml(r.dist || '-')}km</div></div>
+      <div class="record-detail-stat"><div class="record-detail-label">시간</div><div class="record-detail-value">${escapeHtml(r.time || '-')}</div></div>
+      <div class="record-detail-stat"><div class="record-detail-label">페이스</div><div class="record-detail-value">${escapeHtml(r.pace || '-')}</div></div>
+      <div class="record-detail-stat"><div class="record-detail-label">칼로리</div><div class="record-detail-value">${escapeHtml(String(r.cal || '-'))}kcal</div></div>
+    </div>
+    ${recordDetailRow('기록 출처', getRecordSourceLabel(r.source))}
+    ${recordDetailRow('GPS 정확도', r.gpsAccuracy ? '약 ' + r.gpsAccuracy + 'm' : '-')}
+    ${recordDetailRow('경로 포인트', pathCount ? pathCount + '개' : '-')}
+    ${recordDetailRow('저장 시각', r.createdAt ? new Date(r.createdAt).toLocaleString('ko-KR') : '-')}
+    <div style="margin-top:12px;background:var(--gray-50);border-radius:var(--rs);padding:12px;">
+      <div style="font-size:11px;color:var(--gray-500);margin-bottom:6px;">메모</div>
+      <div style="font-size:13px;line-height:1.55;color:var(--gray-900);">${escapeHtml(r.memo || '남긴 메모가 없어요')}</div>
+    </div>
+  `;
+  document.getElementById('recordDetailModal').style.display = 'flex';
+}
+
+function closeRecordDetail() {
+  document.getElementById('recordDetailModal').style.display = 'none';
+}
+
+function recordDetailRow(label, value) {
+  return `<div class="record-detail-row"><span>${escapeHtml(label)}</span><span>${escapeHtml(value || '-')}</span></div>`;
+}
+
+function getRecordSourceLabel(source) {
+  const map = {
+    web_gps: '웹 GPS',
+    web_sim: '웹 시뮬레이션',
+    healthkit: 'HealthKit',
+    apple_watch: 'Apple Watch'
+  };
+  return map[source] || '웹 기록';
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 function clearAllRecords() {
@@ -2690,8 +2734,10 @@ function startMyCoursRun(id) {
   R.totalKm = parseFloat(c.dist);
   R.courseName = c.name;
   R.elapsed = 0; R.dist = 0; R.running = true;
+  R.gpsAccuracy = null; R.lowAccuracyWarned = false;
   document.getElementById('runTitle').textContent = c.name;
   document.getElementById('runScreen').classList.add('active');
+  updateGpsChip('GPS 대기', 'warn');
   buildKmTrack(R.totalKm);
   clearInterval(R.interval);
   R.interval = setInterval(runTick, 1000);
@@ -2834,24 +2880,37 @@ function initRunMap(savedPoints) {
   if (R.watchId) navigator.geolocation.clearWatch(R.watchId);
   R.gpsActive = false;
   R.lastLat = null; R.lastLng = null;
+  R.gpsAccuracy = null; R.lowAccuracyWarned = false;
+  updateGpsChip('GPS 찾는 중', 'warn');
 
   if (navigator.geolocation) {
     R.watchId = navigator.geolocation.watchPosition(pos => {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
+      const accuracy = pos.coords.accuracy || Infinity;
       const latlng = new kakao.maps.LatLng(lat, lng);
+      R.gpsAccuracy = accuracy;
+      updateGpsChip(
+        Number.isFinite(accuracy) ? `GPS ${Math.round(accuracy)}m` : 'GPS 수신',
+        accuracy <= 30 ? 'good' : accuracy <= 80 ? 'warn' : 'bad'
+      );
 
       // GPS 첫 수신 시 시뮬레이션 끄기
       if (!R.gpsActive) {
         R.gpsActive = true;
-        toast('GPS 연결됐어요! 실제 거리로 측정해요 📍');
+        toast(accuracy <= 80 ? 'GPS 연결됐어요! 실제 거리로 측정해요 📍' : 'GPS 정확도가 낮아요. 실내에서는 거리 누적을 보수적으로 봐요');
       }
 
       // 이전 위치와 거리 계산해서 누적
       if (R.lastLat !== null) {
         const moved = getDistKm(R.lastLat, R.lastLng, lat, lng);
-        // 노이즈 필터: 0.003km(3m) 이상 이동했을 때만 반영
-        if (moved > 0.003 && moved < 0.1) {
+        // 노이즈 필터: 실내/저정확도 GPS 점프는 거리로 반영하지 않음
+        if (accuracy > 80) {
+          if (!R.lowAccuracyWarned) {
+            R.lowAccuracyWarned = true;
+            toast('GPS 오차가 커서 이 위치 변화는 거리에서 제외했어요');
+          }
+        } else if (moved > 0.003 && moved < 0.1) {
           R.dist = Math.min(R.dist + moved, R.totalKm * 1.5);
         }
       }
@@ -2881,8 +2940,11 @@ function initRunMap(savedPoints) {
 
     }, (err) => {
       // GPS 실패 시 시뮬레이션으로 폴백
+      updateGpsChip('GPS 대기', 'warn');
       if (!R.gpsActive) toast('GPS를 찾는 중이에요… 시뮬레이션으로 진행해요');
     }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 });
+  } else {
+    updateGpsChip('GPS 없음', 'bad');
   }
 }
 
