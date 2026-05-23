@@ -891,6 +891,7 @@ const S = {
 
 const TMAP_APP_KEY = 'dM1gQjphEH6xgfyyzIjHl2ctRZEUXPPJ6oyn8aqj';
 const TMAP_PEDESTRIAN_URL = 'https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1';
+const TMAP_POI_URL = 'https://apis.openapi.sk.com/tmap/pois';
 const TMAP_MAX_PASS_POINTS = 3;
 const TMAP_CONNECT_TOLERANCE_METERS = 24;
 const TMAP_SNAP_NOTICE_METERS = 45;
@@ -1652,13 +1653,14 @@ function searchAddress(query) {
 
     renderAddressDropdownMessage('검색 중…');
     Promise.all([
+      searchTmapPois(trimmed),
       searchKakaoAddresses(trimmed),
       isStationLikeQuery(trimmed) ? searchKakaoPlaces(trimmed, { categoryGroupCode: 'SW8', size: 5 }) : Promise.resolve([]),
       isStationLikeQuery(trimmed) ? searchKakaoPlaces(trimmed + ' 지하철역', { categoryGroupCode: 'SW8', size: 5 }) : Promise.resolve([]),
       searchKakaoPlaces(trimmed, { size: 10 })
-    ]).then(([addresses, stations, stationAliases, places]) => {
+    ]).then(([tmapPois, addresses, stations, stationAliases, places]) => {
       if (seq !== addrSearchSeq) return;
-      renderAddressDropdown(mergeAddressResults(trimmed, addresses, stations, stationAliases, places));
+      renderAddressDropdown(mergeAddressResults(trimmed, tmapPois, addresses, stations, stationAliases, places));
     }).catch(() => {
       if (seq !== addrSearchSeq) return;
       renderAddressDropdownMessage('검색 결과를 불러오지 못했어요. 다시 입력해주세요.');
@@ -1685,6 +1687,73 @@ function selectAddressResult(index) {
   const item = addrSearchResults[index];
   if (!item) return;
   selectAddress(item.name, item.lat, item.lng);
+}
+
+async function searchTmapPois(query) {
+  const appKey = getTmapAppKey();
+  if (!appKey) return [];
+
+  const params = new URLSearchParams({
+    version: '1',
+    searchKeyword: query,
+    page: '1',
+    count: '10',
+    searchType: 'all',
+    searchtypCd: 'A',
+    reqCoordType: 'WGS84GEO',
+    resCoordType: 'WGS84GEO',
+    multiPoint: 'N',
+    poiGroupYn: 'N'
+  });
+
+  try {
+    const res = await fetch(`${TMAP_POI_URL}?${params.toString()}`, {
+      headers: { Accept: 'application/json', appKey }
+    });
+    if (!res.ok) {
+      console.warn('TMAP POI search failed', res.status);
+      return [];
+    }
+    const data = await res.json();
+    const pois = data && data.searchPoiInfo && data.searchPoiInfo.pois && data.searchPoiInfo.pois.poi;
+    return (Array.isArray(pois) ? pois : []).map(mapTmapPoiResult).filter(isValidSearchResult);
+  } catch(e) {
+    console.warn('TMAP POI search error', e);
+    return [];
+  }
+}
+
+function mapTmapPoiResult(poi) {
+  const lat = parseFloat(poi.noorLat || poi.frontLat);
+  const lng = parseFloat(poi.noorLon || poi.frontLon);
+  const address = buildTmapAddress(poi);
+  const biz = [poi.upperBizName, poi.middleBizName, poi.lowerBizName].filter(Boolean).join(' · ');
+  return {
+    source: 'tmap',
+    type: getTmapPoiType(poi),
+    name: poi.name || '',
+    sub: [address, biz].filter(Boolean).join(' · '),
+    category: biz,
+    distance: parseFloat(poi.radius || ''),
+    lat,
+    lng
+  };
+}
+
+function buildTmapAddress(poi) {
+  const region = [poi.upperAddrName, poi.middleAddrName, poi.lowerAddrName].filter(Boolean).join(' ');
+  const roadNo = [poi.firstNo, poi.secondNo].filter(Boolean).join('-');
+  const road = [poi.roadName, roadNo].filter(Boolean).join(' ');
+  const detail = poi.detailAddrName || '';
+  return [region, road || detail].filter(Boolean).join(' ');
+}
+
+function getTmapPoiType(poi) {
+  const biz = [poi.upperBizName, poi.middleBizName, poi.lowerBizName].filter(Boolean).join(' ');
+  if (/지하철|전철|역|출구/.test(biz) || normalizeSearchText(poi.name).endsWith('역')) return '역';
+  if (/버스|정류장/.test(biz)) return '정류장';
+  if (/공원|산책|체육/.test(biz)) return '러닝';
+  return '장소';
 }
 
 function searchKakaoAddresses(query) {
@@ -1799,6 +1868,7 @@ function scoreSearchResult(query, item) {
   else if (name.startsWith(q)) score += 720;
   else if (name.includes(q)) score += 320;
   if (sub.includes(q)) score += 90;
+  if (item.source === 'tmap') score += 500;
 
   if (stationLike) {
     if (isStationResult(item)) score += 900;
