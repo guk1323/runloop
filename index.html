@@ -1692,19 +1692,25 @@ function selectAddressResult(index) {
 async function searchTmapPois(query) {
   const appKey = getTmapAppKey();
   if (!appKey) return [];
+  const center = getSearchCenter();
 
   const params = new URLSearchParams({
     version: '1',
     searchKeyword: query,
     page: '1',
-    count: '10',
+    count: '20',
     searchType: 'all',
-    searchtypCd: 'A',
+    searchtypCd: center ? 'R' : 'A',
     reqCoordType: 'WGS84GEO',
     resCoordType: 'WGS84GEO',
     multiPoint: 'N',
     poiGroupYn: 'N'
   });
+  if (center) {
+    params.set('centerLon', center.lng);
+    params.set('centerLat', center.lat);
+    params.set('radius', '33');
+  }
 
   try {
     const res = await fetch(`${TMAP_POI_URL}?${params.toString()}`, {
@@ -1716,25 +1722,29 @@ async function searchTmapPois(query) {
     }
     const data = await res.json();
     const pois = data && data.searchPoiInfo && data.searchPoiInfo.pois && data.searchPoiInfo.pois.poi;
-    return (Array.isArray(pois) ? pois : []).map(mapTmapPoiResult).filter(isValidSearchResult);
+    return (Array.isArray(pois) ? pois : []).map(poi => mapTmapPoiResult(poi, center)).filter(isValidSearchResult);
   } catch(e) {
     console.warn('TMAP POI search error', e);
     return [];
   }
 }
 
-function mapTmapPoiResult(poi) {
+function mapTmapPoiResult(poi, center) {
   const lat = parseFloat(poi.noorLat || poi.frontLat);
   const lng = parseFloat(poi.noorLon || poi.frontLon);
   const address = buildTmapAddress(poi);
   const biz = [poi.upperBizName, poi.middleBizName, poi.lowerBizName].filter(Boolean).join(' · ');
+  const radiusKm = parseFloat(poi.radius || '');
+  const distanceMeters = Number.isFinite(radiusKm)
+    ? Math.round(radiusKm * 1000)
+    : getDistanceFromSearchCenter(center, lat, lng);
   return {
     source: 'tmap',
     type: getTmapPoiType(poi),
     name: poi.name || '',
-    sub: [address, biz].filter(Boolean).join(' · '),
+    sub: [formatDistanceLabel(distanceMeters), address, biz].filter(Boolean).join(' · '),
     category: biz,
-    distance: parseFloat(poi.radius || ''),
+    distanceMeters,
     lat,
     lng
   };
@@ -1754,6 +1764,18 @@ function getTmapPoiType(poi) {
   if (/버스|정류장/.test(biz)) return '정류장';
   if (/공원|산책|체육/.test(biz)) return '러닝';
   return '장소';
+}
+
+function getSearchCenter() {
+  if (Number.isFinite(S.lat) && Number.isFinite(S.lng)) {
+    return { lat: S.lat, lng: S.lng };
+  }
+  const map = createMap || aiMap;
+  if (map && typeof map.getCenter === 'function') {
+    const center = map.getCenter();
+    return { lat: center.getLat(), lng: center.getLng() };
+  }
+  return null;
 }
 
 function searchKakaoAddresses(query) {
@@ -1800,7 +1822,7 @@ function searchKakaoPlaces(query, config = {}) {
         name: p.place_name,
         sub: p.road_address_name || p.address_name || p.category_name || '',
         category: p.category_name || '',
-        distance: parseFloat(p.distance || ''),
+        distanceMeters: Number.isFinite(parseFloat(p.distance || '')) ? parseFloat(p.distance || '') : getDistanceFromSearchCenter(getSearchCenter(), parseFloat(p.y), parseFloat(p.x)),
         lat: parseFloat(p.y),
         lng: parseFloat(p.x)
       })).filter(isValidSearchResult));
@@ -1882,7 +1904,12 @@ function scoreSearchResult(query, item) {
   }
 
   if (category.includes('지하철') || category.includes('전철')) score += 250;
-  if (Number.isFinite(item.distance)) score -= Math.min(item.distance / 5000, 80);
+  if (isParkingResult(item) && !q.includes('주차')) score -= 260;
+  if (!addressLike && !stationLike && Number.isFinite(item.distanceMeters)) {
+    score += Math.max(0, 1200 - item.distanceMeters / 5);
+  } else if (Number.isFinite(item.distanceMeters)) {
+    score -= Math.min(item.distanceMeters / 1000, 80);
+  }
   return score;
 }
 
@@ -1912,6 +1939,31 @@ function isBranchLikeStationResult(query, item) {
   const name = normalizeSearchText(item.name);
   if (!q || name === q || !name.includes(q)) return false;
   return /(역점|점|지점|센터|병원|약국|의원|카페|식당|주차장|영업소)$/.test(name);
+}
+
+function isParkingResult(item) {
+  return /주차장|parking/i.test(`${item.name || ''} ${item.category || ''}`);
+}
+
+function getDistanceFromSearchCenter(center, lat, lng) {
+  if (!center || !Number.isFinite(lat) || !Number.isFinite(lng)) return NaN;
+  return Math.round(haversineMeters(center.lat, center.lng, lat, lng));
+}
+
+function haversineMeters(lat1, lng1, lat2, lng2) {
+  const toRad = v => v * Math.PI / 180;
+  const R = 6371000;
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(lng2 - lng1);
+  const a = Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function formatDistanceLabel(meters) {
+  if (!Number.isFinite(meters)) return '';
+  if (meters < 1000) return `${meters}m`;
+  return `${(meters / 1000).toFixed(meters < 10000 ? 1 : 0)}km`;
 }
 
 function getAddressTypeLabel(type) {
