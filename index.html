@@ -882,13 +882,18 @@ const TMAP_CONNECT_TOLERANCE_METERS = 24;
 const TMAP_SNAP_NOTICE_METERS = 45;
 const SMART_SNAP_MAX_DEVIATION_METERS = 100;
 const SMART_SNAP_MAX_END_GAP_METERS = 105;
-const OVERLAP_SEGMENT_TOLERANCE_METERS = 13;
+const OVERLAP_SEGMENT_TOLERANCE_METERS = 11;
 const OVERLAP_MIN_SEGMENT_METERS = 5;
-const OVERLAP_MIN_DIRECTION_DOT = 0.45;
-const OVERLAP_MIN_PROJECTION = 0.18;
+const OVERLAP_MIN_DIRECTION_DOT = 0.82;
+const OVERLAP_MIN_PROJECTION = 0.35;
+const OVERLAP_MIN_CLOSE_FRACTION = 0.58;
 const DRAW_ROUTE_COLOR = '#4F8FB8';
 const DRAW_ROUTE_MANUAL_COLOR = '#6FAED0';
-const DRAW_ROUTE_OVERLAP_COLOR = '#1F5C78';
+const DRAW_ROUTE_OVERLAP_COLORS = {
+  2: '#2F739A',
+  3: '#1F5C78',
+  4: '#153F56'
+};
 const DRAW_ROUTE_MARKER_COLOR = '#4F8FB8';
 const DRAW_ROUTE_PLANNED_COLOR = '#B9DDF1';
 
@@ -1198,17 +1203,27 @@ function renderSegmentPolylines() {
 
 function renderOverlapPolylines(path) {
   const overlapPaths = getOverlappedPaths(path);
-  overlapPaths.forEach(overlapPath => {
-    if (overlapPath.length < 2) return;
+  overlapPaths.forEach(overlap => {
+    if (!overlap.path || overlap.path.length < 2) return;
+    const style = getOverlapStyle(overlap.count);
     S.overlapPolylines.push(new kakao.maps.Polyline({
       map: createMap,
-      path: overlapPath,
-      strokeWeight: 7,
-      strokeColor: DRAW_ROUTE_OVERLAP_COLOR,
-      strokeOpacity: 0.95,
+      path: overlap.path,
+      strokeWeight: style.weight,
+      strokeColor: style.color,
+      strokeOpacity: style.opacity,
       strokeStyle: 'solid'
     }));
   });
+}
+
+function getOverlapStyle(count) {
+  const level = Math.min(Math.max(count || 2, 2), 4);
+  return {
+    color: DRAW_ROUTE_OVERLAP_COLORS[level],
+    weight: level === 2 ? 7 : level === 3 ? 8 : 9,
+    opacity: level === 2 ? 0.9 : 0.96
+  };
 }
 
 async function snapAndCommitDrawSegment(rawSegment) {
@@ -1536,48 +1551,63 @@ function maxDistanceFromPath(points, path) {
 
 function getOverlappedPaths(path) {
   if (!path || path.length < 2) return [];
-  const overlappedEdges = Array(path.length - 1).fill(false);
+  const overlapCounts = Array(path.length - 1).fill(1);
   for (let i = 0; i < path.length - 1; i++) {
     const a = path[i], b = path[i + 1];
     if (latLngDistanceMeters(a, b) < OVERLAP_MIN_SEGMENT_METERS) continue;
+    let matches = 0;
     for (let j = 0; j < path.length - 1; j++) {
       if (i === j || Math.abs(i - j) <= 1) continue;
       if (i === 0 && j === path.length - 2) continue;
       const c = path[j], d = path[j + 1];
       if (latLngDistanceMeters(c, d) < OVERLAP_MIN_SEGMENT_METERS) continue;
       if (segmentsOverlapLikely(a, b, c, d)) {
-        overlappedEdges[i] = true;
-        break;
+        matches++;
       }
     }
+    overlapCounts[i] = matches + 1;
   }
 
   const result = [];
   let current = [];
+  let currentCount = 1;
   for (let i = 0; i < path.length - 1; i++) {
     const a = path[i], b = path[i + 1];
-    if (overlappedEdges[i]) {
+    const count = overlapCounts[i];
+    if (count > 1) {
+      if (current.length > 1 && currentCount !== count) {
+        result.push({ path: current, count: currentCount });
+        current = [];
+      }
+      currentCount = count;
       if (!current.length) current.push(a);
       current.push(b);
     } else if (current.length > 1) {
-      result.push(current);
+      result.push({ path: current, count: currentCount });
       current = [];
+      currentCount = 1;
     } else {
       current = [];
+      currentCount = 1;
     }
   }
-  if (current.length > 1) result.push(current);
+  if (current.length > 1) result.push({ path: current, count: currentCount });
   return result;
 }
 
 function segmentsOverlapLikely(a, b, c, d) {
   const direction = Math.abs(segmentDirectionDot(a, b, c, d));
   if (direction < OVERLAP_MIN_DIRECTION_DOT) return false;
-  if (segmentProjectionOverlap(a, b, c, d) < OVERLAP_MIN_PROJECTION) return false;
-  const abMid = latLngMidpoint(a, b);
-  const cdMid = latLngMidpoint(c, d);
-  return pointLineDistanceMeters(abMid, c, d) <= OVERLAP_SEGMENT_TOLERANCE_METERS ||
-         pointLineDistanceMeters(cdMid, a, b) <= OVERLAP_SEGMENT_TOLERANCE_METERS;
+  const projection = Math.min(
+    segmentProjectionOverlap(a, b, c, d),
+    segmentProjectionOverlap(c, d, a, b)
+  );
+  if (projection < OVERLAP_MIN_PROJECTION) return false;
+
+  const closeAB = segmentCloseFraction(a, b, c, d);
+  const closeCD = segmentCloseFraction(c, d, a, b);
+  return Math.min(closeAB, closeCD) >= OVERLAP_MIN_CLOSE_FRACTION ||
+         (Math.max(closeAB, closeCD) >= 0.82 && projection >= 0.55);
 }
 
 function segmentDirectionDot(a, b, c, d) {
@@ -1607,18 +1637,31 @@ function segmentProjectionOverlap(a, b, c, d) {
   return Math.max(0, end - start);
 }
 
+function segmentCloseFraction(a, b, c, d) {
+  const samples = 5;
+  let close = 0;
+  for (let i = 0; i < samples; i++) {
+    const t = samples === 1 ? 0.5 : i / (samples - 1);
+    const point = interpolateLatLng(a, b, t);
+    if (pointLineDistanceMeters(point, c, d) <= OVERLAP_SEGMENT_TOLERANCE_METERS) {
+      close++;
+    }
+  }
+  return close / samples;
+}
+
+function interpolateLatLng(a, b, t) {
+  return {
+    getLat: () => a.getLat() + (b.getLat() - a.getLat()) * t,
+    getLng: () => a.getLng() + (b.getLng() - a.getLng()) * t
+  };
+}
+
 function segmentVectorMeters(a, b) {
   const refLat = (a.getLat() + b.getLat()) / 2;
   const axy = latLngToXY(a, refLat);
   const bxy = latLngToXY(b, refLat);
   return { x: bxy.x - axy.x, y: bxy.y - axy.y };
-}
-
-function latLngMidpoint(a, b) {
-  return {
-    getLat: () => (a.getLat() + b.getLat()) / 2,
-    getLng: () => (a.getLng() + b.getLng()) / 2
-  };
 }
 
 function latLngToXY(p, refLat) {
