@@ -422,55 +422,99 @@ if ('serviceWorker' in navigator) {
 </div>
 
 <!-- 홈 화면 -->
-<div id="screen-home" class="screen">
-  <!-- 날씨 카드 -->
-  <div id="weatherCard" style="margin:14px 14px 0;background:linear-gradient(135deg,#1D9E75,#0F6E56);border-radius:var(--r);padding:18px;color:#fff;flex-shrink:0;">
-    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
-      <div>
-        <div style="font-size:12px;opacity:.8;margin-bottom:4px;" id="wLocation">위치 불러오는 중…</div>
-        <div style="font-size:42px;font-weight:700;line-height:1;" id="wTemp">—</div>
-        <div style="font-size:14px;margin-top:4px;opacity:.9;" id="wDesc">—</div>
+<div id="screen-home" class="screen" style="overflow-y:auto;">
+  <div style="padding:14px;display:flex;flex-direction:column;gap:12px;">
+
+    <!-- ── 날씨 카드 ── -->
+    <div id="weatherCard" style="background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:16px 18px;">
+      <!-- 1행: 위치 + 날씨 상태 -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:12px;color:var(--gray-500);font-weight:500;display:flex;align-items:center;gap:3px;">
+          <span>📍</span><span id="wLocation">위치 불러오는 중…</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:5px;">
+          <span style="font-size:13px;" id="wIcon">🌤</span>
+          <span style="font-size:12px;color:var(--gray-700);" id="wDesc">—</span>
+        </div>
       </div>
-      <div style="font-size:52px;line-height:1;" id="wIcon">🌤</div>
+      <!-- 2행: 온도 + 최고최저 + 미세먼지/체감 -->
+      <div style="display:flex;align-items:baseline;justify-content:space-between;">
+        <div style="display:flex;align-items:baseline;gap:6px;">
+          <span style="font-size:36px;font-weight:700;color:var(--gray-900);letter-spacing:-1px;line-height:1;" id="wTemp">—</span>
+          <span style="font-size:13px;color:var(--gray-500);">°</span>
+          <span id="wHiLo" style="font-size:12px;color:var(--gray-500);display:none;">
+            <span style="color:#E24B4A;" id="wHigh">—</span>&thinsp;/&thinsp;<span style="color:#378ADD;" id="wLow">—</span>
+          </span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="text-align:right;">
+            <div style="font-size:10px;color:var(--gray-500);margin-bottom:2px;">미세 · 초미세</div>
+            <div style="display:flex;gap:4px;justify-content:flex-end;align-items:center;">
+              <span id="wDustBadge" style="font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--gray-100);color:var(--gray-500);">—</span>
+              <span style="font-size:10px;color:var(--gray-300);">·</span>
+              <span id="wDustBadge25" style="font-size:11px;font-weight:700;padding:2px 7px;border-radius:999px;background:var(--gray-100);color:var(--gray-500);">—</span>
+            </div>
+          </div>
+          <div style="text-align:right;border-left:1px solid var(--gray-100);padding-left:10px;">
+            <div style="font-size:10px;color:var(--gray-500);margin-bottom:2px;">체감</div>
+            <div style="font-size:13px;font-weight:700;color:var(--gray-900);" id="wFeels">—</div>
+          </div>
+        </div>
+      </div>
+      <!-- 3행: 런닝 코멘트 -->
+      <div style="margin-top:10px;font-size:12px;color:var(--gray-500);border-top:1px solid var(--gray-100);padding-top:10px;" id="wSummary">날씨 불러오는 중…</div>
     </div>
-    <div style="margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2);">
-      <div style="font-size:14px;opacity:.95;line-height:1.5;" id="wSummary">오늘 날씨를 불러오는 중이에요 ☁️</div>
-    </div>
-  </div>
 
-  <!-- 이번주 요약 -->
-  <div style="padding:16px 14px 8px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
-    <div style="font-size:14px;font-weight:700;color:var(--gray-900);">이번 주 요약</div>
-    
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 14px 14px;flex-shrink:0;">
-    <div style="background:#fff;border-radius:var(--r);padding:12px;text-align:center;border:1px solid var(--gray-100);">
-      <div style="font-size:11px;color:var(--gray-500);margin-bottom:4px;">총 거리</div>
-      <div style="font-size:20px;font-weight:700;color:var(--green);" id="weekDist">0<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small></div>
+    <!-- ── 이번 주 요약 (차트 포함) ── -->
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:15px;font-weight:700;color:var(--gray-900);">이번 주 요약</div>
+      <div style="font-size:12px;color:var(--green);font-weight:500;cursor:pointer;" onclick="openAllRecords()">전체 기록 →</div>
     </div>
-    <div style="background:#fff;border-radius:var(--r);padding:12px;text-align:center;border:1px solid var(--gray-100);">
-      <div style="font-size:11px;color:var(--gray-500);margin-bottom:4px;">런닝 횟수</div>
-      <div style="font-size:20px;font-weight:700;color:var(--gray-900);" id="weekCount">0<small style="font-size:11px;font-weight:400;color:var(--gray-500)">회</small></div>
+    <div style="background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:16px;">
+      <!-- 수치 3개 -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
+        <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
+          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">총 거리</div>
+          <div style="font-size:20px;font-weight:700;color:var(--green);line-height:1;" id="weekDist">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">km</small></div>
+        </div>
+        <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
+          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">런닝 횟수</div>
+          <div style="font-size:20px;font-weight:700;color:var(--gray-900);line-height:1;" id="weekCount">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">회</small></div>
+        </div>
+        <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
+          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">칼로리</div>
+          <div style="font-size:20px;font-weight:700;color:var(--amber);line-height:1;" id="weekCal">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">kcal</small></div>
+        </div>
+      </div>
+      <!-- 요일별 바 차트 -->
+      <div style="display:flex;align-items:flex-end;gap:5px;height:56px;margin-bottom:5px;" id="weekBarChart"></div>
+      <div style="display:flex;gap:5px;" id="weekBarLabels"></div>
+      <!-- 목표 프로그레스 -->
+      <div style="margin-top:12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
+          <div style="font-size:11px;color:var(--gray-500);">주간 목표 달성률</div>
+          <div style="font-size:11px;font-weight:700;color:var(--green);" id="homeGoalText">0 / 20km</div>
+        </div>
+        <div style="height:5px;background:var(--gray-100);border-radius:3px;overflow:hidden;">
+          <div id="homeGoalFill" style="height:100%;background:var(--green);border-radius:3px;width:0%;transition:width .5s;"></div>
+        </div>
+      </div>
     </div>
-    <div style="background:#fff;border-radius:var(--r);padding:12px;text-align:center;border:1px solid var(--gray-100);">
-      <div style="font-size:11px;color:var(--gray-500);margin-bottom:4px;">칼로리</div>
-      <div style="font-size:20px;font-weight:700;color:var(--amber);" id="weekCal">0<small style="font-size:11px;font-weight:400;color:var(--gray-500)">kcal</small></div>
-    </div>
-  </div>
 
-  <!-- 오늘의 추천 코스 -->
-  <div style="padding:14px 14px 8px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
-    <div style="font-size:14px;font-weight:700;color:var(--gray-900);">오늘의 추천 코스</div>
-    <div style="font-size:12px;color:var(--green);cursor:pointer;" onclick="loadNearCourses()">새로고침</div>
-  </div>
-  <div id="nearCourseList" style="padding:0 14px;flex-shrink:0;">
-    <div style="text-align:center;padding:20px 0;color:var(--gray-500);">
-      <div class="ml-spin" style="margin:0 auto 8px;"></div>
-      <div style="font-size:13px;">주변 코스를 찾는 중이에요…</div>
+    <!-- ── 오늘의 추천 코스 ── -->
+    <div style="display:flex;justify-content:space-between;align-items:center;">
+      <div style="font-size:15px;font-weight:700;color:var(--gray-900);">오늘의 추천 코스</div>
+      <div style="font-size:12px;color:var(--green);font-weight:500;cursor:pointer;" onclick="loadNearCourses()">새로고침</div>
     </div>
-  </div>
+    <div id="nearCourseList">
+      <div style="text-align:center;padding:20px 0;color:var(--gray-500);">
+        <div class="ml-spin" style="margin:0 auto 8px;"></div>
+        <div style="font-size:13px;">주변 코스를 찾는 중이에요…</div>
+      </div>
+    </div>
 
-  <div style="height:14px;flex-shrink:0;"></div>
+    <div style="height:8px;"></div>
+  </div>
 </div>
 
 <!-- 코스 만들기 (AI 추천 + 직접 그리기 통합) -->
@@ -554,16 +598,10 @@ if ('serviceWorker' in navigator) {
 
     <!-- 그리기 모드 바텀시트 -->
     <div id="drawBottomContent" style="display:none;padding:0 16px 12px;">
-      <!-- 경로 모드 토글 -->
-      <div style="display:flex;background:var(--gray-50);border-radius:var(--rs);padding:3px;margin-bottom:10px;">
-        <button id="routeAutoBtn" onclick="setRouteMode('auto')"
-          style="flex:1;height:30px;border:none;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;background:var(--green);color:#fff;transition:all .2s;">
-          🚶 도보 경로
-        </button>
-        <button id="routeFreeBtn" onclick="setRouteMode('free')"
-          style="flex:1;height:30px;border:none;border-radius:6px;font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;background:transparent;color:var(--gray-500);transition:all .2s;">
-          ✏ 자유 그리기
-        </button>
+      <!-- 드래그 안내 -->
+      <div style="display:flex;align-items:center;gap:7px;background:var(--gray-50);border-radius:var(--rs);padding:8px 12px;margin-bottom:10px;font-size:12px;color:var(--gray-500);">
+        <span style="font-size:15px;">✋</span>
+        <span id="drawGuideText">지도를 길게 누른 채 드래그해서 경로를 그려요</span>
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
         <div style="display:flex;gap:8px;flex:1;">
@@ -576,7 +614,7 @@ if ('serviceWorker' in navigator) {
         </div>
       </div>
       <div class="conds" id="conds"></div>
-      <button class="save-btn" id="saveBtn" disabled onclick="saveCourse()" style="margin-top:10px;">지도를 클릭해서 코스를 그어보세요</button>
+      <button class="save-btn" id="saveBtn" disabled onclick="saveCourse()" style="margin-top:10px;">지도를 드래그해서 코스를 그어보세요</button>
     </div>
   </div>
 </div>
@@ -810,7 +848,7 @@ if ('serviceWorker' in navigator) {
 
 <!-- 카카오맵 SDK — onload 콜백으로 로드 완료 후 실행 -->
 <script type="text/javascript"
-  src="//dapi.kakao.com/v2/maps/sdk.js?appkey=056307d59b47ef5080ae7fc5f1413f51&libraries=services&autoload=false">
+  src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=056307d59b47ef5080ae7fc5f1413f51&libraries=services&autoload=false">
 </script>
 
 <script>
@@ -821,6 +859,10 @@ const S = {
   path:[], dots:[], segments:[], distKm:0, crossings:0, clickedPoints:[],
   kakaoReady: false
 };
+
+const TMAP_APP_KEY = 'dM1gQjphEH6xgfyyzIjHl2ctRZEUXPPJ6oyn8aqj';
+const TMAP_PEDESTRIAN_URL = 'https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1';
+const TMAP_MAX_PASS_POINTS = 5;
 
 /* 카카오 SDK 로드 완료 후 초기화 */
 kakao.maps.load(function() {
@@ -868,7 +910,7 @@ function initCreateMap() {
       zIndex: 3
     });
 
-    // 클릭 이벤트
+    // 드래그 그리기 이벤트 등록
     kakao.maps.event.addListener(createMap, 'click', function(e) {
       if (createMode === 'ai') {
         const latlng = e.latLng;
@@ -879,10 +921,9 @@ function initCreateMap() {
             : `${latlng.getLat().toFixed(4)}, ${latlng.getLng().toFixed(4)}`;
           setAiMarker(latlng, addr);
         });
-      } else {
-        addPoint(e.latLng);
       }
     });
+    initDrawDrag();
   };
 
   if (navigator.geolocation && S.lat === 37.5503 && S.lng === 126.9200) {
@@ -923,28 +964,348 @@ function setCreateMode(mode) {
     if (createAiMarker) createAiMarker.setMap(null);
     if (S.polyline) S.polyline.setMap(createMap);
     S.dots.forEach(d => d.setMap(createMap));
-    // 바텀시트 자동으로 열기
     openBottomSheet();
   }
 }
 
-/* ── 경로 모드 ── */
-let routeMode = 'auto'; // 'auto' or 'free'
+/* ── 드래그 그리기 ── */
+let isDragging = false;
+let dragLastLatlng = null;
+let drawRawSegment = [];
+let drawBusy = false;
+let drawSnapToken = 0;
+const DRAG_MIN_METERS = 8;
 
-function setRouteMode(mode) {
-  routeMode = mode;
-  const autoBtn = document.getElementById('routeAutoBtn');
-  const freeBtn = document.getElementById('routeFreeBtn');
-  if (!autoBtn || !freeBtn) return;
-  if (mode === 'auto') {
-    autoBtn.style.background = 'var(--green)'; autoBtn.style.color = '#fff';
-    freeBtn.style.background = 'transparent'; freeBtn.style.color = 'var(--gray-500)';
-  } else {
-    freeBtn.style.background = 'var(--green)'; freeBtn.style.color = '#fff';
-    autoBtn.style.background = 'transparent'; autoBtn.style.color = 'var(--gray-500)';
+function initDrawDrag() {
+  const mapEl = document.getElementById('createMapEl');
+  if (!mapEl) return;
+  if (mapEl.dataset.drawReady === '1') return;
+  mapEl.dataset.drawReady = '1';
+
+  // 드래그 시작 — mousedown / touchstart
+  function onDragStart(e) {
+    if (createMode !== 'draw' || drawBusy) return;
+    e.preventDefault();
+    isDragging = true;
+    dragLastLatlng = null;
+    createMap.setDraggable(false); // 지도 이동 막기
+    createMap.setZoomable(false);
+
+    const latlng = getLatLngFromEvent(e);
+    if (!latlng) return;
+
+    if (S.path.length === 0) {
+      S.path = [latlng];
+      ensureDrawStartDot(latlng);
+      refreshStats(0);
+    }
+
+    const anchor = S.path[S.path.length - 1] || latlng;
+    drawRawSegment = [anchor];
+    if (latLngDistanceMeters(anchor, latlng) > 3) {
+      drawRawSegment.push(latlng);
+    }
+    dragLastLatlng = latlng;
+    renderDrawPolyline(getDrawPreviewPath());
+
+    const guide = document.getElementById('drawGuideText');
+    if (guide) guide.textContent = '손을 떼면 T맵 보행자 길로 보정해요';
   }
-  // 모드 바꾸면 경로 초기화
-  clearDraw();
+
+  // 드래그 중 — mousemove / touchmove
+  function onDragMove(e) {
+    if (!isDragging || createMode !== 'draw') return;
+    e.preventDefault();
+    const latlng = getLatLngFromEvent(e);
+    if (!latlng) return;
+
+    if (dragLastLatlng && latLngDistanceMeters(dragLastLatlng, latlng) < DRAG_MIN_METERS) return;
+    dragLastLatlng = latlng;
+    drawRawSegment.push(latlng);
+    renderDrawPolyline(getDrawPreviewPath());
+  }
+
+  // 드래그 끝 — mouseup / touchend
+  function onDragEnd() {
+    if (!isDragging) return;
+    isDragging = false;
+    createMap.setDraggable(true);
+    createMap.setZoomable(true);
+    dragLastLatlng = null;
+
+    const segment = compactLatLngs(drawRawSegment, 3);
+    drawRawSegment = [];
+    if (segment.length < 2) {
+      renderDrawPolyline(S.path);
+      setDrawGuide(S.path.length > 1
+        ? '계속 드래그해서 경로를 이어 그어요'
+        : '다음 지점까지 드래그해서 코스를 만들어요');
+      return;
+    }
+    snapAndCommitDrawSegment(segment);
+  }
+
+  // 마우스 이벤트
+  mapEl.addEventListener('mousedown', onDragStart);
+  mapEl.addEventListener('mousemove', onDragMove);
+  mapEl.addEventListener('mouseup',   onDragEnd);
+  mapEl.addEventListener('mouseleave', onDragEnd);
+  // 터치 이벤트 (모바일)
+  mapEl.addEventListener('touchstart', onDragStart, { passive: false });
+  mapEl.addEventListener('touchmove',  onDragMove,  { passive: false });
+  mapEl.addEventListener('touchend',   onDragEnd);
+  mapEl.addEventListener('touchcancel', onDragEnd);
+}
+
+function ensureDrawStartDot(latlng) {
+  if (S.dots.length > 0) return;
+  const startDot = new kakao.maps.Circle({
+    map: createMap, center: latlng,
+    radius: 6, strokeWeight: 2,
+    strokeColor: '#1D9E75', fillColor: '#fff', fillOpacity: 1
+  });
+  S.dots.push(startDot);
+}
+
+function setDrawGuide(text) {
+  const guide = document.getElementById('drawGuideText');
+  if (guide) guide.textContent = text;
+}
+
+function setDrawBusy(busy) {
+  drawBusy = busy;
+  const sb = document.getElementById('saveBtn');
+  if (busy && sb) {
+    sb.disabled = true;
+    sb.textContent = 'T맵 보행자 경로 계산 중…';
+  }
+}
+
+function getDrawPreviewPath() {
+  const base = S.path.slice();
+  if (!drawRawSegment || drawRawSegment.length < 2) return base;
+  return base.concat(drawRawSegment.slice(1));
+}
+
+function renderDrawPolyline(path) {
+  if (S.polyline) { S.polyline.setMap(null); S.polyline = null; }
+  if (path && path.length > 1) {
+    S.polyline = new kakao.maps.Polyline({
+      map: createMap, path,
+      strokeWeight: 4, strokeColor: '#1D9E75',
+      strokeOpacity: 0.9, strokeStyle: 'solid'
+    });
+    S.distKm = S.polyline.getLength() / 1000;
+  } else {
+    S.distKm = 0;
+  }
+  refreshStats(S.distKm);
+}
+
+async function snapAndCommitDrawSegment(rawSegment) {
+  const token = ++drawSnapToken;
+  setDrawBusy(true);
+  setDrawGuide('T맵 보행자 경로를 찾는 중…');
+
+  try {
+    const snapped = await fetchTmapPedestrianRoute(rawSegment);
+    if (token !== drawSnapToken) return;
+    commitDrawSegment(ensureSegmentEndpoints(snapped, rawSegment));
+    setDrawGuide('보행자 길로 보정됐어요. 계속 드래그해서 이어 그어요');
+  } catch (err) {
+    if (token !== drawSnapToken) return;
+    commitDrawSegment(rawSegment);
+    if (err.message === 'NO_TMAP_KEY') {
+      toast('TMAP 키를 넣으면 보행자 길로 자동 보정돼요');
+    } else {
+      toast('T맵 경로를 못 찾아 직접 그린 선으로 저장했어요');
+    }
+    setDrawGuide('직접 그린 선으로 이어졌어요. 계속 드래그할 수 있어요');
+  } finally {
+    if (token === drawSnapToken) {
+      setDrawBusy(false);
+      refreshStats(S.distKm);
+    }
+  }
+}
+
+function commitDrawSegment(points) {
+  const segment = compactLatLngs(points, 1);
+  if (segment.length < 2) return;
+  S.segments.push(segment);
+  rebuildDrawPathFromSegments();
+  ensureDrawStartDot(S.path[0]);
+  renderDrawPolyline(S.path);
+}
+
+function rebuildDrawPathFromSegments() {
+  const path = [];
+  S.segments.forEach(segment => {
+    segment.forEach(point => {
+      if (path.length && latLngDistanceMeters(path[path.length - 1], point) < 1) return;
+      path.push(point);
+    });
+  });
+  S.path = path;
+}
+
+function getTmapAppKey() {
+  const stored = localStorage.getItem('runloopTmapAppKey') || '';
+  const key = (stored || TMAP_APP_KEY || '').trim();
+  if (!key || key.includes('여기에') || key.includes('YOUR_')) return '';
+  return key;
+}
+
+async function fetchTmapPedestrianRoute(rawSegment) {
+  const appKey = getTmapAppKey();
+  if (!appKey) throw new Error('NO_TMAP_KEY');
+
+  const routePoints = buildTmapRoutePoints(rawSegment);
+  if (routePoints.length < 2) throw new Error('SHORT_SEGMENT');
+
+  const start = routePoints[0];
+  const end = routePoints[routePoints.length - 1];
+  const passPoints = routePoints.slice(1, -1);
+  const body = {
+    startX: start.getLng(),
+    startY: start.getLat(),
+    endX: end.getLng(),
+    endY: end.getLat(),
+    reqCoordType: 'WGS84GEO',
+    resCoordType: 'WGS84GEO',
+    searchOption: '0',
+    sort: 'index',
+    startName: encodeURIComponent('출발'),
+    endName: encodeURIComponent('도착')
+  };
+  if (passPoints.length) {
+    body.passList = passPoints.map(p => `${p.getLng()},${p.getLat()}`).join('_');
+  }
+
+  const res = await fetch(TMAP_PEDESTRIAN_URL, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      appKey
+    },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error('TMAP_' + res.status);
+
+  const data = await res.json();
+  const path = parseTmapPath(data);
+  if (path.length < 2) throw new Error('EMPTY_TMAP_PATH');
+  return path;
+}
+
+function buildTmapRoutePoints(points) {
+  const cleaned = compactLatLngs(points, 8);
+  if (cleaned.length <= 2) return cleaned;
+  const start = cleaned[0];
+  const end = cleaned[cleaned.length - 1];
+  const inner = cleaned.slice(1, -1);
+  const passPoints = sampleLatLngs(inner, TMAP_MAX_PASS_POINTS);
+  return [start].concat(passPoints, [end]);
+}
+
+function parseTmapPath(data) {
+  const points = [];
+  const features = data && Array.isArray(data.features) ? data.features : [];
+  features.forEach(feature => {
+    const geometry = feature.geometry || {};
+    if (geometry.type === 'LineString' && Array.isArray(geometry.coordinates)) {
+      geometry.coordinates.forEach(coord => pushTmapCoord(points, coord));
+    }
+    if (geometry.type === 'MultiLineString' && Array.isArray(geometry.coordinates)) {
+      geometry.coordinates.forEach(line => {
+        if (Array.isArray(line)) line.forEach(coord => pushTmapCoord(points, coord));
+      });
+    }
+  });
+  return compactLatLngs(points, 1);
+}
+
+function pushTmapCoord(points, coord) {
+  if (!Array.isArray(coord) || coord.length < 2) return;
+  const lng = parseFloat(coord[0]);
+  const lat = parseFloat(coord[1]);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+  points.push(new kakao.maps.LatLng(lat, lng));
+}
+
+function ensureSegmentEndpoints(points, rawSegment) {
+  const out = points.slice();
+  const start = rawSegment[0];
+  const end = rawSegment[rawSegment.length - 1];
+  if (out.length && latLngDistanceMeters(out[0], start) > 20) out.unshift(start);
+  if (out.length && latLngDistanceMeters(out[out.length - 1], end) > 20) out.push(end);
+  return out;
+}
+
+function compactLatLngs(points, minMeters) {
+  const out = [];
+  points.forEach(point => {
+    if (!point) return;
+    if (!out.length || latLngDistanceMeters(out[out.length - 1], point) >= minMeters) {
+      out.push(point);
+    }
+  });
+  const last = points[points.length - 1];
+  if (last && out.length && latLngDistanceMeters(out[out.length - 1], last) > 1) {
+    out.push(last);
+  }
+  return out;
+}
+
+function sampleLatLngs(points, maxCount) {
+  if (points.length <= maxCount) return points;
+  const sampled = [];
+  for (let i = 1; i <= maxCount; i++) {
+    const idx = Math.round((i * (points.length - 1)) / (maxCount + 1));
+    sampled.push(points[idx]);
+  }
+  return sampled;
+}
+
+function latLngDistanceMeters(a, b) {
+  if (!a || !b) return 0;
+  const toRad = deg => deg * Math.PI / 180;
+  const lat1 = a.getLat(), lat2 = b.getLat();
+  const dLat = toRad(lat2 - lat1);
+  const dLng = toRad(b.getLng() - a.getLng());
+  const s1 = Math.sin(dLat / 2);
+  const s2 = Math.sin(dLng / 2);
+  const h = s1 * s1 + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * s2 * s2;
+  return 6371000 * 2 * Math.atan2(Math.sqrt(h), Math.sqrt(1 - h));
+}
+
+// 마우스/터치 이벤트에서 카카오맵 LatLng 변환
+function getLatLngFromEvent(e) {
+  if (!createMap) return null;
+  const mapEl = document.getElementById('createMapEl');
+  const rect = mapEl.getBoundingClientRect();
+  let clientX, clientY;
+  if (e.touches && e.touches.length > 0) {
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  } else {
+    clientX = e.clientX;
+    clientY = e.clientY;
+  }
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+  // 카카오맵 픽셀 → LatLng 변환
+  const proj = createMap.getProjection();
+  const point = new kakao.maps.Point(x, y);
+  return proj.coordsFromContainerPoint(point);
+}
+
+function setRouteMode() {} // 호환성 유지용 빈 함수
+
+/* 경로 점 추가 (호환성 유지) */
+function addPoint(latlng) {
+  // 드래그 방식으로 대체됨 — 사용 안 함
 }
 
 function moveToMyLocation() {
@@ -1219,146 +1580,44 @@ function initMap() {
   }
 }
 
-/* 경로 점 추가 */
-async function addPoint(latlng) {
-  const isFirst = S.path.length === 0;
-
-  // 점 마커 추가
-  const dot = new kakao.maps.Circle({
-    map: createMap, center: latlng,
-    radius: isFirst ? 8 : 5,
-    strokeWeight: isFirst ? 2 : 0,
-    strokeColor: '#1D9E75',
-    fillColor: isFirst ? '#fff' : '#1D9E75',
-    fillOpacity: 1
-  });
-  S.dots.push(dot);
-
-  // 클릭한 점 저장
-  S.clickedPoints.push(latlng);
-
-  if (isFirst) {
-    S.path.push(latlng);
-    S.segments.push([latlng]);
-    refreshStats(0);
-    return;
-  }
-
-  // 이전 점은 사용자가 클릭한 마지막 점 기준
-  const prev = S.clickedPoints[S.clickedPoints.length - 2];
-
-  // 자유 그리기 모드면 직선으로 연결
-  if (routeMode === 'free') {
-    S.path.push(latlng);
-    S.segments.push([latlng]);
-    if (S.polyline) S.polyline.setMap(null);
-    S.polyline = new kakao.maps.Polyline({
-      map: createMap, path: S.path,
-      strokeWeight: 4, strokeColor: '#1D9E75',
-      strokeOpacity: 0.9, strokeStyle: 'solid'
-    });
-    S.distKm = S.polyline.getLength() / 1000;
-    refreshStats(S.distKm);
-    return;
-  }
-
-  // 도보 경로 모드
-  try {
-    toast('경로 계산 중…');
-    const res = await fetch(
-      `https://apis-navi.kakaomobility.com/v1/directions?origin=${prev.getLng()},${prev.getLat()}&destination=${latlng.getLng()},${latlng.getLat()}&priority=RECOMMEND`,
-      { headers: { 'Authorization': 'KakaoAK d0bd1c06205b2f05bacf888d68c632b3' } }
-    );
-    const data = await res.json();
-
-    if (data.routes && data.routes[0].result_code === 0) {
-      // 경로 포인트 추출 + 횡단보도 수 카운트
-      const points = [];
-      let segCrossings = 0;
-      data.routes[0].sections.forEach(section => {
-        // 횡단보도는 guides에서 CROSSWALK 타입으로 옴
-        if (section.guides) {
-          section.guides.forEach(g => {
-            if (g.type === 27) segCrossings++; // 27 = 횡단보도
-          });
-        }
-        section.roads.forEach(road => {
-          for (let i = 0; i < road.vertexes.length; i += 2) {
-            points.push(new kakao.maps.LatLng(road.vertexes[i+1], road.vertexes[i]));
-          }
-        });
-      });
-      S.crossings += segCrossings;
-      S.segments.push(points);
-      S.path.push(...points);
-      S.path.push(latlng);
-    } else {
-      // 길찾기 실패 — 연결 안 하고 알림
-      S.clickedPoints.pop(); // 클릭 취소
-      S.dots.pop()?.setMap(null); // 마커 제거
-      toast('이 구간은 길이 없어요. 자유 그리기를 사용해보세요 ✏');
-      return;
-    }
-  } catch(e) {
-    S.clickedPoints.pop();
-    S.dots.pop()?.setMap(null);
-    toast('경로를 찾지 못했어요. 자유 그리기를 사용해보세요 ✏');
-    return;
-  }
-
-  // 전체 경로 폴리라인 업데이트
-  if (S.polyline) S.polyline.setMap(null);
-  S.polyline = new kakao.maps.Polyline({
-    map: createMap, path: S.path,
-    strokeWeight: 4, strokeColor: '#1D9E75',
-    strokeOpacity: 0.9, strokeStyle: 'solid'
-  });
-  S.distKm = S.polyline.getLength() / 1000;
-  refreshStats(S.distKm);
-}
-
-/* 실행취소 — 클릭 한 번 단위로 */
+/* 실행취소 — 마지막 드래그 세그먼트 단위로 */
 function undoDraw() {
-  if (!S.segments || S.segments.length === 0) return;
-
-  // 클릭한 점도 제거
-  S.clickedPoints.pop();
-
-  // 마지막 세그먼트 제거 (클릭 한 번에 해당하는 구간)
-  const lastSeg = S.segments.pop();
-  if (lastSeg) {
-    S.path.splice(S.path.length - lastSeg.length, lastSeg.length);
+  if (!S.segments || S.segments.length === 0) {
+    clearDraw();
+    return;
   }
 
-  // 마지막 점 마커 제거
-  const d = S.dots.pop();
-  if (d) d.setMap(null);
+  // 마지막 세그먼트 제거
+  S.segments.pop();
+  rebuildDrawPathFromSegments();
 
-  // 폴리라인 업데이트
-  if (S.polyline) S.polyline.setMap(null);
-  S.polyline = null;
-
-  if (S.path.length > 1) {
-    S.polyline = new kakao.maps.Polyline({
-      map: createMap, path: S.path,
-      strokeWeight: 4, strokeColor: '#1D9E75', strokeOpacity: .9
-    });
-    S.distKm = S.polyline.getLength() / 1000;
+  // 시작점 마커 제거 (세그먼트 다 지우면)
+  if (S.segments.length === 0) {
+    S.dots.forEach(d => d.setMap(null));
+    S.dots = [];
   } else {
-    S.distKm = 0;
-    S.crossings = 0;
+    ensureDrawStartDot(S.path[0]);
   }
-  refreshStats(S.distKm);
+
+  renderDrawPolyline(S.path);
+  setDrawGuide(S.path.length > 1
+    ? '마지막 구간을 지웠어요. 계속 드래그해서 이어 그어요'
+    : '지도를 길게 누른 채 드래그해서 경로를 그려요');
 }
 
 /* 전체 지우기 */
 function clearDraw() {
+  drawSnapToken++;
+  drawRawSegment = [];
+  drawBusy = false;
   S.path = []; S.segments = []; S.crossings = 0; S.clickedPoints = [];
   S.dots.forEach(d => d.setMap(null));
   S.dots = [];
   if (S.polyline) { S.polyline.setMap(null); S.polyline = null; }
   S.distKm = 0;
   refreshStats(0);
+  const guide = document.getElementById('drawGuideText');
+  if (guide) guide.textContent = '지도를 길게 누른 채 드래그해서 경로를 그려요';
 }
 
 /* 통계 업데이트 */
@@ -1415,7 +1674,7 @@ function refreshStats(km) {
     sb.textContent = km.toFixed(2) + 'km 코스 저장하기';
   } else {
     sb.disabled = true;
-    sb.textContent = '지도를 클릭해서 코스를 그어보세요';
+    sb.textContent = '지도를 드래그해서 코스를 그어보세요';
   }
 }
 
@@ -1692,22 +1951,57 @@ function renderNearCourses(results) {
   const courseKm = [3.2, 5.0, 4.5, 2.8, 6.1];
   const tags = ['평지 · 산책로', '공원 루프', '한강변', '야간 가능', '뷰 좋음'];
 
+  const tagSets = [
+    [{l:'안전',c:'tg'},{l:'평지',c:'tb'}],
+    [{l:'야간 가능',c:'tg'},{l:'공원',c:'tg'}],
+    [{l:'뷰 좋음',c:'tb'},{l:'경사 포함',c:'ta'}],
+  ];
   wrap.innerHTML = unique.map((p, i) => {
     const km = courseKm[i % courseKm.length];
+    const cal = Math.round(km * 60);
     const time = Math.round(km * 7);
     const dist = p.distFromMe < 1
       ? Math.round(p.distFromMe * 1000) + 'm'
       : p.distFromMe.toFixed(1) + 'km';
+    const tset = tagSets[i % tagSets.length];
+    const featured = i === 0 ? 'border:1.5px solid var(--green);' : 'border:1px solid var(--gray-100);';
     return `
-      <div class="near-course-card" onclick="goToAiWithLocation('${p.place_name}', ${p.y}, ${p.x})">
-        <div class="near-course-icon" style="background:${iconBgs[i % iconBgs.length]};">${icons[i % icons.length]}</div>
-        <div class="near-course-info">
-          <div class="near-course-name">${p.place_name} 코스</div>
-          <div class="near-course-meta">출발지까지 ${dist} · 약 ${km}km · ${time}분 · ${tags[i % tags.length]}</div>
+      <div style="background:#fff;border-radius:var(--r);${featured}overflow:hidden;margin-bottom:10px;">
+        <div style="display:flex;gap:14px;padding:14px;">
+          <div style="position:relative;flex-shrink:0;">
+            <div style="width:52px;height:52px;border-radius:12px;background:${iconBgs[i % iconBgs.length]};display:flex;align-items:center;justify-content:center;font-size:24px;">${icons[i % icons.length]}</div>
+            <div style="position:absolute;top:-5px;right:-5px;background:var(--green);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:999px;">AI</div>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.place_name} 코스</div>
+            <div style="font-size:12px;color:var(--gray-500);margin-bottom:7px;">출발지까지 ${dist} · 약 ${time}분</div>
+            <div style="display:flex;gap:5px;">${tset.map(t=>`<span style="font-size:11px;font-weight:500;padding:3px 8px;border-radius:999px;" class="tag ${t.c}">${t.l}</span>`).join('')}</div>
+          </div>
+          <div style="text-align:right;flex-shrink:0;">
+            <div style="font-size:22px;font-weight:700;color:var(--green);line-height:1;">${km}</div>
+            <div style="font-size:11px;color:var(--gray-500);">km</div>
+          </div>
         </div>
-        <div class="near-course-dist">${km}km</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--gray-100);background:var(--gray-50);">
+          <div style="display:flex;gap:14px;">
+            <div style="font-size:12px;color:var(--gray-500);">⏱ <span style="font-weight:600;color:var(--gray-700);">${time}분</span></div>
+            <div style="font-size:12px;color:var(--gray-500);">🔥 <span style="font-weight:600;color:var(--gray-700);">${cal}kcal</span></div>
+          </div>
+          <div style="display:flex;gap:6px;">
+            <button onclick="event.stopPropagation();saveNearCourse('${p.place_name}',${km})" style="background:none;color:var(--green);font-size:12px;font-weight:500;padding:7px 10px;border-radius:999px;border:1px solid var(--green);cursor:pointer;font-family:inherit;">📍 저장</button>
+            <button onclick="goToAiWithLocation('${p.place_name}',${p.y},${p.x})" style="background:var(--green);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">▶ 시작</button>
+          </div>
+        </div>
       </div>`;
   }).join('');
+}
+
+function saveNearCourse(name, km) {
+  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
+  if (courses.find(x => x.name === name + ' 코스')) { toast('이미 저장된 코스예요!'); return; }
+  courses.push({ id: Date.now(), name: name + ' 코스', dist: km.toFixed(2), date: new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric'}), points: [], fromAi: true });
+  localStorage.setItem('myCourses', JSON.stringify(courses));
+  toast(name + ' 코스가 저장됐어요! 📍');
 }
 
 function goToAiWithLocation(name, lat, lng) {
@@ -1731,9 +2025,60 @@ function renderRecords() {
   // 이번 주 요약
   const weekTotal = records.reduce((s,r) => s + parseFloat(r.dist), 0);
   const weekCal = records.reduce((s,r) => s + r.cal, 0);
-  document.getElementById('weekDist').innerHTML = weekTotal.toFixed(1) + '<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small>';
-  document.getElementById('weekCount').innerHTML = records.length + '<small style="font-size:11px;font-weight:400;color:var(--gray-500)">회</small>';
-  document.getElementById('weekCal').innerHTML = weekCal + '<small style="font-size:11px;font-weight:400;color:var(--gray-500)">kcal</small>';
+  document.getElementById('weekDist').innerHTML = weekTotal.toFixed(1) + '<small style="font-size:10px;font-weight:400;color:var(--gray-500);">km</small>';
+  document.getElementById('weekCount').innerHTML = records.length + '<small style="font-size:10px;font-weight:400;color:var(--gray-500);">회</small>';
+  document.getElementById('weekCal').innerHTML = weekCal + '<small style="font-size:10px;font-weight:400;color:var(--gray-500);">kcal</small>';
+
+  // ── 요일별 바 차트 ──
+  const chartEl  = document.getElementById('weekBarChart');
+  const labelEl  = document.getElementById('weekBarLabels');
+  if (chartEl && labelEl) {
+    const dayNames = ['일','월','화','수','목','금','토'];
+    const today = new Date().getDay(); // 0=일
+    // 이번 주 월~일 기준 날짜별 거리 집계 (간단히 최근 7개 기록 기반)
+    const dayDist = Array(7).fill(0);
+    records.forEach(r => {
+      // r.date 는 "5월 23일 (토)" 형태
+      const match = r.date && r.date.match(/(\d+)월\s*(\d+)일/);
+      if (match) {
+        const now = new Date();
+        const rDate = new Date(now.getFullYear(), parseInt(match[1])-1, parseInt(match[2]));
+        const diff = Math.floor((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - rDate) / 86400000);
+        if (diff >= 0 && diff < 7) {
+          const idx = ((today - diff) + 7) % 7;
+          dayDist[idx] += parseFloat(r.dist);
+        }
+      }
+    });
+    // 월요일 시작 순서로 재배열 (월=1 ~ 일=0)
+    const ordered = [1,2,3,4,5,6,0].map(d => ({ day: dayNames[d], dist: dayDist[d], isToday: d === today }));
+    const maxDist = Math.max(...ordered.map(o => o.dist), 1);
+    chartEl.innerHTML = '';
+    labelEl.innerHTML = '';
+    ordered.forEach(o => {
+      const barH = Math.round((o.dist / maxDist) * 48) + 4;
+      const barColor = o.isToday ? 'var(--green)' : o.dist > 0 ? '#9FE1CB' : 'var(--gray-100)';
+      const wrap2 = document.createElement('div');
+      wrap2.style.cssText = 'flex:1;display:flex;flex-direction:column;align-items:center;gap:0;height:100%;justify-content:flex-end;';
+      const bar = document.createElement('div');
+      bar.style.cssText = `width:100%;height:${barH}px;border-radius:4px 4px 0 0;background:${barColor};`;
+      wrap2.appendChild(bar);
+      chartEl.appendChild(wrap2);
+
+      const lbl = document.createElement('div');
+      lbl.style.cssText = `flex:1;text-align:center;font-size:10px;color:${o.isToday ? 'var(--green)' : 'var(--gray-500)'};font-weight:${o.isToday ? '700' : '500'};`;
+      lbl.textContent = o.day;
+      labelEl.appendChild(lbl);
+    });
+  }
+
+  // ── 홈 목표 프로그레스 ──
+  const goal = parseFloat(localStorage.getItem('weeklyGoal') || '20');
+  const pct  = Math.min(Math.round((weekTotal / goal) * 100), 100);
+  const fillEl = document.getElementById('homeGoalFill');
+  const textEl = document.getElementById('homeGoalText');
+  if (fillEl) fillEl.style.width = pct + '%';
+  if (textEl) textEl.textContent = weekTotal.toFixed(1) + ' / ' + goal + 'km';
 
   if (!wrap) return;
   if (!records.length) {
@@ -1798,10 +2143,45 @@ async function fetchWeather() {
     } catch(e) {
       document.getElementById('wLocation').textContent = d.name;
     }
-    document.getElementById('wTemp').textContent = temp + '°';
+    const tempMax  = Math.round(d.main.temp_max);
+    const tempMin  = Math.round(d.main.temp_min);
+    document.getElementById('wTemp').textContent = temp;
     document.getElementById('wDesc').textContent = desc;
     document.getElementById('wIcon').textContent = icon;
     document.getElementById('wSummary').textContent = makeWeatherSummary(temp, humid, parseFloat(wind), d.weather[0].id);
+    // 최고/최저 온도
+    const hiLoEl = document.getElementById('wHiLo');
+    const highEl = document.getElementById('wHigh');
+    const lowEl  = document.getElementById('wLow');
+    if (hiLoEl) hiLoEl.style.display = 'flex';
+    if (highEl) highEl.textContent = '↑' + tempMax + '°';
+    if (lowEl)  lowEl.textContent  = '↓' + tempMin + '°';
+    // 체감온도
+    const feelsEl = document.getElementById('wFeels');
+    if (feelsEl) feelsEl.textContent = feel + '°';
+
+    // 미세먼지/초미세먼지 통합 등급 (Air Pollution API)
+    try {
+      const airRes = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${S.lat}&lon=${S.lng}&appid=${OWM_KEY}`);
+      const airData = await airRes.json();
+      const comp = airData.list[0].components;
+      const pm10 = Math.round(comp.pm10);
+      const pm25 = Math.round(comp.pm2_5);
+      // 더 나쁜 쪽 기준으로 등급 결정
+      const grade10 = getPmGrade(pm10, 'pm10');
+      const grade25 = getPmGrade(pm25, 'pm25');
+      const style10 = getDustStyle(grade10);
+      const style25 = getDustStyle(grade25);
+      const badge10 = document.getElementById('wDustBadge');
+      const badge25 = document.getElementById('wDustBadge25');
+      if (badge10) { badge10.textContent = style10.label; badge10.style.background = style10.bg; badge10.style.color = style10.color; }
+      if (badge25) { badge25.textContent = style25.label; badge25.style.background = style25.bg; badge25.style.color = style25.color; }
+    } catch(e) {
+      const b10 = document.getElementById('wDustBadge');
+      const b25 = document.getElementById('wDustBadge25');
+      if (b10) b10.textContent = '—';
+      if (b25) b25.textContent = '—';
+    }
   } catch(e) {
     document.getElementById('wDesc').textContent = '날씨 정보를 불러오지 못했어요';
   }
@@ -1973,31 +2353,20 @@ function startMyCoursRun(id) {
 }
 
 function makeWeatherSummary(temp, humid, wind, weatherId) {
-  let parts = [];
-
-  // 날씨 상태
-  if (weatherId >= 200 && weatherId < 300) return '천둥번개가 치고 있어요. 오늘은 실내 운동이 좋을 것 같아요 ⛈';
-  if (weatherId >= 500 && weatherId < 600) return '비가 내리고 있어요. 우비나 방수 재킷을 챙겨요 🌧';
-  if (weatherId >= 600 && weatherId < 700) return '눈이 오고 있어요. 미끄럼 조심하세요 ❄️';
-  if (weatherId >= 700 && weatherId < 800) return '안개가 꼈어요. 시야 확보에 주의하며 천천히 뛰어요 🌫';
-
-  // 기온
-  if (temp >= 33) parts.push('매우 덥고 더운 날씨예요. 한낮 런닝은 피하고 수분을 충분히 챙기세요 🥵');
-  else if (temp >= 28) parts.push('덥고 습한 날씨예요. 이른 아침이나 저녁 런닝을 추천해요 ☀️');
-  else if (temp >= 20) {
-    if (humid > 75) parts.push('따뜻하지만 습해요. 통기성 좋은 옷을 입고 뛰어요 💧');
-    else if (wind > 6) parts.push('적당히 따뜻하고 바람이 불어요. 코스 방향을 고려해보세요 💨');
-    else parts.push('런닝하기 딱 좋은 날씨예요. 가볍게 나가볼까요? 🏃');
-  } else if (temp >= 10) {
-    if (wind > 8) parts.push('선선하고 바람이 강해요. 바람막이 챙기는 걸 추천해요 🌬');
-    else parts.push('선선하고 쾌적해요. 런닝하기 최적의 날씨예요 🌿');
-  } else if (temp >= 0) {
-    parts.push('꽤 쌀쌀해요. 레이어링으로 따뜻하게 입고 나가세요 🧤');
-  } else {
-    parts.push('매우 춥네요. 방한 준비 철저히 하고 몸 충분히 풀고 시작하세요 🥶');
+  if (weatherId >= 200 && weatherId < 300) return '⛈ 천둥번개 중. 오늘은 실내에서 버피 100개';
+  if (weatherId >= 500 && weatherId < 600) return '🌧 비 오는 날. 우비 런닝도 나름 낭만 있음';
+  if (weatherId >= 600 && weatherId < 700) return '❄️ 눈 왔어요. 미끄러지면 그게 바로 코어 운동';
+  if (weatherId >= 700 && weatherId < 800) return '🌫 안개 주의. 앞이 안 보여도 페이스는 보여요';
+  if (temp >= 33) return '🥵 진짜 더워요. 새벽 런닝 아니면 내일로 미루는 것도 용기';
+  if (temp >= 28) return '☀️ 더운 날씨. 물 챙기고 그늘 코스로 가요';
+  if (temp >= 20) {
+    if (humid > 75) return '💧 습해요. 땀인지 눈물인지 모를 각오로';
+    if (wind > 6)  return '💨 바람 있어요. 맞바람 구간엔 욕이 나올 수 있음';
+    return '🏃 안 나가면 후회할 날씨예요';
   }
-
-  return parts[0] || '오늘도 좋은 런닝 하세요! 🏃';
+  if (temp >= 10) return wind > 8 ? '🌬 쌀쌀하고 바람 있어요. 바람막이 필수' : '🌿 런닝하기 딱 좋아요. 지금 당장 나가세요';
+  if (temp >= 0)  return '🧤 꽤 추워요. 귀마개까지 챙기면 100점';
+  return '🥶 진짜 춥네요. 나가는 것 자체가 오늘의 운동';
 }
 
 function getWeatherEmoji(id) {
@@ -2010,6 +2379,33 @@ function getWeatherEmoji(id) {
   if (id === 801) return '🌤';
   if (id <= 804) return '☁️';
   return '🌤';
+}
+
+function getPmGrade(val, type) {
+  if (type === 'pm10') {
+    if (val <= 15)  return '매우좋음';
+    if (val <= 30)  return '좋음';
+    if (val <= 80)  return '보통';
+    if (val <= 150) return '나쁨';
+    return '매우나쁨';
+  } else {
+    if (val <= 8)   return '매우좋음';
+    if (val <= 15)  return '좋음';
+    if (val <= 35)  return '보통';
+    if (val <= 75)  return '나쁨';
+    return '매우나쁨';
+  }
+}
+
+function getDustStyle(grade) {
+  const map = {
+    '매우좋음': { label:'매우좋음', bg:'#E1F5EE', color:'#0F6E56' },
+    '좋음':     { label:'좋음',     bg:'#E1F5EE', color:'#1D9E75' },
+    '보통':     { label:'보통',     bg:'#F0EFEA', color:'#444441' },
+    '나쁨':     { label:'나쁨',     bg:'#FAEEDA', color:'#BA7517' },
+    '매우나쁨': { label:'매우나쁨', bg:'#FCEBEB', color:'#A32D2D' },
+  };
+  return map[grade] || map['보통'];
 }
 
 function getWeatherDesc(id) {
