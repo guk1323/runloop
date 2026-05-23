@@ -188,14 +188,15 @@ if ('serviceWorker' in navigator) {
   .record-dist{font-size:16px;font-weight:700;color:var(--coral);}
 
   .mc-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);margin-bottom:10px;overflow:hidden;}
-  .mc-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;}
-  .mc-name{font-size:14px;font-weight:700;color:var(--gray-900);}
+  .mc-header{padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .mc-header > div:first-child{min-width:0;}
+  .mc-name{font-size:14px;font-weight:700;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .mc-meta{font-size:12px;color:var(--gray-500);margin-top:2px;}
-  .mc-actions{display:flex;gap:6px;}
-  .mc-btn{padding:5px 10px;border-radius:var(--rp);font-size:11px;font-weight:500;border:none;cursor:pointer;font-family:inherit;}
+  .mc-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
+  .mc-btn{height:32px;padding:0 11px;border-radius:var(--rs);font-size:12px;font-weight:700;border:1px solid transparent;cursor:pointer;font-family:inherit;white-space:nowrap;}
   .mc-btn-run{background:var(--ink);color:#fff;}
-  .mc-btn-edit{background:var(--gray-100);color:var(--gray-700);}
-  .mc-btn-del{background:var(--red-light);color:var(--red);}
+  .mc-btn-edit{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
+  .mc-btn-del{background:#fff;color:var(--red);border-color:var(--red-light);}
   .mc-preview{height:70px;background:#dce8dc;position:relative;}
   .mc-preview canvas{width:100%;height:100%;display:block;}
   .mc-dist-badge{position:absolute;bottom:6px;right:8px;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--rp);}
@@ -514,7 +515,7 @@ if ('serviceWorker' in navigator) {
         </button>
         <button id="modeDrawBtn" onclick="setCreateMode('draw')"
           style="flex:1;height:32px;border:none;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;background:transparent;color:var(--gray-500);transition:all .2s;">
-          ✏ 직접 그리기
+          직접 그리기
         </button>
       </div>
       <!-- 검색바 (항상 표시) -->
@@ -599,8 +600,8 @@ if ('serviceWorker' in navigator) {
           <div class="scell" style="flex:1;"><div class="scell-l">예상 시간</div><div class="scell-v" id="dTime">—</div></div>
         </div>
         <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0;">
-          <button onclick="undoDraw()" style="height:34px;padding:0 10px;background:var(--gray-100);border:none;border-radius:var(--rs);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;color:var(--gray-700);white-space:nowrap;">↩ 취소</button>
-          <button onclick="clearDraw()" style="height:34px;padding:0 10px;background:var(--red-light);border:none;border-radius:var(--rs);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;color:var(--red);white-space:nowrap;">🗑 지우기</button>
+          <button onclick="undoDraw()" style="height:34px;padding:0 12px;background:var(--gray-100);border:none;border-radius:var(--rs);font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;color:var(--gray-700);white-space:nowrap;">이전</button>
+          <button onclick="clearDraw()" style="height:34px;padding:0 12px;background:var(--red-light);border:none;border-radius:var(--rs);font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;color:var(--red);white-space:nowrap;">전체 지우기</button>
         </div>
       </div>
       <div class="conds" id="conds"></div>
@@ -866,7 +867,7 @@ if ('serviceWorker' in navigator) {
     <!-- 한 줄 메모 -->
     <div style="margin-bottom:14px;">
       <div style="font-size:11px;color:var(--gray-500);margin-bottom:5px;">오늘의 한 줄 메모</div>
-      <textarea id="finishMemo" rows="2" style="width:100%;border:1px solid var(--gray-300);border-radius:var(--rs);padding:10px 12px;font-size:13px;font-family:inherit;outline:none;resize:none;line-height:1.5;" placeholder="오늘 컨디션은 어땠나요? 자유롭게 기록해보세요 ✏️"></textarea>
+      <textarea id="finishMemo" rows="2" style="width:100%;border:1px solid var(--gray-300);border-radius:var(--rs);padding:10px 12px;font-size:13px;font-family:inherit;outline:none;resize:none;line-height:1.5;" placeholder="오늘 컨디션은 어땠나요? 자유롭게 기록해보세요"></textarea>
     </div>
     <!-- 오늘 기분 -->
     <div style="margin-bottom:14px;">
@@ -2251,7 +2252,7 @@ function renderNearCourses(results) {
           </div>
           <div style="display:flex;gap:6px;">
             <button onclick="event.stopPropagation();saveNearCourse('${p.place_name}',${km})" style="background:none;color:var(--ink);font-size:12px;font-weight:500;padding:7px 10px;border-radius:999px;border:1px solid var(--gray-300);cursor:pointer;font-family:inherit;">📍 저장</button>
-            <button onclick="goToAiWithLocation('${p.place_name}',${p.y},${p.x})" style="background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">▶ 시작</button>
+            <button onclick="goToAiWithLocation('${p.place_name}',${p.y},${p.x})" style="background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">시작</button>
           </div>
         </div>
       </div>`;
@@ -2575,9 +2576,9 @@ function renderMyCourses() {
           <div class="mc-meta">${c.date} 저장 · ${c.dist}km · 약 ${Math.round(parseFloat(c.dist)*7)}분</div>
         </div>
         <div class="mc-actions">
-          <button class="mc-btn mc-btn-run" onclick="startMyCoursRun(${c.id})">▶ 시작</button>
-          <button class="mc-btn mc-btn-edit" onclick="openRename(${c.id}, '${c.name}')">✏</button>
-          <button class="mc-btn mc-btn-del" onclick="deleteMyCourse(${c.id})">🗑</button>
+          <button class="mc-btn mc-btn-run" onclick="startMyCoursRun(${c.id})">시작</button>
+          <button class="mc-btn mc-btn-edit" onclick="openRename(${c.id}, '${c.name}')">이름</button>
+          <button class="mc-btn mc-btn-del" onclick="deleteMyCourse(${c.id})">삭제</button>
         </div>
       </div>
     `;
@@ -3318,7 +3319,7 @@ function renderMyPage() {
               <div style="font-size:11px;color:var(--gray-500);">${r.time}</div>
             </div>
           </div>
-          ${r.memo ? `<div style="font-size:12px;color:var(--gray-700);padding:8px 10px;background:var(--gray-50);border-radius:var(--rs);border-left:3px solid var(--coral);line-height:1.5;">✏️ ${r.memo}</div>` : ''}
+          ${r.memo ? `<div style="font-size:12px;color:var(--gray-700);padding:8px 10px;background:var(--gray-50);border-radius:var(--rs);border-left:3px solid var(--coral);line-height:1.5;">${r.memo}</div>` : ''}
         </div>`).join('');
     }
   }
