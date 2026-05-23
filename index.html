@@ -863,10 +863,10 @@ const S = {
 const TMAP_APP_KEY = 'dM1gQjphEH6xgfyyzIjHl2ctRZEUXPPJ6oyn8aqj';
 const TMAP_PEDESTRIAN_URL = 'https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1';
 const TMAP_MAX_PASS_POINTS = 3;
-const TMAP_CONNECT_TOLERANCE_METERS = 18;
+const TMAP_CONNECT_TOLERANCE_METERS = 30;
 const TMAP_SNAP_NOTICE_METERS = 45;
-const SMART_SNAP_MAX_DEVIATION_METERS = 70;
-const SMART_SNAP_MAX_END_GAP_METERS = 90;
+const SMART_SNAP_MAX_DEVIATION_METERS = 130;
+const SMART_SNAP_MAX_END_GAP_METERS = 120;
 const OVERLAP_GRID_SCALE = 30000;
 
 /* 카카오 SDK 로드 완료 후 초기화 */
@@ -1243,16 +1243,16 @@ function getSmartSnapDecision(rawSegment, normalized) {
   if (normalized.startSnapMeters > TMAP_CONNECT_TOLERANCE_METERS) {
     return { useSnapped: false, message: '지도에 없는 길로 판단해 직접 그린 선을 살렸어요' };
   }
-  if (normalized.endSnapMeters > SMART_SNAP_MAX_END_GAP_METERS && snappedMeters > rawMeters * 1.15) {
+  if (rawMeters > 120 && normalized.endSnapMeters > SMART_SNAP_MAX_END_GAP_METERS && snappedMeters > rawMeters * 1.45) {
     return { useSnapped: false, message: '끝점 보정이 멀어서 직접 그린 길로 유지했어요' };
   }
-  if (rawMeters > 0 && snappedMeters > Math.max(rawMeters * 2.2, rawMeters + 250)) {
+  if (rawMeters > 0 && snappedMeters > Math.max(rawMeters * 3.0, rawMeters + 450)) {
     return { useSnapped: false, message: '보정 경로가 너무 돌아가서 직접 그린 길로 유지했어요' };
   }
-  if (rawMeters > 80 && snappedMeters < rawMeters * 0.45) {
+  if (rawMeters > 140 && snappedMeters < rawMeters * 0.35) {
     return { useSnapped: false, message: '보정 경로가 의도보다 짧아 직접 그린 길로 유지했어요' };
   }
-  if (maxDeviation > SMART_SNAP_MAX_DEVIATION_METERS && snappedMeters > rawMeters * 1.25) {
+  if (rawMeters > 180 && maxDeviation > SMART_SNAP_MAX_DEVIATION_METERS && snappedMeters > rawMeters * 1.8) {
     return { useSnapped: false, message: '보정 경로가 그린 흐름과 달라 직접 길로 유지했어요' };
   }
   return { useSnapped: true, message: '' };
