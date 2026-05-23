@@ -856,15 +856,16 @@ const S = {
   tab:'ai', courses:[], sel:-1,
   lat:37.5503, lng:126.9200,
   map:null, polyline:null, myMarker:null,
-  path:[], dots:[], segments:[], distKm:0, crossings:0, clickedPoints:[],
+  path:[], dots:[], segments:[], overlapPolylines:[], distKm:0, crossings:0, clickedPoints:[],
   kakaoReady: false
 };
 
 const TMAP_APP_KEY = 'dM1gQjphEH6xgfyyzIjHl2ctRZEUXPPJ6oyn8aqj';
 const TMAP_PEDESTRIAN_URL = 'https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1';
 const TMAP_MAX_PASS_POINTS = 3;
-const TMAP_CONNECT_TOLERANCE_METERS = 35;
+const TMAP_CONNECT_TOLERANCE_METERS = 18;
 const TMAP_SNAP_NOTICE_METERS = 45;
+const OVERLAP_GRID_SCALE = 30000;
 
 /* 카카오 SDK 로드 완료 후 초기화 */
 kakao.maps.load(function() {
@@ -956,6 +957,7 @@ function setCreateMode(mode) {
     if (guide) guide.style.display = 'block';
     // 그리기 경로 숨기기 (지도에서만 제거, 데이터는 유지)
     if (S.polyline) S.polyline.setMap(null);
+    S.overlapPolylines.forEach(line => line.setMap(null));
     S.dots.forEach(d => d.setMap(null));
   } else {
     drawBtn.style.background = 'var(--green)'; drawBtn.style.color = '#fff';
@@ -965,6 +967,7 @@ function setCreateMode(mode) {
     if (guide) guide.style.display = 'none';
     if (createAiMarker) createAiMarker.setMap(null);
     if (S.polyline) S.polyline.setMap(createMap);
+    S.overlapPolylines.forEach(line => line.setMap(createMap));
     S.dots.forEach(d => d.setMap(createMap));
     openBottomSheet();
   }
@@ -1091,17 +1094,39 @@ function getDrawPreviewPath() {
 
 function renderDrawPolyline(path) {
   if (S.polyline) { S.polyline.setMap(null); S.polyline = null; }
+  clearOverlapPolylines();
   if (path && path.length > 1) {
     S.polyline = new kakao.maps.Polyline({
       map: createMap, path,
-      strokeWeight: 4, strokeColor: '#1D9E75',
-      strokeOpacity: 0.9, strokeStyle: 'solid'
+      strokeWeight: 5, strokeColor: '#1D9E75',
+      strokeOpacity: 0.82, strokeStyle: 'solid'
     });
+    renderOverlapPolylines(path);
     S.distKm = S.polyline.getLength() / 1000;
   } else {
     S.distKm = 0;
   }
   refreshStats(S.distKm);
+}
+
+function clearOverlapPolylines() {
+  S.overlapPolylines.forEach(line => line.setMap(null));
+  S.overlapPolylines = [];
+}
+
+function renderOverlapPolylines(path) {
+  const overlapPaths = getOverlappedPaths(path);
+  overlapPaths.forEach(overlapPath => {
+    if (overlapPath.length < 2) return;
+    S.overlapPolylines.push(new kakao.maps.Polyline({
+      map: createMap,
+      path: overlapPath,
+      strokeWeight: 7,
+      strokeColor: '#0F6E56',
+      strokeOpacity: 0.95,
+      strokeStyle: 'solid'
+    }));
+  });
 }
 
 async function snapAndCommitDrawSegment(rawSegment) {
@@ -1152,7 +1177,7 @@ function commitDrawSegment(points) {
 }
 
 function normalizeSnappedSegment(snapped, rawSegment) {
-  const points = compactLatLngs(snapped, 1);
+  const points = cleanSnappedPath(compactLatLngs(snapped, 1));
   if (points.length < 2) throw new Error('EMPTY_TMAP_PATH');
 
   const hasCommittedPath = S.segments.length > 0 && S.path.length > 0;
@@ -1162,7 +1187,11 @@ function normalizeSnappedSegment(snapped, rawSegment) {
     if (startGap > TMAP_CONNECT_TOLERANCE_METERS) {
       throw new Error('TMAP_TOO_FAR');
     }
-    if (startGap > 1) points.unshift(anchor);
+    if (startGap > 6) {
+      points[0] = anchor;
+    } else if (startGap > 1) {
+      points.unshift(anchor);
+    }
   }
 
   const rawEnd = rawSegment[rawSegment.length - 1];
@@ -1170,6 +1199,57 @@ function normalizeSnappedSegment(snapped, rawSegment) {
     points,
     endSnapMeters: rawEnd ? latLngDistanceMeters(points[points.length - 1], rawEnd) : 0
   };
+}
+
+function cleanSnappedPath(points) {
+  let cleaned = compactLatLngs(points, 1);
+  cleaned = removeTinyBacktracks(cleaned);
+  cleaned = removeNearLineNoise(cleaned);
+  return compactLatLngs(cleaned, 1);
+}
+
+function removeTinyBacktracks(points) {
+  let cleaned = points.slice();
+  for (let pass = 0; pass < 3; pass++) {
+    if (cleaned.length < 3) break;
+    const next = [cleaned[0]];
+    let changed = false;
+    for (let i = 1; i < cleaned.length - 1; i++) {
+      const a = next[next.length - 1];
+      const b = cleaned[i];
+      const c = cleaned[i + 1];
+      const ab = latLngDistanceMeters(a, b);
+      const bc = latLngDistanceMeters(b, c);
+      const ac = latLngDistanceMeters(a, c);
+      const isShortSpike = ac < 10 && ab + bc > Math.max(18, ac * 2.4) && Math.max(ab, bc) < 45;
+      if (isShortSpike) {
+        changed = true;
+        continue;
+      }
+      next.push(b);
+    }
+    next.push(cleaned[cleaned.length - 1]);
+    cleaned = next;
+    if (!changed) break;
+  }
+  return cleaned;
+}
+
+function removeNearLineNoise(points) {
+  if (points.length < 3) return points;
+  const cleaned = [points[0]];
+  for (let i = 1; i < points.length - 1; i++) {
+    const a = cleaned[cleaned.length - 1];
+    const b = points[i];
+    const c = points[i + 1];
+    const ac = latLngDistanceMeters(a, c);
+    const ab = latLngDistanceMeters(a, b);
+    const bc = latLngDistanceMeters(b, c);
+    if (ac < 35 && Math.min(ab, bc) < 9 && pointLineDistanceMeters(b, a, c) < 3) continue;
+    cleaned.push(b);
+  }
+  cleaned.push(points[points.length - 1]);
+  return cleaned;
 }
 
 function discardDrawPreview() {
@@ -1316,6 +1396,60 @@ function sampleLatLngs(points, maxCount) {
     sampled.push(points[idx]);
   }
   return sampled;
+}
+
+function getOverlappedPaths(path) {
+  if (!path || path.length < 2) return [];
+  const counts = new Map();
+  for (let i = 0; i < path.length - 1; i++) {
+    const key = edgeKey(path[i], path[i + 1]);
+    counts.set(key, (counts.get(key) || 0) + 1);
+  }
+
+  const result = [];
+  let current = [];
+  for (let i = 0; i < path.length - 1; i++) {
+    const a = path[i], b = path[i + 1];
+    const key = edgeKey(a, b);
+    const overlapped = counts.get(key) > 1 && latLngDistanceMeters(a, b) > 2;
+    if (overlapped) {
+      if (!current.length) current.push(a);
+      current.push(b);
+    } else if (current.length > 1) {
+      result.push(current);
+      current = [];
+    } else {
+      current = [];
+    }
+  }
+  if (current.length > 1) result.push(current);
+  return result;
+}
+
+function edgeKey(a, b) {
+  const ak = pointGridKey(a);
+  const bk = pointGridKey(b);
+  return ak < bk ? ak + '|' + bk : bk + '|' + ak;
+}
+
+function pointGridKey(p) {
+  return Math.round(p.getLat() * OVERLAP_GRID_SCALE) + ',' + Math.round(p.getLng() * OVERLAP_GRID_SCALE);
+}
+
+function pointLineDistanceMeters(point, a, b) {
+  const metersPerLat = 111320;
+  const metersPerLng = 111320 * Math.cos(((a.getLat() + b.getLat()) / 2) * Math.PI / 180);
+  const ax = a.getLng() * metersPerLng;
+  const ay = a.getLat() * metersPerLat;
+  const bx = b.getLng() * metersPerLng;
+  const by = b.getLat() * metersPerLat;
+  const px = point.getLng() * metersPerLng;
+  const py = point.getLat() * metersPerLat;
+  const dx = bx - ax;
+  const dy = by - ay;
+  if (dx === 0 && dy === 0) return Math.hypot(px - ax, py - ay);
+  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)));
+  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy));
 }
 
 function latLngDistanceMeters(a, b) {
@@ -1664,6 +1798,7 @@ function clearDraw() {
   S.dots.forEach(d => d.setMap(null));
   S.dots = [];
   if (S.polyline) { S.polyline.setMap(null); S.polyline = null; }
+  clearOverlapPolylines();
   S.distKm = 0;
   refreshStats(0);
   const guide = document.getElementById('drawGuideText');
