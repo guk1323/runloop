@@ -552,7 +552,7 @@ if ('serviceWorker' in navigator) {
   <!-- 바텀시트 -->
   <div id="createBottomSheet" style="background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.1);flex-shrink:0;">
     <!-- 핸들 -->
-    <div style="display:flex;justify-content:center;padding:10px 0 6px;cursor:pointer;" onclick="toggleBottomSheet()">
+    <div id="bottomSheetHandle" style="display:flex;justify-content:center;padding:10px 0 6px;cursor:pointer;" onclick="toggleBottomSheet()">
       <div style="width:36px;height:4px;background:var(--gray-300);border-radius:2px;"></div>
     </div>
 
@@ -579,7 +579,7 @@ if ('serviceWorker' in navigator) {
     </div>
 
     <!-- 그리기 모드 바텀시트 -->
-    <div id="drawBottomContent" style="display:none;padding:0 16px 12px;">
+    <div id="drawBottomContent" style="display:none;padding:12px 16px 12px;">
       <!-- 점 찍기 안내 -->
       <div style="display:flex;align-items:center;gap:7px;background:var(--gray-50);border-radius:var(--rs);padding:8px 12px;margin-bottom:10px;font-size:12px;color:var(--gray-500);">
         <span style="font-size:15px;">✋</span>
@@ -996,6 +996,8 @@ function setCreateMode(mode) {
   const drawBtn = document.getElementById('modeDrawBtn');
   const aiContent = document.getElementById('aiBottomContent');
   const drawContent = document.getElementById('drawBottomContent');
+  const sheet = document.getElementById('createBottomSheet');
+  const sheetHandle = document.getElementById('bottomSheetHandle');
   const searchBar = document.getElementById('aiSearchBar');
   const guide = document.getElementById('aiMapGuide');
 
@@ -1004,6 +1006,11 @@ function setCreateMode(mode) {
     drawBtn.style.background = 'transparent'; drawBtn.style.color = 'var(--gray-500)';
     aiContent.style.display = 'block';
     drawContent.style.display = 'none';
+    if (sheetHandle) sheetHandle.style.display = 'flex';
+    if (sheet) {
+      sheet.style.borderRadius = '20px 20px 0 0';
+      sheet.style.boxShadow = '0 -4px 20px rgba(0,0,0,.1)';
+    }
     // searchBar 항상 표시
     if (guide) guide.style.display = 'block';
     // 그리기 경로 숨기기 (지도에서만 제거, 데이터는 유지)
@@ -1017,6 +1024,11 @@ function setCreateMode(mode) {
     aiBtn.style.background = 'transparent'; aiBtn.style.color = 'var(--gray-500)';
     drawContent.style.display = 'block';
     aiContent.style.display = 'none';
+    if (sheetHandle) sheetHandle.style.display = 'none';
+    if (sheet) {
+      sheet.style.borderRadius = '14px 14px 0 0';
+      sheet.style.boxShadow = '0 -2px 14px rgba(39,49,58,.08)';
+    }
     updateSnapToggle();
     if (guide) guide.style.display = 'none';
     if (createAiMarker) createAiMarker.setMap(null);
