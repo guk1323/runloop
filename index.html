@@ -862,7 +862,9 @@ const S = {
 
 const TMAP_APP_KEY = 'dM1gQjphEH6xgfyyzIjHl2ctRZEUXPPJ6oyn8aqj';
 const TMAP_PEDESTRIAN_URL = 'https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1';
-const TMAP_MAX_PASS_POINTS = 5;
+const TMAP_MAX_PASS_POINTS = 3;
+const TMAP_CONNECT_TOLERANCE_METERS = 35;
+const TMAP_SNAP_NOTICE_METERS = 45;
 
 /* 카카오 SDK 로드 완료 후 초기화 */
 kakao.maps.load(function() {
@@ -1110,19 +1112,28 @@ async function snapAndCommitDrawSegment(rawSegment) {
   try {
     const snapped = await fetchTmapPedestrianRoute(rawSegment);
     if (token !== drawSnapToken) return;
-    commitDrawSegment(ensureSegmentEndpoints(snapped, rawSegment));
-    setDrawGuide('보행자 길로 보정됐어요. 계속 드래그해서 이어 그어요');
+    const normalized = normalizeSnappedSegment(snapped, rawSegment);
+    commitDrawSegment(normalized.points);
+    setDrawGuide(normalized.endSnapMeters > TMAP_SNAP_NOTICE_METERS
+      ? '가까운 보행자 길에 맞춰졌어요. 계속 이어 그어요'
+      : '보행자 길로 보정됐어요. 계속 드래그해서 이어 그어요');
   } catch (err) {
     if (token !== drawSnapToken) return;
-    commitDrawSegment(rawSegment);
-    if (err.message === 'NO_TMAP_KEY') {
+    if (err.message === 'TMAP_TOO_FAR') {
+      discardDrawPreview();
+      toast('보행자 길에서 너무 떨어진 구간은 제외했어요');
+      setDrawGuide('길 위에서 다시 드래그해서 이어 그어요');
+    } else if (err.message === 'NO_TMAP_KEY') {
+      commitDrawSegment(rawSegment);
       toast('TMAP 키를 넣으면 보행자 길로 자동 보정돼요');
     } else if (err.message === 'TMAP_AUTH') {
+      commitDrawSegment(rawSegment);
       toast('TMAP 키 또는 상품 권한을 확인해주세요');
     } else {
+      commitDrawSegment(rawSegment);
       toast('T맵 경로를 못 찾아 직접 그린 선으로 저장했어요');
+      setDrawGuide('직접 그린 선으로 이어졌어요. 계속 드래그할 수 있어요');
     }
-    setDrawGuide('직접 그린 선으로 이어졌어요. 계속 드래그할 수 있어요');
   } finally {
     if (token === drawSnapToken) {
       setDrawBusy(false);
@@ -1136,8 +1147,49 @@ function commitDrawSegment(points) {
   if (segment.length < 2) return;
   S.segments.push(segment);
   rebuildDrawPathFromSegments();
-  ensureDrawStartDot(S.path[0]);
+  syncDrawStartDot(S.path[0]);
   renderDrawPolyline(S.path);
+}
+
+function normalizeSnappedSegment(snapped, rawSegment) {
+  const points = compactLatLngs(snapped, 1);
+  if (points.length < 2) throw new Error('EMPTY_TMAP_PATH');
+
+  const hasCommittedPath = S.segments.length > 0 && S.path.length > 0;
+  const anchor = hasCommittedPath ? S.path[S.path.length - 1] : null;
+  if (anchor) {
+    const startGap = latLngDistanceMeters(points[0], anchor);
+    if (startGap > TMAP_CONNECT_TOLERANCE_METERS) {
+      throw new Error('TMAP_TOO_FAR');
+    }
+    if (startGap > 1) points.unshift(anchor);
+  }
+
+  const rawEnd = rawSegment[rawSegment.length - 1];
+  return {
+    points,
+    endSnapMeters: rawEnd ? latLngDistanceMeters(points[points.length - 1], rawEnd) : 0
+  };
+}
+
+function discardDrawPreview() {
+  drawRawSegment = [];
+  if (S.segments.length === 0) {
+    S.path = [];
+    syncDrawStartDot(null);
+    renderDrawPolyline([]);
+    return;
+  }
+  rebuildDrawPathFromSegments();
+  syncDrawStartDot(S.path[0]);
+  renderDrawPolyline(S.path);
+}
+
+function syncDrawStartDot(latlng) {
+  S.dots.forEach(d => d.setMap(null));
+  S.dots = [];
+  if (!latlng) return;
+  ensureDrawStartDot(latlng);
 }
 
 function rebuildDrawPathFromSegments() {
@@ -1239,15 +1291,6 @@ function pushTmapCoord(points, coord) {
   const lat = parseFloat(coord[1]);
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
   points.push(new kakao.maps.LatLng(lat, lng));
-}
-
-function ensureSegmentEndpoints(points, rawSegment) {
-  const out = points.slice();
-  const start = rawSegment[0];
-  const end = rawSegment[rawSegment.length - 1];
-  if (out.length && latLngDistanceMeters(out[0], start) > 20) out.unshift(start);
-  if (out.length && latLngDistanceMeters(out[out.length - 1], end) > 20) out.push(end);
-  return out;
 }
 
 function compactLatLngs(points, minMeters) {
