@@ -1117,6 +1117,8 @@ async function snapAndCommitDrawSegment(rawSegment) {
     commitDrawSegment(rawSegment);
     if (err.message === 'NO_TMAP_KEY') {
       toast('TMAP 키를 넣으면 보행자 길로 자동 보정돼요');
+    } else if (err.message === 'TMAP_AUTH') {
+      toast('TMAP 키 또는 상품 권한을 확인해주세요');
     } else {
       toast('T맵 경로를 못 찾아 직접 그린 선으로 저장했어요');
     }
@@ -1191,7 +1193,12 @@ async function fetchTmapPedestrianRoute(rawSegment) {
     },
     body: JSON.stringify(body)
   });
-  if (!res.ok) throw new Error('TMAP_' + res.status);
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '');
+    console.warn('TMAP pedestrian route failed', res.status, detail);
+    if (res.status === 401 || res.status === 403) throw new Error('TMAP_AUTH');
+    throw new Error('TMAP_' + res.status);
+  }
 
   const data = await res.json();
   const path = parseTmapPath(data);
