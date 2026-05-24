@@ -2396,13 +2396,113 @@ async function generateCourses() {
   const btn = document.getElementById('genBtn');
   const txt = document.getElementById('genText');
   const sp = document.getElementById('genSpinner');
-  btn.disabled = true; txt.textContent = '코스 생성 중…'; sp.style.display = 'block';
+  btn.disabled = true; txt.textContent = 'AI가 코스 보는 중…'; sp.style.display = 'block';
   const km = parseFloat(document.getElementById('kmSlider').value);
-  await new Promise(r => setTimeout(r, 900));
-  S.courses = COURSES.map(c => ({...c, km: (km * (0.93 + Math.random() * .14)).toFixed(1)}));
-  S.sel = 0;
-  renderCourses();
-  btn.disabled = false; txt.textContent = '다시 생성'; sp.style.display = 'none';
+  try {
+    const aiCourses = await fetchAiCourses(km);
+    S.courses = aiCourses.length ? aiCourses : buildFallbackCourses(km);
+    if (!aiCourses.length) toast('AI 응답이 애매해서 기본 추천을 보여줘요');
+  } catch (err) {
+    console.warn('AI course generation fallback', err);
+    S.courses = buildFallbackCourses(km);
+    toast('AI 연결이 안 돼서 기본 추천을 보여줘요');
+  } finally {
+    S.sel = 0;
+    renderCourses();
+    btn.disabled = false; txt.textContent = '다시 생성'; sp.style.display = 'none';
+  }
+}
+
+async function fetchAiCourses(km) {
+  const res = await fetch('/api/generate-course', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      lat: S.lat,
+      lng: S.lng,
+      km,
+      place: getAiCoursePlaceLabel(),
+      weather: document.getElementById('wSummary')?.textContent || '',
+      preference: getAiCoursePreference(),
+      savedCourseNames: getSavedCourseNames()
+    })
+  });
+  if (!res.ok) throw new Error('AI_API_' + res.status);
+  const data = await res.json();
+  return normalizeAiCourses(data.courses, km);
+}
+
+function buildFallbackCourses(km) {
+  return COURSES.map(c => ({...c, km: (km * (0.93 + Math.random() * .14)).toFixed(1), fromAi: false}));
+}
+
+function getAiCoursePlaceLabel() {
+  const selected = document.getElementById('aiSelectedAddrText')?.textContent;
+  if (selected && selected !== '—') return selected;
+  const weatherLoc = document.getElementById('wLocation')?.textContent;
+  if (weatherLoc && !weatherLoc.includes('불러오는')) return weatherLoc;
+  return '현재 위치 주변';
+}
+
+function getAiCoursePreference() {
+  return '조용하고 안전한 길, 차량이 적은 길, 초보자도 부담 없는 코스';
+}
+
+function getSavedCourseNames() {
+  try {
+    return JSON.parse(localStorage.getItem('myCourses') || '[]')
+      .map(course => course && course.name)
+      .filter(Boolean)
+      .slice(0, 6);
+  } catch (_) {
+    return [];
+  }
+}
+
+function normalizeAiCourses(courses, targetKm) {
+  if (!Array.isArray(courses)) return [];
+  return courses.slice(0, 3).map((course, index) => normalizeAiCourse(course, index, targetKm)).filter(Boolean);
+}
+
+function normalizeAiCourse(course, index, targetKm) {
+  if (!course || typeof course !== 'object') return null;
+  const styles = ['river', 'urban', 'park'];
+  const colors = ['#F27A5E', '#D9654D', '#639922'];
+  const km = Number.isFinite(parseFloat(course.km))
+    ? parseFloat(course.km)
+    : Number.isFinite(parseFloat(course.distanceKm))
+      ? parseFloat(course.distanceKm)
+      : targetKm;
+  const pace = Number.isFinite(parseFloat(course.pace)) ? parseFloat(course.pace) : 6.5 + index * 0.2;
+  const tags = Array.isArray(course.tags)
+    ? course.tags.map(normalizeAiTag).filter(Boolean).slice(0, 3)
+    : [];
+  while (tags.length < 2) tags.push(index === 2 ? { l:'공원', c:'tg' } : { l:'안전', c:'tg' });
+  return {
+    name: String(course.name || `추천 코스 ${index + 1}`).slice(0, 18),
+    km: Math.min(Math.max(km, targetKm * 0.85), targetKm * 1.15).toFixed(1),
+    pace: Math.min(Math.max(pace, 5.5), 8.5),
+    tags,
+    meta: String(course.meta || course.concept || '현재 조건에 맞춘 추천 코스').slice(0, 70),
+    pt: styles.includes(course.pt) ? course.pt : styles.includes(course.mapStyle) ? course.mapStyle : styles[index],
+    color: colors.includes(course.color) ? course.color : colors[index],
+    fromAi: true
+  };
+}
+
+function normalizeAiTag(tag) {
+  if (typeof tag === 'string') return { l: tag.slice(0, 8), c: getAiTagClass(tag) };
+  if (!tag || typeof tag !== 'object') return null;
+  const label = String(tag.l || tag.label || tag.name || '').slice(0, 8);
+  if (!label) return null;
+  const klass = ['tg', 'tb', 'ta'].includes(tag.c) ? tag.c : getAiTagClass(label);
+  return { l: label, c: klass };
+}
+
+function getAiTagClass(label) {
+  if (/경사|언덕|혼잡|주의|차도/.test(label)) return 'ta';
+  if (/평지|강변|뷰|한강/.test(label)) return 'tb';
+  return 'tg';
 }
 
 function renderCourses() {
@@ -2415,14 +2515,14 @@ function renderCourses() {
     card.className = 'course-card' + (i === S.sel ? ' selected' : '');
     card.innerHTML = `
       <div class="cmap"><canvas id="m${i}"></canvas>
-        <div class="cbadge">AI 추천</div>
+        <div class="cbadge">${c.fromAi === false ? '기본 추천' : 'AI 추천'}</div>
         <div class="crank">${['추천','2순위','3순위'][i]}</div>
       </div>
       <div class="cinfo">
-        <div class="cname">${c.name}</div>
-        <div class="cmeta">${c.km}km · ${pm}'${ps}"/km · ${c.meta}</div>
+        <div class="cname">${escapeHtml(c.name)}</div>
+        <div class="cmeta">${escapeHtml(c.km)}km · ${pm}'${ps}"/km · ${escapeHtml(c.meta)}</div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
-          <div class="tags">${c.tags.map(t => `<span class="tag ${t.c}">${t.l}</span>`).join('')}</div>
+          <div class="tags">${c.tags.map(t => `<span class="tag ${t.c}">${escapeHtml(t.l)}</span>`).join('')}</div>
           <button class="save-course-btn" onclick="event.stopPropagation();saveAiCourse(${i})">저장</button>
         </div>
       </div>`;
@@ -2441,7 +2541,6 @@ function selCourse(i) {
   document.querySelectorAll('.course-card').forEach((c, j) => {
     c.className = 'course-card' + (j === i ? ' selected' : '');
   });
-  updStartBtn();
 }
 
 // updStartBtn 제거 — 코스 탭에서 시작
