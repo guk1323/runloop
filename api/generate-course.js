@@ -46,7 +46,10 @@ export default async function handler(req, res) {
 
     if (!result.ok) {
       console.error('OpenAI course generation failed', result.status, result.error);
-      return res.status(502).json({ error: 'AI course generation failed' });
+      return res.status(502).json({
+        error: 'AI course generation failed',
+        detail: sanitizeOpenAiError(result.error)
+      });
     }
 
     const text = extractOpenAiText(result.data);
@@ -104,6 +107,18 @@ async function createOpenAiResponse(apiKey, context) {
   }
 
   return { ok: false, status: lastError && lastError.status, error: lastError };
+}
+
+function sanitizeOpenAiError(error) {
+  if (!error) return null;
+  const source = error.error || error;
+  return {
+    model: error.model || null,
+    status: error.status || null,
+    code: source.code || null,
+    type: source.type || null,
+    message: String(source.message || '').slice(0, 180)
+  };
 }
 
 function getModelCandidates() {
