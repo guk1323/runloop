@@ -1,4 +1,4 @@
-const CACHE_NAME = 'runloop-v6';
+const CACHE_NAME = 'runloop-v7';
 const CACHE_URLS = ['/'];
 
 self.addEventListener('install', e => {
@@ -18,6 +18,10 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  if (e.request.method !== 'GET' || e.request.url.includes('/api/')) {
+    return;
+  }
+
   // 카카오맵 등 외부 API는 캐시 안 함
   if (e.request.url.includes('kakao') || 
       e.request.url.includes('openweather') ||

@@ -2391,6 +2391,8 @@ const COURSES = [
   { name:'홍대 플랫 코스', tags:[{l:'평지',c:'tb'},{l:'야간 가능',c:'tg'},{l:'혼잡',c:'ta'}], meta:'편의점 다수 · 보도 넓음 · 조명 양호', pt:'urban', color:'#D9654D', pace:6.5 },
   { name:'망원 공원 힐 루프', tags:[{l:'공원',c:'tg'},{l:'경사 포함',c:'ta'}], meta:'잔디밭 · 오르막 2곳 · 뷰 좋음', pt:'park', color:'#639922', pace:6.8 }
 ];
+const AI_COURSE_CACHE_KEY = 'runloopAiCourseCache';
+const AI_COURSE_CACHE_MS = 10 * 60 * 1000;
 
 async function generateCourses() {
   const btn = document.getElementById('genBtn');
@@ -2399,13 +2401,17 @@ async function generateCourses() {
   btn.disabled = true; txt.textContent = 'AI가 코스 보는 중…'; sp.style.display = 'block';
   const km = parseFloat(document.getElementById('kmSlider').value);
   try {
-    const aiCourses = await fetchAiCourses(km);
+    const aiResult = await fetchAiCourses(km);
+    const aiCourses = aiResult.courses;
     S.courses = aiCourses.length ? aiCourses : buildFallbackCourses(km);
     if (!aiCourses.length) toast('AI 응답이 애매해서 기본 추천을 보여줘요');
+    if (aiResult.cached && aiCourses.length) toast('최근 AI 추천을 다시 보여줘요');
   } catch (err) {
     console.warn('AI course generation fallback', err);
     S.courses = buildFallbackCourses(km);
-    toast('AI 연결이 안 돼서 기본 추천을 보여줘요');
+    toast(err && String(err.message || '').startsWith('AI_RATE_LIMIT')
+      ? 'AI 추천은 잠시 후 다시 눌러주세요'
+      : 'AI 연결이 안 돼서 기본 추천을 보여줘요');
   } finally {
     S.sel = 0;
     renderCourses();
@@ -2414,22 +2420,86 @@ async function generateCourses() {
 }
 
 async function fetchAiCourses(km) {
+  const payload = buildAiCourseRequest(km);
+  const cacheKey = getAiCourseCacheKey(payload);
+  const cachedCourses = getCachedAiCourses(cacheKey, km);
+  if (cachedCourses.length) return { courses: cachedCourses, cached: true };
+
   const res = await fetch('/api/generate-course', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      lat: S.lat,
-      lng: S.lng,
-      km,
-      place: getAiCoursePlaceLabel(),
-      weather: document.getElementById('wSummary')?.textContent || '',
-      preference: getAiCoursePreference(),
-      savedCourseNames: getSavedCourseNames()
-    })
+    body: JSON.stringify(payload)
   });
-  if (!res.ok) throw new Error('AI_API_' + res.status);
+  if (!res.ok) {
+    const errorBody = await res.json().catch(() => ({}));
+    if (res.status === 429) throw new Error('AI_RATE_LIMIT_' + (errorBody.retryAfterSec || ''));
+    throw new Error('AI_API_' + res.status);
+  }
   const data = await res.json();
-  return normalizeAiCourses(data.courses, km);
+  const courses = normalizeAiCourses(data.courses, km);
+  if (courses.length) setCachedAiCourses(cacheKey, km, courses);
+  return { courses, cached: false };
+}
+
+function buildAiCourseRequest(km) {
+  return {
+    lat: S.lat,
+    lng: S.lng,
+    km,
+    place: getAiCoursePlaceLabel(),
+    weather: document.getElementById('wSummary')?.textContent || '',
+    preference: getAiCoursePreference(),
+    savedCourseNames: getSavedCourseNames()
+  };
+}
+
+function getAiCourseCacheKey(payload) {
+  const lat = Number(payload.lat);
+  const lng = Number(payload.lng);
+  const km = Number(payload.km);
+  const savedNames = Array.isArray(payload.savedCourseNames) ? payload.savedCourseNames.join(',') : '';
+  return [
+    Number.isFinite(km) ? km.toFixed(1) : '5.0',
+    Number.isFinite(lat) ? lat.toFixed(3) : '0.000',
+    Number.isFinite(lng) ? lng.toFixed(3) : '0.000',
+    cleanAiCachePart(payload.place, 40),
+    cleanAiCachePart(payload.weather, 50),
+    cleanAiCachePart(payload.preference, 60),
+    cleanAiCachePart(savedNames, 80)
+  ].join('|');
+}
+
+function cleanAiCachePart(value, maxLength) {
+  return String(value || '').replace(/\s+/g, ' ').trim().slice(0, maxLength);
+}
+
+function readAiCourseCache() {
+  try {
+    const cache = JSON.parse(localStorage.getItem(AI_COURSE_CACHE_KEY) || '{}');
+    return cache && typeof cache === 'object' && !Array.isArray(cache) ? cache : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function getCachedAiCourses(cacheKey, targetKm) {
+  const item = readAiCourseCache()[cacheKey];
+  if (!item || Date.now() - Number(item.savedAt || 0) > AI_COURSE_CACHE_MS) return [];
+  return normalizeAiCourses(item.courses, Number(item.km) || targetKm);
+}
+
+function setCachedAiCourses(cacheKey, km, courses) {
+  const cache = readAiCourseCache();
+  const now = Date.now();
+  Object.keys(cache).forEach(key => {
+    if (!cache[key] || now - Number(cache[key].savedAt || 0) > AI_COURSE_CACHE_MS) delete cache[key];
+  });
+  cache[cacheKey] = { savedAt: now, km, courses: courses.slice(0, 3) };
+  Object.keys(cache)
+    .sort((a, b) => Number(cache[b].savedAt || 0) - Number(cache[a].savedAt || 0))
+    .slice(8)
+    .forEach(key => delete cache[key]);
+  try { localStorage.setItem(AI_COURSE_CACHE_KEY, JSON.stringify(cache)); } catch (_) {}
 }
 
 function buildFallbackCourses(km) {

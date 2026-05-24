@@ -1,4 +1,9 @@
 const DEFAULT_MODEL = 'gpt-5-mini';
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT_MAX_PER_WINDOW = 3;
+const RATE_LIMIT_DAY_MS = 24 * 60 * 60 * 1000;
+const RATE_LIMIT_MAX_PER_DAY = 30;
+const rateBuckets = globalThis.__runloopAiRateBuckets || (globalThis.__runloopAiRateBuckets = new Map());
 const TAG_CLASS = {
   safe: 'tg',
   flat: 'tb',
@@ -21,6 +26,17 @@ export default async function handler(req, res) {
   if (!apiKey) {
     return res.status(500).json({ error: 'OPENAI_API_KEY is not configured' });
   }
+
+  const rateLimit = checkRateLimit(req);
+  if (!rateLimit.ok) {
+    res.setHeader('Retry-After', String(rateLimit.retryAfterSec));
+    setRateLimitHeaders(res, rateLimit);
+    return res.status(429).json({
+      error: 'AI rate limit exceeded',
+      retryAfterSec: rateLimit.retryAfterSec
+    });
+  }
+  setRateLimitHeaders(res, rateLimit);
 
   try {
     const body = parseRequestBody(req.body);
@@ -131,6 +147,83 @@ function getModelCandidates() {
 function shouldTryNextModel(status, error) {
   const message = String((error && (error.message || error.code || error.type)) || '');
   return status === 400 || status === 404 || /model|not found|does not exist|access/i.test(message);
+}
+
+function checkRateLimit(req) {
+  const now = Date.now();
+  const key = getClientKey(req);
+  const bucket = rateBuckets.get(key) || {
+    minuteStart: now,
+    minuteCount: 0,
+    dayStart: now,
+    dayCount: 0,
+    lastSeen: now
+  };
+
+  if (now - bucket.minuteStart >= RATE_LIMIT_WINDOW_MS) {
+    bucket.minuteStart = now;
+    bucket.minuteCount = 0;
+  }
+
+  if (now - bucket.dayStart >= RATE_LIMIT_DAY_MS) {
+    bucket.dayStart = now;
+    bucket.dayCount = 0;
+  }
+
+  bucket.lastSeen = now;
+
+  if (bucket.minuteCount >= RATE_LIMIT_MAX_PER_WINDOW) {
+    rateBuckets.set(key, bucket);
+    return buildRateLimitResult(false, bucket, bucket.minuteStart + RATE_LIMIT_WINDOW_MS - now);
+  }
+
+  if (bucket.dayCount >= RATE_LIMIT_MAX_PER_DAY) {
+    rateBuckets.set(key, bucket);
+    return buildRateLimitResult(false, bucket, bucket.dayStart + RATE_LIMIT_DAY_MS - now);
+  }
+
+  bucket.minuteCount += 1;
+  bucket.dayCount += 1;
+  rateBuckets.set(key, bucket);
+  pruneRateBuckets(now);
+  return buildRateLimitResult(true, bucket, 0);
+}
+
+function buildRateLimitResult(ok, bucket, retryAfterMs) {
+  return {
+    ok,
+    retryAfterSec: Math.max(1, Math.ceil(retryAfterMs / 1000)),
+    remainingMinute: Math.max(0, RATE_LIMIT_MAX_PER_WINDOW - bucket.minuteCount),
+    remainingDay: Math.max(0, RATE_LIMIT_MAX_PER_DAY - bucket.dayCount)
+  };
+}
+
+function setRateLimitHeaders(res, rateLimit) {
+  res.setHeader('X-RateLimit-Limit-Minute', String(RATE_LIMIT_MAX_PER_WINDOW));
+  res.setHeader('X-RateLimit-Remaining-Minute', String(rateLimit.remainingMinute));
+  res.setHeader('X-RateLimit-Limit-Day', String(RATE_LIMIT_MAX_PER_DAY));
+  res.setHeader('X-RateLimit-Remaining-Day', String(rateLimit.remainingDay));
+}
+
+function getClientKey(req) {
+  const forwarded = getHeader(req, 'x-forwarded-for');
+  const rawIp = forwarded || getHeader(req, 'x-real-ip') || (req.socket && req.socket.remoteAddress) || 'unknown';
+  const ip = String(rawIp).split(',')[0].trim();
+  return ip.replace(/[^a-zA-Z0-9:._-]/g, '').slice(0, 80) || 'unknown';
+}
+
+function getHeader(req, name) {
+  const value = req.headers && req.headers[name];
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function pruneRateBuckets(now) {
+  if (rateBuckets.size <= 500) return;
+  for (const [key, bucket] of rateBuckets.entries()) {
+    if (!bucket || now - bucket.lastSeen > RATE_LIMIT_DAY_MS) {
+      rateBuckets.delete(key);
+    }
+  }
 }
 
 function parseRequestBody(body) {
