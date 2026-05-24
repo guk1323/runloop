@@ -190,19 +190,12 @@ if ('serviceWorker' in navigator) {
   .mc-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);margin-bottom:10px;padding:14px;overflow:hidden;}
   .mc-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
   .mc-title{min-width:0;flex:1;}
-  .mc-title-row{display:flex;align-items:center;gap:7px;min-width:0;}
   .mc-name{font-size:15px;font-weight:800;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .mc-type{flex-shrink:0;font-size:10px;font-weight:800;color:var(--coral);background:var(--coral-light);border-radius:999px;padding:3px 7px;}
   .mc-meta{font-size:12px;color:var(--gray-500);margin-top:4px;}
   .mc-distance{text-align:right;flex-shrink:0;min-width:58px;}
   .mc-distance-value{font-size:22px;font-weight:800;color:var(--coral);line-height:1;}
   .mc-distance-unit{font-size:11px;color:var(--gray-500);margin-top:1px;}
-  .mc-stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100);padding:10px 0;margin-bottom:12px;}
-  .mc-stat{padding:0 10px;border-right:1px solid var(--gray-100);min-width:0;}
-  .mc-stat:last-child{border-right:none;}
-  .mc-stat-label{font-size:10px;color:var(--gray-500);font-weight:700;margin-bottom:3px;}
-  .mc-stat-value{font-size:12px;color:var(--gray-900);font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .mc-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;}
+  .mc-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;padding-top:12px;border-top:1px solid var(--gray-100);}
   .mc-btn{height:32px;padding:0 11px;border-radius:var(--rs);font-size:12px;font-weight:700;border:1px solid transparent;cursor:pointer;font-family:inherit;white-space:nowrap;}
   .mc-btn-run{background:var(--ink);color:#fff;}
   .mc-btn-edit{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
@@ -2880,25 +2873,17 @@ function renderMyCourses() {
     card.innerHTML = `
       <div class="mc-card-top">
         <div class="mc-title">
-          <div class="mc-title-row">
-            <div class="mc-name">${escapeHtml(c.name || '코스')}</div>
-            <span class="mc-type">${escapeHtml(meta.type)}</span>
-          </div>
-          <div class="mc-meta">${escapeHtml(meta.summary)}</div>
+          <div class="mc-name">${escapeHtml(c.name || '코스')}</div>
+          <div class="mc-meta">${meta.minutes} · ${escapeHtml(c.date || '-')} 저장</div>
         </div>
         <div class="mc-distance">
           <div class="mc-distance-value">${meta.distance}</div>
           <div class="mc-distance-unit">km</div>
         </div>
       </div>
-      <div class="mc-stats">
-        <div class="mc-stat"><div class="mc-stat-label">예상 시간</div><div class="mc-stat-value">${meta.minutes}</div></div>
-        <div class="mc-stat"><div class="mc-stat-label">방식</div><div class="mc-stat-value">${escapeHtml(meta.method)}</div></div>
-        <div class="mc-stat"><div class="mc-stat-label">저장일</div><div class="mc-stat-value">${escapeHtml(c.date || '-')}</div></div>
-      </div>
       <div class="mc-actions">
         <button class="mc-btn mc-btn-run" onclick="startMyCoursRun(${c.id})">시작</button>
-        <button class="mc-btn mc-btn-edit" onclick="openRename(${c.id})">이름</button>
+        <button class="mc-btn mc-btn-edit" onclick="openRename(${c.id})">편집</button>
         <button class="mc-btn mc-btn-del" onclick="deleteMyCourse(${c.id})">삭제</button>
       </div>
     `;
@@ -2910,34 +2895,7 @@ function getMyCourseCardMeta(course) {
   const dist = parseFloat(course.dist);
   const distance = Number.isFinite(dist) ? dist.toFixed(2) : '0.00';
   const minutes = Number.isFinite(dist) ? `약 ${Math.max(1, Math.round(dist * 7))}분` : '-';
-  const segments = Array.isArray(course.segments) ? course.segments : [];
-  const manualDist = parseFloat(course.manualDist || '0');
-  const manualRatio = Number.isFinite(dist) && dist > 0 ? manualDist / dist : 0;
-
-  if (course.fromAi) {
-    const tags = Array.isArray(course.tags) ? course.tags.map(t => t.l).filter(Boolean).slice(0, 2).join(' · ') : '';
-    return {
-      type: '추천',
-      method: 'AI 추천',
-      distance,
-      minutes,
-      summary: tags || '추천 코스에서 저장'
-    };
-  }
-
-  if (segments.length) {
-    const method = manualRatio > 0.6 ? '내가 그린 길' : manualRatio > 0.15 ? '혼합' : '길 따라가기';
-    const summary = manualRatio > 0.15 && manualDist > 0
-      ? `직접 구간 ${manualDist.toFixed(2)}km 포함`
-      : '보행자 길에 맞춰 정리';
-    return { type: '직접', method, distance, minutes, summary };
-  }
-
-  if (Array.isArray(course.points) && course.points.length > 1) {
-    return { type: '직접', method: '직접 그리기', distance, minutes, summary: '내가 저장한 경로' };
-  }
-
-  return { type: '저장', method: '기본', distance, minutes, summary: '저장한 코스' };
+  return { distance, minutes };
 }
 
 function openRename(id) {
