@@ -2397,9 +2397,11 @@ const COURSES = [
   { name:'홍대 플랫 코스', tags:[{l:'평지',c:'tb'},{l:'야간 가능',c:'tg'},{l:'혼잡',c:'ta'}], meta:'편의점 다수 · 보도 넓음 · 조명 양호', pt:'urban', color:'#D9654D', pace:6.5 },
   { name:'망원 공원 힐 루프', tags:[{l:'공원',c:'tg'},{l:'경사 포함',c:'ta'}], meta:'잔디밭 · 오르막 2곳 · 뷰 좋음', pt:'park', color:'#639922', pace:6.8 }
 ];
-const AI_COURSE_CACHE_KEY = 'runloopAiCourseCacheV4';
+const AI_COURSE_CACHE_KEY = 'runloopAiCourseCacheV5';
 const AI_COURSE_CACHE_MS = 10 * 60 * 1000;
 let aiRouteOverlays = [];
+let aiRouteActiveCourse = null;
+let aiRouteZoomListenerAttached = false;
 
 function resetAiCourseSuggestions() {
   S.courses = [];
@@ -2725,8 +2727,30 @@ function buildAiLoopPath(course, index, targetKm) {
   const start = makeRouteLatLng(S.lat, S.lng);
   const targetMeters = Math.max(800, Math.min(22000, targetKm * 1000));
   const type = course.pt || ['river', 'urban', 'park'][index] || 'urban';
+  if (shouldUseOutAndBackRoute(course, type)) return buildAiOutAndBackPath(start, targetMeters, type, index);
   if (type === 'urban') return buildAiRectLoop(start, targetMeters, index);
   return buildAiOvalLoop(start, targetMeters, type, index);
+}
+
+function shouldUseOutAndBackRoute(course, type) {
+  const tagText = Array.isArray(course.tags) ? course.tags.map(tag => tag.l || tag).join(' ') : '';
+  const text = [course.name, course.routeLabel, course.meta, tagText, type].join(' ');
+  return type === 'river' || /강변|한강|평지|조용|왕복|산책|길/.test(text);
+}
+
+function buildAiOutAndBackPath(start, targetMeters, type, index) {
+  const forward = targetMeters * 0.48;
+  const side = Math.max(90, Math.min(260, targetMeters * 0.05));
+  const bearing = type === 'river'
+    ? ([0.18, -0.22, 0.36][index] || 0.18)
+    : ([0.4, -0.65, 0.95][index] || 0.4);
+  return [
+    [0, 0],
+    [side, forward * 0.36],
+    [side * 0.35, forward],
+    [-side, forward * 0.52],
+    [0, 0]
+  ].map(([north, east]) => makeRouteLatLngOffset(start, north, east, bearing));
 }
 
 function buildAiRectLoop(start, targetMeters, index) {
@@ -2807,7 +2831,7 @@ function roundCoord(value) {
 
 function getAiRouteLabel(course, index) {
   const labels = {
-    river: ['강변 방향 루프', '물길 옆 완만한 루프', '뷰 좋은 왕복 루프'],
+    river: ['강변 방향 왕복길', '물길 옆 완만한 왕복', '뷰 좋은 왕복길'],
     urban: ['동네 블록 루프', '주택가 중심 루프', '큰길 적은 사각 루프'],
     park: ['공원 방향 루프', '초록길 중심 루프', '가볍게 도는 공원 루프']
   };
@@ -2884,11 +2908,15 @@ function clearAiRoutePreview() {
     if (overlay && overlay.setMap) overlay.setMap(null);
   });
   aiRouteOverlays = [];
+  aiRouteActiveCourse = null;
 }
 
-function showAiRoutePreview(course) {
+function showAiRoutePreview(course, options = {}) {
+  const fitBounds = options.fitBounds !== false;
   clearAiRoutePreview();
   if (!createMap || !course || !Array.isArray(course.points) || course.points.length < 2) return;
+  aiRouteActiveCourse = course;
+  ensureAiRouteZoomListener();
   const path = course.points
     .map(point => makeRouteLatLng(point.lat, point.lng))
     .filter(Boolean);
@@ -2931,9 +2959,11 @@ function showAiRoutePreview(course) {
   });
   aiRouteOverlays = [shadow, line].concat(arrows, [startDot, endDot]);
 
-  const bounds = new kakao.maps.LatLngBounds();
-  path.forEach(point => bounds.extend(point));
-  createMap.setBounds(bounds);
+  if (fitBounds) {
+    const bounds = new kakao.maps.LatLngBounds();
+    path.forEach(point => bounds.extend(point));
+    createMap.setBounds(bounds);
+  }
   const guide = document.getElementById('aiMapGuide');
   if (guide) {
     guide.style.display = 'block';
@@ -2943,11 +2973,23 @@ function showAiRoutePreview(course) {
   }
 }
 
+function ensureAiRouteZoomListener() {
+  if (!createMap || aiRouteZoomListenerAttached) return;
+  aiRouteZoomListenerAttached = true;
+  kakao.maps.event.addListener(createMap, 'zoom_changed', () => {
+    if (aiRouteActiveCourse) showAiRoutePreview(aiRouteActiveCourse, { fitBounds: false });
+  });
+}
+
 function createRouteDirectionArrows(path, color) {
   if (!Array.isArray(path) || path.length < 2) return [];
   const overlays = [];
-  const spacingMeters = 260;
-  let nextMarkerAt = Math.min(180, pathLengthMeters(path) / 3);
+  const totalMeters = pathLengthMeters(path);
+  if (totalMeters < 80) return overlays;
+  const level = createMap && createMap.getLevel ? createMap.getLevel() : 4;
+  const arrowCount = level >= 7 ? 2 : level >= 6 ? 3 : level >= 5 ? 4 : 5;
+  const spacingMeters = Math.max(160, totalMeters / (arrowCount + 1));
+  let nextMarkerAt = spacingMeters;
   let walked = 0;
 
   for (let i = 1; i < path.length; i++) {
@@ -2965,7 +3007,7 @@ function createRouteDirectionArrows(path, color) {
       overlays.push(new kakao.maps.CustomOverlay({
         map: createMap,
         position,
-        content: getRouteArrowHtml(getRouteArrowAngle(a, b), color),
+        content: getRouteArrowHtml(getRouteArrowAngle(a, b), color, level),
         xAnchor: 0.5,
         yAnchor: 0.5,
         zIndex: 6
@@ -2992,10 +3034,12 @@ function getRouteArrowAngle(a, b) {
   return Math.atan2(dy, dx) * 180 / Math.PI;
 }
 
-function getRouteArrowHtml(angle, color) {
+function getRouteArrowHtml(angle, color, level = 4) {
   const safeColor = /^#[0-9a-f]{6}$/i.test(color) ? color : DRAW_ROUTE_COLOR;
-  return `<div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;transform:rotate(${angle.toFixed(1)}deg);filter:drop-shadow(0 1px 2px rgba(0,0,0,.28));">
-    <span style="display:block;width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:12px solid ${safeColor};"></span>
+  const size = level >= 6 ? 30 : 26;
+  const fontSize = level >= 6 ? 18 : 16;
+  return `<div style="width:${size}px;height:${size}px;border-radius:999px;background:rgba(255,255,255,.94);border:2px solid ${safeColor};display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.22);">
+    <span style="display:block;color:${safeColor};font-size:${fontSize}px;font-weight:900;line-height:1;transform:rotate(${angle.toFixed(1)}deg);">➜</span>
   </div>`;
 }
 
