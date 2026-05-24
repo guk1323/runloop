@@ -2897,9 +2897,9 @@ function showAiRoutePreview(course) {
   const shadow = new kakao.maps.Polyline({
     map: createMap,
     path,
-    strokeWeight: 9,
+    strokeWeight: 10,
     strokeColor: DRAW_ROUTE_PLANNED_COLOR,
-    strokeOpacity: 0.55,
+    strokeOpacity: 0.5,
     strokeStyle: 'solid'
   });
   const line = new kakao.maps.Polyline({
@@ -2908,8 +2908,9 @@ function showAiRoutePreview(course) {
     strokeWeight: 5,
     strokeColor: course.color || DRAW_ROUTE_COLOR,
     strokeOpacity: 0.9,
-    strokeStyle: 'solid'
+    strokeStyle: 'dash'
   });
+  const arrows = createRouteDirectionArrows(path, course.color || DRAW_ROUTE_COLOR);
   const startDot = new kakao.maps.Circle({
     map: createMap,
     center: path[0],
@@ -2928,7 +2929,7 @@ function showAiRoutePreview(course) {
     fillColor: DRAW_ROUTE_MARKER_COLOR,
     fillOpacity: 1
   });
-  aiRouteOverlays = [shadow, line, startDot, endDot];
+  aiRouteOverlays = [shadow, line].concat(arrows, [startDot, endDot]);
 
   const bounds = new kakao.maps.LatLngBounds();
   path.forEach(point => bounds.extend(point));
@@ -2940,6 +2941,62 @@ function showAiRoutePreview(course) {
       ? `${course.name} 보행자 경로를 표시했어요`
       : `${course.name} 경로를 지도에 표시했어요`;
   }
+}
+
+function createRouteDirectionArrows(path, color) {
+  if (!Array.isArray(path) || path.length < 2) return [];
+  const overlays = [];
+  const spacingMeters = 260;
+  let nextMarkerAt = Math.min(180, pathLengthMeters(path) / 3);
+  let walked = 0;
+
+  for (let i = 1; i < path.length; i++) {
+    const a = path[i - 1];
+    const b = path[i];
+    const segmentMeters = latLngDistanceMeters(a, b);
+    if (segmentMeters < 8) {
+      walked += segmentMeters;
+      continue;
+    }
+
+    while (walked + segmentMeters >= nextMarkerAt) {
+      const ratio = (nextMarkerAt - walked) / segmentMeters;
+      const position = interpolateLatLng(a, b, ratio);
+      overlays.push(new kakao.maps.CustomOverlay({
+        map: createMap,
+        position,
+        content: getRouteArrowHtml(getRouteArrowAngle(a, b), color),
+        xAnchor: 0.5,
+        yAnchor: 0.5,
+        zIndex: 6
+      }));
+      nextMarkerAt += spacingMeters;
+    }
+    walked += segmentMeters;
+  }
+  return overlays;
+}
+
+function interpolateLatLng(a, b, ratio) {
+  const t = Math.max(0, Math.min(1, ratio));
+  return makeRouteLatLng(
+    a.getLat() + (b.getLat() - a.getLat()) * t,
+    a.getLng() + (b.getLng() - a.getLng()) * t
+  );
+}
+
+function getRouteArrowAngle(a, b) {
+  const avgLat = ((a.getLat() + b.getLat()) / 2) * Math.PI / 180;
+  const dx = (b.getLng() - a.getLng()) * Math.cos(avgLat);
+  const dy = -(b.getLat() - a.getLat());
+  return Math.atan2(dy, dx) * 180 / Math.PI;
+}
+
+function getRouteArrowHtml(angle, color) {
+  const safeColor = /^#[0-9a-f]{6}$/i.test(color) ? color : DRAW_ROUTE_COLOR;
+  return `<div style="width:24px;height:24px;display:flex;align-items:center;justify-content:center;transform:rotate(${angle.toFixed(1)}deg);filter:drop-shadow(0 1px 2px rgba(0,0,0,.28));">
+    <span style="display:block;width:0;height:0;border-top:6px solid transparent;border-bottom:6px solid transparent;border-left:12px solid ${safeColor};"></span>
+  </div>`;
 }
 
 // updStartBtn 제거 — 코스 탭에서 시작
@@ -4325,6 +4382,7 @@ function miniMap(cv, type, color, routePoints = []) {
     ? normalizePreviewPoints(routePoints, rw, rh)
     : [];
   if (previewPoints.length > 1) {
+    c.setLineDash([6, 4]);
     c.beginPath();
     c.moveTo(previewPoints[0].x, previewPoints[0].y);
     previewPoints.slice(1).forEach(point => c.lineTo(point.x, point.y));
@@ -4342,10 +4400,37 @@ function miniMap(cv, type, color, routePoints = []) {
     }
   }
   c.stroke();
+  c.setLineDash([]);
+  if (previewPoints.length > 1) drawMiniRouteArrows(c, previewPoints, color);
   const sx = previewPoints[0] ? previewPoints[0].x : (type==='park' ? rw*.5 : rw*.1);
   const sy = previewPoints[0] ? previewPoints[0].y : (type==='park' ? rh*.14 : rh*.6);
   c.fillStyle='#fff'; c.strokeStyle=color; c.lineWidth=1.5;
   c.beginPath();c.arc(sx,sy,4,0,Math.PI*2);c.fill();c.stroke();
+}
+
+function drawMiniRouteArrows(ctx, points, color) {
+  const indexes = [0.28, 0.55, 0.82]
+    .map(ratio => Math.max(1, Math.min(points.length - 1, Math.round((points.length - 1) * ratio))));
+  ctx.fillStyle = color;
+  indexes.forEach(index => {
+    const a = points[index - 1];
+    const b = points[index];
+    if (!a || !b) return;
+    const angle = Math.atan2(b.y - a.y, b.x - a.x);
+    const x = a.x + (b.x - a.x) * 0.6;
+    const y = a.y + (b.y - a.y) * 0.6;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.beginPath();
+    ctx.moveTo(6, 0);
+    ctx.lineTo(-4, -4);
+    ctx.lineTo(-2, 0);
+    ctx.lineTo(-4, 4);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
+  });
 }
 
 /* 토스트 */
