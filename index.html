@@ -450,8 +450,8 @@ if ('serviceWorker' in navigator) {
     <div id="weatherCard" style="background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:16px 18px;box-shadow:0 8px 22px rgba(39,49,58,.04);">
       <!-- 1행: 위치 + 날씨 상태 -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <div style="font-size:12px;color:var(--gray-500);font-weight:500;display:flex;align-items:center;gap:3px;">
-          <span>📍</span><span id="wLocation">위치 불러오는 중…</span>
+        <div style="font-size:12px;color:var(--gray-500);font-weight:500;display:flex;align-items:center;gap:4px;">
+          <span style="font-size:13px;font-weight:800;line-height:1;color:var(--coral-dark);">◎</span><span id="wLocation">위치 불러오는 중…</span>
         </div>
         <div style="display:flex;align-items:center;gap:5px;">
           <span style="font-size:13px;" id="wIcon">🌤</span>
@@ -2235,7 +2235,7 @@ function saveCourse() {
     manualDist: manualKm.toFixed(2)
   });
   localStorage.setItem('myCourses', JSON.stringify(courses));
-  toast('코스 ' + num + '이(가) 저장됐어요! 📍');
+  toast('코스 ' + num + '이(가) 저장됐어요!');
   clearDraw();
   // 코스 탭으로 이동
   setTimeout(() => {
@@ -2284,7 +2284,7 @@ function renderCourses() {
         <div class="cmeta">${c.km}km · ${pm}'${ps}"/km · ${c.meta}</div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
           <div class="tags">${c.tags.map(t => `<span class="tag ${t.c}">${t.l}</span>`).join('')}</div>
-          <button class="save-course-btn" onclick="event.stopPropagation();saveAiCourse(${i})">📍 저장</button>
+          <button class="save-course-btn" onclick="event.stopPropagation();saveAiCourse(${i})">저장</button>
         </div>
       </div>`;
     card.onclick = () => selCourse(i);
@@ -2544,7 +2544,7 @@ function renderNearCourses(results) {
             <div style="font-size:12px;color:var(--gray-500);">🔥 <span style="font-weight:600;color:var(--gray-700);">${cal}kcal</span></div>
           </div>
           <div style="display:flex;gap:6px;">
-            <button onclick="event.stopPropagation();saveNearCourse('${p.place_name}',${km})" style="background:none;color:var(--ink);font-size:12px;font-weight:500;padding:7px 10px;border-radius:999px;border:1px solid var(--gray-300);cursor:pointer;font-family:inherit;">📍 저장</button>
+            <button onclick="event.stopPropagation();saveNearCourse('${p.place_name}',${km})" style="background:none;color:var(--ink);font-size:12px;font-weight:500;padding:7px 10px;border-radius:999px;border:1px solid var(--gray-300);cursor:pointer;font-family:inherit;">저장</button>
             <button onclick="goToAiWithLocation('${p.place_name}',${p.y},${p.x})" style="background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">시작</button>
           </div>
         </div>
@@ -2557,7 +2557,7 @@ function saveNearCourse(name, km) {
   if (courses.find(x => x.name === name + ' 코스')) { toast('이미 저장된 코스예요!'); return; }
   courses.push({ id: Date.now(), name: name + ' 코스', dist: km.toFixed(2), date: new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric'}), points: [], fromAi: true });
   localStorage.setItem('myCourses', JSON.stringify(courses));
-  toast(name + ' 코스가 저장됐어요! 📍');
+  toast(name + ' 코스가 저장됐어요!');
 }
 
 function goToAiWithLocation(name, lat, lng) {
@@ -3185,7 +3185,7 @@ function initRunMap(savedPoints) {
       // GPS 첫 수신 시 시뮬레이션 끄기
       if (!R.gpsActive) {
         R.gpsActive = true;
-        toast(accuracy <= 80 ? 'GPS 연결됐어요! 실제 거리로 측정해요 📍' : 'GPS 정확도가 낮아요. 실내에서는 거리 누적을 보수적으로 봐요');
+        toast(accuracy <= 80 ? 'GPS 연결됐어요! 실제 거리로 측정해요' : 'GPS 정확도가 낮아요. 실내에서는 거리 누적을 보수적으로 봐요');
       }
 
       // 이전 위치와 거리 계산해서 누적
@@ -3552,7 +3552,7 @@ function saveAiCourse(idx) {
     tags: c.tags
   });
   localStorage.setItem('myCourses', JSON.stringify(courses));
-  toast(c.name + ' 코스가 저장됐어요! 📍');
+  toast(c.name + ' 코스가 저장됐어요!');
 }
 
 /* ══════════════════════════════════════
