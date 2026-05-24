@@ -187,19 +187,19 @@ if ('serviceWorker' in navigator) {
   .record-meta{font-size:12px;color:var(--gray-500);}
   .record-dist{font-size:16px;font-weight:700;color:var(--coral);}
 
-  .mc-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);margin-bottom:10px;padding:14px;overflow:hidden;}
-  .mc-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
+  .mc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
+  .mc-card{aspect-ratio:1/1;background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:13px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 18px rgba(39,49,58,.035);}
+  .mc-card-top{display:flex;flex-direction:column;gap:8px;min-height:0;}
   .mc-title{min-width:0;flex:1;}
-  .mc-name{font-size:15px;font-weight:800;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .mc-meta{font-size:12px;color:var(--gray-500);margin-top:4px;}
-  .mc-distance{text-align:right;flex-shrink:0;min-width:58px;}
-  .mc-distance-value{font-size:22px;font-weight:800;color:var(--coral);line-height:1;}
+  .mc-name{font-size:14px;font-weight:800;color:var(--gray-900);line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .mc-meta{font-size:11px;color:var(--gray-500);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .mc-distance{margin-top:auto;}
+  .mc-distance-value{font-size:26px;font-weight:800;color:var(--coral);line-height:1;}
   .mc-distance-unit{font-size:11px;color:var(--gray-500);margin-top:1px;}
-  .mc-actions{display:flex;align-items:center;justify-content:flex-end;gap:6px;padding-top:12px;border-top:1px solid var(--gray-100);}
-  .mc-btn{height:32px;padding:0 11px;border-radius:var(--rs);font-size:12px;font-weight:700;border:1px solid transparent;cursor:pointer;font-family:inherit;white-space:nowrap;}
+  .mc-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding-top:10px;border-top:1px solid var(--gray-100);}
+  .mc-btn{height:32px;padding:0 10px;border-radius:var(--rs);font-size:12px;font-weight:700;border:1px solid transparent;cursor:pointer;font-family:inherit;white-space:nowrap;}
   .mc-btn-run{background:var(--ink);color:#fff;}
   .mc-btn-edit{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
-  .mc-btn-del{background:#fff;color:var(--red);border-color:var(--red-light);}
 
   .addr-dropdown-item{padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--gray-100);color:var(--gray-900);}
   .addr-dropdown-item:last-child{border-bottom:none;}
@@ -753,15 +753,16 @@ if ('serviceWorker' in navigator) {
   </div>
 </div>
 
-<!-- 코스 이름 변경 모달 -->
+<!-- 코스 편집 모달 -->
 <div id="renameModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1001;align-items:center;justify-content:center;">
   <div style="background:#fff;border-radius:16px;padding:24px 20px;width:300px;max-width:90vw;">
-    <div style="font-size:16px;font-weight:700;margin-bottom:16px;">코스 이름 변경</div>
+    <div style="font-size:16px;font-weight:700;margin-bottom:16px;">코스 편집</div>
     <input type="text" id="renameInput" style="width:100%;height:42px;border:1px solid var(--gray-300);border-radius:var(--rs);padding:0 12px;font-size:14px;font-family:inherit;outline:none;margin-bottom:14px;" placeholder="코스 이름 입력">
     <div style="display:flex;gap:8px;">
       <button onclick="closeRename()" style="flex:1;height:42px;background:var(--gray-100);border:none;border-radius:var(--rs);font-size:14px;font-family:inherit;cursor:pointer;color:var(--gray-700);">취소</button>
       <button onclick="confirmRename()" style="flex:1;height:42px;background:var(--ink);border:none;border-radius:var(--rs);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;color:#fff;">저장</button>
     </div>
+    <button onclick="deleteEditingCourse()" style="width:100%;height:38px;margin-top:10px;background:#fff;border:1px solid var(--red-light);border-radius:var(--rs);font-size:13px;font-weight:700;font-family:inherit;cursor:pointer;color:var(--red);">삭제</button>
   </div>
 </div>
 
@@ -2844,12 +2845,14 @@ function renderMyCourses() {
   count.textContent = courses.length + '개';
 
   if (!courses.length) {
+    list.classList.remove('mc-grid');
     empty.style.display = 'block';
     // 카드들 제거
     list.querySelectorAll('.mc-card').forEach(c => c.remove());
     return;
   }
   empty.style.display = 'none';
+  list.classList.add('mc-grid');
 
   // 기존 카드 제거 후 재렌더
   list.querySelectorAll('.mc-card').forEach(c => c.remove());
@@ -2873,7 +2876,6 @@ function renderMyCourses() {
       <div class="mc-actions">
         <button class="mc-btn mc-btn-run" onclick="startMyCoursRun(${c.id})">시작</button>
         <button class="mc-btn mc-btn-edit" onclick="openRename(${c.id})">편집</button>
-        <button class="mc-btn mc-btn-del" onclick="deleteMyCourse(${c.id})">삭제</button>
       </div>
     `;
     list.appendChild(card);
@@ -2916,12 +2918,19 @@ function confirmRename() {
   toast('이름이 변경됐어요!');
 }
 
-function deleteMyCourse(id) {
-  if (!confirm('이 코스를 삭제할까요?')) return;
+function removeMyCourse(id) {
   const courses = JSON.parse(localStorage.getItem('myCourses') || '[]').filter(c => c.id !== id);
   localStorage.setItem('myCourses', JSON.stringify(courses));
   renderMyCourses();
   toast('코스가 삭제됐어요');
+}
+
+function deleteEditingCourse() {
+  if (!renameTargetId) return;
+  const id = renameTargetId;
+  if (!confirm('이 코스를 삭제할까요?')) return;
+  closeRename();
+  removeMyCourse(id);
 }
 
 function startMyCoursRun(id) {
