@@ -14,7 +14,7 @@
 <meta name="theme-color" content="#F7F7F2">
 
 <!-- 아이오에스 아이콘 -->
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23F5F2EA'/><circle cx='128' cy='50' r='18' fill='%23B9DDF1'/><path d='M52 98c21-42 80-42 78 0-2 39-54 43-66 14-10-25 18-48 47-28' fill='none' stroke='%2327313A' stroke-width='16' stroke-linecap='round' stroke-linejoin='round'/><circle cx='53' cy='109' r='10' fill='%234F8FB8'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23F5F2EA'/><circle cx='128' cy='50' r='18' fill='%23FFD6C8'/><path d='M52 98c21-42 80-42 78 0-2 39-54 43-66 14-10-25 18-48 47-28' fill='none' stroke='%2327313A' stroke-width='16' stroke-linecap='round' stroke-linejoin='round'/><circle cx='53' cy='109' r='10' fill='%23F27A5E'/></svg>">
 
 <!-- 서비스 워커 등록 -->
 <script>
@@ -28,8 +28,8 @@ if ('serviceWorker' in navigator) {
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
   :root {
     --ink:#27313A;--paper:#FFFDF8;--cream:#F5F2EA;
-    --coral:#4F8FB8;--coral-dark:#1F5C78;--coral-light:#EAF4F8;
-    --lime:#B9DDF1;--mint:#6FAED0;--route:#4F8FB8;
+    --coral:#F27A5E;--coral-dark:#A94B37;--coral-light:#FFF0EA;
+    --lime:#FFD6C8;--mint:#F6A08A;--route:#D9654D;
     --green:var(--ink);--green-light:var(--coral-light);--green-dark:#172631;
     --amber:#98723E;--amber-light:#F8EEDC;
     --red:#A32D2D;--red-light:#FCEBEB;
@@ -44,10 +44,10 @@ if ('serviceWorker' in navigator) {
   .header{background:var(--paper);border-bottom:1px solid var(--gray-100);padding:14px 18px 10px;flex-shrink:0;z-index:100;}
   .header-top{display:flex;justify-content:space-between;align-items:center;}
   .logo{display:flex;align-items:center;gap:8px;font-size:20px;font-weight:700;color:var(--ink);letter-spacing:0;}
-  .logo-mark{width:28px;height:28px;border-radius:9px;background:var(--ink);position:relative;display:inline-block;box-shadow:inset 0 -6px 0 rgba(79,143,184,.72);}
+  .logo-mark{width:28px;height:28px;border-radius:9px;background:var(--ink);position:relative;display:inline-block;box-shadow:inset 0 -6px 0 rgba(242,122,94,.72);}
   .logo-mark::before{content:'';position:absolute;left:7px;top:8px;width:14px;height:8px;border:2px solid var(--paper);border-top-color:transparent;border-radius:999px;transform:rotate(-13deg);}
   .logo-mark::after{content:'';position:absolute;right:5px;top:5px;width:6px;height:6px;background:var(--coral);border-radius:50%;}
-  .loc-btn{display:flex;align-items:center;gap:5px;background:var(--coral-light);color:var(--ink);padding:6px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;cursor:pointer;border:1px solid rgba(79,143,184,.18);font-family:inherit;}
+  .loc-btn{display:flex;align-items:center;gap:5px;background:var(--coral-light);color:var(--ink);padding:6px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;cursor:pointer;border:1px solid rgba(242,122,94,.18);font-family:inherit;}
 
   .tabs{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:430px;height:70px;padding:6px 10px calc(6px + env(safe-area-inset-bottom));display:flex;gap:4px;background:rgba(255,253,248,.96);border-top:1px solid var(--gray-100);box-shadow:0 -8px 22px rgba(39,49,58,.08);backdrop-filter:blur(12px);z-index:140;flex-shrink:0;}
   .tab{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;font-size:11px;font-weight:700;color:var(--gray-500);cursor:pointer;border:none;border-radius:var(--rs);background:none;font-family:inherit;transition:all .2s;}
@@ -76,7 +76,7 @@ if ('serviceWorker' in navigator) {
   .course-list{padding:12px;display:flex;flex-direction:column;gap:10px;}
   .course-card{background:var(--paper);border-radius:var(--r);border:1.5px solid var(--gray-100);overflow:hidden;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
   .course-card:hover{border-color:var(--gray-300);}
-  .course-card.selected{border-color:var(--coral);box-shadow:0 8px 20px rgba(79,143,184,.12);}
+  .course-card.selected{border-color:var(--coral);box-shadow:0 8px 20px rgba(242,122,94,.12);}
   .cmap{height:85px;position:relative;overflow:hidden;background:#EEEADF;}
   .cmap canvas{width:100%;height:100%;display:block;}
   .cbadge{position:absolute;top:7px;left:7px;background:rgba(23,26,24,.88);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--rp);}
@@ -87,7 +87,7 @@ if ('serviceWorker' in navigator) {
   .tags{display:flex;gap:5px;flex-wrap:wrap;}
   .tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:var(--rp);}
   .tg{background:var(--coral-light);color:var(--ink);}
-  .tb{background:#E6F1FB;color:#185FA5;}
+  .tb{background:#F4EFE8;color:#5C4E45;}
   .ta{background:var(--amber-light);color:var(--amber);}
 
   .start-bar{padding:10px 16px 14px;background:var(--paper);border-top:1px solid var(--gray-100);flex-shrink:0;}
@@ -141,7 +141,7 @@ if ('serviceWorker' in navigator) {
   @keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
   .run-map{flex:1;min-height:280px;background:#EEEADF;position:relative;}
   .gps-chip{position:absolute;top:10px;left:10px;z-index:6;background:rgba(255,255,255,.92);border:1px solid var(--gray-100);border-radius:999px;padding:6px 10px;font-size:11px;font-weight:700;color:var(--gray-700);box-shadow:0 2px 8px rgba(0,0,0,.08);}
-  .gps-chip.good{color:#2F739A;}
+  .gps-chip.good{color:#3F7D5A;}
   .gps-chip.warn{color:#BA7517;}
   .gps-chip.bad{color:#A32D2D;}
   .run-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;padding:10px 14px;flex-shrink:0;}
@@ -237,7 +237,7 @@ if ('serviceWorker' in navigator) {
   .save-course-btn:hover{background:#FFE0DA;}
 
   /* 마이페이지 */
-  .my-profile-card{margin:14px;background:linear-gradient(135deg,#27313A 0%,#314858 68%,#4F8FB8 130%);border-radius:var(--r);padding:20px;color:#fff;flex-shrink:0;}
+  .my-profile-card{margin:14px;background:linear-gradient(135deg,#27313A 0%,#5A463C 68%,#F27A5E 130%);border-radius:var(--r);padding:20px;color:#fff;flex-shrink:0;}
   .my-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:10px;cursor:pointer;border:2px solid rgba(255,255,255,.4);}
   .my-name{font-size:20px;font-weight:700;margin-bottom:2px;}
   .my-sub{font-size:13px;opacity:.8;}
@@ -481,7 +481,7 @@ if ('serviceWorker' in navigator) {
           <span style="font-size:36px;font-weight:700;color:var(--gray-900);letter-spacing:0;line-height:1;" id="wTemp">—</span>
           <span style="font-size:13px;color:var(--gray-500);">°</span>
           <span id="wHiLo" style="font-size:12px;color:var(--gray-500);display:none;">
-            <span style="color:#E24B4A;" id="wHigh">—</span>&thinsp;/&thinsp;<span style="color:#378ADD;" id="wLow">—</span>
+            <span style="color:#E24B4A;" id="wHigh">—</span>&thinsp;/&thinsp;<span style="color:#6E8FA3;" id="wLow">—</span>
           </span>
         </div>
         <div style="display:flex;align-items:center;gap:10px;">
@@ -920,9 +920,9 @@ const TMAP_CONNECT_TOLERANCE_METERS = 24;
 const TMAP_SNAP_NOTICE_METERS = 45;
 const SMART_SNAP_MAX_DEVIATION_METERS = 100;
 const SMART_SNAP_MAX_END_GAP_METERS = 105;
-const DRAW_ROUTE_COLOR = '#4F8FB8';
-const DRAW_ROUTE_MARKER_COLOR = '#4F8FB8';
-const DRAW_ROUTE_PLANNED_COLOR = '#B9DDF1';
+const DRAW_ROUTE_COLOR = '#D9654D';
+const DRAW_ROUTE_MARKER_COLOR = '#F27A5E';
+const DRAW_ROUTE_PLANNED_COLOR = '#FFD6C8';
 const DRAW_ROUTE_WEIGHT = 6;
 const DRAW_ROUTE_OPACITY = 0.58;
 
@@ -968,7 +968,7 @@ function initCreateMap() {
     S.myMarker = new kakao.maps.CustomOverlay({
       map: createMap,
       position: new kakao.maps.LatLng(lat, lng),
-      content: '<div style="width:14px;height:14px;background:#4F8FB8;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(79,143,184,.22)"></div>',
+      content: '<div style="width:14px;height:14px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(242,122,94,.22)"></div>',
       zIndex: 3
     });
 
@@ -1565,7 +1565,7 @@ function moveToMyLocation() {
       if (S.myMarker) S.myMarker.setMap(null);
       S.myMarker = new kakao.maps.CustomOverlay({
         map, position: latlng,
-        content: '<div style="width:14px;height:14px;background:#4F8FB8;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(79,143,184,.22)"></div>',
+        content: '<div style="width:14px;height:14px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(242,122,94,.22)"></div>',
         zIndex: 3
       });
       toast('현재 위치로 이동했어요!');
@@ -1615,7 +1615,7 @@ function setAiMarker(latlng, addrName) {
   createAiMarker = new kakao.maps.CustomOverlay({
     map: createMap,
     position: latlng,
-    content: '<div style="display:flex;flex-direction:column;align-items:center;"><div style="width:14px;height:14px;background:#4F8FB8;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div><div style="width:2px;height:8px;background:#4F8FB8;"></div></div>',
+    content: '<div style="display:flex;flex-direction:column;align-items:center;"><div style="width:14px;height:14px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div><div style="width:2px;height:8px;background:#F27A5E;"></div></div>',
     zIndex: 5
   });
   if (createMap) createMap.setCenter(latlng);
@@ -2017,7 +2017,7 @@ function detectLocation() {
       if (S.myMarker) S.myMarker.setMap(null);
       S.myMarker = new kakao.maps.CustomOverlay({
         map: S.map, position: latlng,
-        content: '<div style="width:14px;height:14px;background:#4F8FB8;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(79,143,184,.22)"></div>',
+        content: '<div style="width:14px;height:14px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(242,122,94,.22)"></div>',
         zIndex: 3
       });
     }
@@ -2127,7 +2127,7 @@ function initMap() {
     S.myMarker = new kakao.maps.CustomOverlay({
       map: S.map,
       position: new kakao.maps.LatLng(lat, lng),
-      content: '<div style="width:14px;height:14px;background:#4F8FB8;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(79,143,184,.22)"></div>',
+      content: '<div style="width:14px;height:14px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(242,122,94,.22)"></div>',
       zIndex: 3
     });
 
@@ -2289,8 +2289,8 @@ function saveCourse() {
 
 /* AI 추천 코스 */
 const COURSES = [
-  { name:'한강 산책로 루프', tags:[{l:'안전',c:'tg'},{l:'평지',c:'tb'},{l:'공원',c:'tg'}], meta:'차량 없음 · 조명 완비 · 화장실 3곳', pt:'river', color:'#4F8FB8', pace:6.2 },
-  { name:'홍대 플랫 코스', tags:[{l:'평지',c:'tb'},{l:'야간 가능',c:'tg'},{l:'혼잡',c:'ta'}], meta:'편의점 다수 · 보도 넓음 · 조명 양호', pt:'urban', color:'#378ADD', pace:6.5 },
+  { name:'한강 산책로 루프', tags:[{l:'안전',c:'tg'},{l:'평지',c:'tb'},{l:'공원',c:'tg'}], meta:'차량 없음 · 조명 완비 · 화장실 3곳', pt:'river', color:'#F27A5E', pace:6.2 },
+  { name:'홍대 플랫 코스', tags:[{l:'평지',c:'tb'},{l:'야간 가능',c:'tg'},{l:'혼잡',c:'ta'}], meta:'편의점 다수 · 보도 넓음 · 조명 양호', pt:'urban', color:'#D9654D', pace:6.5 },
   { name:'망원 공원 힐 루프', tags:[{l:'공원',c:'tg'},{l:'경사 포함',c:'ta'}], meta:'잔디밭 · 오르막 2곳 · 뷰 좋음', pt:'park', color:'#639922', pace:6.8 }
 ];
 
@@ -2544,7 +2544,7 @@ function renderNearCourses(results) {
     .slice(0, 3);
 
   const icons = ['🌳','🏞️','🌿','🏃','💧'];
-  const iconBgs = ['#FFF0EC','#E6F1FB','#F0F8DB','#FFF5DB','#E6F4F9'];
+  const iconBgs = ['#FFF0EC','#F4EFE8','#F0F8DB','#FFF5DB','#EEF8EA'];
   const courseKm = [3.2, 5.0, 4.5, 2.8, 6.1];
   const tags = ['평지 · 산책로', '공원 루프', '한강변', '야간 가능', '뷰 좋음'];
 
@@ -2561,7 +2561,7 @@ function renderNearCourses(results) {
       ? Math.round(p.distFromMe * 1000) + 'm'
       : p.distFromMe.toFixed(1) + 'km';
     const tset = tagSets[i % tagSets.length];
-    const featured = i === 0 ? 'border:1.5px solid var(--coral);box-shadow:0 8px 20px rgba(79,143,184,.10);' : 'border:1px solid var(--gray-100);';
+    const featured = i === 0 ? 'border:1.5px solid var(--coral);box-shadow:0 8px 20px rgba(242,122,94,.10);' : 'border:1px solid var(--gray-100);';
     return `
       <div style="background:#fff;border-radius:var(--r);${featured}overflow:hidden;margin-bottom:10px;">
         <div style="display:flex;gap:14px;padding:14px;">
@@ -2663,7 +2663,7 @@ function renderRecords() {
     labelEl.innerHTML = '';
     ordered.forEach(o => {
       const barH = Math.round((o.dist / maxDist) * 48) + 4;
-      const barColor = o.isToday ? 'var(--coral)' : o.dist > 0 ? '#B9DDF1' : 'var(--gray-100)';
+      const barColor = o.isToday ? 'var(--coral)' : o.dist > 0 ? '#FFD6C8' : 'var(--gray-100)';
       const wrap2 = document.createElement('div');
       wrap2.style.cssText = 'flex:1;display:flex;flex-direction:column;align-items:center;gap:0;height:100%;justify-content:flex-end;';
       const bar = document.createElement('div');
@@ -3369,7 +3369,7 @@ function getPmGrade(val, type) {
 
 function getDustStyle(grade) {
   const map = {
-    '매우좋음': { label:'매우좋음', bg:'#EAF4F8', color:'#27313A' },
+    '매우좋음': { label:'매우좋음', bg:'#EEF8EA', color:'#3F6F3A' },
     '좋음':     { label:'좋음',     bg:'#FFF0EC', color:'#D84F45' },
     '보통':     { label:'보통',     bg:'#F0EFEA', color:'#444441' },
     '나쁨':     { label:'나쁨',     bg:'#FAEEDA', color:'#BA7517' },
@@ -3433,7 +3433,7 @@ function initRunMap(savedPoints) {
   runMarker = new kakao.maps.CustomOverlay({
     map: runMap,
     position: center,
-    content: '<div style="width:16px;height:16px;background:#4F8FB8;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(79,143,184,.22)"></div>',
+    content: '<div style="width:16px;height:16px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(242,122,94,.22)"></div>',
     zIndex: 5
   });
 
@@ -3449,7 +3449,7 @@ function initRunMap(savedPoints) {
     new kakao.maps.CustomOverlay({
       map: runMap,
       position: path[0],
-      content: '<div style="width:10px;height:10px;background:#fff;border:2px solid #4F8FB8;border-radius:50%;"></div>',
+      content: '<div style="width:10px;height:10px;background:#fff;border:2px solid #F27A5E;border-radius:50%;"></div>',
       zIndex: 3
     });
   }
@@ -3500,7 +3500,7 @@ function initRunMap(savedPoints) {
       if (runMarker) runMarker.setMap(null);
       runMarker = new kakao.maps.CustomOverlay({
         map: runMap, position: latlng,
-        content: '<div style="width:16px;height:16px;background:#4F8FB8;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(79,143,184,.22)"></div>',
+        content: '<div style="width:16px;height:16px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(242,122,94,.22)"></div>',
         zIndex: 5
       });
       runMap.setCenter(latlng);
@@ -3573,7 +3573,7 @@ function drawRunCanvas() {
   }
   // 현재 위치 점
   const cur = drawn[drawn.length-1] || pts[0];
-  ctx.fillStyle = 'rgba(79,143,184,.18)'; ctx.beginPath(); ctx.arc(cur.x*w,cur.y*h,12,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(242,122,94,.18)'; ctx.beginPath(); ctx.arc(cur.x*w,cur.y*h,12,0,Math.PI*2); ctx.fill();
   ctx.fillStyle = DRAW_ROUTE_MARKER_COLOR; ctx.beginPath(); ctx.arc(cur.x*w,cur.y*h,5,0,Math.PI*2); ctx.fill();
   // 시작점
   ctx.fillStyle='#fff'; ctx.strokeStyle=DRAW_ROUTE_MARKER_COLOR; ctx.lineWidth=2;
