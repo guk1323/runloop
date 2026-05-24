@@ -100,7 +100,7 @@ async function createOpenAiResponse(apiKey, context) {
         instructions: [
           'You create concise Korean running course recommendation cards for Runloop.',
           'Do not invent exact coordinates, turn-by-turn routes, businesses, safety guarantees, or live map data.',
-          'Return valid JSON only. Keep names short, cute, and minimal.'
+          'Return valid JSON only. Keep names short, cute, and minimal. Include a local area hint when possible.'
         ].join(' '),
         input: [
           `위치: ${context.place} (${context.lat.toFixed(5)}, ${context.lng.toFixed(5)})`,
@@ -108,7 +108,7 @@ async function createOpenAiResponse(apiKey, context) {
           `날씨/상황: ${context.weather}`,
           `사용자 선호: ${context.preference}`,
           `이미 저장한 코스 이름: ${context.savedCourseNames.length ? context.savedCourseNames.join(', ') : '없음'}`,
-          'JSON 형식: {"courses":[{"name":"이름","concept":"한 문장 컨셉","distanceKm":5.0,"paceMinPerKm":6.5,"tags":["안전","평지"],"safetyNote":"짧은 참고","mapStyle":"river|urban|park"}]}',
+          'JSON 형식: {"courses":[{"name":"이름","concept":"한 문장 컨셉","distanceKm":5.0,"paceMinPerKm":6.5,"tags":["안전","평지"],"safetyNote":"짧은 참고","routeLabel":"경로 힌트","mapStyle":"river|urban|park"}]}',
           'courses는 정확히 3개. distanceKm는 목표 거리의 ±10% 안. tags는 각 2~3개.'
         ].join('\n')
       })
@@ -278,6 +278,7 @@ function normalizeCourse(course, index, targetKm) {
   const mapStyle = styles.includes(course.mapStyle) ? course.mapStyle : inferMapStyle(tags, index);
   const concept = cleanText(course.concept, 45);
   const safetyNote = cleanText(course.safetyNote, 45);
+  const routeLabel = cleanText(course.routeLabel, 34);
 
   return {
     name: cleanText(course.name, 18) || `추천 코스 ${index + 1}`,
@@ -285,6 +286,7 @@ function normalizeCourse(course, index, targetKm) {
     pace,
     tags,
     meta: [concept, safetyNote].filter(Boolean).join(' · ') || '현재 조건에 맞춘 추천 코스',
+    routeLabel,
     pt: mapStyle,
     color: colors[index] || colors[0],
     fromAi: true

@@ -73,17 +73,18 @@ if ('serviceWorker' in navigator) {
   .gen-btn:disabled{background:var(--gray-300);cursor:not-allowed;}
 
   .course-scroll{flex:1;overflow-y:auto;}
-  .course-list{padding:12px;display:flex;flex-direction:column;gap:10px;}
+  .course-list{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;}
   .course-card{background:var(--paper);border-radius:var(--r);border:1.5px solid var(--gray-100);overflow:hidden;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
   .course-card:hover{border-color:var(--gray-300);}
   .course-card.selected{border-color:var(--coral);box-shadow:0 8px 20px rgba(242,122,94,.12);}
-  .cmap{height:85px;position:relative;overflow:hidden;background:#EEEADF;}
+  .cmap{height:70px;position:relative;overflow:hidden;background:#EEEADF;}
   .cmap canvas{width:100%;height:100%;display:block;}
   .cbadge{position:absolute;top:7px;left:7px;background:rgba(23,26,24,.88);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--rp);}
   .crank{position:absolute;top:7px;right:7px;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--rp);}
-  .cinfo{padding:10px 14px 12px;}
+  .cinfo{padding:8px 10px 10px;}
   .cname{font-size:14px;font-weight:700;margin-bottom:3px;}
-  .cmeta{font-size:12px;color:var(--gray-500);margin-bottom:7px;}
+  .cmeta{font-size:12px;color:var(--gray-500);line-height:1.35;margin-bottom:7px;}
+  .croute{font-size:11px;color:var(--coral-dark);font-weight:700;margin-bottom:3px;}
   .tags{display:flex;gap:5px;flex-wrap:wrap;}
   .tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:var(--rp);}
   .tg{background:var(--coral-light);color:var(--ink);}
@@ -1086,6 +1087,7 @@ function setCreateMode(mode) {
     clearSegmentPolylines();
     clearOverlapPolylines();
     S.dots.forEach(d => d.setMap(null));
+    if (S.sel >= 0 && S.courses[S.sel]) showAiRoutePreview(S.courses[S.sel]);
   } else {
     drawBtn.style.background = 'var(--ink)'; drawBtn.style.color = '#fff';
     aiBtn.style.background = 'transparent'; aiBtn.style.color = 'var(--gray-500)';
@@ -1099,6 +1101,7 @@ function setCreateMode(mode) {
     updateSnapToggle();
     if (guide) guide.style.display = 'none';
     if (createAiMarker) createAiMarker.setMap(null);
+    clearAiRoutePreview();
     renderDrawPolyline(S.path);
     S.dots.forEach(d => d.setMap(createMap));
     openBottomSheet();
@@ -1627,6 +1630,7 @@ function moveToMyLocation() {
         content: '<div style="width:14px;height:14px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(242,122,94,.22)"></div>',
         zIndex: 3
       });
+      if (createMode === 'ai' && map === createMap) setAiMarker(latlng, '현재 위치');
       toast('현재 위치로 이동했어요!');
     }, () => toast('위치 권한을 허용해주세요'), { enableHighAccuracy: true, timeout: 8000 });
   }
@@ -1665,11 +1669,13 @@ function clearSelectedAddr() {
   document.getElementById('aiMapGuide').style.display = 'block';
   document.getElementById('addrInput').value = '';
   if (createAiMarker) { createAiMarker.setMap(null); createAiMarker = null; }
+  resetAiCourseSuggestions();
 }
 
 function setAiMarker(latlng, addrName) {
   S.lat = latlng.getLat ? latlng.getLat() : parseFloat(latlng.lat);
   S.lng = latlng.getLng ? latlng.getLng() : parseFloat(latlng.lng);
+  resetAiCourseSuggestions();
   if (createAiMarker) createAiMarker.setMap(null);
   createAiMarker = new kakao.maps.CustomOverlay({
     map: createMap,
@@ -2393,6 +2399,23 @@ const COURSES = [
 ];
 const AI_COURSE_CACHE_KEY = 'runloopAiCourseCache';
 const AI_COURSE_CACHE_MS = 10 * 60 * 1000;
+let aiRouteOverlays = [];
+
+function resetAiCourseSuggestions() {
+  S.courses = [];
+  S.sel = -1;
+  clearAiRoutePreview();
+  const list = document.getElementById('courseList');
+  const empty = document.getElementById('emptyState');
+  if (list) {
+    list.innerHTML = '';
+    list.style.display = 'none';
+  }
+  if (empty) {
+    empty.style.display = 'block';
+    empty.innerHTML = '<div class="empty-icon">⌁</div><div class="empty-title">출발지를 기준으로 다시 추천받아보세요</div><div class="empty-desc">추천 후 지도 위에 경로가 표시돼요</div>';
+  }
+}
 
 async function generateCourses() {
   const btn = document.getElementById('genBtn');
@@ -2413,7 +2436,7 @@ async function generateCourses() {
       ? 'AI 추천은 잠시 후 다시 눌러주세요'
       : 'AI 연결이 안 돼서 기본 추천을 보여줘요');
   } finally {
-    S.sel = 0;
+    S.sel = S.courses.length ? 0 : -1;
     renderCourses();
     btn.disabled = false; txt.textContent = '다시 생성'; sp.style.display = 'none';
   }
@@ -2436,7 +2459,7 @@ async function fetchAiCourses(km) {
     throw new Error('AI_API_' + res.status);
   }
   const data = await res.json();
-  const courses = normalizeAiCourses(data.courses, km);
+  const courses = prepareAiCourses(data.courses, km);
   if (courses.length) setCachedAiCourses(cacheKey, km, courses);
   return { courses, cached: false };
 }
@@ -2485,7 +2508,7 @@ function readAiCourseCache() {
 function getCachedAiCourses(cacheKey, targetKm) {
   const item = readAiCourseCache()[cacheKey];
   if (!item || Date.now() - Number(item.savedAt || 0) > AI_COURSE_CACHE_MS) return [];
-  return normalizeAiCourses(item.courses, Number(item.km) || targetKm);
+  return prepareAiCourses(item.courses, Number(item.km) || targetKm);
 }
 
 function setCachedAiCourses(cacheKey, km, courses) {
@@ -2503,7 +2526,9 @@ function setCachedAiCourses(cacheKey, km, courses) {
 }
 
 function buildFallbackCourses(km) {
-  return COURSES.map(c => ({...c, km: (km * (0.93 + Math.random() * .14)).toFixed(1), fromAi: false}));
+  return COURSES
+    .map(c => ({...c, km: (km * (0.93 + Math.random() * .14)).toFixed(1), points: [], fromAi: false}))
+    .map((course, index) => enrichAiCourseRoute(course, index, km));
 }
 
 function getAiCoursePlaceLabel() {
@@ -2534,6 +2559,11 @@ function normalizeAiCourses(courses, targetKm) {
   return courses.slice(0, 3).map((course, index) => normalizeAiCourse(course, index, targetKm)).filter(Boolean);
 }
 
+function prepareAiCourses(courses, targetKm) {
+  return normalizeAiCourses(courses, targetKm)
+    .map((course, index) => enrichAiCourseRoute(course, index, targetKm));
+}
+
 function normalizeAiCourse(course, index, targetKm) {
   if (!course || typeof course !== 'object') return null;
   const styles = ['river', 'urban', 'park'];
@@ -2556,8 +2586,137 @@ function normalizeAiCourse(course, index, targetKm) {
     meta: String(course.meta || course.concept || '현재 조건에 맞춘 추천 코스').slice(0, 70),
     pt: styles.includes(course.pt) ? course.pt : styles.includes(course.mapStyle) ? course.mapStyle : styles[index],
     color: colors.includes(course.color) ? course.color : colors[index],
+    routeLabel: String(course.routeLabel || '').slice(0, 34),
+    startLabel: String(course.startLabel || '').slice(0, 42),
+    points: normalizeStoredPathPoints(course.points),
     fromAi: true
   };
+}
+
+function enrichAiCourseRoute(course, index, targetKm) {
+  const routePath = course.points.length
+    ? course.points.map(point => makeRouteLatLng(point.lat, point.lng))
+    : buildAiLoopPath(course, index, parseFloat(course.km) || targetKm);
+  const points = serializeLatLngPath(routePath);
+  const actualKm = pathLengthMeters(routePath) / 1000;
+  const startLabel = course.startLabel || getAiCoursePlaceLabel();
+  return {
+    ...course,
+    name: qualifyAiCourseName(course.name, startLabel, index),
+    km: Number.isFinite(actualKm) && actualKm > 0 ? actualKm.toFixed(1) : course.km,
+    points,
+    routeLabel: course.routeLabel || getAiRouteLabel(course, index),
+    startLabel
+  };
+}
+
+function qualifyAiCourseName(name, startLabel, index) {
+  const cleaned = String(name || `추천 코스 ${index + 1}`).trim();
+  if (!/^(강변|공원|골목|동네|루프|코스|추천 코스 \d+)$/.test(cleaned)) return cleaned.slice(0, 18);
+  const area = getShortAreaName(startLabel);
+  const suffix = cleaned.endsWith('루프') ? cleaned : cleaned + ' 루프';
+  return `${area} ${suffix}`.slice(0, 18);
+}
+
+function getShortAreaName(label) {
+  const text = String(label || '').replace(/현재 위치|주변/g, '').trim();
+  const matches = text.match(/[가-힣0-9]+(?:동|가|구|시|로|길|공원|캠퍼스|역)/g);
+  if (matches && matches.length) return matches[matches.length - 1].slice(0, 8);
+  return '출발지';
+}
+
+function buildAiLoopPath(course, index, targetKm) {
+  const start = makeRouteLatLng(S.lat, S.lng);
+  const targetMeters = Math.max(800, Math.min(22000, targetKm * 1000));
+  const type = course.pt || ['river', 'urban', 'park'][index] || 'urban';
+  if (type === 'urban') return buildAiRectLoop(start, targetMeters, index);
+  return buildAiOvalLoop(start, targetMeters, type, index);
+}
+
+function buildAiRectLoop(start, targetMeters, index) {
+  const width = targetMeters * (0.28 + index * 0.025);
+  const height = Math.max(260, targetMeters / 2 - width);
+  const bearing = [0.15, 0.95, -0.75][index] || 0;
+  return [
+    [0, 0],
+    [0, width],
+    [height, width],
+    [height, 0],
+    [0, 0]
+  ].map(([north, east]) => makeRouteLatLngOffset(start, north, east, bearing));
+}
+
+function buildAiOvalLoop(start, targetMeters, type, index) {
+  const ratio = type === 'river' ? 1.85 : 1.25;
+  const basePerimeter = getEllipsePerimeter(ratio, 1);
+  const scale = targetMeters / basePerimeter;
+  const rx = ratio * scale;
+  const ry = scale;
+  const bearing = type === 'river'
+    ? ([0.25, -0.18, 0.42][index] || 0.25)
+    : ([0.65, -0.55, 1.15][index] || 0.65);
+  const points = [];
+  const segments = 18;
+  for (let i = 0; i <= segments; i++) {
+    const angle = Math.PI - (Math.PI * 2 * i / segments);
+    const north = Math.sin(angle) * ry;
+    const east = rx + Math.cos(angle) * rx;
+    points.push(makeRouteLatLngOffset(start, north, east, bearing));
+  }
+  return points;
+}
+
+function getEllipsePerimeter(rx, ry) {
+  const h = Math.pow(rx - ry, 2) / Math.pow(rx + ry, 2);
+  return Math.PI * (rx + ry) * (1 + (3 * h) / (10 + Math.sqrt(4 - 3 * h)));
+}
+
+function makeRouteLatLngOffset(origin, northMeters, eastMeters, bearingRad = 0) {
+  const rotatedNorth = northMeters * Math.cos(bearingRad) - eastMeters * Math.sin(bearingRad);
+  const rotatedEast = northMeters * Math.sin(bearingRad) + eastMeters * Math.cos(bearingRad);
+  const lat = origin.getLat() + rotatedNorth / 111320;
+  const lng = origin.getLng() + rotatedEast / (111320 * Math.cos(origin.getLat() * Math.PI / 180));
+  return makeRouteLatLng(lat, lng);
+}
+
+function makeRouteLatLng(lat, lng) {
+  const safeLat = Number(lat);
+  const safeLng = Number(lng);
+  if (window.kakao && kakao.maps && kakao.maps.LatLng) {
+    return new kakao.maps.LatLng(safeLat, safeLng);
+  }
+  return { getLat: () => safeLat, getLng: () => safeLng };
+}
+
+function serializeLatLngPath(path) {
+  return (path || []).map(point => ({
+    lat: roundCoord(point.getLat()),
+    lng: roundCoord(point.getLng())
+  }));
+}
+
+function normalizeStoredPathPoints(points) {
+  if (!Array.isArray(points)) return [];
+  return points
+    .map(point => ({
+      lat: parseFloat(point && point.lat),
+      lng: parseFloat(point && point.lng)
+    }))
+    .filter(point => Number.isFinite(point.lat) && Number.isFinite(point.lng));
+}
+
+function roundCoord(value) {
+  return Math.round(Number(value) * 1000000) / 1000000;
+}
+
+function getAiRouteLabel(course, index) {
+  const labels = {
+    river: ['강변 방향 루프', '물길 옆 완만한 루프', '뷰 좋은 왕복 루프'],
+    urban: ['동네 블록 루프', '주택가 중심 루프', '큰길 적은 사각 루프'],
+    park: ['공원 방향 루프', '초록길 중심 루프', '가볍게 도는 공원 루프']
+  };
+  const group = labels[course.pt] || labels.urban;
+  return group[index] || group[0];
 }
 
 function normalizeAiTag(tag) {
@@ -2590,19 +2749,21 @@ function renderCourses() {
       </div>
       <div class="cinfo">
         <div class="cname">${escapeHtml(c.name)}</div>
+        <div class="croute">${escapeHtml(c.routeLabel || c.startLabel || '지도 위 예상 루프')}</div>
         <div class="cmeta">${escapeHtml(c.km)}km · ${pm}'${ps}"/km · ${escapeHtml(c.meta)}</div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
           <div class="tags">${c.tags.map(t => `<span class="tag ${t.c}">${escapeHtml(t.l)}</span>`).join('')}</div>
-          <button class="save-course-btn" onclick="event.stopPropagation();saveAiCourse(${i})">저장</button>
+          <button class="save-course-btn" onclick="event.stopPropagation();saveAiCourse(${i})">내 코스 저장</button>
         </div>
       </div>`;
     card.onclick = () => selCourse(i);
     list.appendChild(card);
     requestAnimationFrame(() => {
       const cv = document.getElementById('m' + i);
-      if (cv) miniMap(cv, c.pt, c.color);
+      if (cv) miniMap(cv, c.pt, c.color, c.points);
     });
   });
+  if (S.sel >= 0 && S.courses[S.sel]) showAiRoutePreview(S.courses[S.sel]);
   openBottomSheet();
 }
 
@@ -2611,6 +2772,68 @@ function selCourse(i) {
   document.querySelectorAll('.course-card').forEach((c, j) => {
     c.className = 'course-card' + (j === i ? ' selected' : '');
   });
+  showAiRoutePreview(S.courses[i]);
+}
+
+function clearAiRoutePreview() {
+  aiRouteOverlays.forEach(overlay => {
+    if (overlay && overlay.setMap) overlay.setMap(null);
+  });
+  aiRouteOverlays = [];
+}
+
+function showAiRoutePreview(course) {
+  clearAiRoutePreview();
+  if (!createMap || !course || !Array.isArray(course.points) || course.points.length < 2) return;
+  const path = course.points
+    .map(point => makeRouteLatLng(point.lat, point.lng))
+    .filter(Boolean);
+  if (path.length < 2) return;
+
+  const shadow = new kakao.maps.Polyline({
+    map: createMap,
+    path,
+    strokeWeight: 9,
+    strokeColor: DRAW_ROUTE_PLANNED_COLOR,
+    strokeOpacity: 0.55,
+    strokeStyle: 'solid'
+  });
+  const line = new kakao.maps.Polyline({
+    map: createMap,
+    path,
+    strokeWeight: 5,
+    strokeColor: course.color || DRAW_ROUTE_COLOR,
+    strokeOpacity: 0.9,
+    strokeStyle: 'solid'
+  });
+  const startDot = new kakao.maps.Circle({
+    map: createMap,
+    center: path[0],
+    radius: 8,
+    strokeWeight: 3,
+    strokeColor: DRAW_ROUTE_MARKER_COLOR,
+    fillColor: '#fff',
+    fillOpacity: 1
+  });
+  const endDot = new kakao.maps.Circle({
+    map: createMap,
+    center: path[path.length - 1],
+    radius: 5,
+    strokeWeight: 2,
+    strokeColor: '#fff',
+    fillColor: DRAW_ROUTE_MARKER_COLOR,
+    fillOpacity: 1
+  });
+  aiRouteOverlays = [shadow, line, startDot, endDot];
+
+  const bounds = new kakao.maps.LatLngBounds();
+  path.forEach(point => bounds.extend(point));
+  createMap.setBounds(bounds);
+  const guide = document.getElementById('aiMapGuide');
+  if (guide) {
+    guide.style.display = 'block';
+    guide.textContent = `${course.name} 경로를 지도에 표시했어요`;
+  }
 }
 
 // updStartBtn 제거 — 코스 탭에서 시작
@@ -3300,6 +3523,8 @@ function openCourseDetail(id) {
     </div>
     ${recordDetailRow('저장일', saved || '-')}
     ${recordDetailRow('코스 유형', source)}
+    ${course.startLabel ? recordDetailRow('출발지', course.startLabel) : ''}
+    ${course.routeLabel ? recordDetailRow('경로 힌트', course.routeLabel) : ''}
     ${recordDetailRow('경로 포인트', pointCount ? pointCount + '개' : '-')}
     ${recordDetailRow('구간 수', segmentCount ? segmentCount + '개' : '-')}
     ${Number.isFinite(manualKm) && manualKm > 0 ? recordDetailRow('직접 그린 구간', manualKm.toFixed(2) + 'km') : ''}
@@ -3977,10 +4202,10 @@ function drawRunCanvas() {
 }
 
 /* 미니맵 (AI 추천 카드) */
-function miniMap(cv, type, color) {
+function miniMap(cv, type, color, routePoints = []) {
   const dpr = window.devicePixelRatio || 1;
   const rw = cv.offsetWidth || cv.parentElement.offsetWidth;
-  const rh = 85;
+  const rh = 70;
   cv.width = rw * dpr; cv.height = rh * dpr;
   const c = cv.getContext('2d'); c.scale(dpr, dpr);
   c.fillStyle = '#dce8dc'; c.fillRect(0,0,rw,rh);
@@ -3990,19 +4215,29 @@ function miniMap(cv, type, color) {
   if (type==='river'){c.fillStyle='#c8dff0';c.fillRect(0,rh*.62,rw,rh*.2);}
   else if (type==='park'){c.fillStyle='#c0d8b0';c.fillRect(rw*.08,rh*.08,rw*.3,rh*.55);}
   c.strokeStyle=color; c.lineWidth=2.5; c.lineJoin='round'; c.lineCap='round';
-  c.beginPath();
-  if (type==='river'){
-    c.moveTo(rw*.1,rh*.6);c.bezierCurveTo(rw*.3,rh*.5,rw*.7,rh*.5,rw*.9,rh*.6);
-    c.bezierCurveTo(rw*.7,rh*.7,rw*.3,rh*.7,rw*.1,rh*.6);
-  } else if (type==='urban'){
-    c.moveTo(rw*.15,rh*.28);c.lineTo(rw*.8,rh*.28);c.lineTo(rw*.8,rh*.7);
-    c.lineTo(rw*.2,rh*.7);c.lineTo(rw*.2,rh*.48);c.lineTo(rw*.6,rh*.48);
+  const previewPoints = Array.isArray(routePoints) && routePoints.length > 1
+    ? normalizePreviewPoints(routePoints, rw, rh)
+    : [];
+  if (previewPoints.length > 1) {
+    c.beginPath();
+    c.moveTo(previewPoints[0].x, previewPoints[0].y);
+    previewPoints.slice(1).forEach(point => c.lineTo(point.x, point.y));
   } else {
-    c.moveTo(rw*.5,rh*.14);c.bezierCurveTo(rw*.85,rh*.2,rw*.88,rh*.65,rw*.5,rh*.78);
-    c.bezierCurveTo(rw*.12,rh*.65,rw*.15,rh*.2,rw*.5,rh*.14);
+    c.beginPath();
+    if (type==='river'){
+      c.moveTo(rw*.1,rh*.6);c.bezierCurveTo(rw*.3,rh*.5,rw*.7,rh*.5,rw*.9,rh*.6);
+      c.bezierCurveTo(rw*.7,rh*.7,rw*.3,rh*.7,rw*.1,rh*.6);
+    } else if (type==='urban'){
+      c.moveTo(rw*.15,rh*.28);c.lineTo(rw*.8,rh*.28);c.lineTo(rw*.8,rh*.7);
+      c.lineTo(rw*.2,rh*.7);c.lineTo(rw*.2,rh*.48);c.lineTo(rw*.6,rh*.48);
+    } else {
+      c.moveTo(rw*.5,rh*.14);c.bezierCurveTo(rw*.85,rh*.2,rw*.88,rh*.65,rw*.5,rh*.78);
+      c.bezierCurveTo(rw*.12,rh*.65,rw*.15,rh*.2,rw*.5,rh*.14);
+    }
   }
   c.stroke();
-  const sx = type==='park' ? rw*.5 : rw*.1, sy = type==='park' ? rh*.14 : rh*.6;
+  const sx = previewPoints[0] ? previewPoints[0].x : (type==='park' ? rw*.5 : rw*.1);
+  const sy = previewPoints[0] ? previewPoints[0].y : (type==='park' ? rh*.14 : rh*.6);
   c.fillStyle='#fff'; c.strokeStyle=color; c.lineWidth=1.5;
   c.beginPath();c.arc(sx,sy,4,0,Math.PI*2);c.fill();c.stroke();
 }
@@ -4225,24 +4460,40 @@ function saveAiCourse(idx) {
   const c = S.courses[idx];
   if (!c) return;
   const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
-  // 중복 체크
-  if (courses.find(x => x.name === c.name)) {
-    toast('이미 저장된 코스예요!'); return;
+  const points = normalizeStoredPathPoints(c.points);
+  if (points.length < 2) {
+    toast('저장할 지도 경로가 없어요');
+    return;
   }
   const savedAt = new Date();
+  const name = makeUniqueCourseName(c.name || buildCourseNameSuggestion(parseFloat(c.km), savedAt, [], courses), courses);
+  const path = points.map(point => makeRouteLatLng(point.lat, point.lng));
+  const dist = pathLengthMeters(path) / 1000;
   courses.push({
     id: savedAt.getTime(),
-    name: c.name,
-    dist: c.dist || c.km,
+    name,
+    dist: (Number.isFinite(dist) && dist > 0 ? dist : parseFloat(c.km) || 0).toFixed(2),
     date: savedAt.toLocaleDateString('ko-KR', {month:'long', day:'numeric'}),
     savedAt: savedAt.toISOString(),
     favorite: false,
-    points: [],
+    points,
+    segments: [{
+      mode: 'ai',
+      dist: (Number.isFinite(dist) && dist > 0 ? dist : parseFloat(c.km) || 0).toFixed(3),
+      points
+    }],
+    manualDist: '0.00',
     fromAi: true,
-    tags: c.tags
+    tags: c.tags,
+    routeLabel: c.routeLabel || '',
+    startLabel: c.startLabel || getAiCoursePlaceLabel()
   });
   localStorage.setItem('myCourses', JSON.stringify(courses));
-  toast(c.name + ' 코스가 저장됐어요!');
+  toast(name + ' 코스가 저장됐어요!');
+  setTimeout(() => {
+    const courseTab = document.querySelector('[data-tab="mycourse"]');
+    if (courseTab) switchTab('mycourse', courseTab);
+  }, 300);
 }
 
 /* ══════════════════════════════════════
