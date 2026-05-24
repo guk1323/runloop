@@ -2925,7 +2925,7 @@ function showAiRoutePreview(course, options = {}) {
   const shadow = new kakao.maps.Polyline({
     map: createMap,
     path,
-    strokeWeight: 10,
+    strokeWeight: 12,
     strokeColor: DRAW_ROUTE_PLANNED_COLOR,
     strokeOpacity: 0.5,
     strokeStyle: 'solid'
@@ -2933,7 +2933,7 @@ function showAiRoutePreview(course, options = {}) {
   const line = new kakao.maps.Polyline({
     map: createMap,
     path,
-    strokeWeight: 5,
+    strokeWeight: 6,
     strokeColor: course.color || DRAW_ROUTE_COLOR,
     strokeOpacity: 0.9,
     strokeStyle: 'dash'
@@ -3036,11 +3036,16 @@ function getRouteArrowAngle(a, b) {
 
 function getRouteArrowHtml(angle, color, level = 4) {
   const safeColor = /^#[0-9a-f]{6}$/i.test(color) ? color : DRAW_ROUTE_COLOR;
-  const size = level >= 6 ? 30 : 26;
-  const fontSize = level >= 6 ? 18 : 16;
-  return `<div style="width:${size}px;height:${size}px;border-radius:999px;background:rgba(255,255,255,.94);border:2px solid ${safeColor};display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.22);">
-    <span style="display:block;color:${safeColor};font-size:${fontSize}px;font-weight:900;line-height:1;transform:rotate(${angle.toFixed(1)}deg);">➜</span>
-  </div>`;
+  const width = level >= 6 ? 62 : 54;
+  const height = level >= 6 ? 28 : 24;
+  return `<svg width="${width}" height="${height}" viewBox="0 0 54 24" style="display:block;transform:rotate(${angle.toFixed(1)}deg);filter:drop-shadow(0 2px 3px rgba(0,0,0,.28));" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 4 L14 12 L4 20"></path><path d="M20 4 L30 12 L20 20"></path><path d="M36 4 L46 12 L36 20"></path>
+    </g>
+    <g fill="none" stroke="${safeColor}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M4 4 L14 12 L4 20"></path><path d="M20 4 L30 12 L20 20"></path><path d="M36 4 L46 12 L36 20"></path>
+    </g>
+  </svg>`;
 }
 
 // updStartBtn 제거 — 코스 탭에서 시작
@@ -4455,7 +4460,6 @@ function miniMap(cv, type, color, routePoints = []) {
 function drawMiniRouteArrows(ctx, points, color) {
   const indexes = [0.28, 0.55, 0.82]
     .map(ratio => Math.max(1, Math.min(points.length - 1, Math.round((points.length - 1) * ratio))));
-  ctx.fillStyle = color;
   indexes.forEach(index => {
     const a = points[index - 1];
     const b = points[index];
@@ -4466,13 +4470,24 @@ function drawMiniRouteArrows(ctx, points, color) {
     ctx.save();
     ctx.translate(x, y);
     ctx.rotate(angle);
-    ctx.beginPath();
-    ctx.moveTo(6, 0);
-    ctx.lineTo(-4, -4);
-    ctx.lineTo(-2, 0);
-    ctx.lineTo(-4, 4);
-    ctx.closePath();
-    ctx.fill();
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+    [-8, 0, 8].forEach(offset => {
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 4.5;
+      ctx.beginPath();
+      ctx.moveTo(offset - 4, -5);
+      ctx.lineTo(offset + 2, 0);
+      ctx.lineTo(offset - 4, 5);
+      ctx.stroke();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.moveTo(offset - 4, -5);
+      ctx.lineTo(offset + 2, 0);
+      ctx.lineTo(offset - 4, 5);
+      ctx.stroke();
+    });
     ctx.restore();
   });
 }
