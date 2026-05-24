@@ -1,4 +1,4 @@
-const CACHE_NAME = 'runloop-v8';
+const CACHE_NAME = 'runloop-v9';
 const CACHE_URLS = ['/'];
 
 self.addEventListener('install', e => {
@@ -19,6 +19,11 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET' || e.request.url.includes('/api/')) {
+    return;
+  }
+
+  if (e.request.mode === 'navigate') {
+    e.respondWith(fetch(e.request).catch(() => caches.match('/')));
     return;
   }
 
