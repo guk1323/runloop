@@ -985,6 +985,8 @@ const DRAW_ROUTE_MARKER_COLOR = '#F27A5E';
 const DRAW_ROUTE_PLANNED_COLOR = '#FFD6C8';
 const DRAW_ROUTE_WEIGHT = 6;
 const DRAW_ROUTE_OPACITY = 0.58;
+const AI_ROUTE_RETURN_COLOR = '#A94B37';
+const AI_ROUTE_RETURN_OFFSET_METERS = 9;
 
 /* 카카오 SDK 로드 완료 후 초기화 */
 kakao.maps.load(function() {
@@ -2922,6 +2924,13 @@ function showAiRoutePreview(course, options = {}) {
     .filter(Boolean);
   if (path.length < 2) return;
 
+  const routeColor = course.color || DRAW_ROUTE_COLOR;
+  const split = splitRouteByDistance(path);
+  const outboundPath = split.outbound.length > 1 ? split.outbound : path;
+  const returnPath = split.returnPath.length > 1
+    ? offsetRoutePath(split.returnPath, AI_ROUTE_RETURN_OFFSET_METERS)
+    : [];
+
   const shadow = new kakao.maps.Polyline({
     map: createMap,
     path,
@@ -2930,15 +2939,26 @@ function showAiRoutePreview(course, options = {}) {
     strokeOpacity: 0.5,
     strokeStyle: 'solid'
   });
-  const line = new kakao.maps.Polyline({
+  const outboundLine = new kakao.maps.Polyline({
     map: createMap,
-    path,
+    path: outboundPath,
     strokeWeight: 6,
-    strokeColor: course.color || DRAW_ROUTE_COLOR,
+    strokeColor: routeColor,
+    strokeOpacity: 0.92,
+    strokeStyle: 'solid'
+  });
+  const returnLine = returnPath.length > 1 ? new kakao.maps.Polyline({
+    map: createMap,
+    path: returnPath,
+    strokeWeight: 6,
+    strokeColor: AI_ROUTE_RETURN_COLOR,
     strokeOpacity: 0.9,
     strokeStyle: 'dash'
-  });
-  const arrows = createRouteDirectionArrows(path, course.color || DRAW_ROUTE_COLOR);
+  }) : null;
+  const outboundArrows = createRouteDirectionArrows(outboundPath, routeColor);
+  const returnArrows = returnPath.length > 1
+    ? createRouteDirectionArrows(returnPath, AI_ROUTE_RETURN_COLOR)
+    : [];
   const startDot = new kakao.maps.Circle({
     map: createMap,
     center: path[0],
@@ -2957,18 +2977,21 @@ function showAiRoutePreview(course, options = {}) {
     fillColor: DRAW_ROUTE_MARKER_COLOR,
     fillOpacity: 1
   });
-  aiRouteOverlays = [shadow, line].concat(arrows, [startDot, endDot]);
+  aiRouteOverlays = [shadow, outboundLine]
+    .concat(returnLine ? [returnLine] : [])
+    .concat(outboundArrows, returnArrows, [startDot, endDot]);
 
   if (fitBounds) {
     const bounds = new kakao.maps.LatLngBounds();
     path.forEach(point => bounds.extend(point));
+    returnPath.forEach(point => bounds.extend(point));
     createMap.setBounds(bounds);
   }
   const guide = document.getElementById('aiMapGuide');
   if (guide) {
     guide.style.display = 'block';
     guide.textContent = course.routeSource === 'tmap'
-      ? `${course.name} 보행자 경로를 표시했어요`
+      ? `${course.name} 왕복 방향을 나눠 표시했어요`
       : `${course.name} 경로를 지도에 표시했어요`;
   }
 }
@@ -2978,6 +3001,63 @@ function ensureAiRouteZoomListener() {
   aiRouteZoomListenerAttached = true;
   kakao.maps.event.addListener(createMap, 'zoom_changed', () => {
     if (aiRouteActiveCourse) showAiRoutePreview(aiRouteActiveCourse, { fitBounds: false });
+  });
+}
+
+function splitRouteByDistance(path) {
+  if (!Array.isArray(path) || path.length < 2) {
+    return { outbound: path || [], returnPath: [] };
+  }
+  const totalMeters = pathLengthMeters(path);
+  if (totalMeters <= 0) return { outbound: path, returnPath: [] };
+  const splitAt = totalMeters / 2;
+  const outbound = [path[0]];
+  const returnPath = [];
+  let walked = 0;
+  let splitPoint = null;
+
+  for (let i = 1; i < path.length; i++) {
+    const a = path[i - 1];
+    const b = path[i];
+    const segmentMeters = latLngDistanceMeters(a, b);
+    if (!splitPoint && walked + segmentMeters >= splitAt) {
+      const ratio = segmentMeters > 0 ? (splitAt - walked) / segmentMeters : 0;
+      splitPoint = interpolateLatLng(a, b, ratio);
+      outbound.push(splitPoint);
+      returnPath.push(splitPoint, b);
+    } else if (splitPoint) {
+      returnPath.push(b);
+    } else {
+      outbound.push(b);
+    }
+    walked += segmentMeters;
+  }
+
+  return {
+    outbound: compactLatLngs(outbound, 2),
+    returnPath: compactLatLngs(returnPath, 2)
+  };
+}
+
+function offsetRoutePath(path, offsetMeters) {
+  if (!Array.isArray(path) || path.length < 2 || !offsetMeters) return path || [];
+  return path.map((point, index) => {
+    const prev = path[Math.max(0, index - 1)];
+    const next = path[Math.min(path.length - 1, index + 1)];
+    if (!prev || !next || (prev === point && next === point)) return point;
+    const avgLatRad = point.getLat() * Math.PI / 180;
+    const cosLat = Math.max(0.2, Math.cos(avgLatRad));
+    const dx = (next.getLng() - prev.getLng()) * cosLat;
+    const dy = next.getLat() - prev.getLat();
+    const length = Math.hypot(dx, dy);
+    if (!length) return point;
+    const edgeDistance = Math.min(index, path.length - 1 - index);
+    const taper = path.length > 5 ? Math.min(1, edgeDistance / 3) : 1;
+    const normalX = -dy / length;
+    const normalY = dx / length;
+    const latOffset = (normalY * offsetMeters * taper) / 111320;
+    const lngOffset = (normalX * offsetMeters * taper) / (111320 * cosLat);
+    return makeRouteLatLng(point.getLat() + latOffset, point.getLng() + lngOffset);
   });
 }
 
