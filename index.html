@@ -188,8 +188,8 @@ if ('serviceWorker' in navigator) {
   .record-dist{font-size:16px;font-weight:700;color:var(--coral);}
 
   .mc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
-  .mc-card{aspect-ratio:1/1;background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:13px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 18px rgba(39,49,58,.035);}
-  .mc-card-top{display:flex;flex-direction:column;gap:8px;min-height:0;}
+  .mc-card{position:relative;aspect-ratio:1/1;background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:13px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 18px rgba(39,49,58,.035);}
+  .mc-card-top{display:flex;flex-direction:column;gap:8px;min-height:0;padding-right:24px;}
   .mc-title{min-width:0;flex:1;}
   .mc-name{font-size:14px;font-weight:800;color:var(--gray-900);line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   .mc-meta{font-size:11px;color:var(--gray-500);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -200,6 +200,8 @@ if ('serviceWorker' in navigator) {
   .mc-btn{height:32px;padding:0 10px;border-radius:var(--rs);font-size:12px;font-weight:700;border:1px solid transparent;cursor:pointer;font-family:inherit;white-space:nowrap;}
   .mc-btn-run{background:var(--ink);color:#fff;}
   .mc-btn-edit{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
+  .mc-fav{position:absolute;top:9px;right:9px;width:28px;height:28px;border-radius:50%;border:1px solid var(--gray-100);background:rgba(255,255,255,.9);color:var(--gray-300);font-size:18px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(39,49,58,.06);}
+  .mc-fav.active{background:var(--amber-light);border-color:#E8D6B4;color:var(--amber);}
 
   .addr-dropdown-item{padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--gray-100);color:var(--gray-900);}
   .addr-dropdown-item:last-child{border-bottom:none;}
@@ -2217,6 +2219,7 @@ function saveCourse() {
   if (S.path.length < 2) { toast('코스를 더 그어주세요!'); return; }
   const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
   const num = courses.length + 1;
+  const savedAt = new Date();
   const routeSegments = S.segments.map(segment => ({
     mode: segment.mode || 'snapped',
     dist: (pathLengthMeters(segment) / 1000).toFixed(3),
@@ -2226,10 +2229,12 @@ function saveCourse() {
     .filter(segment => segment.mode === 'manual')
     .reduce((sum, segment) => sum + parseFloat(segment.dist), 0);
   courses.push({
-    id: Date.now(),
+    id: savedAt.getTime(),
     name: '코스 ' + num,
     dist: S.distKm.toFixed(2),
-    date: new Date().toLocaleDateString('ko-KR', {month:'long',day:'numeric'}),
+    date: savedAt.toLocaleDateString('ko-KR', {month:'long',day:'numeric'}),
+    savedAt: savedAt.toISOString(),
+    favorite: false,
     points: S.path.map(p => ({ lat: p.getLat(), lng: p.getLng() })),
     segments: routeSegments,
     manualDist: manualKm.toFixed(2)
@@ -2555,7 +2560,17 @@ function renderNearCourses(results) {
 function saveNearCourse(name, km) {
   const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
   if (courses.find(x => x.name === name + ' 코스')) { toast('이미 저장된 코스예요!'); return; }
-  courses.push({ id: Date.now(), name: name + ' 코스', dist: km.toFixed(2), date: new Date().toLocaleDateString('ko-KR',{month:'long',day:'numeric'}), points: [], fromAi: true });
+  const savedAt = new Date();
+  courses.push({
+    id: savedAt.getTime(),
+    name: name + ' 코스',
+    dist: km.toFixed(2),
+    date: savedAt.toLocaleDateString('ko-KR',{month:'long',day:'numeric'}),
+    savedAt: savedAt.toISOString(),
+    favorite: false,
+    points: [],
+    fromAi: true
+  });
   localStorage.setItem('myCourses', JSON.stringify(courses));
   toast(name + ' 코스가 저장됐어요!');
 }
@@ -2674,8 +2689,9 @@ async function fetchWeather() {
     const feel = Math.round(d.main.feels_like);
     const humid = d.main.humidity;
     const wind = d.wind.speed.toFixed(1);
-    const desc = getWeatherDesc(d.weather[0].id);
-    const icon = getWeatherEmoji(d.weather[0].id);
+    const weatherId = d.weather[0].id;
+    const desc = getWeatherDesc(weatherId);
+    const icon = getWeatherEmoji(weatherId);
 
     // 카카오 역지오코딩으로 구 단위 한국어 주소
     try {
@@ -2704,7 +2720,16 @@ async function fetchWeather() {
     document.getElementById('wTemp').textContent = temp;
     document.getElementById('wDesc').textContent = desc;
     document.getElementById('wIcon').textContent = icon;
-    document.getElementById('wSummary').textContent = makeWeatherSummary(temp, humid, parseFloat(wind), d.weather[0].id);
+    document.getElementById('wSummary').textContent = makeWeatherSummary(temp, humid, parseFloat(wind), weatherId);
+
+    try {
+      const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${S.lat}&lon=${S.lng}&appid=${OWM_KEY}&units=metric&lang=kr`);
+      const forecastData = await forecastRes.json();
+      const forecastSummary = makeForecastWeatherSummary(temp, weatherId, forecastData);
+      if (forecastSummary) {
+        document.getElementById('wSummary').textContent = forecastSummary;
+      }
+    } catch(e) {}
     // 최고/최저 온도
     const hiLoEl = document.getElementById('wHiLo');
     const highEl = document.getElementById('wHigh');
@@ -2856,12 +2881,17 @@ function renderMyCourses() {
   // 기존 카드 제거 후 재렌더
   list.querySelectorAll('.mc-card').forEach(c => c.remove());
 
-  courses.forEach(c => {
+  const sortedCourses = [...courses].sort((a, b) => getCourseSavedTime(b) - getCourseSavedTime(a));
+
+  sortedCourses.forEach(c => {
     const meta = getMyCourseCardMeta(c);
+    const courseId = JSON.stringify(c.id);
+    const isFavorite = !!c.favorite;
     const card = document.createElement('div');
     card.className = 'mc-card';
     card.id = 'mc-' + c.id;
     card.innerHTML = `
+      <button class="mc-fav ${isFavorite ? 'active' : ''}" onclick="toggleCourseFavorite(${courseId}, event)" aria-label="${isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}" title="${isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}">${isFavorite ? '★' : '☆'}</button>
       <div class="mc-card-top">
         <div class="mc-title">
           <div class="mc-name">${escapeHtml(c.name || '코스')}</div>
@@ -2873,12 +2903,19 @@ function renderMyCourses() {
         </div>
       </div>
       <div class="mc-actions">
-        <button class="mc-btn mc-btn-run" onclick="startMyCoursRun(${c.id})">시작</button>
-        <button class="mc-btn mc-btn-edit" onclick="openRename(${c.id})">편집</button>
+        <button class="mc-btn mc-btn-run" onclick="startMyCoursRun(${courseId})">시작</button>
+        <button class="mc-btn mc-btn-edit" onclick="openRename(${courseId})">편집</button>
       </div>
     `;
     list.appendChild(card);
   });
+}
+
+function getCourseSavedTime(course) {
+  const saved = Date.parse(course.savedAt || course.createdAt || '');
+  if (Number.isFinite(saved)) return saved;
+  const idTime = Number(course.id);
+  return Number.isFinite(idTime) ? idTime : 0;
 }
 
 function getMyCourseCardMeta(course) {
@@ -2922,6 +2959,17 @@ function removeMyCourse(id) {
   localStorage.setItem('myCourses', JSON.stringify(courses));
   renderMyCourses();
   toast('코스가 삭제됐어요');
+}
+
+function toggleCourseFavorite(id, event) {
+  if (event) event.stopPropagation();
+  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
+  const idx = courses.findIndex(c => c.id === id);
+  if (idx < 0) return;
+  courses[idx].favorite = !courses[idx].favorite;
+  localStorage.setItem('myCourses', JSON.stringify(courses));
+  renderMyCourses();
+  toast(courses[idx].favorite ? '즐겨찾기에 추가했어요' : '즐겨찾기에서 뺐어요');
 }
 
 function deleteEditingCourse() {
@@ -3035,6 +3083,102 @@ function makeWeatherSummary(temp, humid, wind, weatherId) {
     '🥶 바깥 공기가 꽤 단호해요. 무리 금지',
     '🥶 실내 운동도 충분히 훌륭한 선택'
   ]);
+}
+
+function makeForecastWeatherSummary(currentTemp, currentWeatherId, forecastData) {
+  if (!forecastData || !Array.isArray(forecastData.list)) return null;
+  if (isPrecipWeatherId(currentWeatherId)) return null;
+
+  const now = Date.now();
+  const nextItems = forecastData.list
+    .filter(item => item && item.dt && item.dt * 1000 > now && item.dt * 1000 <= now + 12 * 60 * 60 * 1000)
+    .slice(0, 5);
+  if (!nextItems.length) return null;
+
+  const snow = nextItems.find(item => isSnowForecast(item));
+  if (snow) {
+    const when = formatForecastGap(snow.dt);
+    return pickForecastLine('snow-soon', snow.dt, [
+      `${when} 눈 예보가 있어요. 오늘은 안전한 코스로 짧게 가요`,
+      `${when} 눈이 올 수 있어요. 기록보다 미끄럼 방지가 먼저예요`,
+      `${when} 길이 미끄러워질 수 있어요. 나간다면 보폭을 줄여요`
+    ]);
+  }
+
+  const rain = nextItems.find(item => isRainForecast(item));
+  if (rain) {
+    const when = formatForecastGap(rain.dt);
+    return pickForecastLine('rain-soon', rain.dt, [
+      `${when} 비 예보가 있어요. 짧게 뛸 거면 지금이 낫습니다`,
+      `${when} 비가 올 수 있어요. 지금 다녀오면 덜 젖어요`,
+      `${when} 하늘이 젖을 준비 중이에요. 오늘은 짧은 코스 추천`
+    ]);
+  }
+
+  const windy = nextItems.find(item => Number(item.wind && item.wind.speed) >= 8);
+  if (windy) {
+    const when = formatForecastGap(windy.dt);
+    return pickForecastLine('wind-soon', windy.dt, [
+      `${when} 바람이 세져요. 지금 짧게 뛰거나 바람막이를 챙겨요`,
+      `${when} 맞바람 난이도가 올라가요. 가볍게 다녀오는 쪽 추천`,
+      `${when} 바람이 꽤 붙어요. 코스는 짧고 익숙한 길이 좋아요`
+    ]);
+  }
+
+  const temps = nextItems.map(item => Number(item.main && item.main.temp)).filter(Number.isFinite);
+  if (!temps.length) return null;
+
+  const minTemp = Math.round(Math.min(...temps));
+  const maxTemp = Math.round(Math.max(...temps));
+  if (currentTemp - minTemp >= 5 && minTemp <= 16) {
+    return pickForecastLine('temp-drop', minTemp, [
+      `이따 ${minTemp}도까지 내려가요. 추위 싫으면 지금이 더 편해요`,
+      `조금 뒤 기온이 내려가요. 나간다면 얇은 겉옷을 챙겨요`,
+      `오늘은 뒤로 갈수록 쌀쌀해져요. 짧게 먼저 뛰는 것도 좋아요`
+    ]);
+  }
+  if (maxTemp - currentTemp >= 5 && maxTemp >= 28) {
+    return pickForecastLine('temp-rise', maxTemp, [
+      `이따 ${maxTemp}도까지 올라가요. 더워지기 전에 짧게 다녀와요`,
+      `조금 뒤 더워져요. 물 챙기고 지금 가볍게 가는 쪽 추천`,
+      `기온이 더 오를 예정이에요. 오늘은 늦기 전에 짧은 코스`
+    ]);
+  }
+
+  return null;
+}
+
+function isPrecipWeatherId(id) {
+  return id >= 200 && id < 700;
+}
+
+function isRainForecast(item) {
+  const id = item.weather && item.weather[0] ? item.weather[0].id : 800;
+  const rainAmount = Number(item.rain && item.rain['3h']) || 0;
+  const pop = Number(item.pop) || 0;
+  return (id >= 200 && id < 600) || rainAmount > 0 || pop >= 0.55;
+}
+
+function isSnowForecast(item) {
+  const id = item.weather && item.weather[0] ? item.weather[0].id : 800;
+  const snowAmount = Number(item.snow && item.snow['3h']) || 0;
+  return (id >= 600 && id < 700) || snowAmount > 0;
+}
+
+function formatForecastGap(dtSeconds) {
+  const hours = Math.max(1, Math.round((dtSeconds * 1000 - Date.now()) / 3600000));
+  if (hours <= 1) return '잠시 뒤';
+  return `약 ${hours}시간 뒤`;
+}
+
+function pickForecastLine(key, marker, lines) {
+  const now = new Date();
+  const source = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}:${key}:${marker}`;
+  let hash = 0;
+  for (let i = 0; i < source.length; i++) {
+    hash = ((hash << 5) - hash + source.charCodeAt(i)) | 0;
+  }
+  return lines[Math.abs(hash) % lines.length];
 }
 
 function pickWeatherLine(key, weatherId, temp, lines) {
@@ -3542,11 +3686,14 @@ function saveAiCourse(idx) {
   if (courses.find(x => x.name === c.name)) {
     toast('이미 저장된 코스예요!'); return;
   }
+  const savedAt = new Date();
   courses.push({
-    id: Date.now(),
+    id: savedAt.getTime(),
     name: c.name,
-    dist: c.dist,
-    date: new Date().toLocaleDateString('ko-KR', {month:'long', day:'numeric'}),
+    dist: c.dist || c.km,
+    date: savedAt.toLocaleDateString('ko-KR', {month:'long', day:'numeric'}),
+    savedAt: savedAt.toISOString(),
+    favorite: false,
     points: [],
     fromAi: true,
     tags: c.tags
