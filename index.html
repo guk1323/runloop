@@ -2942,20 +2942,102 @@ function startMyCoursRun(id) {
 }
 
 function makeWeatherSummary(temp, humid, wind, weatherId) {
-  if (weatherId >= 200 && weatherId < 300) return '⛈ 천둥번개 중. 오늘은 실내에서 버피 100개';
-  if (weatherId >= 500 && weatherId < 600) return '🌧 비 오는 날. 우비 런닝도 나름 낭만 있음';
-  if (weatherId >= 600 && weatherId < 700) return '❄️ 눈 왔어요. 미끄러지면 그게 바로 코어 운동';
-  if (weatherId >= 700 && weatherId < 800) return '🌫 안개 주의. 앞이 안 보여도 페이스는 보여요';
-  if (temp >= 33) return '🥵 진짜 더워요. 새벽 런닝 아니면 내일로 미루는 것도 용기';
-  if (temp >= 28) return '☀️ 더운 날씨. 물 챙기고 그늘 코스로 가요';
+  if (weatherId >= 200 && weatherId < 300) return pickWeatherLine('thunder', weatherId, temp, [
+    '⛈ 천둥번개 중. 오늘은 러닝화도 휴가입니다',
+    '⛈ 번개가 페이스메이커인 날은 실내 운동으로',
+    '⛈ 하늘이 너무 열심히 뛰고 있어요. 우리는 스트레칭만',
+    '⛈ 오늘은 기록보다 안전이 압도적 1등'
+  ]);
+  if (weatherId >= 300 && weatherId < 600) return pickWeatherLine('rain', weatherId, temp, [
+    '🌧 비 와요. 오늘의 코스는 현관까지 왕복',
+    '🌧 우비 런닝도 낭만이지만 양말은 반대할 수 있어요',
+    '🌧 빗길은 미끄러워요. 오늘은 천천히가 이기는 날',
+    '🌧 비 냄새는 좋고, 젖은 운동화는 덜 좋아요'
+  ]);
+  if (weatherId >= 600 && weatherId < 700) return pickWeatherLine('snow', weatherId, temp, [
+    '❄️ 눈길이에요. 기록보다 무릎이 먼저입니다',
+    '❄️ 미끄러지면 코어 운동이긴 한데 추천하진 않아요',
+    '❄️ 오늘은 보폭을 줄이고 폼은 귀엽게',
+    '❄️ 눈 오는 날 러닝은 풍경 반, 조심 반'
+  ]);
+  if (weatherId >= 700 && weatherId < 800) return pickWeatherLine('fog', weatherId, temp, [
+    '🌫 앞이 흐려요. 페이스보다 시야 확보 먼저',
+    '🌫 안개가 분위기는 잡았고, 우리는 안전을 잡아요',
+    '🌫 오늘은 멀리보다 바로 앞 한 걸음',
+    '🌫 길이 흐릿해도 무리하지 않으면 충분해요'
+  ]);
+  if (temp >= 33) return pickWeatherLine('very-hot', weatherId, temp, [
+    '🥵 진짜 더워요. 새벽 런닝 아니면 내일로 미루는 것도 용기',
+    '🥵 러닝보다 물병이 주인공인 날',
+    '🥵 오늘 낮 러닝은 햇빛과의 면담입니다',
+    '🥵 더위가 진심이에요. 짧게, 천천히, 물 많이'
+  ]);
+  if (temp >= 28) return pickWeatherLine('hot', weatherId, temp, [
+    '☀️ 더운 날씨. 물 챙기고 그늘 코스로 가요',
+    '☀️ 오늘은 페이스보다 수분 보충이 먼저',
+    '☀️ 해가 의욕적이에요. 우리는 조금 덜 의욕적으로',
+    '☀️ 짧은 코스로도 충분히 땀나는 날'
+  ]);
   if (temp >= 20) {
-    if (humid > 75) return '💧 습해요. 땀인지 눈물인지 모를 각오로';
-    if (wind > 6)  return '💨 바람 있어요. 맞바람 구간엔 욕이 나올 수 있음';
-    return '🏃 안 나가면 후회할 날씨예요';
+    if (humid > 75) return pickWeatherLine('humid', weatherId, temp, [
+      '💧 습해요. 땀인지 날씨인지 구분이 안 될 수 있음',
+      '💧 공기가 촉촉해요. 페이스 욕심은 살짝 접기',
+      '💧 습도 높은 날. 오늘의 목표는 뽀송함 포기',
+      '💧 땀이 빨리 와도 당황하지 않는 날'
+    ]);
+    if (wind > 6)  return pickWeatherLine('warm-windy', weatherId, temp, [
+      '💨 바람 있어요. 맞바람 구간엔 마음이 강해집니다',
+      '💨 오늘 바람은 무료 저항 훈련',
+      '💨 순풍이면 기분 좋고, 맞바람이면 이야기거리',
+      '💨 머리는 헝클어져도 리듬은 챙겨요'
+    ]);
+    return pickWeatherLine('good-run', weatherId, temp, [
+      '🏃 이런 날은 10분만 뛰어도 기분이 바뀌어요',
+      '🌿 오늘 공기는 꽤 협조적이에요',
+      '🌤 무리하지 말고, 기분 좋게 나가기 좋은 날',
+      '🏃 지금 나가면 돌아오는 길이 더 좋아질 날씨',
+      '🌿 오늘은 기록보다 리듬을 챙기기 좋은 날',
+      '👟 러닝화가 밖을 보고 있을 날씨',
+      '🌤 가볍게 한 바퀴 돌기 좋은 날이에요'
+    ]);
   }
-  if (temp >= 10) return wind > 8 ? '🌬 쌀쌀하고 바람 있어요. 바람막이 필수' : '🌿 런닝하기 딱 좋아요. 지금 당장 나가세요';
-  if (temp >= 0)  return '🧤 꽤 추워요. 귀마개까지 챙기면 100점';
-  return '🥶 진짜 춥네요. 나가는 것 자체가 오늘의 운동';
+  if (temp >= 10) return wind > 8
+    ? pickWeatherLine('cool-windy', weatherId, temp, [
+      '🌬 쌀쌀하고 바람 있어요. 바람막이 필수',
+      '🌬 바람이 코스를 같이 뛰겠다고 하네요',
+      '🌬 첫 5분만 버티면 몸이 설득됩니다',
+      '🌬 오늘은 얇게 껴입는 사람이 승자'
+    ])
+    : pickWeatherLine('cool-good', weatherId, temp, [
+      '🌿 런닝하기 딱 좋아요. 너무 오래 고민하면 날씨가 삐질 수 있어요',
+      '🌿 몸 풀기 좋은 온도예요',
+      '🏃 집 앞 한 바퀴만 돌아도 충분한 날',
+      '🌿 오늘은 페이스보다 기분으로 뛰어도 좋아요',
+      '👟 가볍게 나가기 좋은 온도예요'
+    ]);
+  if (temp >= 0)  return pickWeatherLine('cold', weatherId, temp, [
+    '🧤 꽤 추워요. 귀마개까지 챙기면 100점',
+    '🧤 나가기 전엔 춥고, 7분 뒤엔 괜찮아질 가능성 있음',
+    '🧤 손끝이 먼저 항의할 수 있어요. 장갑 추천',
+    '🧤 짧게 뛰고 따뜻하게 돌아오기 좋은 날'
+  ]);
+  return pickWeatherLine('freezing', weatherId, temp, [
+    '🥶 진짜 춥네요. 나가는 것 자체가 오늘의 운동',
+    '🥶 오늘은 의지보다 보온이 먼저',
+    '🥶 바깥 공기가 꽤 단호해요. 무리 금지',
+    '🥶 실내 운동도 충분히 훌륭한 선택'
+  ]);
+}
+
+function pickWeatherLine(key, weatherId, temp, lines) {
+  const now = new Date();
+  const dateKey = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+  const source = `${dateKey}:${key}:${weatherId}:${Math.round(temp)}`;
+  let hash = 0;
+  for (let i = 0; i < source.length; i++) {
+    hash = ((hash << 5) - hash + source.charCodeAt(i)) | 0;
+  }
+  return lines[Math.abs(hash) % lines.length];
 }
 
 function getWeatherEmoji(id) {
