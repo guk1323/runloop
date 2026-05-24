@@ -1,4 +1,4 @@
-const CACHE_NAME = 'runloop-v17';
+const CACHE_NAME = 'runloop-v18';
 const CACHE_URLS = ['/'];
 
 self.addEventListener('install', e => {

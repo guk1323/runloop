@@ -986,7 +986,6 @@ const DRAW_ROUTE_PLANNED_COLOR = '#FFD6C8';
 const DRAW_ROUTE_WEIGHT = 6;
 const DRAW_ROUTE_OPACITY = 0.58;
 const AI_ROUTE_RETURN_COLOR = '#A94B37';
-const AI_ROUTE_RETURN_OFFSET_METERS = 9;
 
 /* 카카오 SDK 로드 완료 후 초기화 */
 kakao.maps.load(function() {
@@ -2938,9 +2937,7 @@ function showAiRoutePreview(course, options = {}) {
   const routeColor = course.color || DRAW_ROUTE_COLOR;
   const split = splitRouteByDistance(path);
   const outboundPath = split.outbound.length > 1 ? split.outbound : path;
-  const returnPath = split.returnPath.length > 1
-    ? offsetRoutePath(split.returnPath, AI_ROUTE_RETURN_OFFSET_METERS)
-    : [];
+  const returnPath = split.returnPath.length > 1 ? split.returnPath : [];
 
   const shadow = new kakao.maps.Polyline({
     map: createMap,
@@ -2963,12 +2960,12 @@ function showAiRoutePreview(course, options = {}) {
     path: returnPath,
     strokeWeight: 6,
     strokeColor: AI_ROUTE_RETURN_COLOR,
-    strokeOpacity: 0.9,
-    strokeStyle: 'dash'
+    strokeOpacity: 0.82,
+    strokeStyle: 'solid'
   }) : null;
-  const outboundArrows = createRouteDirectionArrows(outboundPath, routeColor);
+  const outboundArrows = createRouteDirectionArrows(outboundPath, routeColor, { phase: 0.25 });
   const returnArrows = returnPath.length > 1
-    ? createRouteDirectionArrows(returnPath, AI_ROUTE_RETURN_COLOR)
+    ? createRouteDirectionArrows(returnPath, AI_ROUTE_RETURN_COLOR, { phase: 0.65 })
     : [];
   const startDot = new kakao.maps.Circle({
     map: createMap,
@@ -2995,7 +2992,6 @@ function showAiRoutePreview(course, options = {}) {
   if (fitBounds) {
     const bounds = new kakao.maps.LatLngBounds();
     path.forEach(point => bounds.extend(point));
-    returnPath.forEach(point => bounds.extend(point));
     createMap.setBounds(bounds);
   }
   const guide = document.getElementById('aiMapGuide');
@@ -3050,37 +3046,15 @@ function splitRouteByDistance(path) {
   };
 }
 
-function offsetRoutePath(path, offsetMeters) {
-  if (!Array.isArray(path) || path.length < 2 || !offsetMeters) return path || [];
-  return path.map((point, index) => {
-    const prev = path[Math.max(0, index - 1)];
-    const next = path[Math.min(path.length - 1, index + 1)];
-    if (!prev || !next || (prev === point && next === point)) return point;
-    const avgLatRad = point.getLat() * Math.PI / 180;
-    const cosLat = Math.max(0.2, Math.cos(avgLatRad));
-    const dx = (next.getLng() - prev.getLng()) * cosLat;
-    const dy = next.getLat() - prev.getLat();
-    const length = Math.hypot(dx, dy);
-    if (!length) return point;
-    const edgeDistance = Math.min(index, path.length - 1 - index);
-    const taper = path.length > 5 ? Math.min(1, edgeDistance / 3) : 1;
-    const normalX = -dy / length;
-    const normalY = dx / length;
-    const latOffset = (normalY * offsetMeters * taper) / 111320;
-    const lngOffset = (normalX * offsetMeters * taper) / (111320 * cosLat);
-    return makeRouteLatLng(point.getLat() + latOffset, point.getLng() + lngOffset);
-  });
-}
-
-function createRouteDirectionArrows(path, color) {
+function createRouteDirectionArrows(path, color, options = {}) {
   if (!Array.isArray(path) || path.length < 2) return [];
   const overlays = [];
   const totalMeters = pathLengthMeters(path);
   if (totalMeters < 80) return overlays;
   const level = createMap && createMap.getLevel ? createMap.getLevel() : 4;
-  const arrowCount = level >= 7 ? 2 : level >= 6 ? 3 : level >= 5 ? 4 : 5;
-  const spacingMeters = Math.max(160, totalMeters / (arrowCount + 1));
-  let nextMarkerAt = spacingMeters;
+  const spacingMeters = level >= 7 ? 240 : level >= 6 ? 190 : level >= 5 ? 140 : 105;
+  const phase = Number.isFinite(options.phase) ? Math.max(0.1, Math.min(0.9, options.phase)) : 0.5;
+  let nextMarkerAt = Math.min(totalMeters * 0.35, spacingMeters * phase);
   let walked = 0;
 
   for (let i = 1; i < path.length; i++) {
@@ -3127,14 +3101,14 @@ function getRouteArrowAngle(a, b) {
 
 function getRouteArrowHtml(angle, color, level = 4) {
   const safeColor = /^#[0-9a-f]{6}$/i.test(color) ? color : DRAW_ROUTE_COLOR;
-  const width = level >= 6 ? 62 : 54;
-  const height = level >= 6 ? 28 : 24;
-  return `<svg width="${width}" height="${height}" viewBox="0 0 54 24" style="display:block;transform:rotate(${angle.toFixed(1)}deg);filter:drop-shadow(0 2px 3px rgba(0,0,0,.28));" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <g fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M4 4 L14 12 L4 20"></path><path d="M20 4 L30 12 L20 20"></path><path d="M36 4 L46 12 L36 20"></path>
+  const width = level >= 6 ? 82 : 72;
+  const height = level >= 6 ? 34 : 30;
+  return `<svg width="${width}" height="${height}" viewBox="0 0 72 30" style="display:block;transform:rotate(${angle.toFixed(1)}deg);filter:drop-shadow(0 2px 3px rgba(0,0,0,.25));" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 5 L15 15 L5 25"></path><path d="M22 5 L32 15 L22 25"></path><path d="M39 5 L49 15 L39 25"></path><path d="M56 5 L66 15 L56 25"></path>
     </g>
-    <g fill="none" stroke="${safeColor}" stroke-width="5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M4 4 L14 12 L4 20"></path><path d="M20 4 L30 12 L20 20"></path><path d="M36 4 L46 12 L36 20"></path>
+    <g fill="none" stroke="${safeColor}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M5 5 L15 15 L5 25"></path><path d="M22 5 L32 15 L22 25"></path><path d="M39 5 L49 15 L39 25"></path><path d="M56 5 L66 15 L56 25"></path>
     </g>
   </svg>`;
 }
