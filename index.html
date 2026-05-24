@@ -689,28 +689,17 @@ if ('serviceWorker' in navigator) {
       <div style="margin-top:12px;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
           <div style="font-size:11px;color:var(--gray-500);">주간 목표 달성률</div>
-          <div style="font-size:11px;font-weight:700;color:var(--coral);" id="homeGoalText">0 / 20km</div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div style="font-size:11px;font-weight:700;color:var(--coral);" id="homeGoalText">0.0 / 20km</div>
+            <button onclick="openGoalEdit()" style="background:var(--coral-light);border:none;border-radius:var(--rp);padding:4px 9px;color:var(--ink);font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;">변경</button>
+          </div>
         </div>
         <div style="height:5px;background:var(--gray-100);border-radius:3px;overflow:hidden;">
           <div id="homeGoalFill" style="height:100%;background:var(--coral);border-radius:3px;width:0%;transition:width .5s;"></div>
         </div>
+        <div style="font-size:11px;color:var(--gray-500);margin-top:5px;" id="goalPct">0% 달성</div>
+        <div style="font-size:11px;color:var(--gray-500);margin-top:8px;" id="myPaceInfo">평균 페이스 계산 중…</div>
       </div>
-    </div>
-
-    <!-- 주간 목표 -->
-    <div class="my-section">이번 주 목표</div>
-    <div style="background:#fff;padding:14px 16px;border-bottom:1px solid var(--gray-100);">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
-        <div>
-          <span style="font-size:22px;font-weight:700;color:var(--coral);" id="goalProgress2">0</span>
-          <span style="font-size:14px;color:var(--gray-500);"> / </span>
-          <span style="font-size:16px;font-weight:500;color:var(--gray-700);" id="goalMax2">20km</span>
-        </div>
-        <button onclick="openGoalEdit()" style="background:var(--coral-light);border:none;border-radius:var(--rs);padding:6px 12px;color:var(--ink);font-size:12px;font-weight:500;font-family:inherit;cursor:pointer;">목표 변경</button>
-      </div>
-      <div class="goal-bar-track"><div class="goal-bar-fill" id="goalBarFill" style="width:0%"></div></div>
-      <div style="font-size:11px;color:var(--gray-500);margin-top:5px;" id="goalPct">0% 달성</div>
-      <div style="font-size:11px;color:var(--gray-500);margin-top:8px;" id="myPaceInfo">평균 페이스 계산 중…</div>
     </div>
 
     <div style="height:20px;"></div>
@@ -3513,14 +3502,12 @@ function updateGoalBar() {
   const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
   const weekDist = records.reduce((s, r) => s + parseFloat(r.dist), 0);
   const pct = Math.min(Math.round((weekDist / goal) * 100), 100);
-  const fill = document.getElementById('goalBarFill');
+  const fill = document.getElementById('homeGoalFill') || document.getElementById('goalBarFill');
   const pctEl = document.getElementById('goalPct');
-  const p2 = document.getElementById('goalProgress2');
-  const m2 = document.getElementById('goalMax2');
+  const textEl = document.getElementById('homeGoalText');
   if (fill) fill.style.width = pct + '%';
   if (pctEl) pctEl.textContent = pct + '% 달성';
-  if (p2) p2.textContent = weekDist.toFixed(1);
-  if (m2) m2.textContent = goal + 'km';
+  if (textEl) textEl.textContent = weekDist.toFixed(1) + ' / ' + goal + 'km';
 
   // 페이스 정보
   const paceEl = document.getElementById('myPaceInfo');
