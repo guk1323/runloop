@@ -2397,7 +2397,7 @@ const COURSES = [
   { name:'홍대 플랫 코스', tags:[{l:'평지',c:'tb'},{l:'야간 가능',c:'tg'},{l:'혼잡',c:'ta'}], meta:'편의점 다수 · 보도 넓음 · 조명 양호', pt:'urban', color:'#D9654D', pace:6.5 },
   { name:'망원 공원 힐 루프', tags:[{l:'공원',c:'tg'},{l:'경사 포함',c:'ta'}], meta:'잔디밭 · 오르막 2곳 · 뷰 좋음', pt:'park', color:'#639922', pace:6.8 }
 ];
-const AI_COURSE_CACHE_KEY = 'runloopAiCourseCacheV2';
+const AI_COURSE_CACHE_KEY = 'runloopAiCourseCacheV3';
 const AI_COURSE_CACHE_MS = 10 * 60 * 1000;
 let aiRouteOverlays = [];
 
@@ -2421,20 +2421,20 @@ async function generateCourses() {
   const btn = document.getElementById('genBtn');
   const txt = document.getElementById('genText');
   const sp = document.getElementById('genSpinner');
-  btn.disabled = true; txt.textContent = 'AI가 코스 보는 중…'; sp.style.display = 'block';
+  btn.disabled = true; txt.textContent = '보행자 길 찾는 중…'; sp.style.display = 'block';
   const km = parseFloat(document.getElementById('kmSlider').value);
   try {
     const aiResult = await fetchAiCourses(km);
     const aiCourses = aiResult.courses;
-    S.courses = aiCourses.length ? aiCourses : buildFallbackCourses(km);
-    if (!aiCourses.length) toast('AI 응답이 애매해서 기본 추천을 보여줘요');
+    S.courses = aiCourses;
+    if (!aiCourses.length) toast('보행자 길을 찾지 못했어요. 다시 눌러주세요');
     if (aiResult.cached && aiCourses.length) toast('최근 AI 추천을 다시 보여줘요');
   } catch (err) {
     console.warn('AI course generation fallback', err);
-    S.courses = buildFallbackCourses(km);
+    S.courses = [];
     toast(err && String(err.message || '').startsWith('AI_RATE_LIMIT')
       ? 'AI 추천은 잠시 후 다시 눌러주세요'
-      : 'AI 연결이 안 돼서 기본 추천을 보여줘요');
+      : '보행자 길을 찾지 못했어요. 다시 눌러주세요');
   } finally {
     S.sel = S.courses.length ? 0 : -1;
     renderCourses();
@@ -2568,18 +2568,13 @@ function prepareAiCourses(courses, targetKm) {
 async function routeAiCoursesOnRoad(courses) {
   const course = courses[0];
   if (!course) return [];
-  try {
-    return [await routeAiCourseOnRoad(course)];
-  } catch (err) {
-    console.warn('AI route road snap fallback', err);
-    return [course];
-  }
+  return [await routeAiCourseOnRoad(course)];
 }
 
 async function routeAiCourseOnRoad(course) {
   const rawPath = normalizeStoredPathPoints(course.points).map(point => makeRouteLatLng(point.lat, point.lng));
   const anchors = getAiRouteAnchors(rawPath);
-  if (anchors.length < 3) return course;
+  if (anchors.length < 3) throw new Error('AI_ROUTE_ANCHORS_SHORT');
 
   const snapped = [];
   for (let i = 0; i < anchors.length - 1; i++) {
@@ -2589,7 +2584,7 @@ async function routeAiCourseOnRoad(course) {
 
   const snappedKm = pathLengthMeters(snapped) / 1000;
   const targetKm = parseFloat(course.km) || snappedKm;
-  if (!snapped.length || snappedKm < 0.5 || snappedKm > Math.max(targetKm * 1.9, targetKm + 3)) {
+  if (!snapped.length || snappedKm < Math.max(0.4, targetKm * 0.55) || snappedKm > Math.max(targetKm * 1.65, targetKm + 1.5)) {
     throw new Error('AI_TMAP_ROUTE_OUT_OF_RANGE');
   }
 
@@ -2597,7 +2592,8 @@ async function routeAiCourseOnRoad(course) {
     ...course,
     km: snappedKm.toFixed(1),
     points: serializeLatLngPath(snapped),
-    routeLabel: shortenRouteLabel((course.routeLabel || getAiRouteLabel(course, 0)) + ' · 보행자 길 반영')
+    routeLabel: shortenRouteLabel((course.routeLabel || getAiRouteLabel(course, 0)) + ' · 보행자 길 반영'),
+    routeSource: 'tmap'
   };
 }
 
@@ -2654,6 +2650,7 @@ function normalizeAiCourse(course, index, targetKm) {
     routeLabel: String(course.routeLabel || '').slice(0, 34),
     startLabel: String(course.startLabel || '').slice(0, 42),
     points: normalizeStoredPathPoints(course.points),
+    routeSource: course.routeSource === 'tmap' ? 'tmap' : '',
     fromAi: true
   };
 }
@@ -2671,6 +2668,7 @@ function enrichAiCourseRoute(course, index, targetKm) {
     km: Number.isFinite(actualKm) && actualKm > 0 ? actualKm.toFixed(1) : course.km,
     points,
     routeLabel: course.routeLabel || getAiRouteLabel(course, index),
+    routeSource: course.routeSource || '',
     startLabel
   };
 }
@@ -2803,6 +2801,14 @@ function renderCourses() {
   const list = document.getElementById('courseList');
   const em = document.getElementById('emptyState');
   list.innerHTML = ''; list.style.display = 'flex'; em.style.display = 'none';
+  if (!S.courses.length) {
+    clearAiRoutePreview();
+    list.style.display = 'none';
+    em.style.display = 'block';
+    em.innerHTML = '<div class="empty-icon">⌁</div><div class="empty-title">보행자 길을 찾지 못했어요</div><div class="empty-desc">출발지를 조금 옮기거나 목표 거리를 바꿔 다시 생성해보세요</div>';
+    openBottomSheet();
+    return;
+  }
   S.courses.forEach((c, i) => {
     const pm = Math.floor(c.pace), ps = String(Math.round((c.pace % 1) * 60)).padStart(2, '0');
     const card = document.createElement('div');
@@ -2897,7 +2903,9 @@ function showAiRoutePreview(course) {
   const guide = document.getElementById('aiMapGuide');
   if (guide) {
     guide.style.display = 'block';
-    guide.textContent = `${course.name} 경로를 지도에 표시했어요`;
+    guide.textContent = course.routeSource === 'tmap'
+      ? `${course.name} 보행자 경로를 표시했어요`
+      : `${course.name} 경로를 지도에 표시했어요`;
   }
 }
 
@@ -4543,7 +4551,7 @@ function saveAiCourse(idx) {
     favorite: false,
     points,
     segments: [{
-      mode: 'ai',
+      mode: c.routeSource === 'tmap' ? 'tmap' : 'ai',
       dist: (Number.isFinite(dist) && dist > 0 ? dist : parseFloat(c.km) || 0).toFixed(3),
       points
     }],
@@ -4551,6 +4559,7 @@ function saveAiCourse(idx) {
     fromAi: true,
     tags: c.tags,
     routeLabel: c.routeLabel || '',
+    routeSource: c.routeSource || '',
     startLabel: c.startLabel || getAiCoursePlaceLabel()
   });
   localStorage.setItem('myCourses', JSON.stringify(courses));
