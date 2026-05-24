@@ -2397,7 +2397,7 @@ const COURSES = [
   { name:'홍대 플랫 코스', tags:[{l:'평지',c:'tb'},{l:'야간 가능',c:'tg'},{l:'혼잡',c:'ta'}], meta:'편의점 다수 · 보도 넓음 · 조명 양호', pt:'urban', color:'#D9654D', pace:6.5 },
   { name:'망원 공원 힐 루프', tags:[{l:'공원',c:'tg'},{l:'경사 포함',c:'ta'}], meta:'잔디밭 · 오르막 2곳 · 뷰 좋음', pt:'park', color:'#639922', pace:6.8 }
 ];
-const AI_COURSE_CACHE_KEY = 'runloopAiCourseCache';
+const AI_COURSE_CACHE_KEY = 'runloopAiCourseCacheV2';
 const AI_COURSE_CACHE_MS = 10 * 60 * 1000;
 let aiRouteOverlays = [];
 
@@ -2459,7 +2459,7 @@ async function fetchAiCourses(km) {
     throw new Error('AI_API_' + res.status);
   }
   const data = await res.json();
-  const courses = prepareAiCourses(data.courses, km);
+  const courses = await routeAiCoursesOnRoad(prepareAiCourses(data.courses, km), km);
   if (courses.length) setCachedAiCourses(cacheKey, km, courses);
   return { courses, cached: false };
 }
@@ -2517,7 +2517,7 @@ function setCachedAiCourses(cacheKey, km, courses) {
   Object.keys(cache).forEach(key => {
     if (!cache[key] || now - Number(cache[key].savedAt || 0) > AI_COURSE_CACHE_MS) delete cache[key];
   });
-  cache[cacheKey] = { savedAt: now, km, courses: courses.slice(0, 3) };
+  cache[cacheKey] = { savedAt: now, km, courses: courses.slice(0, 1) };
   Object.keys(cache)
     .sort((a, b) => Number(cache[b].savedAt || 0) - Number(cache[a].savedAt || 0))
     .slice(8)
@@ -2527,6 +2527,7 @@ function setCachedAiCourses(cacheKey, km, courses) {
 
 function buildFallbackCourses(km) {
   return COURSES
+    .slice(0, 1)
     .map(c => ({...c, km: (km * (0.93 + Math.random() * .14)).toFixed(1), points: [], fromAi: false}))
     .map((course, index) => enrichAiCourseRoute(course, index, km));
 }
@@ -2556,12 +2557,76 @@ function getSavedCourseNames() {
 
 function normalizeAiCourses(courses, targetKm) {
   if (!Array.isArray(courses)) return [];
-  return courses.slice(0, 3).map((course, index) => normalizeAiCourse(course, index, targetKm)).filter(Boolean);
+  return courses.slice(0, 1).map((course, index) => normalizeAiCourse(course, index, targetKm)).filter(Boolean);
 }
 
 function prepareAiCourses(courses, targetKm) {
   return normalizeAiCourses(courses, targetKm)
     .map((course, index) => enrichAiCourseRoute(course, index, targetKm));
+}
+
+async function routeAiCoursesOnRoad(courses) {
+  const course = courses[0];
+  if (!course) return [];
+  try {
+    return [await routeAiCourseOnRoad(course)];
+  } catch (err) {
+    console.warn('AI route road snap fallback', err);
+    return [course];
+  }
+}
+
+async function routeAiCourseOnRoad(course) {
+  const rawPath = normalizeStoredPathPoints(course.points).map(point => makeRouteLatLng(point.lat, point.lng));
+  const anchors = getAiRouteAnchors(rawPath);
+  if (anchors.length < 3) return course;
+
+  const snapped = [];
+  for (let i = 0; i < anchors.length - 1; i++) {
+    const segment = await fetchTmapPedestrianRoute([anchors[i], anchors[i + 1]]);
+    appendRouteSegment(snapped, segment);
+  }
+
+  const snappedKm = pathLengthMeters(snapped) / 1000;
+  const targetKm = parseFloat(course.km) || snappedKm;
+  if (!snapped.length || snappedKm < 0.5 || snappedKm > Math.max(targetKm * 1.9, targetKm + 3)) {
+    throw new Error('AI_TMAP_ROUTE_OUT_OF_RANGE');
+  }
+
+  return {
+    ...course,
+    km: snappedKm.toFixed(1),
+    points: serializeLatLngPath(snapped),
+    routeLabel: shortenRouteLabel((course.routeLabel || getAiRouteLabel(course, 0)) + ' · 보행자 길 반영')
+  };
+}
+
+function getAiRouteAnchors(path) {
+  if (!Array.isArray(path) || path.length < 3) return [];
+  const lastIndex = path.length - 1;
+  const indexes = [0, Math.round(lastIndex * 0.25), Math.round(lastIndex * 0.5), Math.round(lastIndex * 0.75), lastIndex];
+  const anchors = [];
+  indexes.forEach(index => {
+    const point = path[Math.max(0, Math.min(lastIndex, index))];
+    const prev = anchors[anchors.length - 1];
+    if (!prev || latLngDistanceMeters(prev, point) >= 80) anchors.push(point);
+  });
+  const first = anchors[0];
+  const last = anchors[anchors.length - 1];
+  if (first && last && latLngDistanceMeters(first, last) > 20) anchors.push(first);
+  return anchors;
+}
+
+function appendRouteSegment(target, segment) {
+  (segment || []).forEach(point => {
+    const last = target[target.length - 1];
+    if (last && latLngDistanceMeters(last, point) < 2) return;
+    target.push(point);
+  });
+}
+
+function shortenRouteLabel(label) {
+  return String(label || '').replace(/\s+/g, ' ').trim().slice(0, 34);
 }
 
 function normalizeAiCourse(course, index, targetKm) {

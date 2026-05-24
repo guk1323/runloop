@@ -71,7 +71,7 @@ export default async function handler(req, res) {
     const text = extractOpenAiText(result.data);
     const parsed = parseJsonText(text);
     const rawCourses = Array.isArray(parsed.courses) ? parsed.courses : [];
-    const courses = rawCourses.slice(0, 3).map((course, index) => normalizeCourse(course, index, km));
+    const courses = rawCourses.slice(0, 1).map((course, index) => normalizeCourse(course, index, km));
 
     if (courses.length === 0) {
       return res.status(502).json({ error: 'AI returned no usable courses' });
@@ -109,7 +109,7 @@ async function createOpenAiResponse(apiKey, context) {
           `사용자 선호: ${context.preference}`,
           `이미 저장한 코스 이름: ${context.savedCourseNames.length ? context.savedCourseNames.join(', ') : '없음'}`,
           'JSON 형식: {"courses":[{"name":"이름","concept":"한 문장 컨셉","distanceKm":5.0,"paceMinPerKm":6.5,"tags":["안전","평지"],"safetyNote":"짧은 참고","routeLabel":"경로 힌트","mapStyle":"river|urban|park"}]}',
-          'courses는 정확히 3개. distanceKm는 목표 거리의 ±10% 안. tags는 각 2~3개.'
+          'courses는 정확히 1개. distanceKm는 목표 거리의 ±10% 안. tags는 2~3개.'
         ].join('\n')
       })
     });
