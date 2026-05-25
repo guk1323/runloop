@@ -2624,10 +2624,11 @@ async function routeAiCourseOnRoad(course, requestedTargetKm) {
   const snapped = cleanAiSnappedRoute(tmapPath);
 
   const snappedKm = pathLengthMeters(snapped) / 1000;
-  const targetKm = parseFloat(course.km) || snappedKm;
-  const requestedKm = Number.isFinite(parseFloat(requestedTargetKm)) ? parseFloat(requestedTargetKm) : targetKm;
-  const minKm = Math.max(0.4, getMinRecommendedKm(requestedKm) - AI_ROUTE_DISTANCE_BUFFER_KM);
-  const maxKm = getMaxRecommendedKm(requestedKm) + AI_ROUTE_DISTANCE_BUFFER_KM;
+  const requestedKm = Number.isFinite(parseFloat(requestedTargetKm)) ? parseFloat(requestedTargetKm) : snappedKm;
+  // 직선 거리와 실제 도보 경로는 최대 40% 차이날 수 있으므로 허용폭을 넓게 설정
+  const tolerance = Math.max(1.0, requestedKm * 0.4);
+  const minKm = Math.max(0.4, requestedKm - tolerance);
+  const maxKm = requestedKm + tolerance;
   if (!snapped.length || snappedKm < minKm || snappedKm > maxKm) {
     throw new Error('AI_TMAP_ROUTE_OUT_OF_RANGE');
   }
@@ -2740,6 +2741,12 @@ function normalizeAiCourse(course, index, targetKm) {
     startLabel: String(course.startLabel || '').slice(0, 42),
     crosswalkCount: normalizeCrosswalkCount(course.crosswalkCount),
     points: normalizeStoredPathPoints(course.points),
+    waypoints: Array.isArray(course.waypoints)
+      ? course.waypoints
+          .filter(wp => wp && Number.isFinite(Number(wp.lat)) && Number.isFinite(Number(wp.lng)))
+          .map(wp => ({ lat: Number(wp.lat), lng: Number(wp.lng) }))
+          .slice(0, 2)
+      : [],
     routeSource: course.routeSource === 'tmap' ? 'tmap' : '',
     fromAi: true
   };
@@ -3014,14 +3021,35 @@ function showAiRoutePreview(course, options = {}) {
   const outboundPath = split.outbound.length > 1 ? split.outbound : path;
   const returnPath = split.returnPath.length > 1 ? split.returnPath : [];
 
-  const shadow = new kakao.maps.Polyline({
+  // 흰 테두리 효과를 위한 underline (약간 굵게, 흰색)
+  const underline = new kakao.maps.Polyline({
     map: createMap,
     path,
-    strokeWeight: 10,
-    strokeColor: DRAW_ROUTE_PLANNED_COLOR,
-    strokeOpacity: 0.58,
+    strokeWeight: 9,
+    strokeColor: '#ffffff',
+    strokeOpacity: 0.7,
     strokeStyle: 'solid'
   });
+  // 가는 방향 (outbound) - 코스 대표색
+  const outboundLine = new kakao.maps.Polyline({
+    map: createMap,
+    path: outboundPath,
+    strokeWeight: 6,
+    strokeColor: routeColor,
+    strokeOpacity: 0.92,
+    strokeStyle: 'solid'
+  });
+  // 돌아오는 방향 (return) - 어두운 계열 색
+  const returnLine = returnPath.length > 1
+    ? new kakao.maps.Polyline({
+        map: createMap,
+        path: returnPath,
+        strokeWeight: 5,
+        strokeColor: AI_ROUTE_RETURN_COLOR,
+        strokeOpacity: 0.82,
+        strokeStyle: 'solid'
+      })
+    : null;
   const outboundArrows = createRouteDirectionArrows(outboundPath, routeColor, { phase: 0.25 });
   const returnArrows = returnPath.length > 1
     ? createRouteDirectionArrows(returnPath, AI_ROUTE_RETURN_COLOR, { phase: 0.65 })
@@ -3029,22 +3057,15 @@ function showAiRoutePreview(course, options = {}) {
   const startDot = new kakao.maps.Circle({
     map: createMap,
     center: path[0],
-    radius: 8,
+    radius: 9,
     strokeWeight: 3,
-    strokeColor: DRAW_ROUTE_MARKER_COLOR,
+    strokeColor: routeColor,
     fillColor: '#fff',
     fillOpacity: 1
   });
-  const endDot = new kakao.maps.Circle({
-    map: createMap,
-    center: path[path.length - 1],
-    radius: 5,
-    strokeWeight: 2,
-    strokeColor: '#fff',
-    fillColor: DRAW_ROUTE_MARKER_COLOR,
-    fillOpacity: 1
-  });
-  aiRouteOverlays = [shadow].concat(outboundArrows, returnArrows, [startDot, endDot]);
+  const lines = [underline, outboundLine];
+  if (returnLine) lines.push(returnLine);
+  aiRouteOverlays = lines.concat(outboundArrows, returnArrows, [startDot]);
 
   if (fitBounds) {
     const bounds = new kakao.maps.LatLngBounds();
