@@ -977,13 +977,10 @@ const S = {
   kakaoReady: false
 };
 
-const RUNLOOP_FORCE_LEAFLET_MAP = new URLSearchParams(window.location.search).get('map') === 'leaflet';
-const RUNLOOP_IS_NATIVE_APP = ['capacitor:', 'ionic:'].includes(window.location.protocol);
 const RUNLOOP_REMOTE_API_ORIGIN = 'https://runloop-jet.vercel.app';
 const RUNLOOP_STATIC_LOCAL_HOSTS = ['127.0.0.1:5500', 'localhost:5500'];
 const RUNLOOP_STATIC_LOCAL_HOSTNAMES = ['127.0.0.1', 'localhost'];
 const RUNLOOP_API_ORIGIN = getRunloopApiOrigin();
-const KAKAO_MAP_APP_KEY = '056307d59b47ef5080ae7fc5f1413f51';
 const LEAFLET_CSS_URL = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
 const LEAFLET_JS_URL = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
 const TMAP_APP_KEY = 'dM1gQjphEH6xgfyyzIjHl2ctRZEUXPPJ6oyn8aqj';
@@ -1058,28 +1055,13 @@ function loadExternalStyle(href) {
 
 async function bootMapProvider() {
   try {
-    if (RUNLOOP_IS_NATIVE_APP || RUNLOOP_FORCE_LEAFLET_MAP) {
-      await installLeafletKakaoAdapter();
-    } else {
-      await loadKakaoMapSdk();
-    }
+    await installLeafletKakaoAdapter();
     S.kakaoReady = true;
     if (S.tab === 'create') initCreateMap();
   } catch (err) {
     console.warn('Runloop map provider failed', err);
     showMapProviderError();
   }
-}
-
-function loadKakaoMapSdk() {
-  const sdkUrl = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_APP_KEY}&libraries=services&autoload=false`;
-  return loadExternalScript(sdkUrl).then(() => new Promise((resolve, reject) => {
-    if (!window.kakao || !kakao.maps || !kakao.maps.load) {
-      reject(new Error('Kakao Maps SDK is unavailable'));
-      return;
-    }
-    kakao.maps.load(resolve);
-  }));
 }
 
 async function installLeafletKakaoAdapter() {
