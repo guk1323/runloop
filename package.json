@@ -6,8 +6,10 @@
     "cap:prepare": "node scripts/prepare-capacitor-web.mjs",
     "cap:add:ios": "npm run cap:prepare && npx cap add ios",
     "cap:sync:ios": "npm run cap:prepare && npx cap sync ios",
+    "cap:sync:ios:web": "npm run cap:sync:ios && node scripts/use-ios-remote-url.mjs",
     "cap:open:ios": "npx cap open ios",
-    "cap:run:ios": "npm run cap:sync:ios && npx cap run ios"
+    "cap:run:ios": "npm run cap:sync:ios && npx cap run ios",
+    "cap:run:ios:web": "npm run cap:sync:ios:web && npx cap run ios --no-sync"
   },
   "dependencies": {
     "@capacitor/core": "8.3.4",
