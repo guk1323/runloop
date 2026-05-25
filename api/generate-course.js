@@ -96,13 +96,23 @@ export default async function handler(req, res) {
 
 function applyCors(req, res) {
   const origin = req.headers.origin;
-  if (ALLOWED_ORIGINS.has(origin)) {
+  if (isAllowedCorsOrigin(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Vary', 'Origin');
   }
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Access-Control-Max-Age', '86400');
+}
+
+function isAllowedCorsOrigin(origin) {
+  if (ALLOWED_ORIGINS.has(origin)) return true;
+  try {
+    const url = new URL(origin);
+    return ['localhost', '127.0.0.1'].includes(url.hostname);
+  } catch (_) {
+    return false;
+  }
 }
 
 async function createOpenAiResponse(apiKey, context) {

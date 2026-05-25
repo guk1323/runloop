@@ -127,6 +127,10 @@ if ('serviceWorker' in navigator) {
 
   .map-loading{position:absolute;inset:0;background:#F3F0E6;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:5;font-size:14px;color:var(--gray-700);}
   .ml-spin{width:28px;height:28px;border:3px solid var(--gray-300);border-top-color:var(--coral);border-radius:50%;animation:spin .8s linear infinite;}
+  .leaflet-container{font-family:'Inter','Noto Sans KR',sans-serif;background:#EEEADF;}
+  .leaflet-control-attribution{font-size:9px!important;}
+  .runloop-leaflet-overlay{background:transparent!important;border:0!important;}
+  .runloop-leaflet-overlay > div{transform:translate(-50%,-50%);}
   .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;}
   @keyframes spin{to{transform:rotate(360deg);}}
 
@@ -964,11 +968,6 @@ if ('serviceWorker' in navigator) {
 </div>
 
 
-<!-- 카카오맵 SDK — onload 콜백으로 로드 완료 후 실행 -->
-<script type="text/javascript"
-  src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=056307d59b47ef5080ae7fc5f1413f51&libraries=services&autoload=false">
-</script>
-
 <script>
 const S = {
   tab:'home', courses:[], sel:-1,
@@ -978,9 +977,15 @@ const S = {
   kakaoReady: false
 };
 
+const RUNLOOP_FORCE_LEAFLET_MAP = new URLSearchParams(window.location.search).get('map') === 'leaflet';
+const RUNLOOP_IS_NATIVE_APP = ['capacitor:', 'ionic:'].includes(window.location.protocol);
 const RUNLOOP_REMOTE_API_ORIGIN = 'https://runloop-jet.vercel.app';
 const RUNLOOP_STATIC_LOCAL_HOSTS = ['127.0.0.1:5500', 'localhost:5500'];
+const RUNLOOP_STATIC_LOCAL_HOSTNAMES = ['127.0.0.1', 'localhost'];
 const RUNLOOP_API_ORIGIN = getRunloopApiOrigin();
+const KAKAO_MAP_APP_KEY = '056307d59b47ef5080ae7fc5f1413f51';
+const LEAFLET_CSS_URL = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
+const LEAFLET_JS_URL = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
 const TMAP_APP_KEY = 'dM1gQjphEH6xgfyyzIjHl2ctRZEUXPPJ6oyn8aqj';
 const TMAP_PEDESTRIAN_URL = 'https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1';
 const TMAP_POI_URL = 'https://apis.openapi.sk.com/tmap/pois';
@@ -999,8 +1004,9 @@ const AI_ROUTE_RETURN_COLOR = '#A94B37';
 function getRunloopApiOrigin() {
   const protocol = window.location && window.location.protocol;
   const host = window.location && window.location.host;
+  const hostname = window.location && window.location.hostname;
   if (protocol === 'capacitor:' || protocol === 'ionic:' || protocol === 'file:') return RUNLOOP_REMOTE_API_ORIGIN;
-  if (RUNLOOP_STATIC_LOCAL_HOSTS.includes(host)) return RUNLOOP_REMOTE_API_ORIGIN;
+  if (RUNLOOP_STATIC_LOCAL_HOSTS.includes(host) || RUNLOOP_STATIC_LOCAL_HOSTNAMES.includes(hostname)) return RUNLOOP_REMOTE_API_ORIGIN;
   return '';
 }
 
@@ -1008,11 +1014,308 @@ function runloopApiUrl(path) {
   return RUNLOOP_API_ORIGIN + path;
 }
 
-/* 카카오 SDK 로드 완료 후 초기화 */
-kakao.maps.load(function() {
-  S.kakaoReady = true;
-  if (S.tab === 'create') initCreateMap();
-});
+function loadExternalScript(src) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${src}"]`);
+    if (existing) {
+      existing.addEventListener('load', resolve, { once: true });
+      existing.addEventListener('error', reject, { once: true });
+      if (existing.dataset.loaded === 'true') resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = src;
+    script.async = true;
+    script.onload = () => {
+      script.dataset.loaded = 'true';
+      resolve();
+    };
+    script.onerror = () => reject(new Error(`Script load failed: ${src}`));
+    document.head.appendChild(script);
+  });
+}
+
+function loadExternalStyle(href) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector(`link[href="${href}"]`);
+    if (existing) {
+      existing.addEventListener('load', resolve, { once: true });
+      existing.addEventListener('error', reject, { once: true });
+      if (existing.dataset.loaded === 'true' || existing.sheet) resolve();
+      return;
+    }
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    link.onload = () => {
+      link.dataset.loaded = 'true';
+      resolve();
+    };
+    link.onerror = () => reject(new Error(`Style load failed: ${href}`));
+    document.head.appendChild(link);
+  });
+}
+
+async function bootMapProvider() {
+  try {
+    if (RUNLOOP_IS_NATIVE_APP || RUNLOOP_FORCE_LEAFLET_MAP) {
+      await installLeafletKakaoAdapter();
+    } else {
+      await loadKakaoMapSdk();
+    }
+    S.kakaoReady = true;
+    if (S.tab === 'create') initCreateMap();
+  } catch (err) {
+    console.warn('Runloop map provider failed', err);
+    showMapProviderError();
+  }
+}
+
+function loadKakaoMapSdk() {
+  const sdkUrl = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_APP_KEY}&libraries=services&autoload=false`;
+  return loadExternalScript(sdkUrl).then(() => new Promise((resolve, reject) => {
+    if (!window.kakao || !kakao.maps || !kakao.maps.load) {
+      reject(new Error('Kakao Maps SDK is unavailable'));
+      return;
+    }
+    kakao.maps.load(resolve);
+  }));
+}
+
+async function installLeafletKakaoAdapter() {
+  await loadExternalStyle(LEAFLET_CSS_URL);
+  await loadExternalScript(LEAFLET_JS_URL);
+  if (!window.L) throw new Error('Leaflet is unavailable');
+  if (window.kakao && kakao.maps && kakao.maps.__runloopLeaflet) return;
+
+  const L = window.L;
+  const toLeafletZoom = level => Math.max(3, Math.min(19, 18 - (Number(level) || 4)));
+  const toKakaoLevel = zoom => Math.max(1, Math.min(14, Math.round(18 - (Number(zoom) || 14))));
+  const toLatLng = point => point instanceof LeafletLatLng
+    ? point
+    : new LeafletLatLng(point && typeof point.getLat === 'function' ? point.getLat() : point.lat, point && typeof point.getLng === 'function' ? point.getLng() : point.lng);
+
+  class LeafletLatLng {
+    constructor(lat, lng) {
+      this.Ma = Number(lat);
+      this.La = Number(lng);
+      this.lat = this.Ma;
+      this.lng = this.La;
+    }
+    getLat() { return this.Ma; }
+    getLng() { return this.La; }
+  }
+
+  class LeafletPoint {
+    constructor(x, y) {
+      this.x = x;
+      this.y = y;
+    }
+  }
+
+  class LeafletLatLngBounds {
+    constructor() {
+      this._bounds = null;
+    }
+    extend(point) {
+      const latlng = toLatLng(point);
+      const next = L.latLng(latlng.getLat(), latlng.getLng());
+      this._bounds = this._bounds ? this._bounds.extend(next) : L.latLngBounds(next, next);
+      return this;
+    }
+    toLeafletBounds() {
+      return this._bounds;
+    }
+  }
+
+  class LeafletMap {
+    constructor(container, options = {}) {
+      const center = toLatLng(options.center || new LeafletLatLng(S.lat, S.lng));
+      this._level = options.level || 4;
+      this._map = L.map(container, {
+        center: [center.getLat(), center.getLng()],
+        zoom: toLeafletZoom(this._level),
+        zoomControl: false,
+        attributionControl: true,
+        preferCanvas: true,
+        scrollWheelZoom: options.scrollwheel !== false,
+        dragging: options.draggable !== false
+      });
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; OpenStreetMap contributors'
+      }).addTo(this._map);
+      setTimeout(() => this._map.invalidateSize(), 80);
+    }
+    setCenter(point) {
+      const latlng = toLatLng(point);
+      this._map.setView([latlng.getLat(), latlng.getLng()], this._map.getZoom(), { animate: false });
+    }
+    getCenter() {
+      const center = this._map.getCenter();
+      return new LeafletLatLng(center.lat, center.lng);
+    }
+    setLevel(level) {
+      this._level = level;
+      this._map.setZoom(toLeafletZoom(level), { animate: false });
+    }
+    getLevel() {
+      return toKakaoLevel(this._map.getZoom());
+    }
+    setBounds(bounds) {
+      const leafletBounds = bounds && bounds.toLeafletBounds ? bounds.toLeafletBounds() : null;
+      if (leafletBounds && leafletBounds.isValid()) this._map.fitBounds(leafletBounds, { padding: [24, 24], animate: false });
+    }
+    getProjection() {
+      return {
+        coordsFromContainerPoint: point => {
+          const latlng = this._map.containerPointToLatLng([point.x, point.y]);
+          return new LeafletLatLng(latlng.lat, latlng.lng);
+        }
+      };
+    }
+    _addListener(type, handler) {
+      const eventName = type === 'zoom_changed' ? 'zoomend' : type;
+      const wrapped = e => handler({
+        latLng: e && e.latlng ? new LeafletLatLng(e.latlng.lat, e.latlng.lng) : undefined
+      });
+      this._map.on(eventName, wrapped);
+      return { remove: () => this._map.off(eventName, wrapped) };
+    }
+    _trigger(type) {
+      if (type === 'resize') this._map.invalidateSize();
+    }
+  }
+
+  class LeafletOverlay {
+    constructor(options = {}) {
+      this._mapWrapper = null;
+      this._position = toLatLng(options.position || new LeafletLatLng(S.lat, S.lng));
+      this._content = options.content || '';
+      this._zIndex = options.zIndex || 1;
+      this._marker = null;
+      if (options.map) this.setMap(options.map);
+    }
+    _makeMarker() {
+      return L.marker([this._position.getLat(), this._position.getLng()], {
+        interactive: false,
+        zIndexOffset: this._zIndex * 100,
+        icon: L.divIcon({
+          html: this._content,
+          className: 'runloop-leaflet-overlay',
+          iconSize: [1, 1],
+          iconAnchor: [0, 0]
+        })
+      });
+    }
+    setMap(mapWrapper) {
+      if (this._marker && this._mapWrapper) this._marker.removeFrom(this._mapWrapper._map);
+      this._mapWrapper = mapWrapper || null;
+      if (!mapWrapper) return;
+      this._marker = this._makeMarker();
+      this._marker.addTo(mapWrapper._map);
+    }
+    setPosition(position) {
+      this._position = toLatLng(position);
+      if (this._marker) this._marker.setLatLng([this._position.getLat(), this._position.getLng()]);
+    }
+  }
+
+  class LeafletPolyline {
+    constructor(options = {}) {
+      this._mapWrapper = null;
+      this._path = options.path || [];
+      this._line = L.polyline(this._path.map(p => {
+        const latlng = toLatLng(p);
+        return [latlng.getLat(), latlng.getLng()];
+      }), {
+        color: options.strokeColor || DRAW_ROUTE_COLOR,
+        weight: options.strokeWeight || DRAW_ROUTE_WEIGHT,
+        opacity: options.strokeOpacity == null ? 1 : options.strokeOpacity,
+        dashArray: options.strokeStyle === 'dash' ? '6 8' : null,
+        lineCap: 'round',
+        lineJoin: 'round'
+      });
+      if (options.map) this.setMap(options.map);
+    }
+    setMap(mapWrapper) {
+      if (this._mapWrapper) this._line.removeFrom(this._mapWrapper._map);
+      this._mapWrapper = mapWrapper || null;
+      if (mapWrapper) this._line.addTo(mapWrapper._map);
+    }
+  }
+
+  class LeafletCircle {
+    constructor(options = {}) {
+      this._mapWrapper = null;
+      const center = toLatLng(options.center || new LeafletLatLng(S.lat, S.lng));
+      this._circle = L.circleMarker([center.getLat(), center.getLng()], {
+        radius: options.radius || 6,
+        color: options.strokeColor || DRAW_ROUTE_MARKER_COLOR,
+        weight: options.strokeWeight || 2,
+        fillColor: options.fillColor || '#fff',
+        fillOpacity: options.fillOpacity == null ? 1 : options.fillOpacity
+      });
+      if (options.map) this.setMap(options.map);
+    }
+    setMap(mapWrapper) {
+      if (this._mapWrapper) this._circle.removeFrom(this._mapWrapper._map);
+      this._mapWrapper = mapWrapper || null;
+      if (mapWrapper) this._circle.addTo(mapWrapper._map);
+    }
+  }
+
+  class LeafletGeocoder {
+    coord2Address(lng, lat, callback) {
+      callback([{
+        address: { address_name: `${Number(lat).toFixed(4)}, ${Number(lng).toFixed(4)}` },
+        road_address: null
+      }], 'OK');
+    }
+    addressSearch(_query, callback) {
+      callback([], 'ZERO_RESULT');
+    }
+  }
+
+  class LeafletPlaces {
+    keywordSearch(_query, callback) {
+      callback([], 'ZERO_RESULT');
+    }
+  }
+
+  window.kakao = {
+    maps: {
+      __runloopLeaflet: true,
+      load: callback => callback(),
+      LatLng: LeafletLatLng,
+      Point: LeafletPoint,
+      LatLngBounds: LeafletLatLngBounds,
+      Map: LeafletMap,
+      CustomOverlay: LeafletOverlay,
+      Polyline: LeafletPolyline,
+      Circle: LeafletCircle,
+      event: {
+        addListener: (target, type, handler) => target && target._addListener ? target._addListener(type, handler) : null,
+        trigger: (target, type) => { if (target && target._trigger) target._trigger(type); }
+      },
+      services: {
+        Status: { OK: 'OK', ZERO_RESULT: 'ZERO_RESULT', ERROR: 'ERROR' },
+        SortBy: { DISTANCE: 'distance' },
+        Geocoder: LeafletGeocoder,
+        Places: LeafletPlaces
+      }
+    }
+  };
+}
+
+function showMapProviderError() {
+  ['createMapLoading', 'mapLoading'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.innerHTML = '<span>지도를 불러오지 못했어요</span>';
+  });
+}
+
+bootMapProvider();
 
 /* ── 바텀시트 토글 ── */
 let bottomSheetOpen = false;
