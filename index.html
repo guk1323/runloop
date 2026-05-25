@@ -14,7 +14,7 @@
 <meta name="theme-color" content="#F7F7F2">
 
 <!-- 아이오에스 아이콘 -->
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='40' fill='%23F5F2EA'/><circle cx='128' cy='50' r='18' fill='%23FFD6C8'/><path d='M52 98c21-42 80-42 78 0-2 39-54 43-66 14-10-25 18-48 47-28' fill='none' stroke='%2327313A' stroke-width='16' stroke-linecap='round' stroke-linejoin='round'/><circle cx='53' cy='109' r='10' fill='%23F27A5E'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='42' fill='%231C242B'/><path d='M48 96c25-48 88-42 88-2 0 39-60 49-72 14-9-27 23-47 55-25' fill='none' stroke='%23FFF7F1' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/><circle cx='50' cy='108' r='11' fill='%23F27A5E'/><circle cx='132' cy='52' r='9' fill='%23B7F06A'/></svg>">
 
 <!-- 서비스 워커 등록 -->
 <script>
@@ -25,37 +25,38 @@ if ('serviceWorker' in navigator) {
 }
 </script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;700;800&display=swap');
   :root {
-    --ink:#27313A;--paper:#FFFDF8;--cream:#F5F2EA;
+    --ink:#1C242B;--paper:#FFFDF8;--cream:#F0EEE8;
     --coral:#F27A5E;--coral-dark:#A94B37;--coral-light:#FFF0EA;
-    --lime:#FFD6C8;--mint:#F6A08A;--route:#D9654D;
-    --green:var(--ink);--green-light:var(--coral-light);--green-dark:#172631;
-    --amber:#98723E;--amber-light:#F8EEDC;
+    --lime:#B7F06A;--mint:#CDEFE2;--route:#D9654D;
+    --green:var(--ink);--green-light:var(--coral-light);--green-dark:#101820;
+    --amber:#8D6A36;--amber-light:#F6EAD3;
     --red:#A32D2D;--red-light:#FCEBEB;
-    --gray-50:#F7F7F2;--gray-100:#EDE9DE;--gray-300:#D6D0C3;
-    --gray-500:#827E75;--gray-700:#46443F;--gray-900:var(--ink);
+    --gray-50:#F8F7F2;--gray-100:#EAE5DA;--gray-300:#D2CABD;
+    --gray-500:#817B70;--gray-700:#45413B;--gray-900:var(--ink);
     --r:8px;--rs:8px;--rp:999px;
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-  html,body{height:100%;font-family:'Noto Sans KR',sans-serif;background:var(--cream);color:var(--gray-900);}
-  body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100dvh;overflow:hidden;background:var(--paper);box-shadow:0 0 0 1px rgba(23,26,24,.06);}
+  html,body{height:100%;font-family:'Inter','Noto Sans KR',sans-serif;background:var(--cream);color:var(--gray-900);}
+  body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100dvh;overflow:hidden;background:linear-gradient(180deg,#FFFDF8 0%,#F7F3EC 100%);box-shadow:0 0 0 1px rgba(23,26,24,.06);}
 
-  .header{background:var(--paper);border-bottom:1px solid var(--gray-100);padding:14px 18px 10px;flex-shrink:0;z-index:100;}
+  .header{background:rgba(255,253,248,.88);border-bottom:1px solid rgba(28,36,43,.08);padding:16px 18px 12px;flex-shrink:0;z-index:100;backdrop-filter:blur(16px);}
   .header-top{display:flex;justify-content:space-between;align-items:center;}
-  .logo{display:flex;align-items:center;gap:8px;font-size:20px;font-weight:700;color:var(--ink);letter-spacing:0;}
-  .logo-mark{width:28px;height:28px;border-radius:9px;background:var(--ink);position:relative;display:inline-block;box-shadow:inset 0 -6px 0 rgba(242,122,94,.72);}
-  .logo-mark::before{content:'';position:absolute;left:7px;top:8px;width:14px;height:8px;border:2px solid var(--paper);border-top-color:transparent;border-radius:999px;transform:rotate(-13deg);}
-  .logo-mark::after{content:'';position:absolute;right:5px;top:5px;width:6px;height:6px;background:var(--coral);border-radius:50%;}
+  .logo{display:flex;align-items:center;gap:9px;font-size:21px;font-weight:800;color:var(--ink);letter-spacing:0;}
+  .logo-mark{width:31px;height:31px;border-radius:11px;background:var(--ink);position:relative;display:inline-block;box-shadow:0 8px 18px rgba(28,36,43,.18);}
+  .logo-mark::before{content:'';position:absolute;left:7px;top:9px;width:16px;height:10px;border:2.5px solid #FFF7F1;border-top-color:transparent;border-radius:999px;transform:rotate(-17deg);}
+  .logo-mark::after{content:'';position:absolute;left:7px;bottom:8px;width:7px;height:7px;background:var(--coral);border:2px solid var(--ink);border-radius:50%;}
+  .logo span:last-child{line-height:1;}
   .loc-btn{display:flex;align-items:center;gap:5px;background:var(--coral-light);color:var(--ink);padding:6px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;cursor:pointer;border:1px solid rgba(242,122,94,.18);font-family:inherit;}
 
-  .tabs{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:100%;max-width:430px;height:70px;padding:6px 10px calc(6px + env(safe-area-inset-bottom));display:flex;gap:4px;background:rgba(255,253,248,.96);border-top:1px solid var(--gray-100);box-shadow:0 -8px 22px rgba(39,49,58,.08);backdrop-filter:blur(12px);z-index:140;flex-shrink:0;}
-  .tab{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;font-size:11px;font-weight:700;color:var(--gray-500);cursor:pointer;border:none;border-radius:var(--rs);background:none;font-family:inherit;transition:all .2s;}
-  .tab-icon{font-size:18px;line-height:1;color:var(--gray-500);}
-  .tab.active{color:var(--ink);background:var(--coral-light);}
-  .tab.active .tab-icon{color:var(--coral-dark);}
+  .tabs{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);width:calc(100% - 24px);max-width:406px;height:64px;padding:7px;display:flex;gap:5px;background:rgba(28,36,43,.92);border:1px solid rgba(255,255,255,.16);border-radius:22px;box-shadow:0 16px 34px rgba(28,36,43,.24);backdrop-filter:blur(18px);z-index:140;flex-shrink:0;}
+  .tab{flex:1;min-width:0;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;text-align:center;font-size:10.5px;font-weight:800;color:rgba(255,255,255,.56);cursor:pointer;border:none;border-radius:16px;background:none;font-family:inherit;transition:all .18s;}
+  .tab-icon{font-size:18px;line-height:1;color:rgba(255,255,255,.58);}
+  .tab.active{color:#fff;background:rgba(255,255,255,.12);}
+  .tab.active .tab-icon{color:var(--lime);}
 
-  .screen{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;padding-bottom:76px;}
+  .screen{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;padding-bottom:92px;}
   .screen.active{display:flex;}
 
   /* AI 탭 */
@@ -68,18 +69,18 @@ if ('serviceWorker' in navigator) {
   .km-label{font-size:13px;color:var(--gray-700);white-space:nowrap;}
   .km-slider{flex:1;accent-color:var(--coral);}
   .km-val{font-size:15px;font-weight:700;color:var(--coral);min-width:46px;text-align:right;}
-  .gen-btn{margin-top:10px;width:100%;height:42px;background:var(--ink);color:#fff;border:none;border-radius:var(--rs);font-size:14px;font-weight:500;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s,transform .15s;box-shadow:0 8px 18px rgba(23,26,24,.13);}
+  .gen-btn{margin-top:10px;width:100%;height:44px;background:var(--ink);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s,transform .15s;box-shadow:0 10px 22px rgba(28,36,43,.18);}
   .gen-btn:hover{background:#000;transform:translateY(-1px);}
   .gen-btn:disabled{background:var(--gray-300);cursor:not-allowed;}
 
   .course-scroll{flex:1;overflow-y:auto;}
   .course-list{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;}
-  .course-card{background:var(--paper);border-radius:var(--r);border:1.5px solid var(--gray-100);overflow:hidden;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
+  .course-card{background:rgba(255,255,255,.84);border-radius:12px;border:1px solid rgba(28,36,43,.08);overflow:hidden;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s;box-shadow:0 10px 24px rgba(28,36,43,.05);}
   .course-card:hover{border-color:var(--gray-300);}
-  .course-card.selected{border-color:var(--coral);box-shadow:0 8px 20px rgba(242,122,94,.12);}
+  .course-card.selected{border-color:rgba(28,36,43,.8);box-shadow:0 12px 24px rgba(28,36,43,.12);transform:translateY(-1px);}
   .cmap{height:70px;position:relative;overflow:hidden;background:#EEEADF;}
   .cmap canvas{width:100%;height:100%;display:block;}
-  .cbadge{position:absolute;top:7px;left:7px;background:rgba(23,26,24,.88);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--rp);}
+  .cbadge{position:absolute;top:7px;left:7px;background:rgba(28,36,43,.9);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:var(--rp);}
   .crank{position:absolute;top:7px;right:7px;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--rp);}
   .cinfo{padding:8px 10px 10px;}
   .cname{font-size:14px;font-weight:700;margin-bottom:3px;}
@@ -247,11 +248,13 @@ if ('serviceWorker' in navigator) {
   .all-record-meta{font-size:11px;color:var(--gray-500);}
   .all-record-dist{font-size:15px;font-weight:700;color:var(--coral);}
 
-  .save-course-btn{background:var(--coral-light);color:var(--ink);border:none;border-radius:var(--rp);padding:4px 10px;font-size:11px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
-  .save-course-btn:hover{background:#FFE0DA;}
+  #weatherCard{background:linear-gradient(135deg,#FFFFFF 0%,#FFF6F1 100%)!important;border:1px solid rgba(28,36,43,.07)!important;box-shadow:0 12px 28px rgba(28,36,43,.06)!important;}
+  .near-course-card{background:rgba(255,255,255,.82);border-color:rgba(28,36,43,.07);box-shadow:0 8px 20px rgba(28,36,43,.045);}
+  .save-course-btn{background:var(--ink);color:#fff;border:none;border-radius:var(--rp);padding:5px 11px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
+  .save-course-btn:hover{background:#111820;}
 
   /* 마이페이지 */
-  .my-profile-card{margin:14px;background:linear-gradient(135deg,#27313A 0%,#5A463C 68%,#F27A5E 130%);border-radius:var(--r);padding:20px;color:#fff;flex-shrink:0;}
+  .my-profile-card{margin:14px;background:linear-gradient(135deg,#1C242B 0%,#2B343B 58%,#F27A5E 150%);border-radius:16px;padding:20px;color:#fff;flex-shrink:0;box-shadow:0 16px 34px rgba(28,36,43,.14);}
   .my-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:10px;cursor:pointer;border:2px solid rgba(255,255,255,.4);}
   .my-name{font-size:20px;font-weight:700;margin-bottom:2px;}
   .my-sub{font-size:13px;opacity:.8;}
@@ -309,8 +312,8 @@ if ('serviceWorker' in navigator) {
   .ob-goal-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--gray-50);border:2px solid var(--gray-100);border-radius:var(--r);cursor:pointer;transition:all .15s;}
   .ob-goal-item.selected{background:var(--coral-light);border-color:var(--coral);}
 
-  .near-course-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s;}
-  .near-course-card:hover{border-color:var(--coral);}
+  .near-course-card{background:rgba(255,255,255,.82);border-radius:12px;border:1px solid rgba(28,36,43,.07);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s;box-shadow:0 8px 20px rgba(28,36,43,.045);}
+  .near-course-card:hover{border-color:var(--coral);transform:translateY(-1px);}
   .near-course-icon{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
   .near-course-info{flex:1;min-width:0;}
   .near-course-name{font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -334,7 +337,7 @@ if ('serviceWorker' in navigator) {
   <!-- 스텝 1: 닉네임 -->
   <div id="ob-step-1" style="flex:1;display:flex;flex-direction:column;padding:40px 24px 32px;">
     <div style="font-size:32px;margin-bottom:16px;">👋</div>
-    <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;line-height:1.3;">런룹에 오신 걸<br>환영해요!</div>
+    <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;line-height:1.3;">Runloop에 오신 걸<br>환영해요!</div>
     <div style="font-size:14px;color:var(--gray-500);margin-bottom:40px;line-height:1.6;">함께 달리며 더 건강한 일상을<br>만들어봐요.</div>
     <div style="font-size:13px;font-weight:500;color:var(--gray-700);margin-bottom:8px;">닉네임을 입력해주세요</div>
     <input type="text" id="ob-name" placeholder="예: 달리기 좋아하는 훈" maxlength="12"
@@ -466,7 +469,7 @@ if ('serviceWorker' in navigator) {
 
     <div style="margin-top:auto;display:flex;gap:10px;">
       <button onclick="obBack(4)" style="width:52px;height:52px;background:var(--gray-100);border:none;border-radius:var(--r);font-size:20px;cursor:pointer;">←</button>
-      <button onclick="obFinish()" style="flex:1;height:52px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">시작하기 🚀</button>
+      <button onclick="obFinish()" style="flex:1;height:52px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">시작하기</button>
     </div>
   </div>
 
@@ -689,7 +692,7 @@ if ('serviceWorker' in navigator) {
       <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:16px;">
         <div class="my-avatar" id="myAvatar" onclick="openAvatarEdit()" title="탭해서 변경" style="width:72px;height:72px;font-size:36px;margin-bottom:10px;">🏃</div>
         <div class="my-name" id="myNameDisplay" style="text-align:center;">런너</div>
-        <div class="my-sub" id="myJoinDays" style="text-align:center;margin-top:3px;">런룹과 함께 달리는 중</div>
+        <div class="my-sub" id="myJoinDays" style="text-align:center;margin-top:3px;">Running with Runloop</div>
       </div>
       <!-- 하단: 3개 통계 가운데 정렬 -->
       <div class="my-points" style="justify-content:center;gap:0;">
@@ -891,7 +894,7 @@ if ('serviceWorker' in navigator) {
 <!-- 런닝 진행 화면 -->
 <div class="run-screen" id="runScreen">
   <div class="run-header">
-    <div class="run-title" id="runTitle">한강 산책로 루프</div>
+    <div class="run-title" id="runTitle">Han River Line</div>
     <div class="run-live"><div class="live-dot"></div>라이브</div>
   </div>
   <div class="run-map" id="runMap">
@@ -925,7 +928,7 @@ if ('serviceWorker' in navigator) {
   <div class="finish-card">
     <div class="finish-emoji">🎉</div>
     <div class="finish-title">런닝 완료!</div>
-    <div class="finish-sub" id="finishSub">오늘 · 한강 산책로 루프</div>
+    <div class="finish-sub" id="finishSub">오늘 · Han River Line</div>
     <div class="finish-grid">
       <div class="fstat"><div class="fstat-l">총 거리</div><div class="fstat-v g" id="fDist">—</div></div>
       <div class="fstat"><div class="fstat-l">총 시간</div><div class="fstat-v" id="fTime">—</div></div>
@@ -2341,7 +2344,7 @@ function refreshStats(km) {
 function buildCourseNameSuggestion(km, savedAt, path, existingCourses) {
   const timeLabel = getCourseTimeLabel(savedAt.getHours());
   const distanceLabel = getCourseDistanceName(km);
-  const shapeLabel = isLoopPath(path) ? '루프' : '코스';
+  const shapeLabel = isLoopPath(path) ? 'Loop' : 'Course';
   return makeUniqueCourseName(`${timeLabel} ${distanceLabel} ${shapeLabel}`, existingCourses);
 }
 
@@ -2415,9 +2418,9 @@ function saveCourse() {
 
 /* AI 추천 코스 */
 const COURSES = [
-  { name:'한강 산책로 루프', tags:[{l:'안전',c:'tg'},{l:'평지',c:'tb'},{l:'공원',c:'tg'}], meta:'차량 없음 · 조명 완비 · 화장실 3곳', pt:'river', color:'#F27A5E', pace:6.2 },
+  { name:'Han River Line', tags:[{l:'안전',c:'tg'},{l:'평지',c:'tb'},{l:'공원',c:'tg'}], meta:'차량 없음 · 조명 완비 · 화장실 3곳', pt:'river', color:'#F27A5E', pace:6.2 },
   { name:'홍대 플랫 코스', tags:[{l:'평지',c:'tb'},{l:'야간 가능',c:'tg'},{l:'혼잡',c:'ta'}], meta:'편의점 다수 · 보도 넓음 · 조명 양호', pt:'urban', color:'#D9654D', pace:6.5 },
-  { name:'망원 공원 힐 루프', tags:[{l:'공원',c:'tg'},{l:'경사 포함',c:'ta'}], meta:'잔디밭 · 오르막 2곳 · 뷰 좋음', pt:'park', color:'#639922', pace:6.8 }
+  { name:'Mangwon Park Line', tags:[{l:'공원',c:'tg'},{l:'경사 포함',c:'ta'}], meta:'잔디밭 · 오르막 2곳 · 뷰 좋음', pt:'park', color:'#639922', pace:6.8 }
 ];
 const AI_COURSE_RECOMMENDATION_COUNT = 2;
 const AI_DISTANCE_TOLERANCE_KM = 0.5;
@@ -2773,10 +2776,10 @@ function enrichAiCourseRoute(course, index, targetKm) {
 }
 
 function qualifyAiCourseName(name, startLabel, index) {
-  const cleaned = String(name || `추천 코스 ${index + 1}`).trim();
-  if (!/^(강변|공원|골목|동네|루프|코스|추천 코스 \d+)$/.test(cleaned)) return cleaned.slice(0, 18);
+  const cleaned = String(name || `추천 코스 ${index + 1}`).trim().replace(/\uB8E8\uD504/g, 'Loop');
+  if (!/^(강변|공원|골목|동네|Loop|Line|코스|추천 코스 \d+)$/.test(cleaned)) return cleaned.slice(0, 18);
   const area = getShortAreaName(startLabel);
-  const suffix = cleaned.endsWith('루프') ? cleaned : cleaned + ' 루프';
+  const suffix = /(?:Loop|Line)$/.test(cleaned) ? cleaned : cleaned + ' Loop';
   return `${area} ${suffix}`.slice(0, 18);
 }
 
@@ -2896,8 +2899,8 @@ function roundCoord(value) {
 function getAiRouteLabel(course, index) {
   const labels = {
     river: ['강변 방향 왕복길', '물길 옆 완만한 왕복', '뷰 좋은 왕복길'],
-    urban: ['동네 블록 루프', '주택가 중심 루프', '큰길 적은 사각 루프'],
-    park: ['공원 방향 루프', '초록길 중심 루프', '가볍게 도는 공원 루프']
+    urban: ['Local Block Loop', 'Quiet Street Loop', 'Low Traffic Loop'],
+    park: ['Park Line Loop', 'Green Path Loop', 'Easy Park Loop']
   };
   const group = labels[course.pt] || labels.urban;
   return group[index] || group[0];
@@ -2942,7 +2945,7 @@ function renderCourses() {
       </div>
       <div class="cinfo">
         <div class="cname">${escapeHtml(c.name)}</div>
-        <div class="croute">${escapeHtml(c.routeLabel || c.startLabel || '지도 위 예상 루프')}</div>
+        <div class="croute">${escapeHtml(c.routeLabel || c.startLabel || '지도 위 예상 코스')}</div>
         <div class="cmeta">${escapeHtml(c.km)}km · ${escapeHtml(crosswalkText)} · ${pm}'${ps}"/km · ${escapeHtml(c.meta)}</div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
           <div class="tags">${c.tags.map(t => `<span class="tag ${t.c}">${escapeHtml(t.l)}</span>`).join('')}</div>
@@ -3364,7 +3367,7 @@ function renderNearCourses(results) {
   const icons = ['🌳','🏞️','🌿','🏃','💧'];
   const iconBgs = ['#FFF0EC','#F4EFE8','#F0F8DB','#FFF5DB','#EEF8EA'];
   const courseKm = [3.2, 5.0, 4.5, 2.8, 6.1];
-  const tags = ['평지 · 산책로', '공원 루프', '한강변', '야간 가능', '뷰 좋음'];
+  const tags = ['평지 · 산책로', 'Park Loop', '한강변', '야간 가능', '뷰 좋음'];
 
   const tagSets = [
     [{l:'안전',c:'tg'},{l:'평지',c:'tb'}],
@@ -3819,7 +3822,7 @@ function openCourseDetail(id) {
   const manualKm = parseFloat(course.manualDist);
   const courseId = JSON.stringify(id);
   const favLabel = course.favorite ? '★ 즐겨찾기 해제' : '☆ 즐겨찾기';
-  const routeShape = isStoredLoopCourse(course) ? '루프형' : '편도형';
+  const routeShape = isStoredLoopCourse(course) ? 'Loop' : 'One-way';
   const chips = [source, routeShape, segmentCount ? segmentCount + '구간' : '', pointCount ? pointCount + '포인트' : '']
     .filter(Boolean);
 
@@ -4958,7 +4961,7 @@ function renderMyPage() {
     avgPaceEl.textContent = validCount > 0 ? `${avgPm}'${avgPs}"` : '—';
   }
 
-  // 가입일 기반 "런룹과 함께 N일째"
+  // 가입일 기반 "Runloop와 함께 N일째"
   const joinDaysEl = document.getElementById('myJoinDays');
   if (joinDaysEl) {
     if (!profile.joinDate) {
@@ -4966,7 +4969,7 @@ function renderMyPage() {
       localStorage.setItem('runProfile', JSON.stringify(profile));
     }
     const days = Math.max(1, Math.floor((Date.now() - new Date(profile.joinDate)) / (1000 * 60 * 60 * 24)));
-    joinDaysEl.textContent = `런룹과 함께한 지 ${days}일째 🏃`;
+    joinDaysEl.textContent = `Runloop와 함께한 지 ${days}일째`;
   }
 
   const goalInfo = document.getElementById('myGoalInfo');

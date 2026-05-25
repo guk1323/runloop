@@ -9,12 +9,12 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='44' fill='%23F5F2EA'/><circle cx='136' cy='54' r='19' fill='%23FFD6C8'/><path d='M55 104c24-46 86-44 82 0s-58 48-70 16c-10-28 20-51 50-29' fill='none' stroke='%2327313A' stroke-width='18' stroke-linecap='round' stroke-linejoin='round'/><circle cx='58' cy='116' r='10' fill='%23F27A5E'/></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='46' fill='%231C242B'/><path d='M52 104c27-52 94-46 94-3 0 42-64 53-77 15-10-29 25-51 59-27' fill='none' stroke='%23FFF7F1' stroke-width='16' stroke-linecap='round' stroke-linejoin='round'/><circle cx='54' cy='117' r='12' fill='%23F27A5E'/><circle cx='142' cy='56' r='10' fill='%23B7F06A'/></svg>",
       "sizes": "192x192",
       "type": "image/svg+xml"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='112' fill='%23F5F2EA'/><circle cx='362' cy='144' r='52' fill='%23FFD6C8'/><path d='M146 278c64-122 230-116 218 0-10 104-154 128-187 42-28-73 54-136 134-77' fill='none' stroke='%2327313A' stroke-width='48' stroke-linecap='round' stroke-linejoin='round'/><circle cx='154' cy='310' r='28' fill='%23F27A5E'/></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='122' fill='%231C242B'/><path d='M139 276c72-136 252-122 250-8-2 112-174 142-209 41-28-78 68-136 158-70' fill='none' stroke='%23FFF7F1' stroke-width='44' stroke-linecap='round' stroke-linejoin='round'/><circle cx='144' cy='312' r='32' fill='%23F27A5E'/><circle cx='376' cy='150' r='26' fill='%23B7F06A'/></svg>",
       "sizes": "512x512",
       "type": "image/svg+xml"
     }
