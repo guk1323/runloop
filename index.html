@@ -83,7 +83,10 @@ if ('serviceWorker' in navigator) {
   .cbadge{position:absolute;top:7px;left:7px;background:rgba(28,36,43,.9);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:var(--rp);}
   .crank{position:absolute;top:7px;right:7px;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--rp);}
   .cinfo{padding:8px 10px 10px;}
-  .cname{font-size:14px;font-weight:700;margin-bottom:3px;}
+  .cinfo-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;}
+  .cname{font-size:14px;font-weight:700;flex:1;min-width:0;}
+  .ckm-badge{font-size:22px;font-weight:900;color:#1C242B;letter-spacing:-0.5px;line-height:1;white-space:nowrap;margin-left:8px;}
+  .ckm-badge span{font-size:11px;font-weight:600;color:var(--gray-500);letter-spacing:0;}
   .cmeta{font-size:12px;color:var(--gray-500);line-height:1.35;margin-bottom:7px;}
   .croute{font-size:11px;color:var(--coral-dark);font-weight:700;margin-bottom:3px;}
   .tags{display:flex;gap:5px;flex-wrap:wrap;}
@@ -2964,9 +2967,12 @@ function renderCourses() {
         <div class="crank">${['추천','2순위','3순위'][i]}</div>
       </div>
       <div class="cinfo">
-        <div class="cname">${escapeHtml(c.name)}</div>
+        <div class="cinfo-head">
+          <div class="cname">${escapeHtml(c.name)}</div>
+          <div class="ckm-badge">${escapeHtml(c.km)}<span>km</span></div>
+        </div>
         <div class="croute">${escapeHtml(c.routeLabel || c.startLabel || '지도 위 예상 코스')}</div>
-        <div class="cmeta">${escapeHtml(c.km)}km · ${escapeHtml(crosswalkText)} · ${pm}'${ps}"/km · ${escapeHtml(c.meta)}</div>
+        <div class="cmeta">${escapeHtml(crosswalkText)} · ${pm}'${ps}"/km · ${escapeHtml(c.meta)}</div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
           <div class="tags">${c.tags.map(t => `<span class="tag ${t.c}">${escapeHtml(t.l)}</span>`).join('')}</div>
           <button class="save-course-btn" onclick="event.stopPropagation();saveAiCourse(${i})">내 코스 저장</button>
@@ -3016,54 +3022,40 @@ function showAiRoutePreview(course, options = {}) {
     .filter(Boolean);
   if (path.length < 2) return;
 
-  const routeColor = course.color || DRAW_ROUTE_COLOR;
   const split = splitRouteByDistance(path);
   const outboundPath = split.outbound.length > 1 ? split.outbound : path;
   const returnPath = split.returnPath.length > 1 ? split.returnPath : [];
 
-  // 흰 테두리 효과를 위한 underline (약간 굵게, 흰색)
-  const underline = new kakao.maps.Polyline({
-    map: createMap,
-    path,
-    strokeWeight: 9,
-    strokeColor: '#ffffff',
-    strokeOpacity: 0.7,
-    strokeStyle: 'solid'
+  const primaryColor = '#1565C0';
+  const returnColor  = '#0D47A1';
+
+  // 네비 스타일: 흰 테두리(13px) → 파란 선(7px) 3겹
+  const borderLine = new kakao.maps.Polyline({
+    map: createMap, path,
+    strokeWeight: 13, strokeColor: '#ffffff', strokeOpacity: 0.95, strokeStyle: 'solid'
   });
-  // 가는 방향 (outbound) - 코스 대표색
   const outboundLine = new kakao.maps.Polyline({
-    map: createMap,
-    path: outboundPath,
-    strokeWeight: 6,
-    strokeColor: routeColor,
-    strokeOpacity: 0.92,
-    strokeStyle: 'solid'
+    map: createMap, path: outboundPath,
+    strokeWeight: 7, strokeColor: primaryColor, strokeOpacity: 0.95, strokeStyle: 'solid'
   });
-  // 돌아오는 방향 (return) - 어두운 계열 색
   const returnLine = returnPath.length > 1
     ? new kakao.maps.Polyline({
-        map: createMap,
-        path: returnPath,
-        strokeWeight: 5,
-        strokeColor: AI_ROUTE_RETURN_COLOR,
-        strokeOpacity: 0.82,
-        strokeStyle: 'solid'
+        map: createMap, path: returnPath,
+        strokeWeight: 6, strokeColor: returnColor, strokeOpacity: 0.85, strokeStyle: 'solid'
       })
     : null;
-  const outboundArrows = createRouteDirectionArrows(outboundPath, routeColor, { phase: 0.25 });
+
+  const outboundArrows = createRouteDirectionArrows(outboundPath, '#ffffff', { phase: 0.25 });
   const returnArrows = returnPath.length > 1
-    ? createRouteDirectionArrows(returnPath, AI_ROUTE_RETURN_COLOR, { phase: 0.65 })
+    ? createRouteDirectionArrows(returnPath, '#ffffff', { phase: 0.65 })
     : [];
+
   const startDot = new kakao.maps.Circle({
-    map: createMap,
-    center: path[0],
-    radius: 9,
-    strokeWeight: 3,
-    strokeColor: routeColor,
-    fillColor: '#fff',
-    fillOpacity: 1
+    map: createMap, center: path[0],
+    radius: 10, strokeWeight: 3, strokeColor: primaryColor, fillColor: '#fff', fillOpacity: 1
   });
-  const lines = [underline, outboundLine];
+
+  const lines = [borderLine, outboundLine];
   if (returnLine) lines.push(returnLine);
   aiRouteOverlays = lines.concat(outboundArrows, returnArrows, [startDot]);
 
