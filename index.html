@@ -2427,6 +2427,7 @@ const AI_DISTANCE_TOLERANCE_KM = 0.5;
 const AI_ROUTE_DISTANCE_BUFFER_KM = 0.15;
 const AI_COURSE_CACHE_KEY = 'runloopAiCourseCacheV8';
 const AI_COURSE_CACHE_MS = 10 * 60 * 1000;
+const HOME_RECOMMENDATION_COUNT = 1;
 let aiRouteOverlays = [];
 let aiRouteActiveCourse = null;
 let aiRouteZoomListenerAttached = false;
@@ -3308,15 +3309,19 @@ function saveRecord() {
 }
 
 /* ── 오늘의 추천 코스 (위치 기반) ── */
-function loadNearCourses() {
+function loadNearCourses(options = {}) {
   const wrap = document.getElementById('nearCourseList');
   if (!wrap) return;
   wrap.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--gray-500);"><div class="ml-spin" style="margin:0 auto 8px;"></div><div style="font-size:13px;">주변 코스를 찾는 중이에요…</div></div>';
 
-  if (!S.kakaoReady) { setTimeout(loadNearCourses, 800); return; }
-  // 위치가 기본값이면 위치 먼저 잡고 재시도
-  if (S.lat === 37.5503 && S.lng === 126.9200) {
-    setTimeout(loadNearCourses, 1500); return;
+  const retry = Number(options.retry || 0);
+  if (!S.kakaoReady) {
+    if (retry >= 6) {
+      renderNearCourses(getFallbackNearCourses());
+      return;
+    }
+    setTimeout(() => loadNearCourses({ retry: retry + 1 }), 800);
+    return;
   }
 
   const ps = new kakao.maps.services.Places();
@@ -3342,6 +3347,23 @@ function loadNearCourses() {
   });
 }
 
+function getFallbackNearCourses() {
+  return [{
+    id: 'fallback-near-course',
+    place_name: getNearCourseFallbackName(),
+    y: S.lat,
+    x: S.lng,
+    distFromMe: 0,
+    fallback: true
+  }];
+}
+
+function getNearCourseFallbackName() {
+  const loc = document.getElementById('wLocation')?.textContent || '';
+  if (loc && !loc.includes('불러오는')) return loc;
+  return '현재 위치 주변';
+}
+
 function getDistKm(lat1, lng1, lat2, lng2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -3353,16 +3375,16 @@ function getDistKm(lat1, lng1, lat2, lng2) {
 function renderNearCourses(results) {
   const wrap = document.getElementById('nearCourseList');
   if (!results.length) {
-    wrap.innerHTML = '<div style="text-align:center;padding:16px;color:var(--gray-500);font-size:13px;">주변에서 코스를 찾지 못했어요</div>';
-    return;
+    results = getFallbackNearCourses();
   }
 
   // 중복 제거 + 거리순 정렬 + 홈 추천 1개만 표시
   const seen = new Set();
-  const unique = results
+  let unique = results
     .filter(r => { if (seen.has(r.id)) return false; seen.add(r.id); return true; })
     .sort((a, b) => a.distFromMe - b.distFromMe)
-    .slice(0, 1);
+    .slice(0, HOME_RECOMMENDATION_COUNT);
+  if (!unique.length) unique = getFallbackNearCourses();
 
   const icons = ['🌳','🏞️','🌿','🏃','💧'];
   const iconBgs = ['#FFF0EC','#F4EFE8','#F0F8DB','#FFF5DB','#EEF8EA'];
@@ -3383,6 +3405,10 @@ function renderNearCourses(results) {
       : p.distFromMe.toFixed(1) + 'km';
     const tset = tagSets[i % tagSets.length];
     const featured = i === 0 ? 'border:1.5px solid var(--coral);box-shadow:0 8px 20px rgba(242,122,94,.10);' : 'border:1px solid var(--gray-100);';
+    const placeName = String(p.place_name || '오늘의 추천');
+    const placeArg = JSON.stringify(placeName);
+    const lat = Number(p.y) || S.lat;
+    const lng = Number(p.x) || S.lng;
     return `
       <div style="background:#fff;border-radius:var(--r);${featured}overflow:hidden;margin-bottom:10px;">
         <div style="display:flex;gap:14px;padding:14px;">
@@ -3391,7 +3417,7 @@ function renderNearCourses(results) {
             <div style="position:absolute;top:-5px;right:-5px;background:var(--ink);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:999px;">AI</div>
           </div>
           <div style="flex:1;min-width:0;">
-            <div style="font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${p.place_name} 코스</div>
+            <div style="font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(placeName)} 코스</div>
             <div style="font-size:12px;color:var(--gray-500);margin-bottom:7px;">출발지까지 ${dist} · 약 ${time}분</div>
             <div style="display:flex;gap:5px;">${tset.map(t=>`<span style="font-size:11px;font-weight:500;padding:3px 8px;border-radius:999px;" class="tag ${t.c}">${t.l}</span>`).join('')}</div>
           </div>
@@ -3406,8 +3432,8 @@ function renderNearCourses(results) {
             <div style="font-size:12px;color:var(--gray-500);">🔥 <span style="font-weight:600;color:var(--gray-700);">${cal}kcal</span></div>
           </div>
           <div style="display:flex;gap:6px;">
-            <button onclick="event.stopPropagation();saveNearCourse('${p.place_name}',${km})" style="background:none;color:var(--ink);font-size:12px;font-weight:500;padding:7px 10px;border-radius:999px;border:1px solid var(--gray-300);cursor:pointer;font-family:inherit;">저장</button>
-            <button onclick="goToAiWithLocation('${p.place_name}',${p.y},${p.x})" style="background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">시작</button>
+            <button onclick="event.stopPropagation();saveNearCourse(${placeArg},${km})" style="background:none;color:var(--ink);font-size:12px;font-weight:500;padding:7px 10px;border-radius:999px;border:1px solid var(--gray-300);cursor:pointer;font-family:inherit;">저장</button>
+            <button onclick="goToAiWithLocation(${placeArg},${lat},${lng})" style="background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">시작</button>
           </div>
         </div>
       </div>`;
