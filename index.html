@@ -129,6 +129,8 @@ if ('serviceWorker' in navigator) {
   .ml-spin{width:28px;height:28px;border:3px solid var(--gray-300);border-top-color:var(--coral);border-radius:50%;animation:spin .8s linear infinite;}
   .leaflet-container{font-family:'Inter','Noto Sans KR',sans-serif;background:#EEEADF;}
   .leaflet-control-attribution{font-size:9px!important;}
+  .leaflet-control-zoom{border:1px solid rgba(28,36,43,.12)!important;box-shadow:0 8px 18px rgba(28,36,43,.16)!important;}
+  .leaflet-control-zoom a{width:34px!important;height:34px!important;line-height:32px!important;color:var(--ink)!important;border-color:rgba(28,36,43,.08)!important;}
   .runloop-leaflet-overlay{background:transparent!important;border:0!important;}
   .runloop-leaflet-overlay > div{transform:translate(-50%,-50%);}
   .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;}
@@ -1120,13 +1122,19 @@ async function installLeafletKakaoAdapter() {
         zoomControl: false,
         attributionControl: true,
         preferCanvas: true,
+        touchZoom: true,
+        doubleClickZoom: true,
+        boxZoom: true,
         scrollWheelZoom: options.scrollwheel !== false,
-        dragging: options.draggable !== false
+        dragging: options.draggable !== false,
+        zoomSnap: 0.25,
+        zoomDelta: 0.5
       });
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
         maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors'
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
       }).addTo(this._map);
+      L.control.zoom({ position: 'bottomright' }).addTo(this._map);
       setTimeout(() => this._map.invalidateSize(), 80);
     }
     setCenter(point) {
