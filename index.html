@@ -978,6 +978,9 @@ const S = {
   kakaoReady: false
 };
 
+const RUNLOOP_REMOTE_API_ORIGIN = 'https://runloop-jet.vercel.app';
+const RUNLOOP_STATIC_LOCAL_HOSTS = ['127.0.0.1:5500', 'localhost:5500'];
+const RUNLOOP_API_ORIGIN = getRunloopApiOrigin();
 const TMAP_APP_KEY = 'dM1gQjphEH6xgfyyzIjHl2ctRZEUXPPJ6oyn8aqj';
 const TMAP_PEDESTRIAN_URL = 'https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1';
 const TMAP_POI_URL = 'https://apis.openapi.sk.com/tmap/pois';
@@ -992,6 +995,18 @@ const DRAW_ROUTE_PLANNED_COLOR = '#FFD6C8';
 const DRAW_ROUTE_WEIGHT = 6;
 const DRAW_ROUTE_OPACITY = 0.58;
 const AI_ROUTE_RETURN_COLOR = '#A94B37';
+
+function getRunloopApiOrigin() {
+  const protocol = window.location && window.location.protocol;
+  const host = window.location && window.location.host;
+  if (protocol === 'capacitor:' || protocol === 'ionic:' || protocol === 'file:') return RUNLOOP_REMOTE_API_ORIGIN;
+  if (RUNLOOP_STATIC_LOCAL_HOSTS.includes(host)) return RUNLOOP_REMOTE_API_ORIGIN;
+  return '';
+}
+
+function runloopApiUrl(path) {
+  return RUNLOOP_API_ORIGIN + path;
+}
 
 /* 카카오 SDK 로드 완료 후 초기화 */
 kakao.maps.load(function() {
@@ -2482,7 +2497,7 @@ async function fetchAiCourses(km) {
   const cachedCourses = getCachedAiCourses(cacheKey, km);
   if (cachedCourses.length) return { courses: cachedCourses, cached: true };
 
-  const res = await fetch('/api/generate-course', {
+  const res = await fetch(runloopApiUrl('/api/generate-course'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload)

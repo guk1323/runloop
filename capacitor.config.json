@@ -1,0 +1,22 @@
+{
+  "appId": "com.sonhunguk.runloop",
+  "appName": "Runloop",
+  "webDir": "www",
+  "server": {
+    "iosScheme": "capacitor",
+    "hostname": "localhost"
+  },
+  "ios": {
+    "contentInset": "always"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchAutoHide": true,
+      "backgroundColor": "#FFFDF8"
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#FFFDF8"
+    }
+  }
+}

@@ -12,6 +12,13 @@
 - Leave room for watch-derived fields: heart rate, cadence, elevation, active energy, GPS route, HealthKit workout id, and device source.
 - Web/PWA can validate the core UX, but real Apple Watch integration will require native iOS and watchOS apps.
 
+## iOS Release Path
+
+- Use Capacitor for the first App Store version and defer Apple Watch/native rewrite.
+- First technical risk to verify: Kakao Maps inside iOS WebView on `capacitor://localhost`.
+- TMAP route/POI calls should move behind Vercel API routes before submission so the TMAP key is not shipped in the app bundle.
+- Current local blocker: this machine has Node but no `npm`, and Xcode is not installed/selected. After installing them, run `npm install`, `npm run cap:add:ios`, then test with `npm run cap:run:ios`.
+
 ## Recent Field Test Feedback
 
 - Drag-to-draw routes interferes with screen gestures. Prefer tap/point-based route creation.

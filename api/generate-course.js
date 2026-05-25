@@ -3,6 +3,13 @@ const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const RATE_LIMIT_MAX_PER_WINDOW = 3;
 const RATE_LIMIT_DAY_MS = 24 * 60 * 60 * 1000;
 const RATE_LIMIT_MAX_PER_DAY = 30;
+const ALLOWED_ORIGINS = new Set([
+  'https://runloop-jet.vercel.app',
+  'http://127.0.0.1:5500',
+  'http://localhost:5500',
+  'capacitor://localhost',
+  'ionic://localhost'
+]);
 const rateBuckets = globalThis.__runloopAiRateBuckets || (globalThis.__runloopAiRateBuckets = new Map());
 const TAG_CLASS = {
   safe: 'tg',
@@ -17,6 +24,9 @@ const TAG_CLASS = {
 };
 
 export default async function handler(req, res) {
+  applyCors(req, res);
+  if (req.method === 'OPTIONS') return res.status(204).end();
+
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ error: 'Method not allowed' });
@@ -82,6 +92,17 @@ export default async function handler(req, res) {
     console.error('Runloop AI route error', error);
     return res.status(500).json({ error: 'Failed to generate courses' });
   }
+}
+
+function applyCors(req, res) {
+  const origin = req.headers.origin;
+  if (ALLOWED_ORIGINS.has(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Max-Age', '86400');
 }
 
 async function createOpenAiResponse(apiKey, context) {
