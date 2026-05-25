@@ -1451,7 +1451,7 @@ async function fetchTmapPedestrianRoute(rawSegment) {
     endY: end.getLat(),
     reqCoordType: 'WGS84GEO',
     resCoordType: 'WGS84GEO',
-    searchOption: '0',
+    searchOption: '4',
     sort: 'index',
     startName: encodeURIComponent('출발'),
     endName: encodeURIComponent('도착')
@@ -2800,23 +2800,19 @@ function buildAiLoopPath(course, index, targetKm) {
   return buildAiOvalLoop(start, targetMeters, type, index);
 }
 
-function shouldUseOutAndBackRoute(course, type) {
-  const tagText = Array.isArray(course.tags) ? course.tags.map(tag => tag.l || tag).join(' ') : '';
-  const text = [course.name, course.routeLabel, course.meta, tagText, type].join(' ');
-  return type === 'river' || /강변|한강|평지|조용|왕복|산책|길/.test(text);
+function shouldUseOutAndBackRoute() {
+  return true;
 }
 
 function buildAiOutAndBackPath(start, targetMeters, type, index) {
-  const forward = targetMeters * 0.48;
-  const side = Math.max(90, Math.min(260, targetMeters * 0.05));
-  const bearing = type === 'river'
-    ? ([0.18, -0.22, 0.36][index] || 0.18)
-    : ([0.4, -0.65, 0.95][index] || 0.4);
+  const forward = targetMeters * 0.49;
+  const bearings = [0.0, 0.5, -0.5, 0.25, -0.25];
+  const bearing = bearings[index % bearings.length];
   return [
     [0, 0],
-    [side, forward * 0.36],
-    [side * 0.35, forward],
-    [-side, forward * 0.52],
+    [0, forward * 0.5],
+    [0, forward],
+    [0, forward * 0.5],
     [0, 0]
   ].map(([north, east]) => makeRouteLatLngOffset(start, north, east, bearing));
 }
