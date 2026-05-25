@@ -3406,7 +3406,6 @@ function renderNearCourses(results) {
     const tset = tagSets[i % tagSets.length];
     const featured = i === 0 ? 'border:1.5px solid var(--coral);box-shadow:0 8px 20px rgba(242,122,94,.10);' : 'border:1px solid var(--gray-100);';
     const placeName = String(p.place_name || '오늘의 추천');
-    const placeArg = JSON.stringify(placeName);
     const lat = Number(p.y) || S.lat;
     const lng = Number(p.x) || S.lng;
     return `
@@ -3432,11 +3431,16 @@ function renderNearCourses(results) {
             <div style="font-size:12px;color:var(--gray-500);">🔥 <span style="font-weight:600;color:var(--gray-700);">${cal}kcal</span></div>
           </div>
           <div style="display:flex;gap:6px;">
-            <button onclick="goToAiWithLocation(${placeArg},${lat},${lng},${km})" style="background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">코스 만들기</button>
+            <button data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" data-km="${km}" onclick="goToAiFromHomeButton(this)" style="background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">코스 만들기</button>
           </div>
         </div>
       </div>`;
   }).join('');
+}
+
+function goToAiFromHomeButton(button) {
+  const data = button && button.dataset ? button.dataset : {};
+  goToAiWithLocation(data.place || '오늘의 추천', data.lat, data.lng, data.km);
 }
 
 function goToAiWithLocation(name, lat, lng, km) {
