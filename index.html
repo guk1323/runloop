@@ -1476,6 +1476,7 @@ async function fetchTmapPedestrianRoute(rawSegment) {
   const data = await res.json();
   const path = parseTmapPath(data);
   if (path.length < 2) throw new Error('EMPTY_TMAP_PATH');
+  path.crosswalkCount = countTmapCrosswalks(data);
   return path;
 }
 
@@ -1504,6 +1505,26 @@ function parseTmapPath(data) {
     }
   });
   return compactLatLngs(points, 1);
+}
+
+function countTmapCrosswalks(data) {
+  const features = data && Array.isArray(data.features) ? data.features : [];
+  const seen = new Set();
+  let count = 0;
+  features.forEach(feature => {
+    const props = feature.properties || {};
+    const text = Object.values(props)
+      .filter(value => typeof value === 'string' || typeof value === 'number')
+      .join(' ');
+    if (!/횡단보도|횡단|건널목|crosswalk/i.test(text)) return;
+    const geometry = feature.geometry || {};
+    const coord = Array.isArray(geometry.coordinates) ? JSON.stringify(geometry.coordinates).slice(0, 48) : '';
+    const key = `${props.name || props.description || text.slice(0, 20)}|${coord}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    count += 1;
+  });
+  return count;
 }
 
 function pushTmapCoord(points, coord) {
@@ -2399,7 +2420,9 @@ const COURSES = [
   { name:'망원 공원 힐 루프', tags:[{l:'공원',c:'tg'},{l:'경사 포함',c:'ta'}], meta:'잔디밭 · 오르막 2곳 · 뷰 좋음', pt:'park', color:'#639922', pace:6.8 }
 ];
 const AI_COURSE_RECOMMENDATION_COUNT = 2;
-const AI_COURSE_CACHE_KEY = 'runloopAiCourseCacheV6';
+const AI_DISTANCE_TOLERANCE_KM = 0.5;
+const AI_ROUTE_DISTANCE_BUFFER_KM = 0.15;
+const AI_COURSE_CACHE_KEY = 'runloopAiCourseCacheV8';
 const AI_COURSE_CACHE_MS = 10 * 60 * 1000;
 let aiRouteOverlays = [];
 let aiRouteActiveCourse = null;
@@ -2572,39 +2595,54 @@ function prepareAiCourses(courses, targetKm) {
     .map((course, index) => enrichAiCourseRoute(course, index, targetKm));
 }
 
-async function routeAiCoursesOnRoad(courses) {
+async function routeAiCoursesOnRoad(courses, targetKm) {
   const candidates = courses.slice(0, AI_COURSE_RECOMMENDATION_COUNT);
   const routed = await Promise.all(candidates.map(async course => {
     try {
-      return await routeAiCourseOnRoad(course);
+      return await routeAiCourseOnRoad(course, targetKm);
     } catch (error) {
       console.warn('AI pedestrian route failed', error);
       return null;
     }
   }));
-  return routed.filter(Boolean);
+  return routed
+    .filter(Boolean)
+    .sort((a, b) => getAiRouteScore(a, targetKm) - getAiRouteScore(b, targetKm));
 }
 
-async function routeAiCourseOnRoad(course) {
+async function routeAiCourseOnRoad(course, requestedTargetKm) {
   const rawPath = normalizeStoredPathPoints(course.points).map(point => makeRouteLatLng(point.lat, point.lng));
   const anchors = getAiRouteAnchors(rawPath);
   if (anchors.length < 3) throw new Error('AI_ROUTE_ANCHORS_SHORT');
 
-  const snapped = cleanAiSnappedRoute(await fetchTmapPedestrianRoute(anchors));
+  const tmapPath = await fetchTmapPedestrianRoute(anchors);
+  const crosswalkCount = normalizeCrosswalkCount(tmapPath.crosswalkCount);
+  const snapped = cleanAiSnappedRoute(tmapPath);
 
   const snappedKm = pathLengthMeters(snapped) / 1000;
   const targetKm = parseFloat(course.km) || snappedKm;
-  if (!snapped.length || snappedKm < Math.max(0.4, targetKm * 0.55) || snappedKm > Math.max(targetKm * 1.65, targetKm + 1.5)) {
+  const requestedKm = Number.isFinite(parseFloat(requestedTargetKm)) ? parseFloat(requestedTargetKm) : targetKm;
+  const minKm = Math.max(0.4, getMinRecommendedKm(requestedKm) - AI_ROUTE_DISTANCE_BUFFER_KM);
+  const maxKm = getMaxRecommendedKm(requestedKm) + AI_ROUTE_DISTANCE_BUFFER_KM;
+  if (!snapped.length || snappedKm < minKm || snappedKm > maxKm) {
     throw new Error('AI_TMAP_ROUTE_OUT_OF_RANGE');
   }
 
   return {
     ...course,
     km: snappedKm.toFixed(1),
+    crosswalkCount,
     points: serializeLatLngPath(snapped),
     routeLabel: shortenRouteLabel((course.routeLabel || getAiRouteLabel(course, 0)) + ' · 보행자 길 정리'),
     routeSource: 'tmap'
   };
+}
+
+function getAiRouteScore(course, targetKm) {
+  const crosswalkPenalty = Number.isFinite(course.crosswalkCount) ? course.crosswalkCount * 2 : 8;
+  const km = parseFloat(course.km);
+  const distancePenalty = Number.isFinite(km) && Number.isFinite(targetKm) ? Math.abs(km - targetKm) : 1;
+  return crosswalkPenalty + distancePenalty;
 }
 
 function cleanAiSnappedRoute(points) {
@@ -2688,7 +2726,7 @@ function normalizeAiCourse(course, index, targetKm) {
   while (tags.length < 2) tags.push(index === 2 ? { l:'공원', c:'tg' } : { l:'안전', c:'tg' });
   return {
     name: String(course.name || `추천 코스 ${index + 1}`).slice(0, 18),
-    km: Math.min(Math.max(km, targetKm * 0.85), targetKm * 1.15).toFixed(1),
+    km: Math.min(Math.max(km, getMinRecommendedKm(targetKm)), getMaxRecommendedKm(targetKm)).toFixed(1),
     pace: Math.min(Math.max(pace, 5.5), 8.5),
     tags,
     meta: String(course.meta || course.concept || '현재 조건에 맞춘 추천 코스').slice(0, 70),
@@ -2696,10 +2734,24 @@ function normalizeAiCourse(course, index, targetKm) {
     color: colors.includes(course.color) ? course.color : colors[index],
     routeLabel: String(course.routeLabel || '').slice(0, 34),
     startLabel: String(course.startLabel || '').slice(0, 42),
+    crosswalkCount: normalizeCrosswalkCount(course.crosswalkCount),
     points: normalizeStoredPathPoints(course.points),
     routeSource: course.routeSource === 'tmap' ? 'tmap' : '',
     fromAi: true
   };
+}
+
+function getMinRecommendedKm(targetKm) {
+  return Math.max(0.8, targetKm - AI_DISTANCE_TOLERANCE_KM);
+}
+
+function getMaxRecommendedKm(targetKm) {
+  return Math.min(22, targetKm + AI_DISTANCE_TOLERANCE_KM);
+}
+
+function normalizeCrosswalkCount(value) {
+  const count = Number(value);
+  return Number.isFinite(count) && count >= 0 ? Math.round(count) : null;
 }
 
 function enrichAiCourseRoute(course, index, targetKm) {
@@ -2880,6 +2932,7 @@ function renderCourses() {
   }
   S.courses.forEach((c, i) => {
     const pm = Math.floor(c.pace), ps = String(Math.round((c.pace % 1) * 60)).padStart(2, '0');
+    const crosswalkText = formatCrosswalkMeta(c.crosswalkCount);
     const card = document.createElement('div');
     card.className = 'course-card' + (i === S.sel ? ' selected' : '');
     card.innerHTML = `
@@ -2890,7 +2943,7 @@ function renderCourses() {
       <div class="cinfo">
         <div class="cname">${escapeHtml(c.name)}</div>
         <div class="croute">${escapeHtml(c.routeLabel || c.startLabel || '지도 위 예상 루프')}</div>
-        <div class="cmeta">${escapeHtml(c.km)}km · ${pm}'${ps}"/km · ${escapeHtml(c.meta)}</div>
+        <div class="cmeta">${escapeHtml(c.km)}km · ${escapeHtml(crosswalkText)} · ${pm}'${ps}"/km · ${escapeHtml(c.meta)}</div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
           <div class="tags">${c.tags.map(t => `<span class="tag ${t.c}">${escapeHtml(t.l)}</span>`).join('')}</div>
           <button class="save-course-btn" onclick="event.stopPropagation();saveAiCourse(${i})">내 코스 저장</button>
@@ -2905,6 +2958,12 @@ function renderCourses() {
   });
   if (S.sel >= 0 && S.courses[S.sel]) showAiRoutePreview(S.courses[S.sel]);
   openBottomSheet();
+}
+
+function formatCrosswalkMeta(count) {
+  const normalized = normalizeCrosswalkCount(count);
+  if (normalized === null) return '횡단보도 확인 중';
+  return `횡단보도 ${normalized}개`;
 }
 
 function selCourse(i) {
@@ -2942,27 +3001,11 @@ function showAiRoutePreview(course, options = {}) {
   const shadow = new kakao.maps.Polyline({
     map: createMap,
     path,
-    strokeWeight: 12,
+    strokeWeight: 10,
     strokeColor: DRAW_ROUTE_PLANNED_COLOR,
-    strokeOpacity: 0.5,
+    strokeOpacity: 0.58,
     strokeStyle: 'solid'
   });
-  const outboundLine = new kakao.maps.Polyline({
-    map: createMap,
-    path: outboundPath,
-    strokeWeight: 6,
-    strokeColor: routeColor,
-    strokeOpacity: 0.92,
-    strokeStyle: 'solid'
-  });
-  const returnLine = returnPath.length > 1 ? new kakao.maps.Polyline({
-    map: createMap,
-    path: returnPath,
-    strokeWeight: 6,
-    strokeColor: AI_ROUTE_RETURN_COLOR,
-    strokeOpacity: 0.82,
-    strokeStyle: 'solid'
-  }) : null;
   const outboundArrows = createRouteDirectionArrows(outboundPath, routeColor, { phase: 0.25 });
   const returnArrows = returnPath.length > 1
     ? createRouteDirectionArrows(returnPath, AI_ROUTE_RETURN_COLOR, { phase: 0.65 })
@@ -2985,9 +3028,7 @@ function showAiRoutePreview(course, options = {}) {
     fillColor: DRAW_ROUTE_MARKER_COLOR,
     fillOpacity: 1
   });
-  aiRouteOverlays = [shadow, outboundLine]
-    .concat(returnLine ? [returnLine] : [])
-    .concat(outboundArrows, returnArrows, [startDot, endDot]);
+  aiRouteOverlays = [shadow].concat(outboundArrows, returnArrows, [startDot, endDot]);
 
   if (fitBounds) {
     const bounds = new kakao.maps.LatLngBounds();
@@ -3052,9 +3093,10 @@ function createRouteDirectionArrows(path, color, options = {}) {
   const totalMeters = pathLengthMeters(path);
   if (totalMeters < 80) return overlays;
   const level = createMap && createMap.getLevel ? createMap.getLevel() : 4;
-  const spacingMeters = level >= 7 ? 240 : level >= 6 ? 190 : level >= 5 ? 140 : 105;
+  const baseSpacingMeters = level >= 7 ? 92 : level >= 6 ? 72 : level >= 5 ? 56 : 42;
+  const spacingMeters = Math.max(baseSpacingMeters, totalMeters / 110);
   const phase = Number.isFinite(options.phase) ? Math.max(0.1, Math.min(0.9, options.phase)) : 0.5;
-  let nextMarkerAt = Math.min(totalMeters * 0.35, spacingMeters * phase);
+  let nextMarkerAt = spacingMeters * phase;
   let walked = 0;
 
   for (let i = 1; i < path.length; i++) {
@@ -3101,14 +3143,14 @@ function getRouteArrowAngle(a, b) {
 
 function getRouteArrowHtml(angle, color, level = 4) {
   const safeColor = /^#[0-9a-f]{6}$/i.test(color) ? color : DRAW_ROUTE_COLOR;
-  const width = level >= 6 ? 82 : 72;
-  const height = level >= 6 ? 34 : 30;
-  return `<svg width="${width}" height="${height}" viewBox="0 0 72 30" style="display:block;transform:rotate(${angle.toFixed(1)}deg);filter:drop-shadow(0 2px 3px rgba(0,0,0,.25));" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-    <g fill="none" stroke="#fff" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M5 5 L15 15 L5 25"></path><path d="M22 5 L32 15 L22 25"></path><path d="M39 5 L49 15 L39 25"></path><path d="M56 5 L66 15 L56 25"></path>
+  const width = level >= 6 ? 30 : 26;
+  const height = level >= 6 ? 26 : 22;
+  return `<svg width="${width}" height="${height}" viewBox="0 0 26 22" style="display:block;transform:rotate(${angle.toFixed(1)}deg);filter:drop-shadow(0 1px 2px rgba(0,0,0,.24));" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <g fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 4 L17 11 L7 18"></path>
     </g>
-    <g fill="none" stroke="${safeColor}" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round">
-      <path d="M5 5 L15 15 L5 25"></path><path d="M22 5 L32 15 L22 25"></path><path d="M39 5 L49 15 L39 25"></path><path d="M56 5 L66 15 L56 25"></path>
+    <g fill="none" stroke="${safeColor}" stroke-width="4.8" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M7 4 L17 11 L7 18"></path>
     </g>
   </svg>`;
 }
@@ -3802,6 +3844,7 @@ function openCourseDetail(id) {
     ${recordDetailRow('코스 유형', source)}
     ${course.startLabel ? recordDetailRow('출발지', course.startLabel) : ''}
     ${course.routeLabel ? recordDetailRow('경로 힌트', course.routeLabel) : ''}
+    ${normalizeCrosswalkCount(course.crosswalkCount) !== null ? recordDetailRow('횡단보도', normalizeCrosswalkCount(course.crosswalkCount) + '개') : ''}
     ${recordDetailRow('경로 포인트', pointCount ? pointCount + '개' : '-')}
     ${recordDetailRow('구간 수', segmentCount ? segmentCount + '개' : '-')}
     ${Number.isFinite(manualKm) && manualKm > 0 ? recordDetailRow('직접 그린 구간', manualKm.toFixed(2) + 'km') : ''}
@@ -4496,7 +4539,8 @@ function miniMap(cv, type, color, routePoints = []) {
     ? normalizePreviewPoints(routePoints, rw, rh)
     : [];
   if (previewPoints.length > 1) {
-    c.setLineDash([6, 4]);
+    c.strokeStyle = DRAW_ROUTE_PLANNED_COLOR;
+    c.lineWidth = 4;
     c.beginPath();
     c.moveTo(previewPoints[0].x, previewPoints[0].y);
     previewPoints.slice(1).forEach(point => c.lineTo(point.x, point.y));
@@ -4523,38 +4567,53 @@ function miniMap(cv, type, color, routePoints = []) {
 }
 
 function drawMiniRouteArrows(ctx, points, color) {
-  const indexes = [0.28, 0.55, 0.82]
-    .map(ratio => Math.max(1, Math.min(points.length - 1, Math.round((points.length - 1) * ratio))));
-  indexes.forEach(index => {
-    const a = points[index - 1];
-    const b = points[index];
+  let total = 0;
+  for (let i = 1; i < points.length; i++) {
+    total += Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+  }
+  if (total < 16) return;
+  const spacing = Math.max(18, total / 18);
+  let next = spacing * 0.5;
+  let walked = 0;
+  for (let i = 1; i < points.length; i++) {
+    const a = points[i - 1];
+    const b = points[i];
     if (!a || !b) return;
-    const angle = Math.atan2(b.y - a.y, b.x - a.x);
-    const x = a.x + (b.x - a.x) * 0.6;
-    const y = a.y + (b.y - a.y) * 0.6;
-    ctx.save();
-    ctx.translate(x, y);
-    ctx.rotate(angle);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    [-8, 0, 8].forEach(offset => {
-      ctx.strokeStyle = '#fff';
-      ctx.lineWidth = 4.5;
-      ctx.beginPath();
-      ctx.moveTo(offset - 4, -5);
-      ctx.lineTo(offset + 2, 0);
-      ctx.lineTo(offset - 4, 5);
-      ctx.stroke();
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 2.4;
-      ctx.beginPath();
-      ctx.moveTo(offset - 4, -5);
-      ctx.lineTo(offset + 2, 0);
-      ctx.lineTo(offset - 4, 5);
-      ctx.stroke();
-    });
-    ctx.restore();
-  });
+    const segment = Math.hypot(b.x - a.x, b.y - a.y);
+    if (segment < 2) {
+      walked += segment;
+      continue;
+    }
+    while (walked + segment >= next) {
+      const t = (next - walked) / segment;
+      drawMiniChevron(ctx, a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, Math.atan2(b.y - a.y, b.x - a.x), color);
+      next += spacing;
+    }
+    walked += segment;
+  }
+}
+
+function drawMiniChevron(ctx, x, y, angle, color) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(angle);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = '#fff';
+  ctx.lineWidth = 4.4;
+  ctx.beginPath();
+  ctx.moveTo(-4, -5);
+  ctx.lineTo(4, 0);
+  ctx.lineTo(-4, 5);
+  ctx.stroke();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2.4;
+  ctx.beginPath();
+  ctx.moveTo(-4, -5);
+  ctx.lineTo(4, 0);
+  ctx.lineTo(-4, 5);
+  ctx.stroke();
+  ctx.restore();
 }
 
 /* 토스트 */
@@ -4800,6 +4859,7 @@ function saveAiCourse(idx) {
     manualDist: '0.00',
     fromAi: true,
     tags: c.tags,
+    crosswalkCount: normalizeCrosswalkCount(c.crosswalkCount),
     routeLabel: c.routeLabel || '',
     routeSource: c.routeSource || '',
     startLabel: c.startLabel || getAiCoursePlaceLabel()

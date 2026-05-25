@@ -109,7 +109,9 @@ async function createOpenAiResponse(apiKey, context) {
           `사용자 선호: ${context.preference}`,
           `이미 저장한 코스 이름: ${context.savedCourseNames.length ? context.savedCourseNames.join(', ') : '없음'}`,
           'JSON 형식: {"courses":[{"name":"이름","concept":"한 문장 컨셉","distanceKm":5.0,"paceMinPerKm":6.5,"tags":["안전","평지"],"safetyNote":"짧은 참고","routeLabel":"경로 힌트","mapStyle":"river|urban|park"}]}',
-          'courses는 정확히 2개. 두 코스는 이름, 분위기, 경로 힌트가 서로 달라야 함. distanceKm는 목표 거리의 ±10% 안. tags는 2~3개.'
+          'courses는 정확히 2개. 두 코스는 이름, 분위기, 경로 힌트가 서로 달라야 함.',
+          'distanceKm는 목표 거리에서 ±0.5km 이내. 정확한 거리보다 횡단보도와 큰 교차로가 적고 달리기 좋은 길을 우선.',
+          'tags는 2~3개.'
         ].join('\n')
       })
     });
@@ -263,7 +265,7 @@ function normalizeCourse(course, index, targetKm) {
   if (!course || typeof course !== 'object') course = {};
   const styles = ['river', 'urban', 'park'];
   const colors = ['#F27A5E', '#D9654D', '#639922'];
-  const distance = clampNumber(course.distanceKm, targetKm * 0.9, targetKm * 1.1, targetKm);
+  const distance = clampNumber(course.distanceKm, getMinRecommendedKm(targetKm), getMaxRecommendedKm(targetKm), targetKm);
   const pace = clampNumber(course.paceMinPerKm, 5.5, 8.5, 6.5 + index * 0.2);
   const rawTags = Array.isArray(course.tags) ? course.tags : [];
   const tags = rawTags
@@ -291,6 +293,14 @@ function normalizeCourse(course, index, targetKm) {
     color: colors[index] || colors[0],
     fromAi: true
   };
+}
+
+function getMinRecommendedKm(targetKm) {
+  return Math.max(0.8, targetKm - 0.5);
+}
+
+function getMaxRecommendedKm(targetKm) {
+  return Math.min(22, targetKm + 0.5);
 }
 
 function normalizeTagLabel(tag) {
