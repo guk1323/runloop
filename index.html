@@ -535,7 +535,7 @@ if ('serviceWorker' in navigator) {
 
     <!-- ── 오늘의 추천 코스 ── -->
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:15px;font-weight:700;color:var(--gray-900);">오늘 달릴 곳</div>
+      <div style="font-size:15px;font-weight:700;color:var(--gray-900);">근처 코스</div>
       <div style="font-size:12px;color:var(--coral);font-weight:500;cursor:pointer;" onclick="loadNearCourses()">새로고침</div>
     </div>
     <div id="nearCourseList">
@@ -663,7 +663,7 @@ if ('serviceWorker' in navigator) {
 <!-- 내 코스 화면 -->
 <div id="screen-mycourse" class="screen">
   <div style="padding:14px 16px 10px;background:#fff;border-bottom:1px solid var(--gray-100);flex-shrink:0;display:flex;justify-content:space-between;align-items:center;">
-    <div style="font-size:15px;font-weight:700;color:var(--gray-900);">내가 만든 코스</div>
+    <div style="font-size:15px;font-weight:700;color:var(--gray-900);">저장한 코스</div>
     <div style="font-size:12px;color:var(--gray-500);" id="myCourseCount">0개</div>
   </div>
   <div class="course-filter">
@@ -673,7 +673,7 @@ if ('serviceWorker' in navigator) {
   <div style="flex:1;overflow-y:auto;padding:12px;" id="myCourseList">
     <div id="myCourseEmpty" style="text-align:center;padding:48px 0;color:var(--gray-500);">
       <div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">저장된 코스가 없어요</div>
-      <div style="font-size:13px;line-height:1.6;">코스 만들기 탭에서 코스를 만들고<br>저장해보세요!</div>
+      <div style="font-size:13px;line-height:1.6;">만들기나 추천에서 코스를<br>저장해보세요!</div>
     </div>
   </div>
 </div>
@@ -2405,7 +2405,7 @@ function saveCourse() {
     manualDist: manualKm.toFixed(2)
   });
   localStorage.setItem('myCourses', JSON.stringify(courses));
-  toast(suggestedName + ' 저장됐어요!');
+  toast(suggestedName + ' 저장됐어요. 코스 탭에서 시작해요');
   clearDraw();
   // 코스 탭으로 이동
   setTimeout(() => {
@@ -3159,30 +3159,12 @@ function getRouteArrowHtml(angle, color, level = 4) {
   </svg>`;
 }
 
-// updStartBtn 제거 — 코스 탭에서 시작
-
 /* ── 런닝 상태 ── */
 const R = {
   running: false, elapsed: 0, dist: 0,
   totalKm: 5, interval: null, courseName: '', watchId: null, gpsActive: false,
   lastLat: null, lastLng: null, gpsAccuracy: null, lowAccuracyWarned: false
 };
-
-function startRun() {
-  const c = S.courses[S.sel];
-  R.totalKm = parseFloat(c.km);
-  R.courseName = c.name;
-  R.elapsed = 0; R.dist = 0; R.running = true;
-  R.gpsAccuracy = null; R.lowAccuracyWarned = false;
-  document.getElementById('runTitle').textContent = c.name;
-  document.getElementById('runScreen').classList.add('active');
-  updateGpsChip('GPS 대기', 'warn');
-  buildKmTrack(R.totalKm);
-  updateRunMapProgress();
-  clearInterval(R.interval);
-  R.interval = setInterval(runTick, 1000);
-  initRunMap(null);
-}
 
 function buildKmTrack(total) {
   const wrap = document.getElementById('kmTrack');
@@ -3431,7 +3413,7 @@ function renderNearCourses(results) {
             <div style="font-size:12px;color:var(--gray-500);">🔥 <span style="font-weight:600;color:var(--gray-700);">${cal}kcal</span></div>
           </div>
           <div style="display:flex;gap:6px;">
-            <button data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" data-km="${km}" onclick="goToAiFromHomeButton(this)" style="background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">코스 만들기</button>
+            <button data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" data-km="${km}" onclick="goToAiFromHomeButton(this)" style="background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">구경하기</button>
           </div>
         </div>
       </div>`;
@@ -3767,7 +3749,7 @@ function renderMyCourses() {
     empty.style.display = 'block';
     empty.innerHTML = myCourseFilter === 'favorite'
       ? '<div style="font-size:32px;margin-bottom:10px;">☆</div><div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">즐겨찾기한 코스가 없어요</div><div style="font-size:13px;line-height:1.6;">자주 뛰는 코스에 별을 눌러두세요</div>'
-      : '<div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">저장된 코스가 없어요</div><div style="font-size:13px;line-height:1.6;">코스 만들기 탭에서 코스를 만들고<br>저장해보세요</div>';
+      : '<div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">저장된 코스가 없어요</div><div style="font-size:13px;line-height:1.6;">만들기나 추천에서 코스를<br>저장해보세요</div>';
     // 카드들 제거
     list.querySelectorAll('.mc-card').forEach(c => c.remove());
     return;
@@ -4896,7 +4878,7 @@ function saveAiCourse(idx) {
     startLabel: c.startLabel || getAiCoursePlaceLabel()
   });
   localStorage.setItem('myCourses', JSON.stringify(courses));
-  toast(name + ' 코스가 저장됐어요!');
+  toast(name + ' 저장됐어요. 코스 탭에서 시작해요');
   setTimeout(() => {
     const courseTab = document.querySelector('[data-tab="mycourse"]');
     if (courseTab) switchTab('mycourse', courseTab);
