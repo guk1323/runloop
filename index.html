@@ -3357,12 +3357,12 @@ function renderNearCourses(results) {
     return;
   }
 
-  // 중복 제거 + 거리순 정렬 + 최대 3개
+  // 중복 제거 + 거리순 정렬 + 홈 추천 1개만 표시
   const seen = new Set();
   const unique = results
     .filter(r => { if (seen.has(r.id)) return false; seen.add(r.id); return true; })
     .sort((a, b) => a.distFromMe - b.distFromMe)
-    .slice(0, 3);
+    .slice(0, 1);
 
   const icons = ['🌳','🏞️','🌿','🏃','💧'];
   const iconBgs = ['#FFF0EC','#F4EFE8','#F0F8DB','#FFF5DB','#EEF8EA'];
