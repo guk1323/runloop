@@ -3432,43 +3432,41 @@ function renderNearCourses(results) {
             <div style="font-size:12px;color:var(--gray-500);">🔥 <span style="font-weight:600;color:var(--gray-700);">${cal}kcal</span></div>
           </div>
           <div style="display:flex;gap:6px;">
-            <button onclick="event.stopPropagation();saveNearCourse(${placeArg},${km})" style="background:none;color:var(--ink);font-size:12px;font-weight:500;padding:7px 10px;border-radius:999px;border:1px solid var(--gray-300);cursor:pointer;font-family:inherit;">저장</button>
-            <button onclick="goToAiWithLocation(${placeArg},${lat},${lng})" style="background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">시작</button>
+            <button onclick="goToAiWithLocation(${placeArg},${lat},${lng},${km})" style="background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">코스 만들기</button>
           </div>
         </div>
       </div>`;
   }).join('');
 }
 
-function saveNearCourse(name, km) {
-  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
-  if (courses.find(x => x.name === name + ' 코스')) { toast('이미 저장된 코스예요!'); return; }
-  const savedAt = new Date();
-  courses.push({
-    id: savedAt.getTime(),
-    name: name + ' 코스',
-    dist: km.toFixed(2),
-    date: savedAt.toLocaleDateString('ko-KR',{month:'long',day:'numeric'}),
-    savedAt: savedAt.toISOString(),
-    favorite: false,
-    points: [],
-    fromAi: true
-  });
-  localStorage.setItem('myCourses', JSON.stringify(courses));
-  toast(name + ' 코스가 저장됐어요!');
-}
-
-function goToAiWithLocation(name, lat, lng) {
-  // AI 추천 탭으로 이동하고 해당 위치로 설정
+function goToAiWithLocation(name, lat, lng, km) {
+  // 홈 추천 장소를 만들기 화면의 AI 코스 생성 흐름으로 넘긴다.
   const createTab = document.querySelector('[data-tab="create"]');
   switchTab('create', createTab);
   setCreateMode('ai');
+  applyHomeRecommendationToCreate(name, lat, lng, km, 0);
+}
+
+function applyHomeRecommendationToCreate(name, lat, lng, km, attempt) {
   setTimeout(() => {
-    if (S.kakaoReady && createMap) {
-      const latlng = new kakao.maps.LatLng(parseFloat(lat), parseFloat(lng));
-      setAiMarker(latlng, name + ' 근처');
+    if (!S.kakaoReady || !createMap) {
+      if (attempt < 10) applyHomeRecommendationToCreate(name, lat, lng, km, attempt + 1);
+      return;
     }
-  }, 300);
+    const safeLat = parseFloat(lat);
+    const safeLng = parseFloat(lng);
+    if (!Number.isFinite(safeLat) || !Number.isFinite(safeLng)) return;
+    const targetKm = parseFloat(km);
+    const slider = document.getElementById('kmSlider');
+    const kmVal = document.getElementById('kmVal');
+    if (slider && Number.isFinite(targetKm)) {
+      slider.value = Math.max(parseFloat(slider.min || '1'), Math.min(parseFloat(slider.max || '20'), targetKm));
+      if (kmVal) kmVal.textContent = parseFloat(slider.value).toFixed(1) + 'km';
+    }
+    const latlng = new kakao.maps.LatLng(safeLat, safeLng);
+    setAiMarker(latlng, name + ' 근처');
+    generateCourses();
+  }, attempt ? 250 : 350);
 }
 
 /* 기록 렌더링 */
