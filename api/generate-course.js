@@ -108,13 +108,14 @@ async function createOpenAiResponse(apiKey, context) {
           `날씨/상황: ${context.weather}`,
           `사용자 선호: ${context.preference}`,
           `이미 저장한 코스 이름: ${context.savedCourseNames.length ? context.savedCourseNames.join(', ') : '없음'}`,
-          'JSON 형식: {"courses":[{"name":"이름","concept":"한 문장 컨셉","distanceKm":5.0,"paceMinPerKm":6.5,"tags":["안전","평지"],"safetyNote":"짧은 참고","routeLabel":"경로 힌트","mapStyle":"river|urban|park"}]}',
-          'courses는 정확히 2개. 두 코스는 이름, 분위기, routeLabel이 서로 다른 방향이어야 함.',
+          'JSON 형식: {"courses":[{"name":"이름","concept":"한 문장 컨셉","distanceKm":5.0,"paceMinPerKm":6.5,"tags":["안전","평지"],"safetyNote":"짧은 참고","routeLabel":"경로 힌트","mapStyle":"river|urban|park","waypoints":[{"lat":37.123,"lng":127.456}]}]}',
+          'courses는 정확히 2개. 두 코스는 서로 다른 방향의 왕복 코스여야 함.',
           'distanceKm는 목표 거리에서 ±0.5km 이내.',
-          '핵심 원칙: 모든 코스는 왕복형(같은 길을 나갔다가 돌아오는 out-and-back)으로만 추천한다. 루프형(블록 돌기)은 절대 금지.',
-          '길 우선순위: ① 강변/하천 산책로 ② 공원 내 직선 경로 ③ 차도 없는 긴 직선 보행로. 교차로나 횡단보도가 많은 블록 길은 피한다.',
-          'routeLabel은 "○○ 방향 왕복" 또는 "○○천/공원 직선" 형태로 작성. 블록 이름이나 역 출구 번호 언급 금지.',
-          'tags는 2~3개. 왕복 경로면 반드시 "왕복" 태그 포함.'
+          '핵심 원칙: 모든 코스는 왕복형(out-and-back)으로만 추천한다. 루프형(블록 돌기) 절대 금지.',
+          'waypoints는 정확히 1개. 출발지에서 distanceKm/2 거리에 있는 환점 GPS 좌표. 한강변·하천 산책로·공원 같이 횡단보도 없이 뛸 수 있는 지점을 우선. 교차로나 도로변은 피할 것.',
+          '길 우선순위: ① 한강 또는 하천 산책로 ② 공원 내 경로 ③ 차도 없는 직선 보행로. 횡단보도가 많은 블록 길은 절대 금지.',
+          'routeLabel은 "○○ 방향 왕복" 형태. 역 출구·교차로 이름 언급 금지.',
+          'tags는 2~3개. 왕복 코스면 "왕복" 태그 포함.'
         ].join('\n')
       })
     });
@@ -285,6 +286,13 @@ function normalizeCourse(course, index, targetKm) {
   const safetyNote = cleanText(course.safetyNote, 45);
   const routeLabel = cleanText(course.routeLabel, 34);
 
+  const rawWaypoints = Array.isArray(course.waypoints) ? course.waypoints : [];
+  const waypoints = rawWaypoints
+    .filter(wp => wp && Number.isFinite(Number(wp.lat)) && Number.isFinite(Number(wp.lng)))
+    .filter(wp => Math.abs(Number(wp.lat)) <= 90 && Math.abs(Number(wp.lng)) <= 180)
+    .map(wp => ({ lat: Number(wp.lat), lng: Number(wp.lng) }))
+    .slice(0, 2);
+
   return {
     name: cleanText(course.name, 18) || `추천 코스 ${index + 1}`,
     km: distance.toFixed(1),
@@ -294,7 +302,8 @@ function normalizeCourse(course, index, targetKm) {
     routeLabel,
     pt: mapStyle,
     color: colors[index] || colors[0],
-    fromAi: true
+    fromAi: true,
+    waypoints
   };
 }
 

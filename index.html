@@ -2759,9 +2759,25 @@ function normalizeCrosswalkCount(value) {
 }
 
 function enrichAiCourseRoute(course, index, targetKm) {
-  const routePath = course.points.length
-    ? course.points.map(point => makeRouteLatLng(point.lat, point.lng))
-    : buildAiLoopPath(course, index, parseFloat(course.km) || targetKm);
+  let routePath;
+  if (course.points && course.points.length >= 2) {
+    routePath = course.points.map(point => makeRouteLatLng(point.lat, point.lng));
+  } else if (Array.isArray(course.waypoints) && course.waypoints.length >= 1) {
+    const start = makeRouteLatLng(S.lat, S.lng);
+    const targetMeters = (parseFloat(course.km) || targetKm) * 1000;
+    const validWps = course.waypoints.filter(wp => {
+      const d = latLngDistanceMeters(makeRouteLatLng(wp.lat, wp.lng), start);
+      return d > 150 && d < targetMeters * 0.8;
+    });
+    if (validWps.length >= 1) {
+      const turn = makeRouteLatLng(validWps[0].lat, validWps[0].lng);
+      routePath = [start, turn, start];
+    } else {
+      routePath = buildAiLoopPath(course, index, parseFloat(course.km) || targetKm);
+    }
+  } else {
+    routePath = buildAiLoopPath(course, index, parseFloat(course.km) || targetKm);
+  }
   const points = serializeLatLngPath(routePath);
   const actualKm = pathLengthMeters(routePath) / 1000;
   const startLabel = course.startLabel || getAiCoursePlaceLabel();
