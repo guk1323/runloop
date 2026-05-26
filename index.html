@@ -129,13 +129,8 @@ if ('serviceWorker' in navigator) {
   .ml-spin{width:28px;height:28px;border:3px solid var(--gray-300);border-top-color:var(--coral);border-radius:50%;animation:spin .8s linear infinite;}
   .leaflet-container{font-family:'Inter','Noto Sans KR',sans-serif;background:#EEEADF;}
   .leaflet-control-attribution{font-size:9px!important;}
-  .leaflet-control-zoom{border:1px solid rgba(28,36,43,.12)!important;box-shadow:0 8px 18px rgba(28,36,43,.16)!important;}
-  .leaflet-control-zoom a{width:34px!important;height:34px!important;line-height:32px!important;color:var(--ink)!important;border-color:rgba(28,36,43,.08)!important;}
   .runloop-leaflet-overlay{background:transparent!important;border:0!important;}
   .runloop-leaflet-overlay > div{transform:translate(-50%,-50%);}
-  .mapboxgl-ctrl-bottom-left,.mapboxgl-ctrl-bottom-right{z-index:4;}
-  .mapboxgl-ctrl-group{border-radius:10px!important;box-shadow:0 8px 18px rgba(28,36,43,.16)!important;overflow:hidden;}
-  .mapboxgl-ctrl button{width:34px!important;height:34px!important;}
   .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;}
   @keyframes spin{to{transform:rotate(360deg);}}
 
@@ -982,13 +977,13 @@ const S = {
   kakaoReady: false
 };
 
+const RUNLOOP_FORCE_LEAFLET_MAP = new URLSearchParams(window.location.search).get('map') === 'leaflet';
+const RUNLOOP_IS_NATIVE_APP = ['capacitor:', 'ionic:'].includes(window.location.protocol);
 const RUNLOOP_REMOTE_API_ORIGIN = 'https://runloop-jet.vercel.app';
 const RUNLOOP_STATIC_LOCAL_HOSTS = ['127.0.0.1:5500', 'localhost:5500'];
 const RUNLOOP_STATIC_LOCAL_HOSTNAMES = ['127.0.0.1', 'localhost'];
 const RUNLOOP_API_ORIGIN = getRunloopApiOrigin();
-const MAPBOX_GL_CSS_URL = 'https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.css';
-const MAPBOX_GL_JS_URL = 'https://api.mapbox.com/mapbox-gl-js/v3.10.0/mapbox-gl.js';
-const MAPBOX_STYLE_URL = 'mapbox://styles/mapbox/streets-v12';
+const KAKAO_MAP_APP_KEY = '056307d59b47ef5080ae7fc5f1413f51';
 const LEAFLET_CSS_URL = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
 const LEAFLET_JS_URL = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
 const TMAP_APP_KEY = 'dM1gQjphEH6xgfyyzIjHl2ctRZEUXPPJ6oyn8aqj';
@@ -1017,16 +1012,6 @@ function getRunloopApiOrigin() {
 
 function runloopApiUrl(path) {
   return RUNLOOP_API_ORIGIN + path;
-}
-
-function getRunloopMapboxToken() {
-  const meta = document.querySelector('meta[name="runloop-mapbox-token"]');
-  return String(
-    window.RUNLOOP_MAPBOX_TOKEN ||
-    (meta && meta.content) ||
-    localStorage.getItem('runloopMapboxToken') ||
-    ''
-  ).trim();
 }
 
 function loadExternalScript(src) {
@@ -1073,16 +1058,10 @@ function loadExternalStyle(href) {
 
 async function bootMapProvider() {
   try {
-    const mapboxToken = getRunloopMapboxToken();
-    if (mapboxToken) {
-      try {
-        await installMapboxKakaoAdapter(mapboxToken);
-      } catch (mapboxError) {
-        console.warn('Runloop Mapbox provider failed, falling back to Leaflet', mapboxError);
-        await installLeafletKakaoAdapter();
-      }
-    } else {
+    if (RUNLOOP_IS_NATIVE_APP || RUNLOOP_FORCE_LEAFLET_MAP) {
       await installLeafletKakaoAdapter();
+    } else {
+      await loadKakaoMapSdk();
     }
     S.kakaoReady = true;
     if (S.tab === 'create') initCreateMap();
@@ -1092,280 +1071,15 @@ async function bootMapProvider() {
   }
 }
 
-async function installMapboxKakaoAdapter(accessToken) {
-  if (!String(accessToken || '').startsWith('pk.')) {
-    throw new Error('Mapbox public access token is required');
-  }
-  await loadExternalStyle(MAPBOX_GL_CSS_URL);
-  await loadExternalScript(MAPBOX_GL_JS_URL);
-  if (!window.mapboxgl) throw new Error('Mapbox GL is unavailable');
-  if (window.kakao && kakao.maps && kakao.maps.__runloopMapbox) return;
-  mapboxgl.accessToken = accessToken;
-
-  const toMapboxZoom = level => Math.max(2, Math.min(20, 18 - (Number(level) || 4)));
-  const toKakaoLevel = zoom => Math.max(1, Math.min(14, Math.round(18 - (Number(zoom) || 14))));
-  const toLatLng = point => point instanceof MapboxLatLng
-    ? point
-    : new MapboxLatLng(point && typeof point.getLat === 'function' ? point.getLat() : point.lat, point && typeof point.getLng === 'function' ? point.getLng() : point.lng);
-  let mapboxLayerId = 0;
-
-  class MapboxLatLng {
-    constructor(lat, lng) {
-      this.Ma = Number(lat);
-      this.La = Number(lng);
-      this.lat = this.Ma;
-      this.lng = this.La;
+function loadKakaoMapSdk() {
+  const sdkUrl = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_APP_KEY}&libraries=services&autoload=false`;
+  return loadExternalScript(sdkUrl).then(() => new Promise((resolve, reject) => {
+    if (!window.kakao || !kakao.maps || !kakao.maps.load) {
+      reject(new Error('Kakao Maps SDK is unavailable'));
+      return;
     }
-    getLat() { return this.Ma; }
-    getLng() { return this.La; }
-  }
-
-  class MapboxPoint {
-    constructor(x, y) {
-      this.x = x;
-      this.y = y;
-    }
-  }
-
-  class MapboxLatLngBounds {
-    constructor() {
-      this._bounds = null;
-    }
-    extend(point) {
-      const latlng = toLatLng(point);
-      const next = [latlng.getLng(), latlng.getLat()];
-      this._bounds = this._bounds ? this._bounds.extend(next) : new mapboxgl.LngLatBounds(next, next);
-      return this;
-    }
-    toMapboxBounds() {
-      return this._bounds;
-    }
-  }
-
-  class MapboxMap {
-    constructor(container, options = {}) {
-      const center = toLatLng(options.center || new MapboxLatLng(S.lat, S.lng));
-      this._level = options.level || 4;
-      this._map = new mapboxgl.Map({
-        container,
-        style: MAPBOX_STYLE_URL,
-        center: [center.getLng(), center.getLat()],
-        zoom: toMapboxZoom(this._level),
-        attributionControl: true,
-        dragPan: options.draggable !== false,
-        scrollZoom: options.scrollwheel !== false,
-        doubleClickZoom: true,
-        touchZoomRotate: true
-      });
-      this._ready = new Promise(resolve => {
-        this._map.once('load', resolve);
-      });
-      this._map.addControl(new mapboxgl.NavigationControl({ showCompass: false, visualizePitch: false }), 'bottom-right');
-      this._map.on('error', event => {
-        if (event && event.error) console.warn('Mapbox map error', event.error);
-      });
-      setTimeout(() => this._map.resize(), 80);
-    }
-    _whenReady(callback) {
-      if (this._map.loaded()) callback();
-      else this._ready.then(callback);
-    }
-    setCenter(point) {
-      const latlng = toLatLng(point);
-      this._map.setCenter([latlng.getLng(), latlng.getLat()]);
-    }
-    getCenter() {
-      const center = this._map.getCenter();
-      return new MapboxLatLng(center.lat, center.lng);
-    }
-    setLevel(level) {
-      this._level = level;
-      this._map.setZoom(toMapboxZoom(level));
-    }
-    getLevel() {
-      return toKakaoLevel(this._map.getZoom());
-    }
-    setBounds(bounds) {
-      const mapboxBounds = bounds && bounds.toMapboxBounds ? bounds.toMapboxBounds() : null;
-      if (mapboxBounds && !mapboxBounds.isEmpty()) this._map.fitBounds(mapboxBounds, { padding: 28, duration: 0 });
-    }
-    getProjection() {
-      return {
-        coordsFromContainerPoint: point => {
-          const lngLat = this._map.unproject([point.x, point.y]);
-          return new MapboxLatLng(lngLat.lat, lngLat.lng);
-        }
-      };
-    }
-    _addListener(type, handler) {
-      const eventName = type === 'zoom_changed' ? 'zoomend' : type;
-      const wrapped = e => handler({
-        latLng: e && e.lngLat ? new MapboxLatLng(e.lngLat.lat, e.lngLat.lng) : undefined
-      });
-      this._map.on(eventName, wrapped);
-      return { remove: () => this._map.off(eventName, wrapped) };
-    }
-    _trigger(type) {
-      if (type === 'resize') this._map.resize();
-    }
-  }
-
-  class MapboxOverlay {
-    constructor(options = {}) {
-      this._mapWrapper = null;
-      this._position = toLatLng(options.position || new MapboxLatLng(S.lat, S.lng));
-      this._content = options.content || '';
-      this._zIndex = options.zIndex || 1;
-      this._marker = null;
-      if (options.map) this.setMap(options.map);
-    }
-    _makeElement() {
-      const el = document.createElement('div');
-      el.style.position = 'relative';
-      el.style.zIndex = String(this._zIndex);
-      el.innerHTML = this._content;
-      return el;
-    }
-    setMap(mapWrapper) {
-      if (this._marker) this._marker.remove();
-      this._mapWrapper = mapWrapper || null;
-      if (!mapWrapper) return;
-      this._marker = new mapboxgl.Marker({
-        element: this._makeElement(),
-        anchor: 'center'
-      })
-        .setLngLat([this._position.getLng(), this._position.getLat()])
-        .addTo(mapWrapper._map);
-    }
-    setPosition(position) {
-      this._position = toLatLng(position);
-      if (this._marker) this._marker.setLngLat([this._position.getLng(), this._position.getLat()]);
-    }
-  }
-
-  class MapboxPolyline {
-    constructor(options = {}) {
-      this._mapWrapper = null;
-      this._path = options.path || [];
-      this._sourceId = `runloop-line-${++mapboxLayerId}`;
-      this._layerId = `${this._sourceId}-layer`;
-      this._paint = {
-        'line-color': options.strokeColor || DRAW_ROUTE_COLOR,
-        'line-width': options.strokeWeight || DRAW_ROUTE_WEIGHT,
-        'line-opacity': options.strokeOpacity == null ? 1 : options.strokeOpacity
-      };
-      if (options.strokeStyle === 'dash' || options.strokeStyle === 'shortdash') {
-        this._paint['line-dasharray'] = [1.4, 1.4];
-      }
-      if (options.map) this.setMap(options.map);
-    }
-    _feature() {
-      return {
-        type: 'Feature',
-        properties: {},
-        geometry: {
-          type: 'LineString',
-          coordinates: this._path.map(point => {
-            const latlng = toLatLng(point);
-            return [latlng.getLng(), latlng.getLat()];
-          })
-        }
-      };
-    }
-    _remove() {
-      const map = this._mapWrapper && this._mapWrapper._map;
-      if (!map || !map.getStyle()) return;
-      if (map.getLayer(this._layerId)) map.removeLayer(this._layerId);
-      if (map.getSource(this._sourceId)) map.removeSource(this._sourceId);
-    }
-    setMap(mapWrapper) {
-      this._remove();
-      this._mapWrapper = mapWrapper || null;
-      if (!mapWrapper) return;
-      mapWrapper._whenReady(() => {
-        if (this._mapWrapper !== mapWrapper) return;
-        const map = mapWrapper._map;
-        if (map.getSource(this._sourceId)) return;
-        map.addSource(this._sourceId, { type: 'geojson', data: this._feature() });
-        map.addLayer({
-          id: this._layerId,
-          type: 'line',
-          source: this._sourceId,
-          layout: { 'line-cap': 'round', 'line-join': 'round' },
-          paint: this._paint
-        });
-      });
-    }
-  }
-
-  class MapboxCircle {
-    constructor(options = {}) {
-      this._mapWrapper = null;
-      const center = toLatLng(options.center || new MapboxLatLng(S.lat, S.lng));
-      const size = Math.max(6, (options.radius || 6) * 2);
-      const el = document.createElement('div');
-      el.style.width = `${size}px`;
-      el.style.height = `${size}px`;
-      el.style.borderRadius = '999px';
-      el.style.background = options.fillColor || '#fff';
-      el.style.border = `${options.strokeWeight || 2}px solid ${options.strokeColor || DRAW_ROUTE_MARKER_COLOR}`;
-      el.style.opacity = String(options.fillOpacity == null ? 1 : options.fillOpacity);
-      this._position = center;
-      this._element = el;
-      this._marker = null;
-      if (options.map) this.setMap(options.map);
-    }
-    setMap(mapWrapper) {
-      if (this._marker) this._marker.remove();
-      this._mapWrapper = mapWrapper || null;
-      if (!mapWrapper) return;
-      this._marker = new mapboxgl.Marker({ element: this._element, anchor: 'center' })
-        .setLngLat([this._position.getLng(), this._position.getLat()])
-        .addTo(mapWrapper._map);
-    }
-  }
-
-  class MapboxGeocoder {
-    coord2Address(lng, lat, callback) {
-      callback([{
-        address: { address_name: `${Number(lat).toFixed(4)}, ${Number(lng).toFixed(4)}` },
-        road_address: null
-      }], 'OK');
-    }
-    addressSearch(_query, callback) {
-      callback([], 'ZERO_RESULT');
-    }
-  }
-
-  class MapboxPlaces {
-    keywordSearch(_query, callback) {
-      callback([], 'ZERO_RESULT');
-    }
-  }
-
-  window.kakao = {
-    maps: {
-      __runloopMapbox: true,
-      load: callback => callback(),
-      LatLng: MapboxLatLng,
-      Point: MapboxPoint,
-      LatLngBounds: MapboxLatLngBounds,
-      Map: MapboxMap,
-      CustomOverlay: MapboxOverlay,
-      Polyline: MapboxPolyline,
-      Circle: MapboxCircle,
-      event: {
-        addListener: (target, type, handler) => target && target._addListener ? target._addListener(type, handler) : null,
-        trigger: (target, type) => { if (target && target._trigger) target._trigger(type); }
-      },
-      services: {
-        Status: { OK: 'OK', ZERO_RESULT: 'ZERO_RESULT', ERROR: 'ERROR' },
-        SortBy: { DISTANCE: 'distance' },
-        Geocoder: MapboxGeocoder,
-        Places: MapboxPlaces
-      }
-    }
-  };
+    kakao.maps.load(resolve);
+  }));
 }
 
 async function installLeafletKakaoAdapter() {
@@ -1424,19 +1138,13 @@ async function installLeafletKakaoAdapter() {
         zoomControl: false,
         attributionControl: true,
         preferCanvas: true,
-        touchZoom: true,
-        doubleClickZoom: true,
-        boxZoom: true,
         scrollWheelZoom: options.scrollwheel !== false,
-        dragging: options.draggable !== false,
-        zoomSnap: 0.25,
-        zoomDelta: 0.5
+        dragging: options.draggable !== false
       });
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+        attribution: '&copy; OpenStreetMap contributors'
       }).addTo(this._map);
-      L.control.zoom({ position: 'bottomright' }).addTo(this._map);
       setTimeout(() => this._map.invalidateSize(), 80);
     }
     setCenter(point) {

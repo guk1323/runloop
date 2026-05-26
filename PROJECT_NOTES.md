@@ -15,9 +15,14 @@
 ## iOS Release Path
 
 - Use Capacitor for the first App Store version and defer Apple Watch/native rewrite.
-- First technical risk to verify: Kakao Maps inside iOS WebView on `capacitor://localhost`.
+- Release market is Korea-first. Do not trade away Korean map legibility for global map coverage in v1.
+- Web/PWA map quality target is Kakao Maps JS.
+- Kakao Maps JS inside iOS WebView on `capacitor://localhost` is blocked by domain mismatch, so the App Store build needs a native Korean map bridge.
+- First native map candidate: KakaoMapsSDK v2 for iOS to match the web map provider. Backup candidate: Naver Maps SDK for iOS if Kakao native integration is slower or route overlay controls are weaker.
+- Leaflet/Mapbox are temporary fallback/spike options only, not the intended release map for Korea.
+- Keep TMAP as the pedestrian route correction engine; the Korean map SDK should primarily render the base map, markers, and route overlays.
 - TMAP route/POI calls should move behind Vercel API routes before submission so the TMAP key is not shipped in the app bundle.
-- Current local blocker: this machine has Node but no `npm`, and Xcode is not installed/selected. After installing them, run `npm install`, `npm run cap:add:ios`, then test with `npm run cap:run:ios`.
+- Current local setup has Node, npm, Xcode, iOS Simulator, and Capacitor iOS running. Next blocker is a native Korean map SDK key/setup for the iOS bridge.
 
 ## Recent Field Test Feedback
 
