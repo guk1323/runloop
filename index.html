@@ -787,6 +787,15 @@ if ('serviceWorker' in navigator) {
       <div class="my-info-row"><span>HealthKit</span><strong><span class="my-status-pill">준비</span></strong></div>
     </div>
 
+    <div class="my-block-head">
+      <div class="my-section">정책</div>
+    </div>
+    <div class="my-info-panel">
+      <a class="my-info-row" href="/privacy.html" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;">
+        <span>개인정보처리방침</span><strong style="color:var(--coral);">보기</strong>
+      </a>
+    </div>
+
     <div style="height:20px;"></div>
   </div>
 </div>
@@ -986,9 +995,8 @@ const RUNLOOP_API_ORIGIN = getRunloopApiOrigin();
 const KAKAO_MAP_APP_KEY = '056307d59b47ef5080ae7fc5f1413f51';
 const LEAFLET_CSS_URL = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
 const LEAFLET_JS_URL = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
-const TMAP_APP_KEY = 'dM1gQjphEH6xgfyyzIjHl2ctRZEUXPPJ6oyn8aqj';
-const TMAP_PEDESTRIAN_URL = 'https://apis.openapi.sk.com/tmap/routes/pedestrian?version=1';
-const TMAP_POI_URL = 'https://apis.openapi.sk.com/tmap/pois';
+const TMAP_PEDESTRIAN_URL = runloopApiUrl('/api/tmap-pedestrian');
+const TMAP_POI_URL = runloopApiUrl('/api/tmap-pois');
 const TMAP_MAX_PASS_POINTS = 3;
 const TMAP_CONNECT_TOLERANCE_METERS = 24;
 const TMAP_SNAP_NOTICE_METERS = 45;
@@ -1748,17 +1756,7 @@ function rebuildDrawPathFromSegments() {
   S.path = path;
 }
 
-function getTmapAppKey() {
-  const stored = localStorage.getItem('runloopTmapAppKey') || '';
-  const key = (stored || TMAP_APP_KEY || '').trim();
-  if (!key || key.includes('여기에') || key.includes('YOUR_')) return '';
-  return key;
-}
-
 async function fetchTmapPedestrianRoute(rawSegment) {
-  const appKey = getTmapAppKey();
-  if (!appKey) throw new Error('NO_TMAP_KEY');
-
   const routePoints = buildTmapRoutePoints(rawSegment);
   if (routePoints.length < 2) throw new Error('SHORT_SEGMENT');
 
@@ -1785,8 +1783,7 @@ async function fetchTmapPedestrianRoute(rawSegment) {
     method: 'POST',
     headers: {
       Accept: 'application/json',
-      'Content-Type': 'application/json',
-      appKey
+      'Content-Type': 'application/json'
     },
     body: JSON.stringify(body)
   });
@@ -2124,8 +2121,6 @@ function selectAddressResult(index) {
 }
 
 async function searchTmapPois(query) {
-  const appKey = getTmapAppKey();
-  if (!appKey) return [];
   const center = getSearchCenter();
 
   const params = new URLSearchParams({
@@ -2148,7 +2143,7 @@ async function searchTmapPois(query) {
 
   try {
     const res = await fetch(`${TMAP_POI_URL}?${params.toString()}`, {
-      headers: { Accept: 'application/json', appKey }
+      headers: { Accept: 'application/json' }
     });
     if (!res.ok) {
       console.warn('TMAP POI search failed', res.status);

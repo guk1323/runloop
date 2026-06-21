@@ -4,6 +4,10 @@
   "private": true,
   "scripts": {
     "cap:prepare": "node scripts/prepare-capacitor-web.mjs",
+    "cap:add:android": "npm run cap:prepare && npx cap add android",
+    "cap:sync:android": "npm run cap:prepare && npx cap sync android",
+    "cap:open:android": "npx cap open android",
+    "cap:run:android": "npm run cap:sync:android && npx cap run android",
     "cap:add:ios": "npm run cap:prepare && npx cap add ios",
     "cap:sync:ios": "npm run cap:prepare && npx cap sync ios",
     "cap:sync:ios:web": "npm run cap:sync:ios && node scripts/use-ios-remote-url.mjs",
@@ -18,6 +22,7 @@
     "@capacitor/status-bar": "8.0.2"
   },
   "devDependencies": {
+    "@capacitor/android": "8.3.4",
     "@capacitor/cli": "8.3.4",
     "@capacitor/ios": "8.3.4"
   }
