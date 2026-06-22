@@ -201,16 +201,16 @@ if ('serviceWorker' in navigator) {
   .record-meta{font-size:12px;color:var(--gray-500);}
   .record-dist{font-size:16px;font-weight:700;color:var(--coral);}
 
-  .mc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}
-  .mc-card{position:relative;aspect-ratio:1/1;background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:13px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;box-shadow:0 8px 18px rgba(39,49,58,.035);}
-  .mc-card-top{display:flex;flex-direction:column;gap:8px;min-height:0;padding-right:24px;}
+  .mc-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(216px,auto);align-items:stretch;gap:10px;padding-bottom:108px!important;}
+  .mc-card{position:relative;min-height:216px;background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:13px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;gap:12px;box-shadow:0 8px 18px rgba(39,49,58,.035);}
+  .mc-card-top{display:flex;flex:1;flex-direction:column;gap:8px;min-height:0;padding-right:24px;}
   .mc-title{min-width:0;flex:1;}
   .mc-name{font-size:14px;font-weight:800;color:var(--gray-900);line-height:1.25;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   .mc-meta{font-size:11px;color:var(--gray-500);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .mc-distance{margin-top:auto;}
   .mc-distance-value{font-size:26px;font-weight:800;color:var(--coral);line-height:1;}
   .mc-distance-unit{font-size:11px;color:var(--gray-500);margin-top:1px;}
-  .mc-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding-top:10px;border-top:1px solid var(--gray-100);}
+  .mc-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;flex-shrink:0;padding-top:10px;border-top:1px solid var(--gray-100);}
   .mc-btn{height:32px;padding:0 10px;border-radius:var(--rs);font-size:12px;font-weight:700;border:1px solid transparent;cursor:pointer;font-family:inherit;white-space:nowrap;}
   .mc-btn-run{background:var(--ink);color:#fff;}
   .mc-btn-edit{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
@@ -2741,7 +2741,7 @@ const COURSES = [
 const AI_COURSE_RECOMMENDATION_COUNT = 2;
 const AI_DISTANCE_TOLERANCE_KM = 0.5;
 const AI_ROUTE_DISTANCE_BUFFER_KM = 0.15;
-const AI_COURSE_CACHE_KEY = 'runloopAiCourseCacheV8';
+const AI_COURSE_CACHE_KEY = 'runloopAiCourseCacheV9';
 const AI_COURSE_CACHE_MS = 10 * 60 * 1000;
 const HOME_RECOMMENDATION_COUNT = 1;
 let aiRouteOverlays = [];
@@ -2793,7 +2793,7 @@ async function fetchAiCourses(km) {
   const payload = buildAiCourseRequest(km);
   const cacheKey = getAiCourseCacheKey(payload);
   const cachedCourses = getCachedAiCourses(cacheKey, km);
-  if (cachedCourses.length) return { courses: cachedCourses, cached: true };
+  if (cachedCourses.length >= AI_COURSE_RECOMMENDATION_COUNT) return { courses: cachedCourses, cached: true };
 
   const res = await fetch(runloopApiUrl('/api/generate-course'), {
     method: 'POST',
@@ -2806,7 +2806,8 @@ async function fetchAiCourses(km) {
     throw new Error('AI_API_' + res.status);
   }
   const data = await res.json();
-  const courses = await routeAiCoursesOnRoad(prepareAiCourses(data.courses, km), km);
+  const candidates = completeAiCourseRecommendations(prepareAiCourses(data.courses, km), km);
+  const courses = await routeAiCoursesOnRoad(candidates, km);
   if (courses.length) setCachedAiCourses(cacheKey, km, courses);
   return { courses, cached: false };
 }
@@ -2879,6 +2880,20 @@ function buildFallbackCourses(km) {
     .map((course, index) => enrichAiCourseRoute(course, index, km));
 }
 
+function completeAiCourseRecommendations(courses, targetKm) {
+  const filled = Array.isArray(courses) ? courses.slice(0, AI_COURSE_RECOMMENDATION_COUNT) : [];
+  if (filled.length >= AI_COURSE_RECOMMENDATION_COUNT) return filled;
+
+  const names = new Set(filled.map(course => String(course && course.name || '').trim()).filter(Boolean));
+  buildFallbackCourses(targetKm).forEach(course => {
+    if (filled.length >= AI_COURSE_RECOMMENDATION_COUNT) return;
+    const name = names.has(course.name) ? `기본 추천 ${filled.length + 1}` : course.name;
+    names.add(name);
+    filled.push({ ...course, name });
+  });
+  return filled.slice(0, AI_COURSE_RECOMMENDATION_COUNT);
+}
+
 function getAiCoursePlaceLabel() {
   const selected = document.getElementById('aiSelectedAddrText')?.textContent;
   if (selected && selected !== '—') return selected;
@@ -2922,11 +2937,16 @@ async function routeAiCoursesOnRoad(courses, targetKm) {
       return await routeAiCourseOnRoad(course, targetKm);
     } catch (error) {
       console.warn('AI pedestrian route failed', error);
-      return null;
+      return {
+        ...course,
+        routeSource: course.routeSource || '',
+        crosswalkCount: normalizeCrosswalkCount(course.crosswalkCount)
+      };
     }
   }));
   return routed
     .filter(Boolean)
+    .slice(0, AI_COURSE_RECOMMENDATION_COUNT)
     .sort((a, b) => getAiRouteScore(a, targetKm) - getAiRouteScore(b, targetKm));
 }
 
