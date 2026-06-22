@@ -80,16 +80,11 @@ if ('serviceWorker' in navigator) {
   .course-card.selected{border-color:rgba(28,36,43,.8);box-shadow:0 12px 24px rgba(28,36,43,.12);transform:translateY(-1px);}
   .cmap{height:70px;position:relative;overflow:hidden;background:#EEEADF;}
   .cmap canvas{width:100%;height:100%;display:block;}
-  .cbadge{display:inline-flex;align-items:center;background:rgba(28,36,43,.9);color:#fff;font-size:10px;font-weight:800;padding:3px 8px;border-radius:var(--rp);}
-  .crank{display:inline-flex;align-items:center;background:rgba(28,36,43,.12);color:var(--gray-700);font-size:10px;font-weight:800;padding:3px 8px;border-radius:var(--rp);}
-  .cinfo{padding:12px;}
-  .cinfo-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;}
-  .cname{font-size:14px;font-weight:700;flex:1;min-width:0;}
+  .cinfo{padding:14px;}
+  .cinfo-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;}
+  .cname{font-size:15px;font-weight:800;flex:1;min-width:0;line-height:1.35;}
   .ckm-badge{font-size:22px;font-weight:900;color:#1C242B;letter-spacing:-0.5px;line-height:1;white-space:nowrap;margin-left:8px;}
   .ckm-badge span{font-size:11px;font-weight:600;color:var(--gray-500);letter-spacing:0;}
-  .cmeta{font-size:12px;color:var(--gray-500);line-height:1.45;margin-bottom:9px;white-space:normal;overflow:visible;}
-  .croute{font-size:12px;color:var(--coral-dark);font-weight:800;line-height:1.45;margin-bottom:5px;white-space:normal;overflow:visible;}
-  .tags{display:flex;gap:5px;flex-wrap:wrap;}
   .tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:var(--rp);}
   .tg{background:var(--coral-light);color:var(--ink);}
   .tb{background:#F4EFE8;color:#5C4E45;}
@@ -248,7 +243,6 @@ if ('serviceWorker' in navigator) {
   .course-detail-value.g{color:var(--coral);}
   .course-detail-chiprow{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px;}
   .course-detail-chip{font-size:11px;font-weight:700;color:var(--gray-700);background:var(--gray-50);border:1px solid var(--gray-100);border-radius:999px;padding:5px 9px;}
-  .course-detail-note{font-size:12px;line-height:1.5;color:var(--gray-500);background:var(--coral-light);border-radius:var(--rs);padding:10px 12px;margin:10px 0 12px;}
   .course-detail-primary-action{width:100%;height:46px;border-radius:var(--r);background:var(--ink);color:#fff;border:none;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;margin-top:12px;}
   .course-detail-secondary-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
   .course-detail-secondary-actions button{height:42px;border-radius:var(--rs);font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;border:1px solid transparent;}
@@ -3132,7 +3126,7 @@ async function routeAiCourseOnRoad(course, requestedTargetKm) {
     ...course,
     km: snappedKm.toFixed(1),
     points: serializeLatLngPath(snapped),
-    routeLabel: shortenRouteLabel((course.routeLabel || getAiRouteLabel(course, 0)) + ' · 보행자 길 정리'),
+    routeLabel: '',
     routeSource: 'tmap'
   };
 }
@@ -3442,24 +3436,15 @@ function renderCourses() {
   }
   clearAiRoutePreview();
   S.courses.forEach((c, i) => {
-    const pm = Math.floor(c.pace), ps = String(Math.round((c.pace % 1) * 60)).padStart(2, '0');
-    const metaText = getVerifiedCourseMeta(c, `${pm}'${ps}"/km`);
     const card = document.createElement('div');
     card.className = 'course-card' + (i === S.sel ? ' selected' : '');
     card.innerHTML = `
       <div class="cinfo">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div class="cbadge">${c.fromAi === false ? '기본 추천' : 'AI 추천'}</div>
-        <div class="crank">${['추천','2순위','3순위'][i]}</div>
-        </div>
         <div class="cinfo-head">
           <div class="cname">${escapeHtml(c.name)}</div>
           <div class="ckm-badge">${escapeHtml(c.km)}<span>km</span></div>
         </div>
-        <div class="croute">${escapeHtml(c.routeLabel || c.startLabel || '지도 위 예상 코스')}</div>
-        <div class="cmeta">${escapeHtml(metaText)}</div>
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
-          <div class="tags">${c.tags.map(t => `<span class="tag ${t.c}">${escapeHtml(t.l)}</span>`).join('')}</div>
+        <div style="display:flex;justify-content:flex-end;align-items:center;">
           <button class="save-course-btn" onclick="event.stopPropagation();saveAiCourse(${i})">내 코스 저장</button>
         </div>
       </div>`;
@@ -3467,12 +3452,6 @@ function renderCourses() {
     list.appendChild(card);
   });
   openBottomSheet();
-}
-
-function getVerifiedCourseMeta(course, paceText) {
-  const parts = ['TMAP 보행자 길 검증'];
-  if (paceText) parts.push(`예상 ${paceText}`);
-  return parts.join(' · ');
 }
 
 function selCourse(i) {
@@ -3539,9 +3518,7 @@ function showAiRoutePreview(course, options = {}) {
   const guide = document.getElementById('aiMapGuide');
   if (guide) {
     guide.style.display = 'block';
-    guide.textContent = course.routeSource === 'tmap'
-      ? `${course.name} 왕복 방향을 나눠 표시했어요`
-      : `${course.name} 경로를 지도에 표시했어요`;
+    guide.textContent = `${course.name} 경로를 표시했어요`;
   }
 }
 
@@ -4290,7 +4267,6 @@ function openRecordDetail(index) {
     ${conditionValue ? recordDetailRow('컨디션', conditionValue) : ''}
     ${recordDetailRow('기록 출처', getRecordSourceLabel(r.source))}
     ${recordDetailRow('GPS 정확도', r.gpsAccuracy ? '약 ' + r.gpsAccuracy + 'm' : '-')}
-    ${recordDetailRow('경로 포인트', pathCount ? pathCount + '개' : '-')}
     ${recordDetailRow('저장 시각', r.createdAt ? new Date(r.createdAt).toLocaleString('ko-KR') : '-')}
     <div style="margin-top:12px;background:var(--gray-50);border-radius:var(--rs);padding:12px;">
       <div style="font-size:11px;color:var(--gray-500);margin-bottom:6px;">메모</div>
@@ -4513,7 +4489,6 @@ function getSocialPostMeta(post) {
     return [
       course.name || '',
       Number.isFinite(dist) ? dist.toFixed(2) + 'km' : '',
-      course.routeLabel || course.startLabel || '',
       isPopularSocialCourse(post) ? 'AI 추천 반영 후보' : ''
     ].filter(Boolean).join(' · ') || '공유 코스';
   }
@@ -4937,14 +4912,10 @@ function openCourseDetail(id) {
   const meta = getMyCourseCardMeta(course);
   const saved = formatCourseSavedAt(course);
   const source = getCourseSourceLabel(course);
-  const pointCount = Array.isArray(course.points) ? course.points.length : 0;
-  const segmentCount = Array.isArray(course.segments) ? course.segments.length : 0;
-  const manualKm = parseFloat(course.manualDist);
   const courseId = JSON.stringify(id);
   const favLabel = course.favorite ? '★ 즐겨찾기 해제' : '☆ 즐겨찾기';
   const routeShape = isStoredLoopCourse(course) ? 'Loop' : 'One-way';
-  const chips = [source, routeShape, segmentCount ? segmentCount + '구간' : '', pointCount ? pointCount + '포인트' : '']
-    .filter(Boolean);
+  const chips = [source, routeShape].filter(Boolean);
 
   document.getElementById('courseDetailTitle').textContent = course.name || '코스';
   document.getElementById('courseDetailMeta').textContent = [saved, source].filter(Boolean).join(' · ');
@@ -4956,7 +4927,6 @@ function openCourseDetail(id) {
       <div class="course-detail-stat"><div class="course-detail-label">거리</div><div class="course-detail-value g">${meta.distance}km</div></div>
       <div class="course-detail-stat"><div class="course-detail-label">예상 시간</div><div class="course-detail-value">${meta.minutes.replace('약 ', '')}</div></div>
     </div>
-    ${Number.isFinite(manualKm) && manualKm > 0 ? `<div class="course-detail-note">직접 그린 구간이 ${manualKm.toFixed(2)}km 있어요. 실제 주행 전 지도에서 길 흐름을 한 번 확인하는 쪽이 좋아요.</div>` : ''}
     <div class="course-detail-secondary-actions">
       <button class="course-primary" onclick="startCourseFromDetail()">시작하기</button>
       <button class="course-secondary" onclick="viewCourseFromDetail()">지도에서 보기</button>
@@ -4969,10 +4939,6 @@ function openCourseDetail(id) {
     ${recordDetailRow('저장일', saved || '-')}
     ${recordDetailRow('코스 유형', source)}
     ${course.startLabel ? recordDetailRow('출발지', course.startLabel) : ''}
-    ${course.routeLabel ? recordDetailRow('경로 힌트', course.routeLabel) : ''}
-    ${recordDetailRow('경로 포인트', pointCount ? pointCount + '개' : '-')}
-    ${recordDetailRow('구간 수', segmentCount ? segmentCount + '개' : '-')}
-    ${Number.isFinite(manualKm) && manualKm > 0 ? recordDetailRow('직접 그린 구간', manualKm.toFixed(2) + 'km') : ''}
     <button class="course-detail-delete" onclick="deleteCourseFromDetail()">코스 삭제</button>
   `;
   document.getElementById('courseDetailModal').style.display = 'flex';
