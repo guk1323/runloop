@@ -94,7 +94,7 @@ if ('serviceWorker' in navigator) {
   .map-place-dest{background:var(--ink);border:1px solid var(--ink);color:#fff;}
 
   .course-scroll{flex:1;overflow-y:auto;}
-  .course-list{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;}
+  .course-list{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;-webkit-overflow-scrolling:touch;}
   .course-card{background:rgba(255,255,255,.84);border-radius:12px;border:1px solid rgba(28,36,43,.08);overflow:visible;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s;box-shadow:0 10px 24px rgba(28,36,43,.05);}
   .course-card:hover{border-color:var(--gray-300);}
   .course-card.selected{border-color:rgba(28,36,43,.8);box-shadow:0 12px 24px rgba(28,36,43,.12);transform:translateY(-1px);}
@@ -624,7 +624,7 @@ if ('serviceWorker' in navigator) {
         <div style="display:flex;align-items:baseline;gap:6px;">
           <span style="font-size:36px;font-weight:700;color:var(--gray-900);letter-spacing:0;line-height:1;" id="wTemp">—</span>
           <span style="font-size:13px;color:var(--gray-500);">°</span>
-          <span id="wHiLo" style="font-size:12px;color:var(--gray-500);display:none;">
+          <span id="wHiLo" title="오늘 최고/최저" aria-label="오늘 최고/최저" style="font-size:12px;color:var(--gray-500);display:none;">
             <span style="color:#E24B4A;" id="wHigh">—</span>&thinsp;/&thinsp;<span style="color:#6E8FA3;" id="wLow">—</span>
           </span>
         </div>
@@ -751,7 +751,7 @@ if ('serviceWorker' in navigator) {
       </button>
       <div id="aiCourseArea" style="max-height:0;overflow:hidden;transition:max-height .3s;margin-top:8px;">
         <div class="empty-state" id="emptyState" style="display:none;padding:16px;flex:none;"></div>
-        <div class="course-list" id="courseList" style="display:none;max-height:min(48dvh,480px);overflow-y:auto;padding-bottom:108px;"></div>
+        <div class="course-list" id="courseList" style="display:none;max-height:0;overflow-y:auto;"></div>
       </div>
     </div>
 
@@ -923,6 +923,44 @@ if ('serviceWorker' in navigator) {
           <div class="my-info-value" id="mySourceInfo">—</div>
         </div>
       </div>
+    </div>
+
+    <div class="my-block-head">
+      <div class="my-section">문화 스팟 알림</div>
+    </div>
+    <div class="my-info-panel">
+      <div class="my-info-row">
+        <span>알림</span>
+        <label style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;color:var(--gray-900);">
+          <input type="checkbox" id="cultureAlertEnabled" onchange="saveCultureAlertSettingsFromUI()" style="accent-color:var(--coral);">
+          <span id="cultureAlertEnabledLabel">켜짐</span>
+        </label>
+      </div>
+      <div class="my-info-row">
+        <span>거리 범위</span>
+        <select id="cultureAlertDistance" class="my-setting-input" onchange="saveCultureAlertSettingsFromUI()">
+          <option value="0.5">0.5km</option>
+          <option value="1">1km</option>
+          <option value="2">2km</option>
+          <option value="3">3km</option>
+          <option value="5">5km</option>
+          <option value="10">10km</option>
+        </select>
+      </div>
+      <div class="my-info-row">
+        <span>최소 별점</span>
+        <select id="cultureAlertStars" class="my-setting-input" onchange="saveCultureAlertSettingsFromUI()">
+          <option value="2">★2 이상</option>
+          <option value="3">★3 이상</option>
+          <option value="4">★4 이상</option>
+          <option value="5">★5</option>
+        </select>
+      </div>
+      <div class="my-info-row">
+        <span>브라우저 알림</span>
+        <button id="cultureAlertPermissionBtn" onclick="requestCultureNotificationPermission()" style="height:32px;border-radius:999px;border:1px solid var(--gray-300);background:#fff;color:var(--gray-700);font-size:12px;font-weight:800;font-family:inherit;padding:0 12px;cursor:pointer;">권한 확인</button>
+      </div>
+      <div id="cultureAlertStatus" style="font-size:11px;color:var(--gray-500);line-height:1.45;padding-top:10px;border-top:1px solid var(--gray-100);"></div>
     </div>
 
     <div class="my-block-head">
@@ -1534,6 +1572,7 @@ bootMapProvider();
 /* ── 바텀시트 토글 ── */
 let bottomSheetOpen = false;
 const AI_COURSE_AREA_MAX_HEIGHT = 380;
+const AI_COURSE_VISIBLE_CARD_LIMIT = 3;
 const AI_CREATE_PANEL_GAP = 18;
 
 function toggleBottomSheet() {
@@ -1549,7 +1588,9 @@ function setBottomSheetOpen(open) {
   bottomSheetOpen = !!open;
   const area = document.getElementById('aiCourseArea');
   if (!area) return;
-  area.style.maxHeight = bottomSheetOpen ? getAiCourseAreaOpenHeight() + 'px' : '0';
+  const openHeight = bottomSheetOpen ? getAiCourseAreaOpenHeight() : 0;
+  area.style.maxHeight = openHeight + 'px';
+  syncAiCourseListHeight(openHeight);
 }
 
 function getAiCourseAreaOpenHeight() {
@@ -1572,7 +1613,45 @@ function getAiCourseAreaOpenHeight() {
   const currentAreaHeight = area.getBoundingClientRect().height;
   const sheetFixedHeight = sheet.getBoundingClientRect().height - currentAreaHeight;
   const availableHeight = screenContentHeight - requiredMapHeight - sheetFixedHeight;
-  return Math.max(0, Math.min(AI_COURSE_AREA_MAX_HEIGHT, Math.floor(availableHeight)));
+  const contentHeight = Math.min(AI_COURSE_AREA_MAX_HEIGHT, getAiCourseContentOpenHeight());
+  return Math.max(0, Math.min(contentHeight, Math.floor(availableHeight)));
+}
+
+function getAiCourseContentOpenHeight() {
+  const list = document.getElementById('courseList');
+  const empty = document.getElementById('emptyState');
+
+  if (list && list.style.display !== 'none' && list.children.length > 0) {
+    const styles = getComputedStyle(list);
+    const gap = parseFloat(styles.rowGap || styles.gap || '0') || 0;
+    const paddingTop = parseFloat(styles.paddingTop || '0') || 0;
+    const paddingBottom = parseFloat(styles.paddingBottom || '0') || 0;
+    const visibleCards = Array.from(list.children).slice(0, AI_COURSE_VISIBLE_CARD_LIMIT);
+    const cardsHeight = visibleCards.reduce((sum, card) => {
+      return sum + (card.getBoundingClientRect().height || 96);
+    }, 0);
+    const gapsHeight = Math.max(0, visibleCards.length - 1) * gap;
+    return Math.ceil(paddingTop + cardsHeight + gapsHeight + paddingBottom);
+  }
+
+  if (empty && empty.style.display !== 'none') {
+    const styles = getComputedStyle(empty);
+    const marginTop = parseFloat(styles.marginTop || '0') || 0;
+    const marginBottom = parseFloat(styles.marginBottom || '0') || 0;
+    return Math.ceil((empty.getBoundingClientRect().height || 150) + marginTop + marginBottom);
+  }
+
+  return AI_COURSE_AREA_MAX_HEIGHT;
+}
+
+function syncAiCourseListHeight(areaHeight) {
+  const list = document.getElementById('courseList');
+  if (!list) return;
+  if (list.style.display === 'none') {
+    list.style.maxHeight = '0';
+    return;
+  }
+  list.style.maxHeight = Math.max(0, Math.floor(areaHeight)) + 'px';
 }
 
 function hasAiCourseSheetContent() {
@@ -3225,6 +3304,11 @@ const HOME_RECOMMENDATION_COUNT = 5;
 const CULTURE_SPOT_SEARCH_RADIUS_METERS = 10000;
 const CULTURE_SPOT_VISIT_RADIUS_METERS = 150;
 const CULTURE_SPOT_VISITS_KEY = 'runloopCultureSpotVisitsV1';
+const CULTURE_SPOT_ALERT_SETTINGS_KEY = 'runloopCultureSpotAlertSettingsV1';
+const CULTURE_SPOT_ALERT_HISTORY_KEY = 'runloopCultureSpotAlertHistoryV1';
+const CULTURE_SPOT_ALERT_COOLDOWN_MS = 6 * 60 * 60 * 1000;
+const CULTURE_SPOT_MIN_VALUE_STARS = 2;
+const CULTURE_SPOT_KEYWORDS = ['세계문화유산', '문화재', '국보', '보물', '사적', '궁궐', '왕릉', '유적지', '박물관', '미술관', '기념관', '역사관', '전통문화', '한옥마을', '사찰', '성곽', '공연장', '극장', '전시관'];
 let aiRouteOverlays = [];
 let aiRouteActiveCourse = null;
 let aiRouteZoomListenerAttached = false;
@@ -4214,7 +4298,8 @@ function showAiRoutePreview(course, options = {}) {
   if (path.length < 2) return;
 
   const isDestinationRoute = course.routeKind === 'destination';
-  const primaryColor = '#1565C0';
+  const routeColor = getAiRouteStrokeColor(course);
+  const endColor = isDestinationRoute ? '#F27A5E' : routeColor;
 
   const borderLine = new kakao.maps.Polyline({
     map: createMap, path,
@@ -4222,26 +4307,28 @@ function showAiRoutePreview(course, options = {}) {
   });
   const routeLine = new kakao.maps.Polyline({
     map: createMap, path,
-    strokeWeight: 7, strokeColor: primaryColor, strokeOpacity: 0.95, strokeStyle: 'solid'
+    strokeWeight: 7, strokeColor: routeColor, strokeOpacity: 0.95, strokeStyle: 'solid'
   });
 
   const startDot = new kakao.maps.Circle({
     map: createMap, center: path[0],
-    radius: 10, strokeWeight: 3, strokeColor: primaryColor, fillColor: '#fff', fillOpacity: 1
+    radius: 10, strokeWeight: 3, strokeColor: routeColor, fillColor: '#fff', fillOpacity: 1
   });
   const endDot = isDestinationRoute ? new kakao.maps.Circle({
     map: createMap, center: path[path.length - 1],
-    radius: 10, strokeWeight: 3, strokeColor: '#1C242B', fillColor: '#fff', fillOpacity: 1
+    radius: 10, strokeWeight: 3, strokeColor: endColor, fillColor: '#fff', fillOpacity: 1
   }) : null;
-  const routeLabel = new kakao.maps.CustomOverlay({
+  const routeLabel = isDestinationRoute ? null : new kakao.maps.CustomOverlay({
     map: createMap,
     position: getRouteLabelPosition(path),
-    content: `<div style="background:rgba(28,36,43,.9);color:#fff;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.16);white-space:nowrap;">${isDestinationRoute ? '단방향' : '왕복'}</div>`,
+    content: '<div style="background:rgba(28,36,43,.9);color:#fff;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.16);white-space:nowrap;">왕복</div>',
     yAnchor: 1.2,
     zIndex: 6
   });
 
-  aiRouteOverlays = [borderLine, routeLine, routeLabel, startDot].concat(endDot ? [endDot] : []);
+  aiRouteOverlays = [borderLine, routeLine, startDot]
+    .concat(routeLabel ? [routeLabel] : [])
+    .concat(endDot ? [endDot] : []);
 
   if (fitBounds) {
     const bounds = new kakao.maps.LatLngBounds();
@@ -4251,10 +4338,14 @@ function showAiRoutePreview(course, options = {}) {
   const guide = document.getElementById('aiMapGuide');
   if (guide) {
     const distanceLabel = getAiRouteDistanceLabel(course);
-    const routeTypeLabel = isDestinationRoute ? '단방향' : '왕복';
+    const routeTypeLabel = isDestinationRoute ? '' : '왕복';
     guide.style.display = 'block';
     guide.textContent = [course.name, distanceLabel, routeTypeLabel].filter(Boolean).join(' · ');
   }
+}
+
+function getAiRouteStrokeColor(course) {
+  return course && course.routeKind === 'destination' ? '#1C242B' : '#F27A5E';
 }
 
 function getRouteLabelPosition(path) {
@@ -4540,7 +4631,7 @@ function loadNearCourses(options = {}) {
   }
 
   const ps = new kakao.maps.services.Places();
-  const keywords = ['문화재', '박물관', '미술관', '전시', '공연장', '팝업스토어'];
+  const keywords = CULTURE_SPOT_KEYWORDS;
   const results = [];
   let done = 0;
 
@@ -4548,10 +4639,19 @@ function loadNearCourses(options = {}) {
     ps.keywordSearch(kw, (data, status) => {
       done++;
       if (status === kakao.maps.services.Status.OK) {
-        data.slice(0, 3).forEach(p => {
+        data.slice(0, 4).forEach(p => {
           const dist = getDistKm(S.lat, S.lng, parseFloat(p.y), parseFloat(p.x));
           if (dist <= CULTURE_SPOT_SEARCH_RADIUS_METERS / 1000) {
-            results.push({ ...p, distFromMe: dist, cultureType: getCultureSpotType(p, kw) });
+            const value = getCultureSpotValue(p, kw);
+            if (value.stars >= CULTURE_SPOT_MIN_VALUE_STARS) {
+              results.push({
+                ...p,
+                distFromMe: dist,
+                cultureType: value.type,
+                cultureValueStars: value.stars,
+                cultureValueLabel: value.label
+              });
+            }
           }
         });
       }
@@ -4572,6 +4672,8 @@ function getFallbackNearCourses() {
     x: S.lng,
     distFromMe: 0,
     cultureType: '문화 스팟',
+    cultureValueStars: 1,
+    cultureValueLabel: '탐색 필요',
     fallback: true
   }];
 }
@@ -4587,15 +4689,213 @@ function getCultureSpotType(place, keyword) {
   if (/문화재|궁|향교|사찰|성곽|유적|역사/.test(text)) return '문화재';
   if (/미술관|갤러리|전시/.test(text)) return '전시';
   if (/박물관|기념관/.test(text)) return '박물관';
+  if (/영화관|시네마|cgv|롯데시네마|메가박스/i.test(text)) return '영화관';
   if (/공연|극장|콘서트/.test(text)) return '공연';
   if (/팝업|스토어|편집샵/.test(text)) return '팝업';
   return keyword || '문화 스팟';
+}
+
+function getCultureSpotValue(place, keyword) {
+  const text = getCultureSpotSearchText(place, keyword);
+  const placeText = getCultureSpotSearchText(place, '');
+  const type = getCultureSpotType(place, keyword);
+  if (isLowValueCultureSpot(text)) {
+    return { stars: 1, label: '일상 시설', type };
+  }
+  if (/유네스코|세계문화유산|세계유산|경복궁|창덕궁|종묘|수원화성|남한산성|불국사|석굴암|해인사|하회마을|양동마을|조선왕릉|선정릉|동구릉|서오릉|서삼릉|광릉|홍유릉|영릉|장릉|백제역사유적|공산성|부소산성|미륵사지|왕궁리|고인돌/.test(placeText)) {
+    return { stars: 5, label: '세계유산급', type };
+  }
+  if (/문화재|문화유적|국보|보물|사적|경복궁|창덕궁|창경궁|덕수궁|경희궁|궁궐|왕궁|궁터|왕릉|성곽|성지|유적|유적지|서원|향교|한옥마을|전통마을|사찰|절|성당|근대문화유산/.test(placeText)) {
+    return { stars: 4, label: '역사 명소', type };
+  }
+  if (/국립|시립|도립|구립|박물관|미술관|기념관|역사관|문화관|전시관/.test(placeText)) {
+    const stars = /국립|시립|도립|기념관|역사관/.test(placeText) ? 4 : 3;
+    return { stars, label: stars >= 4 ? '대표 문화시설' : '문화시설', type };
+  }
+  if (/공연장|극장|아트센터|문화센터|갤러리|전시장|전시/.test(placeText)) {
+    return { stars: 2, label: '지역 문화', type };
+  }
+  return { stars: 2, label: '문화 후보', type };
+}
+
+function getCultureSpotSearchText(place, keyword) {
+  return [place && place.category_name, place && place.place_name, keyword]
+    .filter(Boolean)
+    .join(' ');
+}
+
+function isLowValueCultureSpot(text) {
+  const schoolLike = /학교|대학교|캠퍼스|학원|스터디/.test(text) && !/박물관|미술관|기념관|문화재|사적|유적|역사관/.test(text);
+  const commercialLike = /메가박스|cgv|롯데시네마|씨네큐|영화관|시네마|팝업|편집샵|스토어|백화점|쇼핑몰|마트|카페|식당|주차장|사설/i.test(text);
+  return schoolLike || commercialLike;
+}
+
+function getCultureValueStarsText(stars) {
+  const safeStars = Math.max(1, Math.min(5, Math.round(Number(stars) || 1)));
+  return '★'.repeat(safeStars) + '☆'.repeat(5 - safeStars);
+}
+
+function getCultureRewardLabel(stars) {
+  const safeStars = Math.max(1, Math.min(5, Math.round(Number(stars) || 1)));
+  if (safeStars >= 5) return '레전드 리워드';
+  if (safeStars >= 4) return '프리미엄 리워드';
+  if (safeStars >= 3) return '스페셜 리워드';
+  return '기본 리워드';
+}
+
+function getCultureAlertSettings() {
+  const defaults = { enabled: true, distanceKm: 2, minStars: 4 };
+  try {
+    const saved = JSON.parse(localStorage.getItem(CULTURE_SPOT_ALERT_SETTINGS_KEY) || '{}');
+    const distanceKm = clampToOptions(Number(saved.distanceKm), [0.5, 1, 2, 3, 5, 10], defaults.distanceKm);
+    const minStars = clampToOptions(Number(saved.minStars), [2, 3, 4, 5], defaults.minStars);
+    return {
+      enabled: saved.enabled !== false,
+      distanceKm,
+      minStars
+    };
+  } catch (_) {
+    return defaults;
+  }
+}
+
+function clampToOptions(value, options, fallback) {
+  return options.includes(value) ? value : fallback;
+}
+
+function saveCultureAlertSettings(settings) {
+  const current = getCultureAlertSettings();
+  const next = {
+    enabled: settings.enabled !== undefined ? !!settings.enabled : current.enabled,
+    distanceKm: clampToOptions(Number(settings.distanceKm), [0.5, 1, 2, 3, 5, 10], current.distanceKm),
+    minStars: clampToOptions(Number(settings.minStars), [2, 3, 4, 5], current.minStars)
+  };
+  localStorage.setItem(CULTURE_SPOT_ALERT_SETTINGS_KEY, JSON.stringify(next));
+  return next;
+}
+
+function saveCultureAlertSettingsFromUI() {
+  const enabledEl = document.getElementById('cultureAlertEnabled');
+  const distanceEl = document.getElementById('cultureAlertDistance');
+  const starsEl = document.getElementById('cultureAlertStars');
+  saveCultureAlertSettings({
+    enabled: enabledEl ? enabledEl.checked : true,
+    distanceKm: distanceEl ? Number(distanceEl.value) : 2,
+    minStars: starsEl ? Number(starsEl.value) : 4
+  });
+  renderCultureAlertSettings();
+  toast('문화 스팟 알림 설정을 저장했어요');
+  if (S.tab === 'home') loadNearCourses();
+}
+
+function renderCultureAlertSettings() {
+  const settings = getCultureAlertSettings();
+  const enabledEl = document.getElementById('cultureAlertEnabled');
+  const enabledLabel = document.getElementById('cultureAlertEnabledLabel');
+  const distanceEl = document.getElementById('cultureAlertDistance');
+  const starsEl = document.getElementById('cultureAlertStars');
+  const statusEl = document.getElementById('cultureAlertStatus');
+  const permissionBtn = document.getElementById('cultureAlertPermissionBtn');
+  if (enabledEl) enabledEl.checked = settings.enabled;
+  if (enabledLabel) enabledLabel.textContent = settings.enabled ? '켜짐' : '꺼짐';
+  if (distanceEl) distanceEl.value = String(settings.distanceKm);
+  if (starsEl) starsEl.value = String(settings.minStars);
+  const permission = getCultureNotificationPermissionLabel();
+  if (permissionBtn) permissionBtn.textContent = permission === '허용됨' ? '허용됨' : '권한 확인';
+  if (statusEl) {
+    statusEl.textContent = settings.enabled
+      ? `${settings.distanceKm}km 이내 · ★${settings.minStars} 이상 · 브라우저 알림 ${permission}`
+      : '알림 꺼짐';
+  }
+}
+
+function getCultureNotificationPermissionLabel() {
+  if (!('Notification' in window)) return '미지원';
+  if (Notification.permission === 'granted') return '허용됨';
+  if (Notification.permission === 'denied') return '차단됨';
+  return '대기';
+}
+
+async function requestCultureNotificationPermission() {
+  if (!('Notification' in window)) {
+    toast('이 브라우저는 알림을 지원하지 않아요');
+    renderCultureAlertSettings();
+    return;
+  }
+  if (Notification.permission === 'granted') {
+    toast('브라우저 알림이 이미 허용돼 있어요');
+    renderCultureAlertSettings();
+    return;
+  }
+  try {
+    const result = await Notification.requestPermission();
+    toast(result === 'granted' ? '브라우저 알림을 허용했어요' : '브라우저 알림 권한이 허용되지 않았어요');
+  } catch (_) {
+    toast('브라우저 알림 권한을 확인하지 못했어요');
+  }
+  renderCultureAlertSettings();
+}
+
+function checkCultureSpotAlerts(spots) {
+  const settings = getCultureAlertSettings();
+  if (!settings.enabled || document.hidden || !Array.isArray(spots)) return;
+  const candidates = spots
+    .filter(spot => !spot.fallback)
+    .filter(spot => Number(spot.distFromMe) <= settings.distanceKm)
+    .filter(spot => (Number(spot.cultureValueStars) || 1) >= settings.minStars)
+    .sort((a, b) => {
+      const starDiff = (Number(b.cultureValueStars) || 1) - (Number(a.cultureValueStars) || 1);
+      if (starDiff) return starDiff;
+      return Number(a.distFromMe) - Number(b.distFromMe);
+    });
+  if (!candidates.length) return;
+  const spot = candidates[0];
+  const key = getCultureSpotVisitKey(spot);
+  const history = readCultureSpotAlertHistory();
+  const lastAlertAt = Number(history[key] || 0);
+  if (Date.now() - lastAlertAt < CULTURE_SPOT_ALERT_COOLDOWN_MS) return;
+  history[key] = Date.now();
+  writeCultureSpotAlertHistory(history);
+  showCultureSpotAlert(spot);
+}
+
+function readCultureSpotAlertHistory() {
+  try {
+    const history = JSON.parse(localStorage.getItem(CULTURE_SPOT_ALERT_HISTORY_KEY) || '{}');
+    return history && typeof history === 'object' && !Array.isArray(history) ? history : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function writeCultureSpotAlertHistory(history) {
+  try { localStorage.setItem(CULTURE_SPOT_ALERT_HISTORY_KEY, JSON.stringify(history || {})); } catch (_) {}
+}
+
+function showCultureSpotAlert(spot) {
+  const placeName = String(spot.place_name || '문화 스팟');
+  const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
+  const dist = Number(spot.distFromMe) < 1
+    ? Math.round(Number(spot.distFromMe) * 1000) + 'm'
+    : Number(spot.distFromMe).toFixed(1) + 'km';
+  const message = `근처 ${dist}에 ★${stars} ${placeName} 문화 스팟이 있어요`;
+  toast(message);
+  if ('Notification' in window && Notification.permission === 'granted') {
+    try {
+      new Notification('Runloop 문화 스팟', {
+        body: message,
+        tag: 'runloop-culture-' + getCultureSpotVisitKey(spot),
+        renotify: false
+      });
+    } catch (_) {}
+  }
 }
 
 function getCultureSpotIcon(type) {
   if (/문화재/.test(type)) return '🏛️';
   if (/전시|미술/.test(type)) return '🖼️';
   if (/박물관/.test(type)) return '🏺';
+  if (/영화관/.test(type)) return '🎬';
   if (/공연/.test(type)) return '🎭';
   if (/팝업/.test(type)) return '✨';
   return '📍';
@@ -4628,9 +4928,12 @@ function setCultureSpotVisit(spot) {
   const visits = readCultureSpotVisits();
   const key = getCultureSpotVisitKey(spot);
   if (visits[key]) return { visited: true, isNew: false, data: visits[key] };
+  const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
   const visit = {
     name: String(spot.place_name || '문화 스팟'),
     type: spot.cultureType || getCultureSpotType(spot, ''),
+    valueStars: stars,
+    rewardTier: getCultureRewardLabel(stars),
     lat: Number(spot.y) || S.lat,
     lng: Number(spot.x) || S.lng,
     visitedAt: new Date().toISOString(),
@@ -4667,7 +4970,7 @@ function renderNearCourses(results) {
     results = getFallbackNearCourses();
   }
 
-  // 중복 제거 + 거리순 정렬 + 가까운 문화 스팟 표시
+  // 중복 제거 + 문화가치 우선 정렬 + 가까운 문화 스팟 표시
   const seen = new Set();
   let unique = results
     .filter(r => {
@@ -4676,7 +4979,11 @@ function renderNearCourses(results) {
       seen.add(key);
       return true;
     })
-    .sort((a, b) => a.distFromMe - b.distFromMe)
+    .sort((a, b) => {
+      const valueDiff = (Number(b.cultureValueStars) || 1) - (Number(a.cultureValueStars) || 1);
+      if (valueDiff) return valueDiff;
+      return a.distFromMe - b.distFromMe;
+    })
     .slice(0, HOME_RECOMMENDATION_COUNT);
   if (!unique.length) unique = getFallbackNearCourses();
 
@@ -4688,28 +4995,33 @@ function renderNearCourses(results) {
     const featured = i === 0 ? 'border:1.5px solid var(--coral);box-shadow:0 8px 20px rgba(242,122,94,.10);' : 'border:1px solid var(--gray-100);';
     const placeName = String(p.place_name || '오늘의 문화 스팟');
     const type = p.cultureType || getCultureSpotType(p, '');
+    const valueStars = Math.max(1, Math.min(5, Math.round(Number(p.cultureValueStars) || 1)));
+    const valueLabel = p.cultureValueLabel || getCultureRewardLabel(valueStars);
+    const starText = getCultureValueStarsText(valueStars);
+    const rewardLabel = getCultureRewardLabel(valueStars);
     const introUrl = getCultureSpotInfoUrl(placeName, p.place_url);
     const lat = Number(p.y) || S.lat;
     const lng = Number(p.x) || S.lng;
     const visitState = getCultureSpotVisitState(p);
-    const reward = visitState.visited ? '방문 기록됨' : i === 0 ? '근처 발견 후보' : '방문 컬렉션';
+    const reward = visitState.visited ? '방문 기록됨' : `${rewardLabel} 후보`;
     const rewardClass = visitState.visited ? 'tg' : 'tb';
     const footerText = visitState.visited
-      ? '방문 기록됨 · 리워드는 추후 지급'
-      : `${Math.round(CULTURE_SPOT_VISIT_RADIUS_METERS)}m 안에서 방문 기록`;
+      ? `방문 기록됨 · ${rewardLabel} 지급 예정`
+      : `${Math.round(CULTURE_SPOT_VISIT_RADIUS_METERS)}m 안에서 방문 기록 · ${rewardLabel}`;
     return `
       <div style="background:#fff;border-radius:var(--r);${featured}overflow:hidden;margin-bottom:10px;">
         <div style="display:flex;gap:14px;padding:14px;">
           <div style="position:relative;flex-shrink:0;">
             <div style="width:52px;height:52px;border-radius:12px;background:${iconBgs[i % iconBgs.length]};display:flex;align-items:center;justify-content:center;font-size:24px;">${getCultureSpotIcon(type)}</div>
-            <div style="position:absolute;top:-5px;right:-5px;background:var(--ink);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:999px;">문화</div>
+            <div style="position:absolute;top:-5px;right:-5px;background:var(--ink);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:999px;">★${valueStars}</div>
           </div>
           <div style="flex:1;min-width:0;">
             <div style="font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(placeName)}</div>
-            <div style="font-size:12px;color:var(--gray-500);margin-bottom:7px;">${escapeHtml(dist)} · ${escapeHtml(type)}</div>
+            <div style="font-size:12px;color:var(--gray-500);margin-bottom:5px;">${escapeHtml(dist)} · ${escapeHtml(type)}</div>
+            <div style="font-size:11px;color:var(--amber);font-weight:800;margin-bottom:7px;">문화가치 ${escapeHtml(starText)} · ${escapeHtml(valueLabel)}</div>
             <div style="display:flex;gap:5px;flex-wrap:wrap;">
               <span style="font-size:11px;font-weight:500;padding:3px 8px;border-radius:999px;" class="tag ${rewardClass}">${escapeHtml(reward)}</span>
-              <span style="font-size:11px;font-weight:500;padding:3px 8px;border-radius:999px;" class="tag tb">iPhone 탐험</span>
+              <span style="font-size:11px;font-weight:500;padding:3px 8px;border-radius:999px;" class="tag tb">Tour Ready</span>
             </div>
           </div>
           <div style="text-align:right;flex-shrink:0;">
@@ -4718,7 +5030,7 @@ function renderNearCourses(results) {
           </div>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--gray-100);background:var(--gray-50);">
-          <div style="font-size:12px;color:var(--gray-500);">
+          <div style="font-size:12px;color:var(--gray-500);min-width:0;line-height:1.35;">
             ${escapeHtml(footerText)}
           </div>
           <div style="display:flex;gap:6px;flex-shrink:0;">
@@ -4728,6 +5040,7 @@ function renderNearCourses(results) {
         </div>
       </div>`;
   }).join('');
+  checkCultureSpotAlerts(unique);
 }
 
 function openCultureSpotInfoFromHomeButton(button) {
@@ -4890,17 +5203,17 @@ async function fetchWeather() {
     } catch(e) {
       document.getElementById('wLocation').textContent = d.name;
     }
-    const tempMax  = Math.round(d.main.temp_max);
-    const tempMin  = Math.round(d.main.temp_min);
     document.getElementById('wTemp').textContent = temp;
     document.getElementById('wDesc').textContent = desc;
     document.getElementById('wIcon').textContent = icon;
     document.getElementById('wSummary').textContent = makeWeatherSummary(temp, humid, parseFloat(wind), weatherId);
+    let todayHiLo = getWeatherFallbackHighLow(d, temp);
 
     try {
       const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${S.lat}&lon=${S.lng}&appid=${OWM_KEY}&units=metric&lang=kr`);
       const forecastData = await forecastRes.json();
       const forecastSummary = makeForecastWeatherSummary(temp, weatherId, forecastData);
+      todayHiLo = getTodayForecastHighLow(d, forecastData) || todayHiLo;
       if (forecastSummary) {
         document.getElementById('wSummary').textContent = forecastSummary;
       }
@@ -4910,8 +5223,8 @@ async function fetchWeather() {
     const highEl = document.getElementById('wHigh');
     const lowEl  = document.getElementById('wLow');
     if (hiLoEl) hiLoEl.style.display = 'flex';
-    if (highEl) highEl.textContent = '↑' + tempMax + '°';
-    if (lowEl)  lowEl.textContent  = '↓' + tempMin + '°';
+    if (highEl) highEl.textContent = '↑' + todayHiLo.high + '°';
+    if (lowEl)  lowEl.textContent  = '↓' + todayHiLo.low + '°';
     // 체감온도
     const feelsEl = document.getElementById('wFeels');
     if (feelsEl) feelsEl.textContent = feel + '°';
@@ -6036,6 +6349,51 @@ function makeWeatherSummary(temp, humid, wind, weatherId) {
   ]);
 }
 
+function getWeatherFallbackHighLow(currentData, currentTemp) {
+  const current = Number(currentTemp);
+  const values = [current].filter(Number.isFinite);
+  if (!values.length) return { high: 0, low: 0 };
+  return {
+    high: Math.round(Math.max(...values)),
+    low: Math.round(Math.min(...values))
+  };
+}
+
+function getTodayForecastHighLow(currentData, forecastData) {
+  const timezoneSeconds = Number(forecastData && forecastData.city && forecastData.city.timezone) || 0;
+  const currentTime = Number(currentData && currentData.dt) || Math.floor(Date.now() / 1000);
+  const todayKey = getForecastDateKey(currentTime, timezoneSeconds);
+  const values = [];
+  addForecastTemps(values, currentData && currentData.main);
+
+  const list = Array.isArray(forecastData && forecastData.list) ? forecastData.list : [];
+  list.forEach(item => {
+    if (!item || getForecastDateKey(Number(item.dt), timezoneSeconds) !== todayKey) return;
+    addForecastTemps(values, item.main);
+  });
+
+  const temps = values.filter(Number.isFinite);
+  if (!temps.length) return null;
+  return {
+    high: Math.round(Math.max(...temps)),
+    low: Math.round(Math.min(...temps))
+  };
+}
+
+function getForecastDateKey(timestampSeconds, timezoneSeconds) {
+  const safeTimestamp = Number.isFinite(timestampSeconds) ? timestampSeconds : Math.floor(Date.now() / 1000);
+  const safeTimezone = Number.isFinite(timezoneSeconds) ? timezoneSeconds : 0;
+  return new Date((safeTimestamp + safeTimezone) * 1000).toISOString().slice(0, 10);
+}
+
+function addForecastTemps(values, main) {
+  if (!main) return;
+  [main.temp, main.temp_max, main.temp_min].forEach(value => {
+    const temp = Number(value);
+    if (Number.isFinite(temp)) values.push(temp);
+  });
+}
+
 function makeForecastWeatherSummary(currentTemp, currentWeatherId, forecastData) {
   if (!forecastData || !Array.isArray(forecastData.list)) return null;
   if (isPrecipWeatherId(currentWeatherId)) return null;
@@ -6840,6 +7198,7 @@ function renderMyPage() {
     bodyInfo.textContent = [height, weight].filter(Boolean).join(' · ') || '미입력';
   }
   if (sourceInfo) sourceInfo.textContent = getMySourceSummary(records);
+  renderCultureAlertSettings();
 
   // 목표 바
   updateGoalBar();
