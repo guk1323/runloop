@@ -77,13 +77,21 @@ if ('serviceWorker' in navigator) {
   .create-mode-tabs button{flex:1;height:32px;border:none;border-radius:6px;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;background:transparent;color:var(--gray-500);transition:all .2s;}
   .create-mode-tabs button.active{background:var(--ink);color:#fff;}
   .ai-search-panel{display:flex;flex-direction:column;gap:6px;background:rgba(255,255,255,.94);border-radius:var(--r);padding:6px;box-shadow:0 2px 10px rgba(0,0,0,.13);}
-  .ai-search-targets{display:grid;grid-template-columns:1fr 1fr .9fr;gap:4px;}
+  .ai-search-targets{display:none;grid-template-columns:1fr 1fr .9fr;gap:4px;}
   .ai-search-targets button{height:30px;border:none;border-radius:6px;background:var(--gray-50);color:var(--gray-500);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;}
   .ai-search-targets button.active{background:var(--ink);color:#fff;}
   .ai-same-dest-btn.active{background:var(--coral-light);border:1px solid rgba(242,122,94,.28);color:var(--ink);}
   .ai-search-row{display:flex;gap:6px;}
   .ai-location-btn{width:40px;height:40px;background:#fff;border:1px solid var(--gray-100);border-radius:var(--rs);cursor:pointer;font-size:19px;font-weight:800;line-height:1;color:var(--coral-dark);flex-shrink:0;font-family:inherit;}
   .ai-selected-hidden{display:none!important;}
+  .create-map-shell{position:relative;flex:1;min-height:220px;}
+  .map-place-card{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:24;background:rgba(255,255,255,.96);border:1px solid rgba(28,36,43,.08);border-radius:14px;padding:12px;box-shadow:0 10px 28px rgba(28,36,43,.18);backdrop-filter:blur(14px);}
+  .map-place-title{font-size:14px;font-weight:900;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .map-place-sub{font-size:11px;color:var(--gray-500);line-height:1.4;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .map-place-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+  .map-place-actions button{height:38px;border-radius:var(--rs);font-size:13px;font-weight:900;font-family:inherit;cursor:pointer;}
+  .map-place-start{background:#fff;border:1px solid var(--gray-300);color:var(--gray-900);}
+  .map-place-dest{background:var(--ink);border:1px solid var(--ink);color:#fff;}
 
   .course-scroll{flex:1;overflow-y:auto;}
   .course-list{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;}
@@ -317,7 +325,16 @@ if ('serviceWorker' in navigator) {
   .my-info-row:first-child{border-top:none;}
   .my-info-row span:first-child{color:var(--gray-500);}
   .my-info-row strong{font-size:13px;color:var(--gray-900);text-align:right;}
-  .my-status-pill{font-size:11px;font-weight:800;padding:4px 9px;border-radius:999px;background:var(--gray-50);border:1px solid var(--gray-100);color:var(--gray-500);}
+  .my-goal-main{background:linear-gradient(135deg,#FFF6F1 0%,#FFFFFF 100%);border:1px solid rgba(242,122,94,.22);border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 10px 24px rgba(242,122,94,.08);}
+  .my-goal-main-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;}
+  .my-goal-label{font-size:11px;font-weight:800;color:var(--coral-dark);margin-bottom:4px;}
+  .my-goal-percent{display:flex;align-items:flex-end;gap:5px;line-height:1;}
+  .my-goal-percent strong{font-size:34px;font-weight:900;color:var(--ink);letter-spacing:0;}
+  .my-goal-percent span{font-size:12px;font-weight:800;color:var(--gray-500);padding-bottom:4px;}
+  .my-goal-main-text{font-size:12px;font-weight:800;color:var(--gray-700);text-align:right;white-space:nowrap;}
+  .my-goal-main-btn{margin-top:7px;height:28px;padding:0 11px;border:none;border-radius:999px;background:var(--ink);color:#fff;font-size:11px;font-weight:800;font-family:inherit;cursor:pointer;}
+  .my-goal-track{height:8px;background:rgba(28,36,43,.1);border-radius:999px;overflow:hidden;}
+  .my-goal-fill{height:100%;background:var(--coral);border-radius:999px;width:0%;transition:width .5s;}
 
   .goal-bar-wrap{padding:0 16px 14px;background:#fff;}
   .goal-bar-track{height:8px;background:var(--gray-100);border-radius:4px;overflow:hidden;margin-top:6px;}
@@ -580,8 +597,8 @@ if ('serviceWorker' in navigator) {
 
 <div class="tabs">
   <button class="tab active" data-tab="home" onclick="switchTab('home',this)"><span class="tab-icon">⌂</span><span>홈</span></button>
-  <button class="tab" data-tab="create" onclick="switchTab('create',this)"><span class="tab-icon">＋</span><span>만들기</span></button>
   <button class="tab" data-tab="mycourse" onclick="switchTab('mycourse',this)"><span class="tab-icon">⌁</span><span>코스</span></button>
+  <button class="tab" data-tab="create" onclick="switchTab('create',this)"><span class="tab-icon">＋</span><span>만들기</span></button>
   <button class="tab" data-tab="social" onclick="switchTab('social',this)"><span class="tab-icon">♡</span><span>소셜</span></button>
   <button class="tab" data-tab="mypage" onclick="switchTab('mypage',this)"><span class="tab-icon">●</span><span>MY</span></button>
 </div>
@@ -650,7 +667,7 @@ if ('serviceWorker' in navigator) {
 <div id="screen-create" class="screen" style="position:relative;">
 
   <!-- 공유 지도 -->
-  <div style="position:relative;flex:1;min-height:0;">
+  <div id="createMapShell" class="create-map-shell">
 
     <!-- 상단: 모드 토글 + 검색 -->
     <div class="create-top-panel">
@@ -672,7 +689,7 @@ if ('serviceWorker' in navigator) {
         </div>
         <div class="ai-search-row">
           <div style="position:relative;flex:1;">
-            <input type="text" class="addr-input" id="addrInput" placeholder="출발지 주소·장소 검색" autocomplete="off"
+            <input type="text" class="addr-input" id="addrInput" placeholder="장소·가게 검색" autocomplete="off"
               onfocus="prepareAddressSearchInput(this)" onclick="prepareAddressSearchInput(this)" oninput="searchAddress(this.value)"
               style="border-color:var(--gray-100);background:#fff;">
             <div id="addrDropdown" style="display:none;position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-radius:var(--rs);z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;"></div>
@@ -700,7 +717,15 @@ if ('serviceWorker' in navigator) {
 
     <!-- 출발지 안내 (AI 모드) -->
     <div id="aiMapGuide" style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.6);color:#fff;font-size:12px;font-weight:500;padding:6px 14px;border-radius:var(--rp);white-space:nowrap;z-index:10;">
-      지도를 클릭해 출발지를 선택하세요
+      지도나 검색으로 장소를 선택하세요
+    </div>
+    <div id="aiPlaceCard" class="map-place-card">
+      <div class="map-place-title" id="aiPlaceTitle">선택한 장소</div>
+      <div class="map-place-sub" id="aiPlaceSub">출발 또는 도착으로 설정하세요</div>
+      <div class="map-place-actions">
+        <button class="map-place-start" onclick="applyPendingPlaceAsStart()">출발</button>
+        <button class="map-place-dest" onclick="applyPendingPlaceAsDestination()">도착</button>
+      </div>
     </div>
 
   </div>
@@ -725,11 +750,7 @@ if ('serviceWorker' in navigator) {
         <div class="spinner" id="genSpinner"></div>
       </button>
       <div id="aiCourseArea" style="max-height:0;overflow:hidden;transition:max-height .3s;margin-top:8px;">
-        <div class="empty-state" id="emptyState" style="padding:16px;flex:none;">
-          <div class="empty-icon">🗺️</div>
-          <div class="empty-title">출발지를 선택해주세요</div>
-          <div class="empty-desc">지도를 클릭하거나 주소를 검색해보세요</div>
-        </div>
+        <div class="empty-state" id="emptyState" style="display:none;padding:16px;flex:none;"></div>
         <div class="course-list" id="courseList" style="display:none;max-height:min(48dvh,480px);overflow-y:auto;padding-bottom:108px;"></div>
       </div>
     </div>
@@ -850,6 +871,21 @@ if ('serviceWorker' in navigator) {
       <div style="font-size:12px;color:var(--coral);font-weight:500;cursor:pointer;" onclick="openAllRecords()">전체 기록 →</div>
     </div>
     <div style="background:#fff;border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100);padding:16px;">
+      <div class="my-goal-main">
+        <div class="my-goal-main-top">
+          <div>
+            <div class="my-goal-label">주간 목표 달성률</div>
+            <div class="my-goal-percent"><strong id="goalPct">0%</strong><span>달성</span></div>
+          </div>
+          <div>
+            <div class="my-goal-main-text" id="homeGoalText">0.0 / 20km</div>
+            <button class="my-goal-main-btn" onclick="openGoalEdit()">목표 변경</button>
+          </div>
+        </div>
+        <div class="my-goal-track">
+          <div id="homeGoalFill" class="my-goal-fill"></div>
+        </div>
+      </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
         <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
           <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">총 거리</div>
@@ -866,20 +902,6 @@ if ('serviceWorker' in navigator) {
       </div>
       <div style="display:flex;align-items:flex-end;gap:5px;height:56px;margin-bottom:5px;" id="weekBarChart"></div>
       <div style="display:flex;gap:5px;" id="weekBarLabels"></div>
-      <div style="margin-top:12px;">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;">
-          <div style="font-size:11px;color:var(--gray-500);">주간 목표 달성률</div>
-          <div style="display:flex;align-items:center;gap:8px;">
-            <div style="font-size:11px;font-weight:700;color:var(--coral);" id="homeGoalText">0.0 / 20km</div>
-            <button onclick="openGoalEdit()" style="background:var(--coral-light);border:none;border-radius:var(--rp);padding:4px 9px;color:var(--ink);font-size:11px;font-weight:700;font-family:inherit;cursor:pointer;">변경</button>
-          </div>
-        </div>
-        <div style="height:5px;background:var(--gray-100);border-radius:3px;overflow:hidden;">
-          <div id="homeGoalFill" style="height:100%;background:var(--coral);border-radius:3px;width:0%;transition:width .5s;"></div>
-        </div>
-        <div style="font-size:11px;color:var(--gray-500);margin-top:5px;" id="goalPct">0% 달성</div>
-        <div style="font-size:11px;color:var(--gray-500);margin-top:8px;" id="myPaceInfo">평균 페이스 계산 중…</div>
-      </div>
     </div>
 
     <div class="my-block-head">
@@ -901,14 +923,6 @@ if ('serviceWorker' in navigator) {
           <div class="my-info-value" id="mySourceInfo">—</div>
         </div>
       </div>
-    </div>
-
-    <div class="my-block-head">
-      <div class="my-section">연동</div>
-    </div>
-    <div class="my-info-panel">
-      <div class="my-info-row"><span>Apple Watch</span><strong><span class="my-status-pill">준비</span></strong></div>
-      <div class="my-info-row"><span>HealthKit</span><strong><span class="my-status-pill">준비</span></strong></div>
     </div>
 
     <div class="my-block-head">
@@ -1519,17 +1533,59 @@ bootMapProvider();
 
 /* ── 바텀시트 토글 ── */
 let bottomSheetOpen = false;
+const AI_COURSE_AREA_MAX_HEIGHT = 380;
+const AI_CREATE_PANEL_GAP = 18;
 
 function toggleBottomSheet() {
-  bottomSheetOpen = !bottomSheetOpen;
-  const area = document.getElementById('aiCourseArea');
-  area.style.maxHeight = bottomSheetOpen ? '380px' : '0';
+  if (!bottomSheetOpen && !hasAiCourseSheetContent()) return;
+  setBottomSheetOpen(!bottomSheetOpen);
 }
 
 function openBottomSheet() {
-  bottomSheetOpen = true;
-  document.getElementById('aiCourseArea').style.maxHeight = '380px';
+  setBottomSheetOpen(true);
 }
+
+function setBottomSheetOpen(open) {
+  bottomSheetOpen = !!open;
+  const area = document.getElementById('aiCourseArea');
+  if (!area) return;
+  area.style.maxHeight = bottomSheetOpen ? getAiCourseAreaOpenHeight() + 'px' : '0';
+}
+
+function getAiCourseAreaOpenHeight() {
+  const screen = document.getElementById('screen-create');
+  const mapShell = document.getElementById('createMapShell');
+  const topPanel = document.querySelector('#screen-create .create-top-panel');
+  const sheet = document.getElementById('createBottomSheet');
+  const area = document.getElementById('aiCourseArea');
+  if (!screen || !sheet || !area) return AI_COURSE_AREA_MAX_HEIGHT;
+
+  const screenStyle = getComputedStyle(screen);
+  const mapMinHeight = mapShell
+    ? parseFloat(getComputedStyle(mapShell).minHeight || '0')
+    : 0;
+  const screenContentHeight = screen.clientHeight - parseFloat(screenStyle.paddingBottom || '0');
+  const panelBottom = topPanel
+    ? topPanel.offsetTop + topPanel.offsetHeight + AI_CREATE_PANEL_GAP
+    : 220;
+  const requiredMapHeight = Math.max(panelBottom, mapMinHeight);
+  const currentAreaHeight = area.getBoundingClientRect().height;
+  const sheetFixedHeight = sheet.getBoundingClientRect().height - currentAreaHeight;
+  const availableHeight = screenContentHeight - requiredMapHeight - sheetFixedHeight;
+  return Math.max(0, Math.min(AI_COURSE_AREA_MAX_HEIGHT, Math.floor(availableHeight)));
+}
+
+function hasAiCourseSheetContent() {
+  const list = document.getElementById('courseList');
+  const empty = document.getElementById('emptyState');
+  const hasCourses = list && list.style.display !== 'none' && list.children.length > 0;
+  const hasMessage = empty && empty.style.display !== 'none' && empty.textContent.trim().length > 0;
+  return !!(hasCourses || hasMessage);
+}
+
+window.addEventListener('resize', () => {
+  if (bottomSheetOpen) setBottomSheetOpen(true);
+});
 
 /* ── 코스 만들기 — 통합 지도 ── */
 let createMap = null, createAiMarker = null, createDestMarker = null;
@@ -1537,6 +1593,9 @@ let createMode = 'ai'; // 'ai' or 'draw'
 let aiSearchTarget = 'start';
 let aiDestination = null;
 let aiDestinationSameAsStart = true;
+let aiPendingPlace = null;
+let aiPendingPlaceOverlay = null;
+let aiDirectRouteSeq = 0;
 
 function initCreateMap() {
   if (createMap) {
@@ -1564,15 +1623,7 @@ function initCreateMap() {
       if (createMode === 'draw') {
         handleDrawMapTap(e.latLng);
       } else if (createMode === 'ai') {
-        const latlng = e.latLng;
-        const geocoder = new kakao.maps.services.Geocoder();
-        geocoder.coord2Address(latlng.getLng(), latlng.getLat(), (result, status) => {
-          const addr = status === kakao.maps.services.Status.OK
-            ? (result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name)
-            : `${latlng.getLat().toFixed(4)}, ${latlng.getLng().toFixed(4)}`;
-          if (aiSearchTarget === 'dest') setAiDestinationMarker(latlng, addr);
-          else setAiMarker(latlng, addr);
-        });
+        handleAiMapPlaceTap(e.latLng);
       }
     });
     initDrawTap();
@@ -1622,6 +1673,7 @@ function setCreateMode(mode) {
     aiBtn.classList.remove('active');
     drawContent.style.display = 'block';
     aiContent.style.display = 'none';
+    clearAiPlaceCard();
     if (sheetHandle) sheetHandle.style.display = 'none';
     if (sheet) {
       sheet.style.borderRadius = '14px 14px 0 0';
@@ -2183,7 +2235,178 @@ function initAiMap() {
   });
 }
 
+function handleAiMapPlaceTap(latlng) {
+  const dropdown = document.getElementById('addrDropdown');
+  if (dropdown) dropdown.style.display = 'none';
+  resolveAiPlaceFromLatLng(latlng).then(place => {
+    showAiPlaceCard(latlng, place.name, place.sub);
+  });
+}
+
+function resolveAiPlaceFromLatLng(latlng) {
+  return new Promise(resolve => {
+    const fallback = {
+      name: `${latlng.getLat().toFixed(4)}, ${latlng.getLng().toFixed(4)}`,
+      sub: '지도에서 선택한 위치'
+    };
+    if (!kakao.maps.services || !kakao.maps.services.Geocoder) {
+      resolve(fallback);
+      return;
+    }
+    const geocoder = new kakao.maps.services.Geocoder();
+    geocoder.coord2Address(latlng.getLng(), latlng.getLat(), (result, status) => {
+      if (status !== kakao.maps.services.Status.OK || !result || !result[0]) {
+        resolve(fallback);
+        return;
+      }
+      const road = result[0].road_address && result[0].road_address.address_name;
+      const address = result[0].address && result[0].address.address_name;
+      resolve({
+        name: road || address || fallback.name,
+        sub: road && address ? address : '지도에서 선택한 위치'
+      });
+    });
+  });
+}
+
+function showAiPlaceCard(latlng, name, sub) {
+  const lat = latlng.getLat ? latlng.getLat() : parseFloat(latlng.lat);
+  const lng = latlng.getLng ? latlng.getLng() : parseFloat(latlng.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+  aiPendingPlace = { lat, lng, name: name || '선택한 장소', sub: sub || '출발 또는 도착으로 설정하세요' };
+  if (aiPendingPlaceOverlay) aiPendingPlaceOverlay.setMap(null);
+  aiPendingPlaceOverlay = new kakao.maps.CustomOverlay({
+    map: createMap,
+    position: new kakao.maps.LatLng(lat, lng),
+    content: '<div style="width:16px;height:16px;background:#1565C0;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.28);"></div>',
+    zIndex: 7
+  });
+  const card = document.getElementById('aiPlaceCard');
+  const title = document.getElementById('aiPlaceTitle');
+  const desc = document.getElementById('aiPlaceSub');
+  if (title) title.textContent = aiPendingPlace.name;
+  if (desc) {
+    desc.textContent = createAiMarker
+      ? '도착을 누르면 선택한 출발지에서 도보 경로를 표시해요'
+      : '도착을 누르면 현재 위치에서 도보 경로를 표시해요';
+  }
+  if (card) card.style.display = 'block';
+  const guide = document.getElementById('aiMapGuide');
+  if (guide) guide.style.display = 'none';
+  const input = document.getElementById('addrInput');
+  if (input) input.value = aiPendingPlace.name;
+  if (createMap) createMap.setCenter(new kakao.maps.LatLng(lat, lng));
+}
+
+function clearAiPlaceCard() {
+  aiPendingPlace = null;
+  const card = document.getElementById('aiPlaceCard');
+  if (card) card.style.display = 'none';
+  if (aiPendingPlaceOverlay) {
+    aiPendingPlaceOverlay.setMap(null);
+    aiPendingPlaceOverlay = null;
+  }
+}
+
+function applyPendingPlaceAsStart() {
+  if (!aiPendingPlace) return;
+  const place = { ...aiPendingPlace };
+  const latlng = new kakao.maps.LatLng(place.lat, place.lng);
+  clearAiDestination({ silentSameButton: true });
+  aiDestinationSameAsStart = false;
+  setAiMarker(latlng, place.name);
+  setAiSearchTarget('dest');
+  clearAiPlaceCard();
+  const guide = document.getElementById('aiMapGuide');
+  if (guide) {
+    guide.style.display = 'block';
+    guide.textContent = '도착지를 지도에서 선택하세요';
+  }
+  toast('출발지로 설정했어요. 도착지를 선택하세요');
+}
+
+async function applyPendingPlaceAsDestination() {
+  if (!aiPendingPlace) return;
+  const place = { ...aiPendingPlace };
+  const latlng = new kakao.maps.LatLng(place.lat, place.lng);
+  if (!createAiMarker) await setCurrentLocationAsAiStart({ silent: true, recenter: false });
+  setAiDestinationMarker(latlng, place.name);
+  clearAiPlaceCard();
+  await previewDirectPedestrianRoute(place);
+}
+
+function setCurrentLocationAsAiStart(options = {}) {
+  const useFallback = () => {
+    const latlng = new kakao.maps.LatLng(S.lat, S.lng);
+    setAiMarker(latlng, '현재 위치');
+  };
+  if (!navigator.geolocation) {
+    useFallback();
+    return Promise.resolve();
+  }
+  if (!options.silent) toast('현재 위치 확인 중…');
+  return new Promise(resolve => {
+    navigator.geolocation.getCurrentPosition(pos => {
+      S.lat = pos.coords.latitude;
+      S.lng = pos.coords.longitude;
+      const latlng = new kakao.maps.LatLng(S.lat, S.lng);
+      setAiMarker(latlng, '현재 위치');
+      if (!options.recenter && createMap) createMap.setCenter(new kakao.maps.LatLng(aiPendingPlace?.lat || S.lat, aiPendingPlace?.lng || S.lng));
+      resolve();
+    }, () => {
+      useFallback();
+      if (!options.silent) toast('현재 위치를 다시 확인하지 못해 마지막 위치를 사용해요');
+      resolve();
+    }, { enableHighAccuracy: true, timeout: 5000 });
+  });
+}
+
+async function previewDirectPedestrianRoute(destination) {
+  const seq = ++aiDirectRouteSeq;
+  const guide = document.getElementById('aiMapGuide');
+  if (guide) {
+    guide.style.display = 'block';
+    guide.textContent = '도보 경로 찾는 중…';
+  }
+
+  const start = makeRouteLatLng(S.lat, S.lng);
+  const end = makeRouteLatLng(destination.lat, destination.lng);
+  let routePath = [start, end];
+  let routeSource = '';
+  try {
+    routePath = await fetchTmapPedestrianRoute([start, end]);
+    routeSource = 'tmap';
+  } catch (error) {
+    console.warn('Direct pedestrian route failed', error);
+    toast('보행자 경로를 찾지 못해 직선으로 표시했어요');
+  }
+  if (seq !== aiDirectRouteSeq) return;
+
+  const km = pathLengthMeters(routePath) / 1000;
+  const course = {
+    name: makeDestinationCourseName(destination.name),
+    km: (Number.isFinite(km) && km > 0 ? km : 0).toFixed(1),
+    pace: 6.7,
+    tags: [],
+    meta: '',
+    pt: 'urban',
+    color: '#1565C0',
+    routeLabel: '',
+    startLabel: getAiCoursePlaceLabel(),
+    destinationLabel: destination.name,
+    points: serializeLatLngPath(routePath),
+    routeKind: 'destination',
+    routeSource,
+    fromAi: true
+  };
+  S.courses = [course];
+  S.sel = 0;
+  renderCourses();
+  selCourse(0);
+}
+
 function clearSelectedAddr() {
+  clearAiPlaceCard();
   document.getElementById('aiSelectedAddr').style.display = 'none';
   document.getElementById('aiMapGuide').style.display = 'block';
   document.getElementById('addrInput').value = '';
@@ -2201,7 +2424,7 @@ function setAiSearchTarget(target) {
   if (startBtn) startBtn.classList.toggle('active', aiSearchTarget === 'start');
   if (destBtn) destBtn.classList.toggle('active', aiSearchTarget === 'dest');
   if (input) {
-    input.placeholder = aiSearchTarget === 'dest' ? '목적지 주소·장소 검색' : '출발지 주소·장소 검색';
+    input.placeholder = '장소·가게 검색';
     input.value = getAiSearchInputValue();
   }
   if (dropdown) dropdown.style.display = 'none';
@@ -2273,6 +2496,7 @@ function setAiDestinationMarker(latlng, addrName) {
 }
 
 function clearAiDestination(options = {}) {
+  clearAiPlaceCard();
   aiDestination = null;
   if (createDestMarker) { createDestMarker.setMap(null); createDestMarker = null; }
   const destBox = document.getElementById('aiSelectedDest');
@@ -2362,8 +2586,7 @@ function selectAddress(name, lat, lng) {
   document.getElementById('addrInput').value = name;
   document.getElementById('addrDropdown').style.display = 'none';
   if (createMode === 'ai') {
-    if (aiSearchTarget === 'dest') setAiDestinationMarker(latlng, name);
-    else setAiMarker(latlng, name);
+    showAiPlaceCard(latlng, name, '검색한 장소');
   }
 }
 
@@ -2890,14 +3113,6 @@ function calcCalories(km) {
   return Math.round(met * weight * hours);
 }
 
-function getPaceLabel() {
-  const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
-  const valid = records.filter(r => r.pace && r.pace !== '—');
-  if (valid.length === 0) return '기본값';
-  if (valid.length < 3) return '학습 중';
-  return '내 평균 페이스';
-}
-
 function refreshStats(km) {
   // hudDist 제거됨
   document.getElementById('dDist').innerHTML = km.toFixed(2) + '<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small>';
@@ -3015,6 +3230,7 @@ function resetAiCourseSuggestions() {
   S.courses = [];
   S.sel = -1;
   clearAiRoutePreview();
+  setBottomSheetOpen(false);
   const list = document.getElementById('courseList');
   const empty = document.getElementById('emptyState');
   if (list) {
@@ -3022,8 +3238,8 @@ function resetAiCourseSuggestions() {
     list.style.display = 'none';
   }
   if (empty) {
-    empty.style.display = 'block';
-    empty.innerHTML = '<div class="empty-icon">⌁</div><div class="empty-title">출발지를 기준으로 다시 추천받아보세요</div><div class="empty-desc">추천 후 지도 위에 경로가 표시돼요</div>';
+    empty.style.display = 'none';
+    empty.innerHTML = '';
   }
 }
 
@@ -4031,14 +4247,30 @@ function showAiRoutePreview(course, options = {}) {
   }
   const guide = document.getElementById('aiMapGuide');
   if (guide) {
+    const distanceLabel = getAiRouteDistanceLabel(course);
+    const routeTypeLabel = isDestinationRoute ? '단방향' : '왕복';
     guide.style.display = 'block';
-    guide.textContent = `${course.name} · ${isDestinationRoute ? '단방향' : '왕복'}`;
+    guide.textContent = [course.name, distanceLabel, routeTypeLabel].filter(Boolean).join(' · ');
   }
 }
 
 function getRouteLabelPosition(path) {
   if (!Array.isArray(path) || !path.length) return path && path[0];
   return path[Math.floor((path.length - 1) / 2)];
+}
+
+function getAiRouteDistanceLabel(course) {
+  if (!course) return '';
+  const explicitKm = parseFloat(course.km ?? course.dist);
+  if (Number.isFinite(explicitKm) && explicitKm > 0) return explicitKm.toFixed(1) + 'km';
+  if (Array.isArray(course.points) && course.points.length > 1) {
+    const path = course.points
+      .map(point => makeRouteLatLng(point.lat, point.lng))
+      .filter(Boolean);
+    const measuredKm = pathLengthMeters(path) / 1000;
+    if (Number.isFinite(measuredKm) && measuredKm > 0) return measuredKm.toFixed(1) + 'km';
+  }
+  return '';
 }
 
 function ensureAiRouteZoomListener() {
@@ -5536,9 +5768,7 @@ function showSavedCourseOnCreateMap(course, attempt) {
     document.querySelectorAll('.course-card').forEach(card => card.classList.remove('selected'));
     setCreateMode('ai');
     if (createAiMarker) createAiMarker.setMap(null);
-    bottomSheetOpen = false;
-    const area = document.getElementById('aiCourseArea');
-    if (area) area.style.maxHeight = '0';
+    setBottomSheetOpen(false);
     showAiRoutePreview(course);
     toast((course.name || '저장 코스') + '를 지도에 표시했어요');
   }, attempt ? 250 : 120);
@@ -6483,26 +6713,8 @@ function updateGoalBar() {
   const pctEl = document.getElementById('goalPct');
   const textEl = document.getElementById('homeGoalText');
   if (fill) fill.style.width = pct + '%';
-  if (pctEl) pctEl.textContent = pct + '% 달성';
+  if (pctEl) pctEl.textContent = pct + '%';
   if (textEl) textEl.textContent = weekDist.toFixed(1) + ' / ' + goal + 'km';
-
-  // 페이스 정보
-  const paceEl = document.getElementById('myPaceInfo');
-  if (paceEl) {
-    const avgPace = getAvgPaceSecPerKm();
-    const pm = Math.floor(avgPace / 60), ps = String(avgPace % 60).padStart(2, '0');
-    const label = getPaceLabel();
-    const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
-    const validCount = records.filter(r => r.pace && r.pace !== '—').length;
-    if (validCount === 0) {
-      paceEl.textContent = '런닝 기록이 쌓이면 페이스 기반 칼로리를 계산해요 🏃';
-    } else if (validCount < 3) {
-      paceEl.textContent = `페이스 학습 중 (${validCount}/3회) — 현재 ${pm}'${ps}"/km 기준`;
-    } else {
-      paceEl.textContent = `평균 페이스 ${pm}'${ps}"/km 기준으로 칼로리를 계산해요 ✓`;
-      paceEl.style.color = 'var(--coral)';
-    }
-  }
 }
 
 function renderMyPage() {
