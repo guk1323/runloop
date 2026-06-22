@@ -647,15 +647,15 @@ if ('serviceWorker' in navigator) {
       <div style="margin-top:10px;font-size:12px;color:var(--gray-500);border-top:1px solid var(--gray-100);padding-top:10px;" id="wSummary">날씨 불러오는 중…</div>
     </div>
 
-    <!-- ── 오늘의 추천 코스 ── -->
+    <!-- ── 근처 문화 스팟 ── -->
     <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div style="font-size:15px;font-weight:700;color:var(--gray-900);">근처 코스</div>
+      <div style="font-size:15px;font-weight:700;color:var(--gray-900);">근처 문화 스팟</div>
       <div style="font-size:12px;color:var(--coral);font-weight:500;cursor:pointer;" onclick="loadNearCourses()">새로고침</div>
     </div>
     <div id="nearCourseList">
       <div style="text-align:center;padding:20px 0;color:var(--gray-500);">
         <div class="ml-spin" style="margin:0 auto 8px;"></div>
-        <div style="font-size:13px;">주변 코스를 찾는 중이에요…</div>
+        <div style="font-size:13px;">가까운 문화 스팟을 찾는 중이에요…</div>
       </div>
     </div>
 
@@ -919,7 +919,7 @@ if ('serviceWorker' in navigator) {
           <div class="my-info-value" id="myBodyInfo">—</div>
         </div>
         <div class="my-info-card">
-          <div class="my-info-label">기록 출처</div>
+          <div class="my-info-label">활동 데이터</div>
           <div class="my-info-value" id="mySourceInfo">—</div>
         </div>
       </div>
@@ -3221,7 +3221,10 @@ const AI_DISTANCE_TOLERANCE_KM = 0.5;
 const AI_ROUTE_DISTANCE_BUFFER_KM = 0.15;
 const AI_COURSE_CACHE_KEY = 'runloopAiCourseCacheV12';
 const AI_COURSE_CACHE_MS = 10 * 60 * 1000;
-const HOME_RECOMMENDATION_COUNT = 1;
+const HOME_RECOMMENDATION_COUNT = 5;
+const CULTURE_SPOT_SEARCH_RADIUS_METERS = 10000;
+const CULTURE_SPOT_VISIT_RADIUS_METERS = 150;
+const CULTURE_SPOT_VISITS_KEY = 'runloopCultureSpotVisitsV1';
 let aiRouteOverlays = [];
 let aiRouteActiveCourse = null;
 let aiRouteZoomListenerAttached = false;
@@ -4520,11 +4523,11 @@ function saveRecord() {
   toast(`기록 저장 완료! +${earnedPts}포인트 🏆`);
 }
 
-/* ── 오늘의 추천 코스 (위치 기반) ── */
+/* ── 근처 문화 스팟 (위치 기반) ── */
 function loadNearCourses(options = {}) {
   const wrap = document.getElementById('nearCourseList');
   if (!wrap) return;
-  wrap.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--gray-500);"><div class="ml-spin" style="margin:0 auto 8px;"></div><div style="font-size:13px;">주변 코스를 찾는 중이에요…</div></div>';
+  wrap.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--gray-500);"><div class="ml-spin" style="margin:0 auto 8px;"></div><div style="font-size:13px;">10km 이내 문화 스팟을 찾는 중이에요…</div></div>';
 
   const retry = Number(options.retry || 0);
   if (!S.kakaoReady) {
@@ -4537,7 +4540,7 @@ function loadNearCourses(options = {}) {
   }
 
   const ps = new kakao.maps.services.Places();
-  const keywords = ['공원', '한강', '산책로'];
+  const keywords = ['문화재', '박물관', '미술관', '전시', '공연장', '팝업스토어'];
   const results = [];
   let done = 0;
 
@@ -4545,15 +4548,17 @@ function loadNearCourses(options = {}) {
     ps.keywordSearch(kw, (data, status) => {
       done++;
       if (status === kakao.maps.services.Status.OK) {
-        data.slice(0, 2).forEach(p => {
+        data.slice(0, 3).forEach(p => {
           const dist = getDistKm(S.lat, S.lng, parseFloat(p.y), parseFloat(p.x));
-          if (dist < 5) results.push({ ...p, distFromMe: dist });
+          if (dist <= CULTURE_SPOT_SEARCH_RADIUS_METERS / 1000) {
+            results.push({ ...p, distFromMe: dist, cultureType: getCultureSpotType(p, kw) });
+          }
         });
       }
       if (done === keywords.length) renderNearCourses(results);
     }, {
       location: new kakao.maps.LatLng(S.lat, S.lng),
-      radius: 5000,
+      radius: CULTURE_SPOT_SEARCH_RADIUS_METERS,
       sort: kakao.maps.services.SortBy.DISTANCE
     });
   });
@@ -4561,19 +4566,91 @@ function loadNearCourses(options = {}) {
 
 function getFallbackNearCourses() {
   return [{
-    id: 'fallback-near-course',
+    id: 'fallback-culture-spot',
     place_name: getNearCourseFallbackName(),
     y: S.lat,
     x: S.lng,
     distFromMe: 0,
+    cultureType: '문화 스팟',
     fallback: true
   }];
 }
 
 function getNearCourseFallbackName() {
   const loc = document.getElementById('wLocation')?.textContent || '';
-  if (loc && !loc.includes('불러오는')) return loc;
-  return '현재 위치 주변';
+  if (loc && !loc.includes('불러오는')) return loc + ' 문화 산책';
+  return '현재 위치 주변 문화 스팟';
+}
+
+function getCultureSpotType(place, keyword) {
+  const text = [place.category_name, place.place_name, keyword].filter(Boolean).join(' ');
+  if (/문화재|궁|향교|사찰|성곽|유적|역사/.test(text)) return '문화재';
+  if (/미술관|갤러리|전시/.test(text)) return '전시';
+  if (/박물관|기념관/.test(text)) return '박물관';
+  if (/공연|극장|콘서트/.test(text)) return '공연';
+  if (/팝업|스토어|편집샵/.test(text)) return '팝업';
+  return keyword || '문화 스팟';
+}
+
+function getCultureSpotIcon(type) {
+  if (/문화재/.test(type)) return '🏛️';
+  if (/전시|미술/.test(type)) return '🖼️';
+  if (/박물관/.test(type)) return '🏺';
+  if (/공연/.test(type)) return '🎭';
+  if (/팝업/.test(type)) return '✨';
+  return '📍';
+}
+
+function getCultureSpotInfoUrl(placeName, placeUrl) {
+  if (placeUrl && /^https?:\/\//.test(placeUrl)) return placeUrl;
+  return 'https://search.naver.com/search.naver?query=' + encodeURIComponent(placeName + ' 소개');
+}
+
+function getCultureSpotVisitKey(spot) {
+  const name = String(spot && spot.place_name || spot && spot.name || '문화 스팟').replace(/\s+/g, '').slice(0, 40);
+  const lat = Number(spot && (spot.y ?? spot.lat));
+  const lng = Number(spot && (spot.x ?? spot.lng));
+  const latKey = Number.isFinite(lat) ? lat.toFixed(4) : '0.0000';
+  const lngKey = Number.isFinite(lng) ? lng.toFixed(4) : '0.0000';
+  return [name, latKey, lngKey].join(':');
+}
+
+function readCultureSpotVisits() {
+  try {
+    const visits = JSON.parse(localStorage.getItem(CULTURE_SPOT_VISITS_KEY) || '{}');
+    return visits && typeof visits === 'object' && !Array.isArray(visits) ? visits : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function setCultureSpotVisit(spot) {
+  const visits = readCultureSpotVisits();
+  const key = getCultureSpotVisitKey(spot);
+  if (visits[key]) return { visited: true, isNew: false, data: visits[key] };
+  const visit = {
+    name: String(spot.place_name || '문화 스팟'),
+    type: spot.cultureType || getCultureSpotType(spot, ''),
+    lat: Number(spot.y) || S.lat,
+    lng: Number(spot.x) || S.lng,
+    visitedAt: new Date().toISOString(),
+    rewardStatus: 'pending'
+  };
+  visits[key] = visit;
+  try { localStorage.setItem(CULTURE_SPOT_VISITS_KEY, JSON.stringify(visits)); } catch (_) {}
+  return { visited: true, isNew: true, data: visit };
+}
+
+function getCultureSpotVisitState(spot) {
+  const visits = readCultureSpotVisits();
+  const key = getCultureSpotVisitKey(spot);
+  if (visits[key]) return { visited: true, isNew: false, data: visits[key] };
+  if (!spot || spot.fallback) return { visited: false, isNew: false, data: null };
+  const distMeters = Number(spot.distFromMe) * 1000;
+  if (Number.isFinite(distMeters) && distMeters <= CULTURE_SPOT_VISIT_RADIUS_METERS) {
+    return setCultureSpotVisit(spot);
+  }
+  return { visited: false, isNew: false, data: null };
 }
 
 function getDistKm(lat1, lng1, lat2, lng2) {
@@ -4590,98 +4667,99 @@ function renderNearCourses(results) {
     results = getFallbackNearCourses();
   }
 
-  // 중복 제거 + 거리순 정렬 + 홈 추천 1개만 표시
+  // 중복 제거 + 거리순 정렬 + 가까운 문화 스팟 표시
   const seen = new Set();
   let unique = results
-    .filter(r => { if (seen.has(r.id)) return false; seen.add(r.id); return true; })
+    .filter(r => {
+      const key = r.id || getCultureSpotVisitKey(r);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
     .sort((a, b) => a.distFromMe - b.distFromMe)
     .slice(0, HOME_RECOMMENDATION_COUNT);
   if (!unique.length) unique = getFallbackNearCourses();
 
-  const icons = ['🌳','🏞️','🌿','🏃','💧'];
   const iconBgs = ['#FFF0EC','#F4EFE8','#F0F8DB','#FFF5DB','#EEF8EA'];
-  const courseKm = [3.2, 5.0, 4.5, 2.8, 6.1];
-  const tags = ['평지 · 산책로', 'Park Loop', '한강변', '야간 가능', '뷰 좋음'];
-
-  const tagSets = [
-    [{l:'안전',c:'tg'},{l:'평지',c:'tb'}],
-    [{l:'야간 가능',c:'tg'},{l:'공원',c:'tg'}],
-    [{l:'뷰 좋음',c:'tb'},{l:'경사 포함',c:'ta'}],
-  ];
   wrap.innerHTML = unique.map((p, i) => {
-    const km = courseKm[i % courseKm.length];
-    const cal = Math.round(km * 60);
-    const time = Math.round(km * 7);
     const dist = p.distFromMe < 1
       ? Math.round(p.distFromMe * 1000) + 'm'
       : p.distFromMe.toFixed(1) + 'km';
-    const tset = tagSets[i % tagSets.length];
     const featured = i === 0 ? 'border:1.5px solid var(--coral);box-shadow:0 8px 20px rgba(242,122,94,.10);' : 'border:1px solid var(--gray-100);';
-    const placeName = String(p.place_name || '오늘의 추천');
+    const placeName = String(p.place_name || '오늘의 문화 스팟');
+    const type = p.cultureType || getCultureSpotType(p, '');
+    const introUrl = getCultureSpotInfoUrl(placeName, p.place_url);
     const lat = Number(p.y) || S.lat;
     const lng = Number(p.x) || S.lng;
+    const visitState = getCultureSpotVisitState(p);
+    const reward = visitState.visited ? '방문 기록됨' : i === 0 ? '근처 발견 후보' : '방문 컬렉션';
+    const rewardClass = visitState.visited ? 'tg' : 'tb';
+    const footerText = visitState.visited
+      ? '방문 기록됨 · 리워드는 추후 지급'
+      : `${Math.round(CULTURE_SPOT_VISIT_RADIUS_METERS)}m 안에서 방문 기록`;
     return `
       <div style="background:#fff;border-radius:var(--r);${featured}overflow:hidden;margin-bottom:10px;">
         <div style="display:flex;gap:14px;padding:14px;">
           <div style="position:relative;flex-shrink:0;">
-            <div style="width:52px;height:52px;border-radius:12px;background:${iconBgs[i % iconBgs.length]};display:flex;align-items:center;justify-content:center;font-size:24px;">${icons[i % icons.length]}</div>
-            <div style="position:absolute;top:-5px;right:-5px;background:var(--ink);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:999px;">AI</div>
+            <div style="width:52px;height:52px;border-radius:12px;background:${iconBgs[i % iconBgs.length]};display:flex;align-items:center;justify-content:center;font-size:24px;">${getCultureSpotIcon(type)}</div>
+            <div style="position:absolute;top:-5px;right:-5px;background:var(--ink);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:999px;">문화</div>
           </div>
           <div style="flex:1;min-width:0;">
-            <div style="font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(placeName)} 코스</div>
-            <div style="font-size:12px;color:var(--gray-500);margin-bottom:7px;">출발지까지 ${dist} · 약 ${time}분</div>
-            <div style="display:flex;gap:5px;">${tset.map(t=>`<span style="font-size:11px;font-weight:500;padding:3px 8px;border-radius:999px;" class="tag ${t.c}">${t.l}</span>`).join('')}</div>
+            <div style="font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(placeName)}</div>
+            <div style="font-size:12px;color:var(--gray-500);margin-bottom:7px;">${escapeHtml(dist)} · ${escapeHtml(type)}</div>
+            <div style="display:flex;gap:5px;flex-wrap:wrap;">
+              <span style="font-size:11px;font-weight:500;padding:3px 8px;border-radius:999px;" class="tag ${rewardClass}">${escapeHtml(reward)}</span>
+              <span style="font-size:11px;font-weight:500;padding:3px 8px;border-radius:999px;" class="tag tb">iPhone 탐험</span>
+            </div>
           </div>
           <div style="text-align:right;flex-shrink:0;">
-            <div style="font-size:22px;font-weight:700;color:var(--coral);line-height:1;">${km}</div>
-            <div style="font-size:11px;color:var(--gray-500);">km</div>
+            <div style="font-size:18px;font-weight:800;color:var(--coral);line-height:1;">${escapeHtml(dist)}</div>
+            <div style="font-size:11px;color:var(--gray-500);">거리</div>
           </div>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--gray-100);background:var(--gray-50);">
-          <div style="display:flex;gap:14px;">
-            <div style="font-size:12px;color:var(--gray-500);">⏱ <span style="font-weight:600;color:var(--gray-700);">${time}분</span></div>
-            <div style="font-size:12px;color:var(--gray-500);">🔥 <span style="font-weight:600;color:var(--gray-700);">${cal}kcal</span></div>
+          <div style="font-size:12px;color:var(--gray-500);">
+            ${escapeHtml(footerText)}
           </div>
-          <div style="display:flex;gap:6px;">
-            <button data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" data-km="${km}" onclick="goToAiFromHomeButton(this)" style="background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:7px 14px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">구경하기</button>
+          <div style="display:flex;gap:6px;flex-shrink:0;">
+            <button data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromHomeButton(this)" style="background:#fff;color:var(--gray-700);border:1px solid var(--gray-300);font-size:12px;font-weight:700;padding:7px 12px;border-radius:999px;cursor:pointer;font-family:inherit;">소개 보기</button>
+            <button data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" onclick="goToAiFromHomeButton(this)" style="background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:7px 12px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">도착지</button>
           </div>
         </div>
       </div>`;
   }).join('');
 }
 
-function goToAiFromHomeButton(button) {
-  const data = button && button.dataset ? button.dataset : {};
-  goToAiWithLocation(data.place || '오늘의 추천', data.lat, data.lng, data.km);
+function openCultureSpotInfoFromHomeButton(button) {
+  const url = button && button.dataset ? button.dataset.url : '';
+  if (!url) return;
+  window.open(url, '_blank', 'noopener');
 }
 
-function goToAiWithLocation(name, lat, lng, km) {
-  // 홈 추천 장소를 만들기 화면의 AI 코스 생성 흐름으로 넘긴다.
+function goToAiFromHomeButton(button) {
+  const data = button && button.dataset ? button.dataset : {};
+  goToAiWithLocation(data.place || '오늘의 문화 스팟', data.lat, data.lng);
+}
+
+function goToAiWithLocation(name, lat, lng) {
+  // 홈 문화 스팟을 만들기 화면의 목적지 경로 흐름으로 넘긴다.
   const createTab = document.querySelector('[data-tab="create"]');
   switchTab('create', createTab);
   setCreateMode('ai');
-  applyHomeRecommendationToCreate(name, lat, lng, km, 0);
+  applyHomeRecommendationToCreate(name, lat, lng, 0);
 }
 
-function applyHomeRecommendationToCreate(name, lat, lng, km, attempt) {
+function applyHomeRecommendationToCreate(name, lat, lng, attempt) {
   setTimeout(() => {
     if (!S.kakaoReady || !createMap) {
-      if (attempt < 10) applyHomeRecommendationToCreate(name, lat, lng, km, attempt + 1);
+      if (attempt < 10) applyHomeRecommendationToCreate(name, lat, lng, attempt + 1);
       return;
     }
     const safeLat = parseFloat(lat);
     const safeLng = parseFloat(lng);
     if (!Number.isFinite(safeLat) || !Number.isFinite(safeLng)) return;
-    const targetKm = parseFloat(km);
-    const slider = document.getElementById('kmSlider');
-    const kmVal = document.getElementById('kmVal');
-    if (slider && Number.isFinite(targetKm)) {
-      slider.value = Math.max(parseFloat(slider.min || '1'), Math.min(parseFloat(slider.max || '20'), targetKm));
-      if (kmVal) kmVal.textContent = parseFloat(slider.value).toFixed(1) + 'km';
-    }
-    const latlng = new kakao.maps.LatLng(safeLat, safeLng);
-    setAiMarker(latlng, name + ' 근처');
-    generateCourses();
+    aiPendingPlace = { lat: safeLat, lng: safeLng, name: name || '문화 스팟', sub: '홈에서 선택한 문화 스팟' };
+    applyPendingPlaceAsDestination();
   }, attempt ? 250 : 350);
 }
 
@@ -4966,12 +5044,12 @@ function hasSafeRecordPhoto(value) {
 
 function getRecordSourceLabel(source) {
   const map = {
-    web_gps: '웹 GPS',
-    web_sim: '웹 시뮬레이션',
+    web_gps: 'iPhone GPS',
+    web_sim: '시연 기록',
     healthkit: 'HealthKit',
     apple_watch: 'Apple Watch'
   };
-  return map[source] || '웹 기록';
+  return map[source] || 'Runloop 기록';
 }
 
 function escapeHtml(value) {
@@ -6772,8 +6850,8 @@ function getMySourceSummary(records) {
   const sources = new Set(records.map(r => r.source || 'web_sim'));
   if (sources.has('apple_watch')) return 'Apple Watch';
   if (sources.has('healthkit')) return 'HealthKit';
-  if (sources.has('web_gps')) return '웹 GPS';
-  return '웹 기록';
+  if (sources.has('web_gps')) return 'iPhone GPS';
+  return '시연 기록';
 }
 
 window.addEventListener('resize', () => {
