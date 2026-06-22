@@ -219,7 +219,7 @@ if ('serviceWorker' in navigator) {
   .record-dist{font-size:16px;font-weight:700;color:var(--coral);}
 
   .mc-grid{display:flex;flex-direction:column;gap:10px;padding-bottom:108px!important;}
-  .mc-card{position:relative;background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:13px;overflow:hidden;display:flex;flex-direction:column;gap:11px;box-shadow:0 8px 18px rgba(39,49,58,.035);}
+  .mc-card{position:relative;background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:13px;overflow:hidden;display:flex;flex-direction:column;gap:11px;flex-shrink:0;box-shadow:0 8px 18px rgba(39,49,58,.035);}
   .mc-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-right:34px;}
   .mc-title{min-width:0;flex:1;}
   .mc-name{font-size:15px;font-weight:800;color:var(--gray-900);line-height:1.28;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -227,13 +227,14 @@ if ('serviceWorker' in navigator) {
   .mc-distance{text-align:right;flex-shrink:0;}
   .mc-distance-value{font-size:23px;font-weight:900;color:var(--coral);line-height:1;}
   .mc-distance-unit{font-size:11px;color:var(--gray-500);margin-top:1px;}
-  .mc-actions{display:grid;grid-template-columns:1.15fr 1fr 1fr 34px 34px;gap:6px;flex-shrink:0;padding-top:10px;border-top:1px solid var(--gray-100);}
+  .mc-actions{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;flex-shrink:0;padding-top:10px;border-top:1px solid var(--gray-100);}
   .mc-btn{height:34px;padding:0 10px;border-radius:var(--rs);font-size:12px;font-weight:800;border:1px solid transparent;cursor:pointer;font-family:inherit;white-space:nowrap;}
-  .mc-btn-run{background:var(--ink);color:#fff;}
+  .mc-btn-run{grid-column:span 3;background:var(--ink);color:#fff;}
+  .mc-btn-map{grid-column:span 3;}
+  .mc-btn-share,.mc-btn-edit,.mc-btn-delete{grid-column:span 2;}
   .mc-btn-edit{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
   .mc-fav{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;border:1px solid var(--gray-100);background:rgba(255,255,255,.9);color:var(--gray-300);font-size:18px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(39,49,58,.06);}
   .mc-fav.active{background:var(--amber-light);border-color:#E8D6B4;color:var(--amber);}
-  .mc-icon-btn{width:34px;padding:0;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;font-size:15px;}
   .mc-btn-delete{background:#fff;color:var(--red);border-color:var(--red-light);}
   .course-filter{display:flex;gap:6px;padding:10px 12px 0;background:#fff;flex-shrink:0;}
   .course-filter button{height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--gray-100);background:#fff;color:var(--gray-500);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;}
@@ -5009,11 +5010,11 @@ function renderMyCourses() {
         </div>
       </div>
       <div class="mc-actions">
-        <button class="mc-btn mc-btn-run" onclick="event.stopPropagation(); startMyCoursRun(${courseId})">시작</button>
-        <button class="mc-btn mc-btn-map" onclick="event.stopPropagation(); viewCourseOnMap(${courseId})">지도</button>
-        <button class="mc-btn mc-btn-share" onclick="event.stopPropagation(); openSocialComposer('course',{courseId:${courseId}})">공유</button>
-        <button class="mc-btn mc-btn-edit mc-icon-btn" onclick="event.stopPropagation(); openRename(${courseId})" aria-label="이름 편집" title="이름 편집">✎</button>
-        <button class="mc-btn mc-btn-delete mc-icon-btn" onclick="event.stopPropagation(); deleteCourseFromCard(${courseId})" aria-label="코스 삭제" title="코스 삭제">×</button>
+        <button class="mc-btn mc-btn-run" onclick="event.stopPropagation(); startMyCoursRun(${courseId})">코스 시작</button>
+        <button class="mc-btn mc-btn-map" onclick="event.stopPropagation(); viewCourseOnMap(${courseId})">지도에서 보기</button>
+        <button class="mc-btn mc-btn-share" onclick="event.stopPropagation(); openSocialComposer('course',{courseId:${courseId}})">소셜 공유</button>
+        <button class="mc-btn mc-btn-edit" onclick="event.stopPropagation(); openRename(${courseId})">제목 편집</button>
+        <button class="mc-btn mc-btn-delete" onclick="event.stopPropagation(); deleteCourseFromCard(${courseId})">코스 삭제</button>
       </div>
     `;
     list.appendChild(card);
