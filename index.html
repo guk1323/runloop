@@ -72,6 +72,11 @@ if ('serviceWorker' in navigator) {
   .gen-btn{margin-top:10px;width:100%;height:44px;background:var(--ink);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s,transform .15s;box-shadow:0 10px 22px rgba(28,36,43,.18);}
   .gen-btn:hover{background:#000;transform:translateY(-1px);}
   .gen-btn:disabled{background:var(--gray-300);cursor:not-allowed;}
+  .ai-search-targets{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:rgba(255,255,255,.94);border-radius:var(--rs);padding:3px;box-shadow:0 2px 8px rgba(0,0,0,.13);}
+  .ai-search-targets button{height:30px;border:none;border-radius:6px;background:transparent;color:var(--gray-500);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;}
+  .ai-search-targets button.active{background:var(--ink);color:#fff;}
+  .ai-same-dest-btn{height:32px;border:1px solid rgba(28,36,43,.12);border-radius:var(--rs);background:rgba(255,255,255,.94);color:var(--gray-700);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.11);}
+  .ai-same-dest-btn.active{background:var(--coral-light);border-color:rgba(242,122,94,.28);color:var(--ink);}
 
   .course-scroll{flex:1;overflow-y:auto;}
   .course-list{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;}
@@ -654,21 +659,32 @@ if ('serviceWorker' in navigator) {
         </button>
       </div>
       <!-- 검색바 (항상 표시) -->
-      <div id="aiSearchBar" style="display:flex;gap:6px;">
-        <div style="position:relative;flex:1;">
-          <input type="text" class="addr-input" id="addrInput" placeholder="주소·장소 검색" autocomplete="off"
+      <div id="aiSearchBar" style="display:flex;flex-direction:column;gap:6px;">
+        <div class="ai-search-targets">
+          <button id="aiSearchStartBtn" class="active" onclick="setAiSearchTarget('start')">출발지</button>
+          <button id="aiSearchDestBtn" onclick="setAiSearchTarget('dest')">목적지</button>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <div style="position:relative;flex:1;">
+          <input type="text" class="addr-input" id="addrInput" placeholder="출발지 주소·장소 검색" autocomplete="off"
             onfocus="prepareAddressSearchInput(this)" onclick="prepareAddressSearchInput(this)" oninput="searchAddress(this.value)"
             style="box-shadow:0 2px 8px rgba(0,0,0,.15);border-color:transparent;">
-          <div id="addrDropdown" style="display:none;position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-radius:var(--rs);z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;"></div>
+            <div id="addrDropdown" style="display:none;position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-radius:var(--rs);z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;"></div>
+          </div>
+          <button onclick="moveToMyLocation()" aria-label="현재 위치로 이동" title="현재 위치" style="width:40px;height:40px;background:#fff;border:none;border-radius:var(--rs);cursor:pointer;font-size:19px;font-weight:800;line-height:1;color:var(--coral-dark);flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);">◎</button>
         </div>
-        <button onclick="moveToMyLocation()" aria-label="현재 위치로 이동" title="현재 위치" style="width:40px;height:40px;background:#fff;border:none;border-radius:var(--rs);cursor:pointer;font-size:19px;font-weight:800;line-height:1;color:var(--coral-dark);flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);">◎</button>
+        <button id="aiSameDestBtn" class="ai-same-dest-btn active" onclick="setAiDestinationSameAsStart()">목적지가 출발지와 같음</button>
       </div>
     </div>
 
     <!-- 선택된 출발지 표시 -->
-    <div id="aiSelectedAddr" style="display:none;position:absolute;top:102px;left:10px;right:10px;z-index:20;background:#fff;border-radius:var(--rs);padding:7px 12px;font-size:12px;font-weight:500;color:var(--gray-900);box-shadow:0 2px 8px rgba(0,0,0,.12);display:none;align-items:center;justify-content:space-between;">
+    <div id="aiSelectedAddr" style="display:none;position:absolute;top:176px;left:10px;right:10px;z-index:20;background:#fff;border-radius:var(--rs);padding:7px 12px;font-size:12px;font-weight:500;color:var(--gray-900);box-shadow:0 2px 8px rgba(0,0,0,.12);display:none;align-items:center;justify-content:space-between;">
       <div><span style="color:var(--coral);font-weight:700;">출발지</span><span style="color:var(--gray-300);margin:0 6px;">·</span><span id="aiSelectedAddrText">—</span></div>
       <button onclick="clearSelectedAddr()" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--gray-500);padding:0 0 0 8px;line-height:1;">×</button>
+    </div>
+    <div id="aiSelectedDest" style="display:none;position:absolute;top:212px;left:10px;right:10px;z-index:20;background:#fff;border-radius:var(--rs);padding:7px 12px;font-size:12px;font-weight:500;color:var(--gray-900);box-shadow:0 2px 8px rgba(0,0,0,.12);align-items:center;justify-content:space-between;">
+      <div><span style="color:var(--ink);font-weight:700;">목적지</span><span style="color:var(--gray-300);margin:0 6px;">·</span><span id="aiSelectedDestText">—</span></div>
+      <button onclick="clearAiDestination()" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--gray-500);padding:0 0 0 8px;line-height:1;">×</button>
     </div>
 
     <!-- 통합 지도 -->
@@ -1511,8 +1527,11 @@ function openBottomSheet() {
 }
 
 /* ── 코스 만들기 — 통합 지도 ── */
-let createMap = null, createAiMarker = null;
+let createMap = null, createAiMarker = null, createDestMarker = null;
 let createMode = 'ai'; // 'ai' or 'draw'
+let aiSearchTarget = 'start';
+let aiDestination = null;
+let aiDestinationSameAsStart = true;
 
 function initCreateMap() {
   if (createMap) {
@@ -1546,7 +1565,8 @@ function initCreateMap() {
           const addr = status === kakao.maps.services.Status.OK
             ? (result[0].road_address ? result[0].road_address.address_name : result[0].address.address_name)
             : `${latlng.getLat().toFixed(4)}, ${latlng.getLng().toFixed(4)}`;
-          setAiMarker(latlng, addr);
+          if (aiSearchTarget === 'dest') setAiDestinationMarker(latlng, addr);
+          else setAiMarker(latlng, addr);
         });
       }
     });
@@ -2114,6 +2134,7 @@ function moveToMyLocation() {
   if (!map) return;
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(pos => {
+      setAiSearchTarget('start');
       S.lat = pos.coords.latitude; S.lng = pos.coords.longitude;
       const latlng = new kakao.maps.LatLng(S.lat, S.lng);
       map.setCenter(latlng); map.setLevel(4);
@@ -2165,6 +2186,40 @@ function clearSelectedAddr() {
   resetAiCourseSuggestions();
 }
 
+function setAiSearchTarget(target) {
+  aiSearchTarget = target === 'dest' ? 'dest' : 'start';
+  if (aiSearchTarget === 'dest' && aiDestinationSameAsStart) setAiDestinationSameAsStart(false, { keepTarget: true });
+  const startBtn = document.getElementById('aiSearchStartBtn');
+  const destBtn = document.getElementById('aiSearchDestBtn');
+  const input = document.getElementById('addrInput');
+  const dropdown = document.getElementById('addrDropdown');
+  if (startBtn) startBtn.classList.toggle('active', aiSearchTarget === 'start');
+  if (destBtn) destBtn.classList.toggle('active', aiSearchTarget === 'dest');
+  if (input) {
+    input.placeholder = aiSearchTarget === 'dest' ? '목적지 주소·장소 검색' : '출발지 주소·장소 검색';
+    input.value = getAiSearchInputValue();
+  }
+  if (dropdown) dropdown.style.display = 'none';
+  addrSearchResults = [];
+}
+
+function setAiDestinationSameAsStart(enabled = true, options = {}) {
+  aiDestinationSameAsStart = !!enabled;
+  const sameBtn = document.getElementById('aiSameDestBtn');
+  if (sameBtn) sameBtn.classList.toggle('active', aiDestinationSameAsStart);
+  if (aiDestinationSameAsStart) {
+    clearAiDestination({ silentSameButton: true });
+    if (!options.keepTarget) setAiSearchTarget('start');
+  }
+  resetAiCourseSuggestions();
+}
+
+function getAiSearchInputValue() {
+  if (aiSearchTarget === 'dest') return aiDestination ? aiDestination.name : '';
+  const selected = document.getElementById('aiSelectedAddrText')?.textContent;
+  return selected && selected !== '—' ? selected : '';
+}
+
 function setAiMarker(latlng, addrName) {
   S.lat = latlng.getLat ? latlng.getLat() : parseFloat(latlng.lat);
   S.lng = latlng.getLng ? latlng.getLng() : parseFloat(latlng.lng);
@@ -2184,6 +2239,50 @@ function setAiMarker(latlng, addrName) {
   document.getElementById('addrInput').value = addrName;
   // 드롭다운 닫기
   document.getElementById('addrDropdown').style.display = 'none';
+}
+
+function setAiDestinationMarker(latlng, addrName) {
+  const lat = latlng.getLat ? latlng.getLat() : parseFloat(latlng.lat);
+  const lng = latlng.getLng ? latlng.getLng() : parseFloat(latlng.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+  aiDestinationSameAsStart = false;
+  const sameBtn = document.getElementById('aiSameDestBtn');
+  if (sameBtn) sameBtn.classList.remove('active');
+  aiDestination = { lat, lng, name: addrName || '목적지' };
+  resetAiCourseSuggestions();
+  if (createDestMarker) createDestMarker.setMap(null);
+  createDestMarker = new kakao.maps.CustomOverlay({
+    map: createMap,
+    position: latlng,
+    content: '<div style="display:flex;flex-direction:column;align-items:center;"><div style="width:14px;height:14px;background:#1C242B;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div><div style="width:2px;height:8px;background:#1C242B;"></div></div>',
+    zIndex: 5
+  });
+  if (createMap) createMap.setCenter(latlng);
+  const destBox = document.getElementById('aiSelectedDest');
+  const destText = document.getElementById('aiSelectedDestText');
+  if (destBox) destBox.style.display = 'flex';
+  if (destText) destText.textContent = aiDestination.name;
+  document.getElementById('aiMapGuide').style.display = 'none';
+  document.getElementById('addrInput').value = aiDestination.name;
+  document.getElementById('addrDropdown').style.display = 'none';
+}
+
+function clearAiDestination(options = {}) {
+  aiDestination = null;
+  if (createDestMarker) { createDestMarker.setMap(null); createDestMarker = null; }
+  const destBox = document.getElementById('aiSelectedDest');
+  if (destBox) destBox.style.display = 'none';
+  if (!options.silentSameButton) {
+    aiDestinationSameAsStart = true;
+    const sameBtn = document.getElementById('aiSameDestBtn');
+    if (sameBtn) sameBtn.classList.add('active');
+    if (aiSearchTarget === 'dest') setAiSearchTarget('start');
+  }
+  if (aiSearchTarget === 'dest') {
+    const input = document.getElementById('addrInput');
+    if (input) input.value = '';
+  }
+  resetAiCourseSuggestions();
 }
 
 function useMyLocation() {
@@ -2206,7 +2305,7 @@ let addrSearchResults = [];
 
 function prepareAddressSearchInput(input) {
   if (!input) return;
-  if (input.value.trim() === '현재 위치') {
+  if (input.value.trim() === '현재 위치' || input.value.trim() === getAiSearchInputValue()) {
     input.value = '';
     addrSearchResults = [];
     const dropdown = document.getElementById('addrDropdown');
@@ -2253,14 +2352,13 @@ function selectAddress(name, lat, lng) {
   const map = createMap || aiMap;
   if (!map) return;
   const latlng = new kakao.maps.LatLng(parseFloat(lat), parseFloat(lng));
-  S.lat = parseFloat(lat);
-  S.lng = parseFloat(lng);
   map.setCenter(latlng);
   map.setLevel(4);
   document.getElementById('addrInput').value = name;
   document.getElementById('addrDropdown').style.display = 'none';
   if (createMode === 'ai') {
-    setAiMarker(latlng, name);
+    if (aiSearchTarget === 'dest') setAiDestinationMarker(latlng, name);
+    else setAiMarker(latlng, name);
   }
 }
 
@@ -2895,11 +2993,13 @@ const COURSES = [
 ];
 const AI_COURSE_RECOMMENDATION_COUNT = 5;
 const AI_COURSE_ROUTE_CANDIDATE_COUNT = 12;
-const AI_NEARBY_ROUTE_CANDIDATE_COUNT = 5;
+const AI_NEARBY_ROUTE_CANDIDATE_COUNT = 8;
 const AI_NEARBY_ROUTE_RADIUS_METERS = 5000;
+const AI_DESTINATION_SAME_THRESHOLD_METERS = 140;
+const AI_SPOT_ROUTE_MIN_LOOP_METERS = 700;
 const AI_DISTANCE_TOLERANCE_KM = 0.5;
 const AI_ROUTE_DISTANCE_BUFFER_KM = 0.15;
-const AI_COURSE_CACHE_KEY = 'runloopAiCourseCacheV11';
+const AI_COURSE_CACHE_KEY = 'runloopAiCourseCacheV12';
 const AI_COURSE_CACHE_MS = 10 * 60 * 1000;
 const HOME_RECOMMENDATION_COUNT = 1;
 let aiRouteOverlays = [];
@@ -2926,8 +3026,9 @@ async function generateCourses() {
   const btn = document.getElementById('genBtn');
   const txt = document.getElementById('genText');
   const sp = document.getElementById('genSpinner');
-  btn.disabled = true; txt.textContent = '보행자 길 찾는 중…'; sp.style.display = 'block';
   const km = parseFloat(document.getElementById('kmSlider').value);
+  const destination = getAiDestinationForRouting();
+  btn.disabled = true; txt.textContent = destination ? '목적지까지 러닝길 찾는 중…' : '보행자 길 찾는 중…'; sp.style.display = 'block';
   try {
     const aiResult = await fetchAiCourses(km);
     const aiCourses = aiResult.courses;
@@ -2959,6 +3060,11 @@ async function fetchAiCourses(km) {
   const cacheKey = getAiCourseCacheKey(payload);
   const cachedCourses = getCachedAiCourses(cacheKey, km);
   if (cachedCourses.length >= AI_COURSE_RECOMMENDATION_COUNT) return { courses: cachedCourses, cached: true };
+  if (payload.destination) {
+    const courses = await buildDestinationAiCourses(km, payload.destination);
+    if (courses.length) setCachedAiCourses(cacheKey, km, courses);
+    return { courses, cached: false };
+  }
 
   const res = await fetch(runloopApiUrl('/api/generate-course'), {
     method: 'POST',
@@ -2989,12 +3095,118 @@ async function buildLocalAiCourses(km) {
   return routeAiCoursesOnRoad(candidates, km);
 }
 
+async function buildDestinationAiCourses(km, destination) {
+  const candidates = await buildDestinationRouteCandidates(km, destination);
+  return routeAiCoursesOnRoad(candidates, km);
+}
+
+async function buildDestinationRouteCandidates(targetKm, destination) {
+  const start = makeRouteLatLng(S.lat, S.lng);
+  const end = makeRouteLatLng(destination.lat, destination.lng);
+  const directMeters = latLngDistanceMeters(start, end);
+  const midpoint = {
+    lat: (S.lat + destination.lat) / 2,
+    lng: (S.lng + destination.lng) / 2
+  };
+  const radius = Math.min(7000, Math.max(2500, directMeters * 0.65));
+  const seeds = await findNearbyRunCourseSeeds({
+    centerLat: midpoint.lat,
+    centerLng: midpoint.lng,
+    originLat: S.lat,
+    originLng: S.lng,
+    radiusMeters: radius
+  });
+  const direct = buildDestinationDirectCandidate(destination, directMeters);
+  const spotCandidates = seeds
+    .map((seed, index) => buildDestinationSpotCandidate(seed, destination, directMeters, index))
+    .filter(Boolean)
+    .sort((a, b) => getDestinationRouteSeedScore(a, directMeters) - getDestinationRouteSeedScore(b, directMeters))
+    .slice(0, AI_COURSE_ROUTE_CANDIDATE_COUNT - 1);
+  return mergeAiCourseCandidates(spotCandidates.concat(direct), AI_COURSE_ROUTE_CANDIDATE_COUNT);
+}
+
+function buildDestinationDirectCandidate(destination, directMeters) {
+  const start = makeRouteLatLng(S.lat, S.lng);
+  const end = makeRouteLatLng(destination.lat, destination.lng);
+  const estimateKm = Math.max(directMeters / 1000, 0.4) * 1.12;
+  return {
+    name: makeDestinationCourseName(destination.name),
+    km: estimateKm.toFixed(1),
+    targetKm: estimateKm.toFixed(1),
+    pace: 6.7,
+    tags: [],
+    meta: '',
+    pt: 'urban',
+    color: '#1565C0',
+    routeLabel: '',
+    startLabel: getAiCoursePlaceLabel(),
+    destinationLabel: destination.name,
+    points: serializeLatLngPath([start, end]),
+    routeKind: 'destination',
+    routeSource: '',
+    fromAi: true
+  };
+}
+
+function buildDestinationSpotCandidate(seed, destination, directMeters, index) {
+  const start = makeRouteLatLng(S.lat, S.lng);
+  const spot = makeRouteLatLng(seed.lat, seed.lng);
+  const end = makeRouteLatLng(destination.lat, destination.lng);
+  const spotOffset = pointLineDistanceMeters(spot, start, end);
+  const maxOffset = Math.max(750, Math.min(2200, directMeters * 0.45));
+  if (spotOffset > maxOffset) return null;
+  const routeMeters = latLngDistanceMeters(start, spot) + latLngDistanceMeters(spot, end);
+  if (routeMeters > Math.max(directMeters + 2800, directMeters * 1.75)) return null;
+  const routePath = [start, spot, end];
+  const estimateKm = Math.max(routeMeters / 1000, 0.4);
+  return {
+    name: makeDestinationCourseName(destination.name, seed.name),
+    km: estimateKm.toFixed(1),
+    targetKm: estimateKm.toFixed(1),
+    pace: 6.6 + (index % 3) * 0.1,
+    tags: [],
+    meta: '',
+    pt: seed.type || 'park',
+    color: '#1565C0',
+    routeLabel: '',
+    startLabel: getAiCoursePlaceLabel(),
+    destinationLabel: destination.name,
+    points: serializeLatLngPath(routePath),
+    routeKind: 'destination',
+    runnerSpot: true,
+    nearbySeed: true,
+    seedName: seed.name,
+    seedType: seed.type,
+    seedDistanceKm: seed.distanceKm,
+    routeSource: '',
+    fromAi: true
+  };
+}
+
+function getDestinationRouteSeedScore(course, directMeters) {
+  const points = normalizeStoredPathPoints(course.points);
+  const seed = points.length >= 3 ? points[1] : null;
+  const directKm = directMeters / 1000;
+  const km = parseFloat(course.km);
+  let score = Number.isFinite(km) ? Math.max(0, km - directKm) : 3;
+  if (course.runnerSpot) score -= 0.8;
+  if (/track|stadium/.test(course.seedType || '')) score -= 0.45;
+  if (/river/.test(course.seedType || '')) score -= 0.25;
+  if (seed) {
+    const start = makeRouteLatLng(S.lat, S.lng);
+    const end = makeRouteLatLng(aiDestination ? aiDestination.lat : points[points.length - 1].lat, aiDestination ? aiDestination.lng : points[points.length - 1].lng);
+    score += Math.min(2, pointLineDistanceMeters(makeRouteLatLng(seed.lat, seed.lng), start, end) / 1200);
+  }
+  return score;
+}
+
 function buildAiCourseRequest(km) {
   return {
     lat: S.lat,
     lng: S.lng,
     km,
     place: getAiCoursePlaceLabel(),
+    destination: getAiDestinationForRouting(),
     weather: document.getElementById('wSummary')?.textContent || '',
     preference: getAiCoursePreference(),
     savedCourseNames: getSavedCourseNames()
@@ -3011,6 +3223,7 @@ function getAiCourseCacheKey(payload) {
     Number.isFinite(lat) ? lat.toFixed(3) : '0.000',
     Number.isFinite(lng) ? lng.toFixed(3) : '0.000',
     cleanAiCachePart(payload.place, 40),
+    payload.destination ? `${Number(payload.destination.lat).toFixed(4)},${Number(payload.destination.lng).toFixed(4)},${cleanAiCachePart(payload.destination.name, 40)}` : 'loop',
     cleanAiCachePart(payload.weather, 50),
     cleanAiCachePart(payload.preference, 60),
     cleanAiCachePart(savedNames, 80)
@@ -3080,39 +3293,96 @@ function completeAiCourseRecommendations(courses, targetKm) {
 
 async function buildNearbyAiCourseCandidates(targetKm) {
   const seeds = await findNearbyRunCourseSeeds();
-  return seeds.slice(0, AI_NEARBY_ROUTE_CANDIDATE_COUNT).map((seed, index) => {
-    const origin = makeRouteLatLng(seed.lat, seed.lng);
-    const kmOffset = 1 + (((index % 5) - 2) * 0.035);
-    const targetMeters = Math.max(800, Math.min(22000, targetKm * 1000 * kmOffset));
-    const routePath = buildAiOutAndBackPath(origin, targetMeters, seed.type || 'park', index + 2);
+  const spotCandidates = seeds
+    .map((seed, index) => buildRunnerSpotLoopCandidate(seed, targetKm, index))
+    .filter(Boolean);
+  const startCandidates = buildStartBasedRunnerCandidates(targetKm, Math.max(3, AI_NEARBY_ROUTE_CANDIDATE_COUNT - spotCandidates.length));
+  return mergeAiCourseCandidates(spotCandidates.concat(startCandidates), AI_NEARBY_ROUTE_CANDIDATE_COUNT);
+}
+
+function buildRunnerSpotLoopCandidate(seed, targetKm, index) {
+  const start = makeRouteLatLng(S.lat, S.lng);
+  const spot = makeRouteLatLng(seed.lat, seed.lng);
+  const targetMeters = Math.max(800, Math.min(22000, targetKm * 1000));
+  const travelMeters = latLngDistanceMeters(start, spot) * 2;
+  if (travelMeters > targetMeters * 0.78) return null;
+  const spotMeters = Math.max(AI_SPOT_ROUTE_MIN_LOOP_METERS, targetMeters - travelMeters);
+  const spotPath = buildAiSpotLoopPath(spot, spotMeters, seed.type || 'park', index);
+  const routePath = [start].concat(spotPath).concat([start]);
+  const actualKm = pathLengthMeters(routePath) / 1000;
+  return {
+    name: makeNearbyCourseName(seed.name, seed.type),
+    km: Number.isFinite(actualKm) && actualKm > 0 ? actualKm.toFixed(1) : targetKm.toFixed(1),
+    targetKm: targetKm.toFixed(1),
+    pace: 6.4 + (index % 3) * 0.12,
+    tags: [],
+    meta: '',
+    pt: seed.type || 'park',
+    color: '#F27A5E',
+    routeLabel: '',
+    startLabel: seed.name,
+    points: serializeLatLngPath(routePath),
+    routeSource: '',
+    fromAi: true,
+    runnerSpot: true,
+    nearbySeed: true,
+    seedType: seed.type,
+    seedDistanceKm: seed.distanceKm
+  };
+}
+
+function buildStartBasedRunnerCandidates(targetKm, count) {
+  return Array.from({ length: Math.max(0, count) }, (_, index) => {
+    const base = COURSES[index % COURSES.length];
+    const targetMeters = Math.max(800, Math.min(22000, targetKm * 1000 * (1 + (index - 1) * 0.035)));
+    const routePath = buildAiOutAndBackPath(makeRouteLatLng(S.lat, S.lng), targetMeters, base.pt || 'urban', index);
     const actualKm = pathLengthMeters(routePath) / 1000;
     return {
-      name: makeNearbyCourseName(seed.name),
+      ...base,
+      name: qualifyAiCourseName(base.name, getAiCoursePlaceLabel(), index),
       km: Number.isFinite(actualKm) && actualKm > 0 ? actualKm.toFixed(1) : targetKm.toFixed(1),
-      pace: 6.5 + (index % 3) * 0.15,
+      targetKm: targetKm.toFixed(1),
       tags: [],
       meta: '',
-      pt: seed.type || 'park',
-      color: '#F27A5E',
-      routeLabel: '',
-      startLabel: seed.name,
       points: serializeLatLngPath(routePath),
+      routeLabel: '',
+      startLabel: getAiCoursePlaceLabel(),
       routeSource: '',
-      fromAi: true,
-      nearbySeed: true,
-      seedDistanceKm: seed.distanceKm
+      fromAi: true
     };
   });
 }
 
-function findNearbyRunCourseSeeds() {
+function buildAiSpotLoopPath(spot, loopMeters, type, index) {
+  if (type === 'track') return buildAiTrackLoopPath(spot, loopMeters, index);
+  if (type === 'river') return buildAiOutAndBackPath(spot, loopMeters, type, index + 3);
+  return buildAiOvalLoop(spot, loopMeters, type || 'park', index + 3);
+}
+
+function buildAiTrackLoopPath(spot, loopMeters, index) {
+  const lapMeters = 400;
+  const laps = Math.max(1, Math.round(loopMeters / lapMeters));
+  const radius = 63;
+  const points = [];
+  const bearing = (index % 4) * 0.35;
+  for (let lap = 0; lap < laps; lap++) {
+    for (let i = 0; i < 8; i++) {
+      const angle = (Math.PI * 2 * i / 8) + bearing;
+      points.push(makeRouteLatLngOffset(spot, Math.sin(angle) * radius, Math.cos(angle) * radius, 0));
+    }
+  }
+  points.push(points[0] || spot);
+  return points;
+}
+
+function findNearbyRunCourseSeeds(options = {}) {
   return new Promise(resolve => {
     if (!S.kakaoReady || !window.kakao || !kakao.maps || !kakao.maps.services) {
       resolve([]);
       return;
     }
     const ps = new kakao.maps.services.Places();
-    const keywords = ['공원', '한강', '산책로', '하천', '운동장'];
+    const keywords = ['운동장', '종합운동장', '공원', '한강', '산책로', '하천', '체육공원'];
     const results = [];
     let done = 0;
     const finishOne = () => {
@@ -3127,23 +3397,31 @@ function findNearbyRunCourseSeeds() {
               const lat = parseFloat(place.y);
               const lng = parseFloat(place.x);
               if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
-              const distanceKm = getDistKm(S.lat, S.lng, lat, lng);
-              if (distanceKm > AI_NEARBY_ROUTE_RADIUS_METERS / 1000) return;
+              const originLat = Number.isFinite(options.originLat) ? options.originLat : S.lat;
+              const originLng = Number.isFinite(options.originLng) ? options.originLng : S.lng;
+              const distanceKm = getDistKm(originLat, originLng, lat, lng);
+              const radiusMeters = Number.isFinite(options.radiusMeters) ? options.radiusMeters : AI_NEARBY_ROUTE_RADIUS_METERS;
+              const centerLat = Number.isFinite(options.centerLat) ? options.centerLat : S.lat;
+              const centerLng = Number.isFinite(options.centerLng) ? options.centerLng : S.lng;
+              if (haversineMeters(centerLat, centerLng, lat, lng) > radiusMeters) return;
               results.push({
                 id: place.id || `${place.place_name}-${lat.toFixed(5)}-${lng.toFixed(5)}`,
                 name: place.place_name || keyword,
                 lat,
                 lng,
                 distanceKm,
-                type: /한강|하천|강|천/.test(place.place_name || keyword) ? 'river' : 'park',
+                type: getRunningSeedType(place.place_name || keyword, place.category_name || keyword),
                 keyword
               });
             });
           }
           finishOne();
         }, {
-          location: new kakao.maps.LatLng(S.lat, S.lng),
-          radius: AI_NEARBY_ROUTE_RADIUS_METERS,
+          location: new kakao.maps.LatLng(
+            Number.isFinite(options.centerLat) ? options.centerLat : S.lat,
+            Number.isFinite(options.centerLng) ? options.centerLng : S.lng
+          ),
+          radius: Number.isFinite(options.radiusMeters) ? options.radiusMeters : AI_NEARBY_ROUTE_RADIUS_METERS,
           sort: kakao.maps.services.SortBy ? kakao.maps.services.SortBy.DISTANCE : undefined
         });
       } catch (_) {
@@ -3169,18 +3447,28 @@ function getNearbySeedScore(seed) {
   const name = String(seed && seed.name || '');
   const distance = Number(seed && seed.distanceKm);
   let score = Number.isFinite(distance) ? distance : 9;
-  if (/한강|공원|산책로|둘레길|하천|천변|수변|운동장/.test(name)) score -= 1.2;
+  if (seed && seed.type === 'track') score -= 2.1;
+  if (seed && seed.type === 'river') score -= 1.6;
+  if (/한강|공원|산책로|둘레길|하천|천변|수변|운동장|체육공원/.test(name)) score -= 1.2;
   if (/역|주차장|아파트|상가|카페|식당/.test(name)) score += 1.5;
   return score;
 }
 
-function makeNearbyCourseName(name) {
+function getRunningSeedType(name, category = '') {
+  const text = `${name || ''} ${category || ''}`;
+  if (/운동장|종합운동장|트랙|경기장|스타디움|체육관|체육공원/.test(text)) return 'track';
+  if (/한강|하천|강|천|수변|천변|강변/.test(text)) return 'river';
+  return 'park';
+}
+
+function makeNearbyCourseName(name, type = '') {
   const cleaned = String(name || '주변 코스')
     .replace(/\s+/g, ' ')
     .replace(/입구|주차장|관리사무소/g, '')
     .trim();
   const base = cleaned || '주변';
-  return `${base} 코스`.slice(0, 18);
+  const suffix = type === 'track' ? '반복 코스' : type === 'river' ? '러닝길' : '코스';
+  return `${base} ${suffix}`.slice(0, 18);
 }
 
 function mergeAiCourseCandidates(candidates, maxCount) {
@@ -3207,6 +3495,21 @@ function getAiCoursePlaceLabel() {
   const weatherLoc = document.getElementById('wLocation')?.textContent;
   if (weatherLoc && !weatherLoc.includes('불러오는')) return weatherLoc;
   return '현재 위치 주변';
+}
+
+function getAiDestinationForRouting() {
+  if (aiDestinationSameAsStart) return null;
+  if (!aiDestination) return null;
+  const distanceMeters = haversineMeters(S.lat, S.lng, aiDestination.lat, aiDestination.lng);
+  if (!Number.isFinite(distanceMeters) || distanceMeters <= AI_DESTINATION_SAME_THRESHOLD_METERS) return null;
+  return { ...aiDestination, distanceMeters };
+}
+
+function makeDestinationCourseName(destinationName, viaName = '') {
+  const dest = String(destinationName || '목적지').replace(/\s+/g, ' ').trim();
+  const via = String(viaName || '').replace(/\s+/g, ' ').trim();
+  if (via) return `${via} 경유`.slice(0, 18);
+  return `${dest} 러닝길`.slice(0, 18);
 }
 
 function getAiCoursePreference() {
@@ -3241,7 +3544,7 @@ async function routeAiCoursesOnRoad(courses, targetKm) {
   const candidates = courses.slice(0, AI_COURSE_ROUTE_CANDIDATE_COUNT);
   const routed = await Promise.all(candidates.map(async course => {
     try {
-      return await routeAiCourseOnRoad(course, targetKm);
+      return await routeAiCourseOnRoad(course, course.targetKm || targetKm);
     } catch (error) {
       console.warn('AI pedestrian route failed', error);
       return null;
@@ -3255,8 +3558,9 @@ async function routeAiCoursesOnRoad(courses, targetKm) {
 
 async function routeAiCourseOnRoad(course, requestedTargetKm) {
   const rawPath = normalizeStoredPathPoints(course.points).map(point => makeRouteLatLng(point.lat, point.lng));
-  const anchors = getAiRouteAnchors(rawPath);
-  if (anchors.length < 3) throw new Error('AI_ROUTE_ANCHORS_SHORT');
+  const anchors = getAiRouteAnchors(rawPath, { closeRoute: course.routeKind !== 'destination' });
+  const minAnchors = course.routeKind === 'destination' ? 2 : 3;
+  if (anchors.length < minAnchors) throw new Error('AI_ROUTE_ANCHORS_SHORT');
 
   const tmapPath = await fetchTmapPedestrianRoute(anchors);
   const snapped = cleanAiSnappedRoute(tmapPath);
@@ -3264,10 +3568,22 @@ async function routeAiCourseOnRoad(course, requestedTargetKm) {
   const snappedKm = pathLengthMeters(snapped) / 1000;
   const requestedKm = Number.isFinite(parseFloat(requestedTargetKm)) ? parseFloat(requestedTargetKm) : snappedKm;
   // 직선 거리와 실제 도보 경로는 최대 40% 차이날 수 있으므로 허용폭을 넓게 설정
-  const tolerance = Math.max(1.0, requestedKm * 0.4);
+  const tolerance = course.routeKind === 'destination'
+    ? Math.max(1.5, requestedKm * 0.55)
+    : Math.max(1.0, requestedKm * 0.4);
   const minKm = Math.max(0.4, requestedKm - tolerance);
   const maxKm = requestedKm + tolerance;
   if (!snapped.length || snappedKm < minKm || snappedKm > maxKm) {
+    const rawKm = pathLengthMeters(rawPath) / 1000;
+    if (course.runnerSpot && rawPath.length > 2 && rawKm >= minKm && rawKm <= maxKm) {
+      return {
+        ...course,
+        km: rawKm.toFixed(1),
+        points: serializeLatLngPath(rawPath),
+        routeLabel: '',
+        routeSource: 'runner_spot'
+      };
+    }
     throw new Error('AI_TMAP_ROUTE_OUT_OF_RANGE');
   }
 
@@ -3282,8 +3598,12 @@ async function routeAiCourseOnRoad(course, requestedTargetKm) {
 
 function getAiRouteScore(course, targetKm) {
   const km = parseFloat(course.km);
-  const distancePenalty = Number.isFinite(km) && Number.isFinite(targetKm) ? Math.abs(km - targetKm) : 1;
-  return distancePenalty;
+  const compareKm = Number.isFinite(parseFloat(course.targetKm)) ? parseFloat(course.targetKm) : targetKm;
+  let score = Number.isFinite(km) && Number.isFinite(compareKm) ? Math.abs(km - compareKm) : 1;
+  if (course.runnerSpot) score -= 0.45;
+  if (course.seedType === 'track') score -= 0.35;
+  if (course.seedType === 'river') score -= 0.2;
+  return score;
 }
 
 function cleanAiSnappedRoute(points) {
@@ -3323,8 +3643,10 @@ function removeClosedRouteDetour(points) {
   return points.slice(0, best.i + 1).concat(points.slice(best.j));
 }
 
-function getAiRouteAnchors(path) {
-  if (!Array.isArray(path) || path.length < 3) return [];
+function getAiRouteAnchors(path, options = {}) {
+  if (!Array.isArray(path) || path.length < 2) return [];
+  if (path.length === 2) return compactLatLngs(path, 8);
+  const closeRoute = options.closeRoute !== false;
   const lastIndex = path.length - 1;
   const indexes = [0, Math.round(lastIndex * 0.25), Math.round(lastIndex * 0.5), Math.round(lastIndex * 0.75), lastIndex];
   const anchors = [];
@@ -3335,7 +3657,7 @@ function getAiRouteAnchors(path) {
   });
   const first = anchors[0];
   const last = anchors[anchors.length - 1];
-  if (first && last && latLngDistanceMeters(first, last) > 20) anchors.push(first);
+  if (closeRoute && first && last && latLngDistanceMeters(first, last) > 20) anchors.push(first);
   return anchors;
 }
 
@@ -3375,6 +3697,7 @@ function normalizeAiCourse(course, index, targetKm) {
     color: colors.includes(course.color) ? course.color : colors[index],
     routeLabel: String(course.routeLabel || '').slice(0, 34),
     startLabel: String(course.startLabel || '').slice(0, 42),
+    destinationLabel: String(course.destinationLabel || '').slice(0, 42),
     points: normalizeStoredPathPoints(course.points),
     waypoints: Array.isArray(course.waypoints)
       ? course.waypoints
@@ -3382,7 +3705,13 @@ function normalizeAiCourse(course, index, targetKm) {
           .map(wp => ({ lat: Number(wp.lat), lng: Number(wp.lng) }))
           .slice(0, 2)
       : [],
-    routeSource: course.routeSource === 'tmap' ? 'tmap' : '',
+    routeSource: ['tmap', 'runner_spot'].includes(course.routeSource) ? course.routeSource : '',
+    routeKind: course.routeKind === 'destination' ? 'destination' : '',
+    targetKm: Number.isFinite(parseFloat(course.targetKm)) ? parseFloat(course.targetKm).toFixed(1) : '',
+    runnerSpot: !!course.runnerSpot,
+    nearbySeed: !!course.nearbySeed,
+    seedType: course.seedType || '',
+    seedName: course.seedName || '',
     fromAi: true
   };
 }
@@ -3660,7 +3989,8 @@ function showAiRoutePreview(course, options = {}) {
     .filter(Boolean);
   if (path.length < 2) return;
 
-  const split = splitRouteByDistance(path);
+  const isDestinationRoute = course.routeKind === 'destination';
+  const split = isDestinationRoute ? { outbound: path, returnPath: [] } : splitRouteByDistance(path);
   const outboundPath = split.outbound.length > 1 ? split.outbound : path;
   const returnPath = split.returnPath.length > 1 ? split.returnPath : [];
 
@@ -3686,8 +4016,12 @@ function showAiRoutePreview(course, options = {}) {
     map: createMap, center: path[0],
     radius: 10, strokeWeight: 3, strokeColor: primaryColor, fillColor: '#fff', fillOpacity: 1
   });
+  const endDot = isDestinationRoute ? new kakao.maps.Circle({
+    map: createMap, center: path[path.length - 1],
+    radius: 10, strokeWeight: 3, strokeColor: '#1C242B', fillColor: '#fff', fillOpacity: 1
+  }) : null;
 
-  aiRouteOverlays = [borderLine, routeLine].concat(outboundArrows, returnArrows, [startDot]);
+  aiRouteOverlays = [borderLine, routeLine].concat(outboundArrows, returnArrows, [startDot]).concat(endDot ? [endDot] : []);
 
   if (fitBounds) {
     const bounds = new kakao.maps.LatLngBounds();
