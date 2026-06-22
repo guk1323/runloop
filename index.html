@@ -75,20 +75,20 @@ if ('serviceWorker' in navigator) {
 
   .course-scroll{flex:1;overflow-y:auto;}
   .course-list{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;}
-  .course-card{background:rgba(255,255,255,.84);border-radius:12px;border:1px solid rgba(28,36,43,.08);overflow:hidden;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s;box-shadow:0 10px 24px rgba(28,36,43,.05);}
+  .course-card{background:rgba(255,255,255,.84);border-radius:12px;border:1px solid rgba(28,36,43,.08);overflow:visible;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s;box-shadow:0 10px 24px rgba(28,36,43,.05);}
   .course-card:hover{border-color:var(--gray-300);}
   .course-card.selected{border-color:rgba(28,36,43,.8);box-shadow:0 12px 24px rgba(28,36,43,.12);transform:translateY(-1px);}
   .cmap{height:70px;position:relative;overflow:hidden;background:#EEEADF;}
   .cmap canvas{width:100%;height:100%;display:block;}
-  .cbadge{position:absolute;top:7px;left:7px;background:rgba(28,36,43,.9);color:#fff;font-size:10px;font-weight:800;padding:2px 8px;border-radius:var(--rp);}
-  .crank{position:absolute;top:7px;right:7px;background:rgba(0,0,0,.45);color:#fff;font-size:10px;font-weight:500;padding:2px 8px;border-radius:var(--rp);}
-  .cinfo{padding:8px 10px 10px;}
+  .cbadge{display:inline-flex;align-items:center;background:rgba(28,36,43,.9);color:#fff;font-size:10px;font-weight:800;padding:3px 8px;border-radius:var(--rp);}
+  .crank{display:inline-flex;align-items:center;background:rgba(28,36,43,.12);color:var(--gray-700);font-size:10px;font-weight:800;padding:3px 8px;border-radius:var(--rp);}
+  .cinfo{padding:12px;}
   .cinfo-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2px;}
   .cname{font-size:14px;font-weight:700;flex:1;min-width:0;}
   .ckm-badge{font-size:22px;font-weight:900;color:#1C242B;letter-spacing:-0.5px;line-height:1;white-space:nowrap;margin-left:8px;}
   .ckm-badge span{font-size:11px;font-weight:600;color:var(--gray-500);letter-spacing:0;}
-  .cmeta{font-size:12px;color:var(--gray-500);line-height:1.35;margin-bottom:7px;}
-  .croute{font-size:11px;color:var(--coral-dark);font-weight:700;margin-bottom:3px;}
+  .cmeta{font-size:12px;color:var(--gray-500);line-height:1.45;margin-bottom:9px;white-space:normal;overflow:visible;}
+  .croute{font-size:12px;color:var(--coral-dark);font-weight:800;line-height:1.45;margin-bottom:5px;white-space:normal;overflow:visible;}
   .tags{display:flex;gap:5px;flex-wrap:wrap;}
   .tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:var(--rp);}
   .tg{background:var(--coral-light);color:var(--ink);}
@@ -631,7 +631,7 @@ if ('serviceWorker' in navigator) {
           <div class="empty-title">출발지를 선택해주세요</div>
           <div class="empty-desc">지도를 클릭하거나 주소를 검색해보세요</div>
         </div>
-        <div class="course-list" id="courseList" style="display:none;max-height:280px;overflow-y:auto;"></div>
+        <div class="course-list" id="courseList" style="display:none;max-height:min(48dvh,480px);overflow-y:auto;padding-bottom:108px;"></div>
       </div>
     </div>
 
@@ -2739,9 +2739,10 @@ const COURSES = [
   { name:'Mangwon Park Line', tags:[{l:'공원',c:'tg'},{l:'경사 포함',c:'ta'}], meta:'잔디밭 · 오르막 2곳 · 뷰 좋음', pt:'park', color:'#639922', pace:6.8 }
 ];
 const AI_COURSE_RECOMMENDATION_COUNT = 2;
+const AI_COURSE_ROUTE_CANDIDATE_COUNT = 4;
 const AI_DISTANCE_TOLERANCE_KM = 0.5;
 const AI_ROUTE_DISTANCE_BUFFER_KM = 0.15;
-const AI_COURSE_CACHE_KEY = 'runloopAiCourseCacheV9';
+const AI_COURSE_CACHE_KEY = 'runloopAiCourseCacheV10';
 const AI_COURSE_CACHE_MS = 10 * 60 * 1000;
 const HOME_RECOMMENDATION_COUNT = 1;
 let aiRouteOverlays = [];
@@ -2783,7 +2784,7 @@ async function generateCourses() {
       ? 'AI 추천은 잠시 후 다시 눌러주세요'
       : '보행자 길을 찾지 못했어요. 다시 눌러주세요');
   } finally {
-    S.sel = S.courses.length ? 0 : -1;
+    S.sel = -1;
     renderCourses();
     btn.disabled = false; txt.textContent = '다시 생성'; sp.style.display = 'none';
   }
@@ -2873,25 +2874,32 @@ function setCachedAiCourses(cacheKey, km, courses) {
   try { localStorage.setItem(AI_COURSE_CACHE_KEY, JSON.stringify(cache)); } catch (_) {}
 }
 
-function buildFallbackCourses(km) {
-  return COURSES
-    .slice(0, AI_COURSE_RECOMMENDATION_COUNT)
-    .map(c => ({...c, km: (km * (0.93 + Math.random() * .14)).toFixed(1), points: [], fromAi: false}))
+function buildFallbackCourses(km, count = AI_COURSE_RECOMMENDATION_COUNT) {
+  return Array.from({ length: count }, (_, index) => {
+    const base = COURSES[index % COURSES.length];
+    return {
+      ...base,
+      name: index >= COURSES.length ? `${base.name} ${index + 1}` : base.name,
+      km: (km * (0.93 + Math.random() * .14)).toFixed(1),
+      points: [],
+      fromAi: false
+    };
+  })
     .map((course, index) => enrichAiCourseRoute(course, index, km));
 }
 
 function completeAiCourseRecommendations(courses, targetKm) {
-  const filled = Array.isArray(courses) ? courses.slice(0, AI_COURSE_RECOMMENDATION_COUNT) : [];
-  if (filled.length >= AI_COURSE_RECOMMENDATION_COUNT) return filled;
+  const filled = Array.isArray(courses) ? courses.slice(0, AI_COURSE_ROUTE_CANDIDATE_COUNT) : [];
+  if (filled.length >= AI_COURSE_ROUTE_CANDIDATE_COUNT) return filled;
 
   const names = new Set(filled.map(course => String(course && course.name || '').trim()).filter(Boolean));
-  buildFallbackCourses(targetKm).forEach(course => {
-    if (filled.length >= AI_COURSE_RECOMMENDATION_COUNT) return;
+  buildFallbackCourses(targetKm, AI_COURSE_ROUTE_CANDIDATE_COUNT).forEach(course => {
+    if (filled.length >= AI_COURSE_ROUTE_CANDIDATE_COUNT) return;
     const name = names.has(course.name) ? `기본 추천 ${filled.length + 1}` : course.name;
     names.add(name);
     filled.push({ ...course, name });
   });
-  return filled.slice(0, AI_COURSE_RECOMMENDATION_COUNT);
+  return filled.slice(0, AI_COURSE_ROUTE_CANDIDATE_COUNT);
 }
 
 function getAiCoursePlaceLabel() {
@@ -2931,23 +2939,19 @@ function prepareAiCourses(courses, targetKm) {
 }
 
 async function routeAiCoursesOnRoad(courses, targetKm) {
-  const candidates = courses.slice(0, AI_COURSE_RECOMMENDATION_COUNT);
+  const candidates = courses.slice(0, AI_COURSE_ROUTE_CANDIDATE_COUNT);
   const routed = await Promise.all(candidates.map(async course => {
     try {
       return await routeAiCourseOnRoad(course, targetKm);
     } catch (error) {
       console.warn('AI pedestrian route failed', error);
-      return {
-        ...course,
-        routeSource: course.routeSource || '',
-        crosswalkCount: normalizeCrosswalkCount(course.crosswalkCount)
-      };
+      return null;
     }
   }));
   return routed
     .filter(Boolean)
-    .slice(0, AI_COURSE_RECOMMENDATION_COUNT)
-    .sort((a, b) => getAiRouteScore(a, targetKm) - getAiRouteScore(b, targetKm));
+    .sort((a, b) => getAiRouteScore(a, targetKm) - getAiRouteScore(b, targetKm))
+    .slice(0, AI_COURSE_RECOMMENDATION_COUNT);
 }
 
 async function routeAiCourseOnRoad(course, requestedTargetKm) {
@@ -3289,23 +3293,24 @@ function renderCourses() {
     openBottomSheet();
     return;
   }
+  clearAiRoutePreview();
   S.courses.forEach((c, i) => {
     const pm = Math.floor(c.pace), ps = String(Math.round((c.pace % 1) * 60)).padStart(2, '0');
-    const crosswalkText = formatCrosswalkMeta(c.crosswalkCount);
+    const metaText = getVerifiedCourseMeta(c, `${pm}'${ps}"/km`);
     const card = document.createElement('div');
     card.className = 'course-card' + (i === S.sel ? ' selected' : '');
     card.innerHTML = `
-      <div class="cmap"><canvas id="m${i}"></canvas>
+      <div class="cinfo">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
         <div class="cbadge">${c.fromAi === false ? '기본 추천' : 'AI 추천'}</div>
         <div class="crank">${['추천','2순위','3순위'][i]}</div>
-      </div>
-      <div class="cinfo">
+        </div>
         <div class="cinfo-head">
           <div class="cname">${escapeHtml(c.name)}</div>
           <div class="ckm-badge">${escapeHtml(c.km)}<span>km</span></div>
         </div>
         <div class="croute">${escapeHtml(c.routeLabel || c.startLabel || '지도 위 예상 코스')}</div>
-        <div class="cmeta">${escapeHtml(crosswalkText)} · ${pm}'${ps}"/km · ${escapeHtml(c.meta)}</div>
+        <div class="cmeta">${escapeHtml(metaText)}</div>
         <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
           <div class="tags">${c.tags.map(t => `<span class="tag ${t.c}">${escapeHtml(t.l)}</span>`).join('')}</div>
           <button class="save-course-btn" onclick="event.stopPropagation();saveAiCourse(${i})">내 코스 저장</button>
@@ -3313,13 +3318,15 @@ function renderCourses() {
       </div>`;
     card.onclick = () => selCourse(i);
     list.appendChild(card);
-    requestAnimationFrame(() => {
-      const cv = document.getElementById('m' + i);
-      if (cv) miniMap(cv, c.pt, c.color, c.points);
-    });
   });
-  if (S.sel >= 0 && S.courses[S.sel]) showAiRoutePreview(S.courses[S.sel]);
   openBottomSheet();
+}
+
+function getVerifiedCourseMeta(course, paceText) {
+  const parts = ['TMAP 보행자 길 기준'];
+  parts.push(formatCrosswalkMeta(course.crosswalkCount));
+  if (paceText) parts.push(`예상 ${paceText}`);
+  return parts.join(' · ');
 }
 
 function formatCrosswalkMeta(count) {
