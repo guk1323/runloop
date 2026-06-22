@@ -1970,7 +1970,6 @@ async function fetchTmapPedestrianRoute(rawSegment) {
   const data = await res.json();
   const path = parseTmapPath(data);
   if (path.length < 2) throw new Error('EMPTY_TMAP_PATH');
-  path.crosswalkCount = countTmapCrosswalks(data);
   return path;
 }
 
@@ -1999,26 +1998,6 @@ function parseTmapPath(data) {
     }
   });
   return compactLatLngs(points, 1);
-}
-
-function countTmapCrosswalks(data) {
-  const features = data && Array.isArray(data.features) ? data.features : [];
-  const seen = new Set();
-  let count = 0;
-  features.forEach(feature => {
-    const props = feature.properties || {};
-    const text = Object.values(props)
-      .filter(value => typeof value === 'string' || typeof value === 'number')
-      .join(' ');
-    if (!/횡단보도|횡단|건널목|crosswalk/i.test(text)) return;
-    const geometry = feature.geometry || {};
-    const coord = Array.isArray(geometry.coordinates) ? JSON.stringify(geometry.coordinates).slice(0, 48) : '';
-    const key = `${props.name || props.description || text.slice(0, 20)}|${coord}`;
-    if (seen.has(key)) return;
-    seen.add(key);
-    count += 1;
-  });
-  return count;
 }
 
 function pushTmapCoord(points, coord) {
@@ -3138,7 +3117,6 @@ async function routeAiCourseOnRoad(course, requestedTargetKm) {
   if (anchors.length < 3) throw new Error('AI_ROUTE_ANCHORS_SHORT');
 
   const tmapPath = await fetchTmapPedestrianRoute(anchors);
-  const crosswalkCount = normalizeCrosswalkCount(tmapPath.crosswalkCount);
   const snapped = cleanAiSnappedRoute(tmapPath);
 
   const snappedKm = pathLengthMeters(snapped) / 1000;
@@ -3154,7 +3132,6 @@ async function routeAiCourseOnRoad(course, requestedTargetKm) {
   return {
     ...course,
     km: snappedKm.toFixed(1),
-    crosswalkCount,
     points: serializeLatLngPath(snapped),
     routeLabel: shortenRouteLabel((course.routeLabel || getAiRouteLabel(course, 0)) + ' · 보행자 길 정리'),
     routeSource: 'tmap'
@@ -3162,10 +3139,9 @@ async function routeAiCourseOnRoad(course, requestedTargetKm) {
 }
 
 function getAiRouteScore(course, targetKm) {
-  const crosswalkPenalty = Number.isFinite(course.crosswalkCount) ? course.crosswalkCount * 2 : 8;
   const km = parseFloat(course.km);
   const distancePenalty = Number.isFinite(km) && Number.isFinite(targetKm) ? Math.abs(km - targetKm) : 1;
-  return crosswalkPenalty + distancePenalty;
+  return distancePenalty;
 }
 
 function cleanAiSnappedRoute(points) {
@@ -3257,7 +3233,6 @@ function normalizeAiCourse(course, index, targetKm) {
     color: colors.includes(course.color) ? course.color : colors[index],
     routeLabel: String(course.routeLabel || '').slice(0, 34),
     startLabel: String(course.startLabel || '').slice(0, 42),
-    crosswalkCount: normalizeCrosswalkCount(course.crosswalkCount),
     points: normalizeStoredPathPoints(course.points),
     waypoints: Array.isArray(course.waypoints)
       ? course.waypoints
@@ -3276,11 +3251,6 @@ function getMinRecommendedKm(targetKm) {
 
 function getMaxRecommendedKm(targetKm) {
   return Math.min(22, targetKm + AI_DISTANCE_TOLERANCE_KM);
-}
-
-function normalizeCrosswalkCount(value) {
-  const count = Number(value);
-  return Number.isFinite(count) && count >= 0 ? Math.round(count) : null;
 }
 
 function enrichAiCourseRoute(course, index, targetKm) {
@@ -3501,16 +3471,9 @@ function renderCourses() {
 }
 
 function getVerifiedCourseMeta(course, paceText) {
-  const parts = ['TMAP 보행자 길 기준'];
-  parts.push(formatCrosswalkMeta(course.crosswalkCount));
+  const parts = ['TMAP 보행자 길 검증'];
   if (paceText) parts.push(`예상 ${paceText}`);
   return parts.join(' · ');
-}
-
-function formatCrosswalkMeta(count) {
-  const normalized = normalizeCrosswalkCount(count);
-  if (normalized === null) return '횡단보도 확인 중';
-  return `횡단보도 ${normalized}개`;
 }
 
 function selCourse(i) {
@@ -4838,7 +4801,6 @@ function createSocialCourseSnapshot(course) {
     manualDist: course.manualDist || '0.00',
     fromAi: !!course.fromAi,
     tags: Array.isArray(course.tags) ? course.tags : [],
-    crosswalkCount: normalizeCrosswalkCount(course.crosswalkCount),
     routeLabel: course.routeLabel || '',
     routeSource: course.routeSource || '',
     startLabel: course.startLabel || ''
@@ -5007,7 +4969,6 @@ function openCourseDetail(id) {
     ${recordDetailRow('코스 유형', source)}
     ${course.startLabel ? recordDetailRow('출발지', course.startLabel) : ''}
     ${course.routeLabel ? recordDetailRow('경로 힌트', course.routeLabel) : ''}
-    ${normalizeCrosswalkCount(course.crosswalkCount) !== null ? recordDetailRow('횡단보도', normalizeCrosswalkCount(course.crosswalkCount) + '개') : ''}
     ${recordDetailRow('경로 포인트', pointCount ? pointCount + '개' : '-')}
     ${recordDetailRow('구간 수', segmentCount ? segmentCount + '개' : '-')}
     ${Number.isFinite(manualKm) && manualKm > 0 ? recordDetailRow('직접 그린 구간', manualKm.toFixed(2) + 'km') : ''}
@@ -6024,7 +5985,6 @@ function saveAiCourse(idx) {
     manualDist: '0.00',
     fromAi: true,
     tags: c.tags,
-    crosswalkCount: normalizeCrosswalkCount(c.crosswalkCount),
     routeLabel: c.routeLabel || '',
     routeSource: c.routeSource || '',
     startLabel: c.startLabel || getAiCoursePlaceLabel()
