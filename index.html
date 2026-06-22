@@ -4798,21 +4798,8 @@ function renderNearCourses(results) {
     results = getFallbackNearCourses();
   }
 
-  // 중복 제거 + 문화가치 우선 정렬 + 가까운 문화 스팟 표시
-  const seen = new Set();
-  let unique = results
-    .filter(r => {
-      const key = r.id || getCultureSpotVisitKey(r);
-      if (seen.has(key)) return false;
-      seen.add(key);
-      return true;
-    })
-    .sort((a, b) => {
-      const valueDiff = (Number(b.cultureValueStars) || 1) - (Number(a.cultureValueStars) || 1);
-      if (valueDiff) return valueDiff;
-      return a.distFromMe - b.distFromMe;
-    })
-    .slice(0, HOME_RECOMMENDATION_COUNT);
+  // 중복 제거 + 거리와 문화가치를 균형 있게 섞어 가까운 문화 스팟 표시
+  let unique = selectHomeCultureSpots(results);
   if (!unique.length) unique = getFallbackNearCourses();
 
   const iconBgs = ['#FFF0EC','#F4EFE8','#F0F8DB','#FFF5DB','#EEF8EA'];
@@ -4868,6 +4855,48 @@ function renderNearCourses(results) {
         </div>
       </div>`;
   }).join('');
+}
+
+function selectHomeCultureSpots(results) {
+  const seen = new Set();
+  const deduped = results
+    .filter(r => {
+      const key = r.id || getCultureSpotVisitKey(r);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => {
+      const scoreDiff = getHomeCultureSpotScore(b) - getHomeCultureSpotScore(a);
+      if (scoreDiff) return scoreDiff;
+      return a.distFromMe - b.distFromMe;
+    });
+
+  const selected = [];
+  deduped.forEach(spot => {
+    if (selected.length >= HOME_RECOMMENDATION_COUNT) return;
+    const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
+    const fiveStarCount = selected.filter(item => Number(item.cultureValueStars) >= 5).length;
+    const hasLowerValueOption = deduped.some(item => !selected.includes(item) && Number(item.cultureValueStars) < 5);
+    if (stars >= 5 && fiveStarCount >= 2 && hasLowerValueOption) return;
+    selected.push(spot);
+  });
+
+  if (selected.length < HOME_RECOMMENDATION_COUNT) {
+    deduped.forEach(spot => {
+      if (selected.length >= HOME_RECOMMENDATION_COUNT) return;
+      if (!selected.includes(spot)) selected.push(spot);
+    });
+  }
+
+  return selected.slice(0, HOME_RECOMMENDATION_COUNT);
+}
+
+function getHomeCultureSpotScore(spot) {
+  const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
+  const dist = Math.max(0, Number(spot.distFromMe) || CULTURE_SPOT_SEARCH_RADIUS_METERS / 1000);
+  const distanceScore = dist <= 0.5 ? 5 : dist <= 1 ? 4.3 : dist <= 2 ? 3.5 : dist <= 5 ? 2.4 : 1.2;
+  return distanceScore + stars * 0.75;
 }
 
 function openCultureSpotInfoFromHomeButton(button) {
