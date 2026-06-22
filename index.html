@@ -346,6 +346,65 @@ if ('serviceWorker' in navigator) {
   .near-course-name{font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .near-course-meta{font-size:12px;color:var(--gray-500);}
   .near-course-dist{font-size:14px;font-weight:700;color:var(--coral);flex-shrink:0;}
+  .social-header{padding:14px 16px 10px;background:#fff;border-bottom:1px solid var(--gray-100);flex-shrink:0;display:flex;justify-content:space-between;align-items:center;gap:12px;}
+  .social-title{font-size:16px;font-weight:800;color:var(--gray-900);}
+  .social-sub{font-size:12px;color:var(--gray-500);margin-top:3px;}
+  .social-compose-btn{height:36px;padding:0 14px;border:none;border-radius:var(--rp);background:var(--ink);color:#fff;font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;}
+  .social-filter{display:flex;gap:6px;padding:10px 12px;background:#fff;border-bottom:1px solid var(--gray-100);flex-shrink:0;overflow-x:auto;}
+  .social-filter::-webkit-scrollbar{display:none;}
+  .social-filter button{height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--gray-100);background:#fff;color:var(--gray-500);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;}
+  .social-filter button.active{background:var(--ink);border-color:var(--ink);color:#fff;}
+  .social-scroll{flex:1;overflow-y:auto;background:var(--paper);}
+  .social-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:12px 12px 0;}
+  .social-stat{background:#fff;border:1px solid var(--gray-100);border-radius:var(--r);padding:11px 10px;}
+  .social-stat span{display:block;font-size:10px;color:var(--gray-500);margin-bottom:4px;}
+  .social-stat strong{display:block;font-size:18px;color:var(--gray-900);line-height:1;}
+  .social-feed{padding:12px;display:flex;flex-direction:column;gap:10px;padding-bottom:108px;}
+  .social-card{background:#fff;border:1px solid rgba(28,36,43,.08);border-radius:var(--r);overflow:hidden;box-shadow:0 8px 20px rgba(39,49,58,.035);}
+  .social-card-head{display:flex;align-items:center;gap:9px;padding:12px 12px 8px;}
+  .social-avatar{width:34px;height:34px;border-radius:50%;background:var(--coral-light);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+  .social-author{flex:1;min-width:0;}
+  .social-author-name{font-size:13px;font-weight:800;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .social-time{font-size:11px;color:var(--gray-500);margin-top:1px;}
+  .social-badges{display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end;}
+  .social-badge{font-size:10px;font-weight:800;padding:3px 7px;border-radius:var(--rp);background:var(--gray-50);color:var(--gray-700);border:1px solid var(--gray-100);white-space:nowrap;}
+  .social-badge.hot{background:var(--amber-light);color:var(--amber);border-color:#E8D6B4;}
+  .social-body{padding:0 12px 12px;}
+  .social-post-title{font-size:15px;font-weight:800;color:var(--gray-900);line-height:1.35;margin-bottom:5px;}
+  .social-text{font-size:13px;line-height:1.55;color:var(--gray-700);white-space:pre-wrap;word-break:break-word;}
+  .social-meta{font-size:11px;color:var(--gray-500);margin-top:8px;line-height:1.45;}
+  .social-photo{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--gray-50);}
+  .social-course-preview{height:132px;background:#EEEADF;position:relative;overflow:hidden;border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100);}
+  .social-course-preview canvas{width:100%;height:100%;display:block;}
+  .social-course-chip{position:absolute;right:10px;bottom:10px;background:rgba(28,36,43,.9);color:#fff;border-radius:var(--rp);padding:5px 9px;font-size:11px;font-weight:900;}
+  .social-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-top:1px solid var(--gray-100);background:var(--gray-50);}
+  .social-like{height:34px;padding:0 12px;border-radius:var(--rp);border:1px solid var(--gray-100);background:#fff;color:var(--gray-700);font-size:12px;font-weight:900;font-family:inherit;cursor:pointer;}
+  .social-like.active{background:var(--coral-light);border-color:rgba(242,122,94,.22);color:var(--coral-dark);}
+  .social-delete{height:34px;padding:0 10px;border-radius:var(--rp);border:1px solid var(--gray-100);background:#fff;color:var(--gray-500);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;}
+  .social-empty{text-align:center;padding:40px 18px;color:var(--gray-500);}
+  .social-empty-icon{font-size:34px;margin-bottom:10px;opacity:.75;}
+  .social-empty-title{font-size:14px;font-weight:800;color:var(--gray-700);margin-bottom:5px;}
+  .social-empty-desc{font-size:13px;line-height:1.55;}
+  .social-composer-sheet{background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;max-height:88dvh;display:flex;flex-direction:column;}
+  .social-composer-body{flex:1;overflow-y:auto;padding:14px 16px 18px;}
+  .social-type-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px;background:var(--gray-50);border-radius:var(--rs);padding:3px;}
+  .social-type-tabs button{height:34px;border:none;border-radius:6px;background:transparent;color:var(--gray-500);font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;}
+  .social-type-tabs button.active{background:var(--ink);color:#fff;}
+  .social-field{margin-bottom:12px;}
+  .social-label{font-size:11px;color:var(--gray-500);font-weight:800;margin-bottom:6px;}
+  .social-input,.social-select,.social-textarea{width:100%;border:1px solid var(--gray-300);border-radius:var(--rs);background:#fff;color:var(--gray-900);font-family:inherit;font-size:14px;outline:none;}
+  .social-input,.social-select{height:42px;padding:0 12px;}
+  .social-textarea{min-height:86px;padding:10px 12px;resize:none;line-height:1.5;}
+  .social-photo-picker{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+  .social-photo-picker button{height:38px;border-radius:var(--rs);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;}
+  .social-photo-pick{background:var(--ink);border:1px solid var(--ink);color:#fff;}
+  .social-photo-clear{background:#fff;border:1px solid var(--gray-300);color:var(--gray-500);}
+  .social-photo-preview{display:none;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--rs);border:1px solid var(--gray-100);background:var(--gray-50);margin-top:8px;}
+  .social-photo-preview.active{display:block;}
+  .social-publish-btn{width:100%;height:48px;border:none;border-radius:var(--r);background:var(--ink);color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;}
+  .course-detail-share,.record-detail-share{width:100%;height:42px;border-radius:var(--rs);background:var(--coral-light);color:var(--ink);border:1px solid rgba(242,122,94,.22);font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;margin-top:8px;}
+  .mc-actions{grid-template-columns:repeat(3,1fr);}
+  .mc-btn-share{background:var(--coral-light);color:var(--ink);border-color:rgba(242,122,94,.22);}
 </style>
 </head>
 <body>
@@ -513,6 +572,7 @@ if ('serviceWorker' in navigator) {
   <button class="tab active" data-tab="home" onclick="switchTab('home',this)"><span class="tab-icon">⌂</span><span>홈</span></button>
   <button class="tab" data-tab="create" onclick="switchTab('create',this)"><span class="tab-icon">＋</span><span>만들기</span></button>
   <button class="tab" data-tab="mycourse" onclick="switchTab('mycourse',this)"><span class="tab-icon">⌁</span><span>코스</span></button>
+  <button class="tab" data-tab="social" onclick="switchTab('social',this)"><span class="tab-icon">♡</span><span>소셜</span></button>
   <button class="tab" data-tab="mypage" onclick="switchTab('mypage',this)"><span class="tab-icon">●</span><span>MY</span></button>
 </div>
 
@@ -702,6 +762,31 @@ if ('serviceWorker' in navigator) {
       <div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">저장된 코스가 없어요</div>
       <div style="font-size:13px;line-height:1.6;">만들기나 추천에서 코스를<br>저장해보세요!</div>
     </div>
+  </div>
+</div>
+
+<!-- 소셜 화면 -->
+<div id="screen-social" class="screen">
+  <div class="social-header">
+    <div>
+      <div class="social-title">소셜</div>
+      <div class="social-sub"><span id="socialPostCount">0개</span> · AI 추천 후보 <span id="socialAiCandidateCount">0개</span></div>
+    </div>
+    <button class="social-compose-btn" onclick="openSocialComposer()">공유하기</button>
+  </div>
+  <div class="social-filter">
+    <button id="socialFilterAll" class="active" onclick="setSocialFilter('all')">전체</button>
+    <button id="socialFilterCourse" onclick="setSocialFilter('course')">코스</button>
+    <button id="socialFilterPhoto" onclick="setSocialFilter('photo')">사진</button>
+    <button id="socialFilterPopular" onclick="setSocialFilter('popular')">인기</button>
+  </div>
+  <div class="social-scroll">
+    <div class="social-summary">
+      <div class="social-stat"><span>공유</span><strong id="socialShareStat">0</strong></div>
+      <div class="social-stat"><span>좋아요</span><strong id="socialLikeStat">0</strong></div>
+      <div class="social-stat"><span>후보</span><strong id="socialCandidateStat">0</strong></div>
+    </div>
+    <div class="social-feed" id="socialFeed"></div>
   </div>
 </div>
 
@@ -924,6 +1009,52 @@ if ('serviceWorker' in navigator) {
     <div style="flex:1;overflow-y:auto;padding:14px 16px 18px;" id="courseDetailBody"></div>
   </div>
 </div>
+
+<!-- 소셜 공유 모달 -->
+<div id="socialComposerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1003;align-items:flex-end;justify-content:center;">
+  <div class="social-composer-sheet">
+    <div style="padding:16px 18px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gray-100);">
+      <div style="font-size:16px;font-weight:800;">소셜에 공유</div>
+      <button onclick="closeSocialComposer()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-500);">×</button>
+    </div>
+    <div class="social-composer-body">
+      <div class="social-type-tabs">
+        <button id="socialTypeCourse" class="active" onclick="switchSocialShareType('course')">코스</button>
+        <button id="socialTypePhoto" onclick="switchSocialShareType('photo')">사진</button>
+      </div>
+
+      <div id="socialCourseFields">
+        <div class="social-field">
+          <div class="social-label">공유할 코스</div>
+          <select class="social-select" id="socialCourseSelect" onchange="updateSocialCourseDraft()"></select>
+        </div>
+      </div>
+
+      <div id="socialPhotoFields" style="display:none;">
+        <div class="social-field">
+          <div class="social-label">기록 인증샷</div>
+          <select class="social-select" id="socialRecordPhotoSelect" onchange="selectSocialRecordPhoto()"></select>
+          <div class="social-photo-picker">
+            <button class="social-photo-pick" onclick="document.getElementById('socialPhotoInput').click()">사진 선택</button>
+            <button class="social-photo-clear" onclick="clearSocialPhoto()">사진 삭제</button>
+          </div>
+          <img class="social-photo-preview" id="socialPhotoPreview" alt="공유할 사진 미리보기">
+        </div>
+      </div>
+
+      <div class="social-field">
+        <div class="social-label">제목</div>
+        <input class="social-input" id="socialTitleInput" maxlength="32" placeholder="공유 제목">
+      </div>
+      <div class="social-field">
+        <div class="social-label">메모</div>
+        <textarea class="social-textarea" id="socialTextInput" maxlength="180" placeholder="코스 느낌이나 풍경을 짧게 남겨보세요"></textarea>
+      </div>
+      <button class="social-publish-btn" onclick="publishSocialPost()">공유하기</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="socialPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="handleSocialPhotoSelected(event)">
 
 <div class="toast" id="toast"></div>
 
@@ -2523,6 +2654,10 @@ document.getElementById('courseDetailModal').addEventListener('click', function(
   if (e.target === this) closeCourseDetail();
 });
 
+document.getElementById('socialComposerModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSocialComposer();
+});
+
 /* 탭 전환 */
 function switchTab(tab, el) {
   S.tab = tab;
@@ -2540,6 +2675,7 @@ function switchTab(tab, el) {
     loadNearCourses();
   }
   if (tab === 'mycourse') renderMyCourses();
+  if (tab === 'social') renderSocial();
   if (tab === 'mypage') {
     renderRecords();
     renderMyPage();
@@ -4198,6 +4334,7 @@ function openRecordDetail(index) {
       <div style="font-size:11px;color:var(--gray-500);margin-bottom:6px;">메모</div>
       <div style="font-size:13px;line-height:1.55;color:var(--gray-900);">${escapeHtml(r.memo || '남긴 메모가 없어요')}</div>
     </div>
+    ${hasSafeRecordPhoto(r.photo) ? `<button class="record-detail-share" onclick="shareRecordPhotoToSocial(${index})">인증샷 소셜 공유</button>` : ''}
   `;
   document.getElementById('recordDetailModal').style.display = 'flex';
 }
@@ -4271,6 +4408,470 @@ function clearAllRecords() {
   toast('전체 기록이 삭제됐어요');
 }
 
+/* ── 소셜 ── */
+const SOCIAL_POSTS_KEY = 'runloopSocialPosts';
+const SOCIAL_AI_PICK_LIKE_THRESHOLD = 3;
+let socialFilter = 'all';
+let socialComposerType = 'course';
+let socialPhotoDataUrl = '';
+
+function getSocialPosts() {
+  try {
+    const posts = JSON.parse(localStorage.getItem(SOCIAL_POSTS_KEY) || '[]');
+    return Array.isArray(posts) ? posts : [];
+  } catch(e) {
+    return [];
+  }
+}
+
+function saveSocialPosts(posts) {
+  localStorage.setItem(SOCIAL_POSTS_KEY, JSON.stringify(Array.isArray(posts) ? posts : []));
+}
+
+function renderSocial() {
+  const posts = getSocialPosts().sort((a, b) => getSocialPostTime(b) - getSocialPostTime(a));
+  const filtered = getFilteredSocialPosts(posts);
+  const feed = document.getElementById('socialFeed');
+  updateSocialStats(posts);
+  updateSocialFilterButtons();
+  if (!feed) return;
+
+  if (!filtered.length) {
+    feed.innerHTML = `
+      <div class="social-empty">
+        <div class="social-empty-icon">♡</div>
+        <div class="social-empty-title">${socialFilter === 'popular' ? '좋아요 받은 공유글이 없어요' : '아직 공유글이 없어요'}</div>
+        <div class="social-empty-desc">저장한 코스나 런닝 인증샷을 올려 피드를 채워보세요.</div>
+      </div>`;
+    return;
+  }
+
+  feed.innerHTML = filtered.map(renderSocialPost).join('');
+  requestAnimationFrame(() => {
+    filtered
+      .filter(post => post.type === 'course')
+      .forEach(drawSocialCoursePreview);
+  });
+}
+
+function getFilteredSocialPosts(posts) {
+  if (socialFilter === 'course') return posts.filter(post => post.type === 'course');
+  if (socialFilter === 'photo') return posts.filter(post => post.type === 'photo');
+  if (socialFilter === 'popular') {
+    return posts
+      .filter(post => Number(post.likes) > 0)
+      .sort((a, b) => (Number(b.likes) || 0) - (Number(a.likes) || 0) || getSocialPostTime(b) - getSocialPostTime(a));
+  }
+  return posts;
+}
+
+function updateSocialStats(posts) {
+  const courseCandidates = getPopularSocialCourseCandidates(posts);
+  const likeTotal = posts.reduce((sum, post) => sum + (Number(post.likes) || 0), 0);
+  setText('socialPostCount', posts.length + '개');
+  setText('socialAiCandidateCount', courseCandidates.length + '개');
+  setText('socialShareStat', posts.length);
+  setText('socialLikeStat', likeTotal);
+  setText('socialCandidateStat', courseCandidates.length);
+}
+
+function setText(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
+
+function setSocialFilter(filter) {
+  socialFilter = ['all', 'course', 'photo', 'popular'].includes(filter) ? filter : 'all';
+  renderSocial();
+}
+
+function updateSocialFilterButtons() {
+  ['All', 'Course', 'Photo', 'Popular'].forEach(name => {
+    const key = name.toLowerCase();
+    const el = document.getElementById('socialFilter' + name);
+    if (el) el.classList.toggle('active', socialFilter === key);
+  });
+}
+
+function renderSocialPost(post) {
+  const postId = JSON.stringify(post.id);
+  const domId = getSocialPostDomId(post.id);
+  const isCourse = post.type === 'course';
+  const isHotCourse = isPopularSocialCourse(post);
+  const typeLabel = isCourse ? '코스' : '사진';
+  const media = isCourse
+    ? renderSocialCourseMedia(post, domId)
+    : renderSocialPhotoMedia(post);
+  return `
+    <div class="social-card" id="socialPost-${domId}">
+      <div class="social-card-head">
+        <div class="social-avatar">${escapeHtml(post.authorAvatar || '🏃')}</div>
+        <div class="social-author">
+          <div class="social-author-name">${escapeHtml(post.authorName || '런너')}</div>
+          <div class="social-time">${escapeHtml(formatSocialTime(post.createdAt))}</div>
+        </div>
+        <div class="social-badges">
+          ${isHotCourse ? '<span class="social-badge hot">AI 추천 후보</span>' : ''}
+          <span class="social-badge">${typeLabel}</span>
+        </div>
+      </div>
+      ${media}
+      <div class="social-body">
+        <div class="social-post-title">${escapeHtml(post.title || (isCourse ? '공유 코스' : '공유 사진'))}</div>
+        ${post.text ? `<div class="social-text">${escapeHtml(post.text)}</div>` : ''}
+        <div class="social-meta">${escapeHtml(getSocialPostMeta(post))}</div>
+      </div>
+      <div class="social-actions">
+        <button class="social-like ${post.likedByMe ? 'active' : ''}" onclick="toggleSocialLike(${postId}, event)">♥ ${Math.max(0, Number(post.likes) || 0)}</button>
+        <button class="social-delete" onclick="deleteSocialPost(${postId}, event)">삭제</button>
+      </div>
+    </div>`;
+}
+
+function renderSocialCourseMedia(post, domId) {
+  const course = post.course || {};
+  const dist = Number.parseFloat(course.dist);
+  const distLabel = Number.isFinite(dist) ? dist.toFixed(2) + 'km' : '코스';
+  return `
+    <div class="social-course-preview">
+      <canvas id="socialCourseCanvas-${domId}"></canvas>
+      <div class="social-course-chip">${escapeHtml(distLabel)}</div>
+    </div>`;
+}
+
+function renderSocialPhotoMedia(post) {
+  if (!hasSafeRecordPhoto(post.photo)) return '';
+  return `<img class="social-photo" src="${escapeHtml(post.photo)}" alt="공유 사진">`;
+}
+
+function getSocialPostMeta(post) {
+  if (post.type === 'course') {
+    const course = post.course || {};
+    const dist = Number.parseFloat(course.dist);
+    return [
+      course.name || '',
+      Number.isFinite(dist) ? dist.toFixed(2) + 'km' : '',
+      course.routeLabel || course.startLabel || '',
+      isPopularSocialCourse(post) ? 'AI 추천 반영 후보' : ''
+    ].filter(Boolean).join(' · ') || '공유 코스';
+  }
+  const record = post.record || {};
+  return [
+    record.date || '',
+    record.dist ? record.dist + 'km' : '',
+    record.conditionScore !== undefined && record.conditionScore !== null ? '컨디션 ' + record.conditionScore + '/10' : ''
+  ].filter(Boolean).join(' · ') || '공유 사진';
+}
+
+function drawSocialCoursePreview(post) {
+  const canvas = document.getElementById('socialCourseCanvas-' + getSocialPostDomId(post.id));
+  if (!canvas) return;
+  drawStoredCoursePreview(canvas, post.course || {}, 132);
+}
+
+function getSocialPostDomId(id) {
+  return String(id).replace(/[^a-z0-9_-]/gi, '_');
+}
+
+function getSocialPostTime(post) {
+  const parsed = Date.parse(post && post.createdAt || '');
+  if (Number.isFinite(parsed)) return parsed;
+  const idTime = Number(post && post.id);
+  return Number.isFinite(idTime) ? idTime : 0;
+}
+
+function formatSocialTime(value) {
+  const time = Date.parse(value || '');
+  if (!Number.isFinite(time)) return '방금';
+  const diff = Date.now() - time;
+  if (diff < 60000) return '방금';
+  if (diff < 3600000) return Math.floor(diff / 60000) + '분 전';
+  if (diff < 86400000) return Math.floor(diff / 3600000) + '시간 전';
+  return new Date(time).toLocaleDateString('ko-KR', { month:'long', day:'numeric' });
+}
+
+function isPopularSocialCourse(post) {
+  return post && post.type === 'course' && (Number(post.likes) || 0) >= SOCIAL_AI_PICK_LIKE_THRESHOLD;
+}
+
+function getPopularSocialCourseCandidates(posts = getSocialPosts()) {
+  return posts
+    .filter(isPopularSocialCourse)
+    .sort((a, b) => (Number(b.likes) || 0) - (Number(a.likes) || 0))
+    .map(post => ({
+      postId: post.id,
+      likes: Number(post.likes) || 0,
+      course: post.course
+    }));
+}
+
+function toggleSocialLike(id, event) {
+  if (event) event.stopPropagation();
+  const posts = getSocialPosts();
+  const post = posts.find(item => String(item.id) === String(id));
+  if (!post) return;
+  const currentLikes = Math.max(0, Number(post.likes) || 0);
+  post.likedByMe = !post.likedByMe;
+  post.likes = post.likedByMe ? currentLikes + 1 : Math.max(0, currentLikes - 1);
+  saveSocialPosts(posts);
+  renderSocial();
+}
+
+function deleteSocialPost(id, event) {
+  if (event) event.stopPropagation();
+  if (!confirm('이 공유글을 삭제할까요?')) return;
+  const posts = getSocialPosts().filter(post => String(post.id) !== String(id));
+  saveSocialPosts(posts);
+  renderSocial();
+  toast('공유글이 삭제됐어요');
+}
+
+function openSocialComposer(type = 'course', options = {}) {
+  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
+  const hasCourses = Array.isArray(courses) && courses.length > 0;
+  socialPhotoDataUrl = '';
+  populateSocialCourseSelect(options.courseId);
+  populateSocialRecordPhotoSelect(options.recordIndex);
+  document.getElementById('socialTitleInput').value = '';
+  document.getElementById('socialTextInput').value = '';
+  switchSocialShareType(type === 'photo' || !hasCourses ? 'photo' : 'course');
+  if (options.courseId !== undefined && options.courseId !== null) {
+    const select = document.getElementById('socialCourseSelect');
+    if (select) select.value = String(options.courseId);
+    updateSocialCourseDraft();
+  }
+  if (options.recordIndex !== undefined && options.recordIndex !== null) {
+    const select = document.getElementById('socialRecordPhotoSelect');
+    if (select) select.value = String(options.recordIndex);
+    selectSocialRecordPhoto();
+  }
+  document.getElementById('socialComposerModal').style.display = 'flex';
+}
+
+function closeSocialComposer() {
+  document.getElementById('socialComposerModal').style.display = 'none';
+  socialPhotoDataUrl = '';
+  updateSocialPhotoPreview();
+}
+
+function switchSocialShareType(type) {
+  socialComposerType = type === 'photo' ? 'photo' : 'course';
+  const courseBtn = document.getElementById('socialTypeCourse');
+  const photoBtn = document.getElementById('socialTypePhoto');
+  const courseFields = document.getElementById('socialCourseFields');
+  const photoFields = document.getElementById('socialPhotoFields');
+  if (courseBtn) courseBtn.classList.toggle('active', socialComposerType === 'course');
+  if (photoBtn) photoBtn.classList.toggle('active', socialComposerType === 'photo');
+  if (courseFields) courseFields.style.display = socialComposerType === 'course' ? 'block' : 'none';
+  if (photoFields) photoFields.style.display = socialComposerType === 'photo' ? 'block' : 'none';
+  if (socialComposerType === 'course') updateSocialCourseDraft();
+  if (socialComposerType === 'photo' && shouldReplaceSocialDraftTitle()) {
+    document.getElementById('socialTitleInput').value = '오늘의 풍경';
+  }
+}
+
+function populateSocialCourseSelect(selectedId) {
+  const select = document.getElementById('socialCourseSelect');
+  if (!select) return;
+  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
+  if (!Array.isArray(courses) || !courses.length) {
+    select.innerHTML = '<option value="">저장한 코스 없음</option>';
+    select.disabled = true;
+    return;
+  }
+  select.disabled = false;
+  select.innerHTML = courses
+    .sort((a, b) => getCourseSavedTime(b) - getCourseSavedTime(a))
+    .map(course => `<option value="${escapeHtml(String(course.id))}">${escapeHtml(course.name || '코스')} · ${escapeHtml(getMyCourseCardMeta(course).distance)}km</option>`)
+    .join('');
+  if (selectedId !== undefined && selectedId !== null) select.value = String(selectedId);
+}
+
+function populateSocialRecordPhotoSelect(selectedIndex) {
+  const select = document.getElementById('socialRecordPhotoSelect');
+  if (!select) return;
+  const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
+  const options = Array.isArray(records)
+    ? records
+        .map((record, index) => ({ record, index }))
+        .filter(item => hasSafeRecordPhoto(item.record && item.record.photo))
+    : [];
+  select.innerHTML = '<option value="">기록 인증샷 선택 안 함</option>' + options.map(item => {
+    const label = [item.record.name || '런닝 인증샷', item.record.date || ''].filter(Boolean).join(' · ');
+    return `<option value="${item.index}">${escapeHtml(label)}</option>`;
+  }).join('');
+  if (selectedIndex !== undefined && selectedIndex !== null) select.value = String(selectedIndex);
+}
+
+function updateSocialCourseDraft() {
+  if (socialComposerType !== 'course') return;
+  const course = getSelectedSocialCourse();
+  const title = document.getElementById('socialTitleInput');
+  if (title && course && shouldReplaceSocialDraftTitle()) title.value = course.name || '공유 코스';
+}
+
+function shouldReplaceSocialDraftTitle() {
+  const title = document.getElementById('socialTitleInput');
+  const current = title ? title.value.trim() : '';
+  const course = getSelectedSocialCourse();
+  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
+  const isKnownCourseTitle = Array.isArray(courses) && courses.some(item => current === (item.name || '공유 코스'));
+  return !current || current === '오늘의 풍경' || isKnownCourseTitle || (course && current === (course.name || '공유 코스'));
+}
+
+function getSelectedSocialCourse() {
+  const select = document.getElementById('socialCourseSelect');
+  if (!select || !select.value) return null;
+  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
+  return Array.isArray(courses) ? courses.find(course => String(course.id) === String(select.value)) : null;
+}
+
+function selectSocialRecordPhoto() {
+  const select = document.getElementById('socialRecordPhotoSelect');
+  const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
+  const index = select && select.value !== '' ? Number(select.value) : -1;
+  const record = Number.isInteger(index) && Array.isArray(records) ? records[index] : null;
+  if (!record || !hasSafeRecordPhoto(record.photo)) {
+    socialPhotoDataUrl = '';
+    updateSocialPhotoPreview();
+    return;
+  }
+  socialPhotoDataUrl = record.photo;
+  const title = document.getElementById('socialTitleInput');
+  const text = document.getElementById('socialTextInput');
+  if (title && shouldReplaceSocialDraftTitle()) title.value = record.name || '런닝 인증샷';
+  if (text && !text.value.trim() && record.memo) text.value = record.memo;
+  updateSocialPhotoPreview();
+}
+
+async function handleSocialPhotoSelected(event) {
+  const file = event && event.target && event.target.files && event.target.files[0];
+  if (!file) return;
+  try {
+    socialPhotoDataUrl = await compressRunPhoto(file);
+    const select = document.getElementById('socialRecordPhotoSelect');
+    if (select) select.value = '';
+    const title = document.getElementById('socialTitleInput');
+    if (title && shouldReplaceSocialDraftTitle()) title.value = '오늘의 풍경';
+    updateSocialPhotoPreview();
+  } catch(e) {
+    console.warn('Social photo processing failed', e);
+    toast('사진을 불러오지 못했어요');
+  }
+}
+
+function clearSocialPhoto() {
+  socialPhotoDataUrl = '';
+  const input = document.getElementById('socialPhotoInput');
+  const select = document.getElementById('socialRecordPhotoSelect');
+  if (input) input.value = '';
+  if (select) select.value = '';
+  updateSocialPhotoPreview();
+}
+
+function updateSocialPhotoPreview() {
+  const preview = document.getElementById('socialPhotoPreview');
+  if (!preview) return;
+  preview.classList.toggle('active', !!socialPhotoDataUrl);
+  if (socialPhotoDataUrl) preview.src = socialPhotoDataUrl;
+  else preview.removeAttribute('src');
+}
+
+function publishSocialPost() {
+  const titleInput = document.getElementById('socialTitleInput');
+  const textInput = document.getElementById('socialTextInput');
+  const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
+  const now = new Date();
+  const post = {
+    id: now.getTime(),
+    type: socialComposerType,
+    title: titleInput.value.trim(),
+    text: textInput.value.trim(),
+    authorName: profile.name || '런너',
+    authorAvatar: profile.avatar || '🏃',
+    createdAt: now.toISOString(),
+    likes: 0,
+    likedByMe: false
+  };
+
+  if (socialComposerType === 'course') {
+    const course = getSelectedSocialCourse();
+    if (!course) { toast('공유할 코스를 선택해주세요'); return; }
+    post.title = post.title || course.name || '공유 코스';
+    post.course = createSocialCourseSnapshot(course);
+  } else {
+    if (!hasSafeRecordPhoto(socialPhotoDataUrl)) { toast('공유할 사진을 선택해주세요'); return; }
+    post.title = post.title || '오늘의 풍경';
+    post.photo = socialPhotoDataUrl;
+    post.record = createSocialRecordSnapshot();
+  }
+
+  const posts = getSocialPosts();
+  posts.unshift(post);
+  saveSocialPosts(posts);
+  closeSocialComposer();
+  const socialTab = document.querySelector('[data-tab="social"]');
+  switchTab('social', socialTab);
+  toast('소셜에 공유했어요');
+}
+
+function createSocialCourseSnapshot(course) {
+  const points = getStoredCoursePreviewPoints(course).map(point => ({
+    lat: roundCoord(point.lat),
+    lng: roundCoord(point.lng)
+  }));
+  const segments = Array.isArray(course.segments)
+    ? course.segments.map(segment => ({
+        mode: segment.mode || 'saved',
+        dist: String(segment.dist || ''),
+        points: normalizeStoredPathPoints(segment.points || [])
+      })).filter(segment => segment.points.length > 1)
+    : [];
+  return {
+    id: course.id,
+    name: course.name || '코스',
+    dist: course.dist || getMyCourseCardMeta(course).distance,
+    date: course.date || '',
+    savedAt: course.savedAt || '',
+    points,
+    segments,
+    manualDist: course.manualDist || '0.00',
+    fromAi: !!course.fromAi,
+    tags: Array.isArray(course.tags) ? course.tags : [],
+    crosswalkCount: normalizeCrosswalkCount(course.crosswalkCount),
+    routeLabel: course.routeLabel || '',
+    routeSource: course.routeSource || '',
+    startLabel: course.startLabel || ''
+  };
+}
+
+function createSocialRecordSnapshot() {
+  const select = document.getElementById('socialRecordPhotoSelect');
+  const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
+  const index = select && select.value !== '' ? Number(select.value) : -1;
+  const record = Number.isInteger(index) && Array.isArray(records) ? records[index] : null;
+  if (!record) return null;
+  return {
+    id: record.id || null,
+    name: record.name || '',
+    dist: record.dist || '',
+    date: record.date || '',
+    conditionScore: Number.isFinite(Number(record.conditionScore)) ? Math.max(0, Math.min(10, Math.round(Number(record.conditionScore)))) : null
+  };
+}
+
+function shareCourseFromDetail() {
+  if (!courseDetailTargetId) return;
+  const id = courseDetailTargetId;
+  closeCourseDetail();
+  openSocialComposer('course', { courseId: id });
+}
+
+function shareRecordPhotoToSocial(index) {
+  closeRecordDetail();
+  openSocialComposer('photo', { recordIndex: index });
+}
+
 /* ── 내 코스 관리 ── */
 let renameTargetId = null;
 let courseDetailTargetId = null;
@@ -4330,6 +4931,7 @@ function renderMyCourses() {
       <div class="mc-actions">
         <button class="mc-btn mc-btn-run" onclick="event.stopPropagation(); startMyCoursRun(${courseId})">시작</button>
         <button class="mc-btn mc-btn-edit" onclick="event.stopPropagation(); openRename(${courseId})">편집</button>
+        <button class="mc-btn mc-btn-share" onclick="event.stopPropagation(); openSocialComposer('course',{courseId:${courseId}})">공유</button>
       </div>
     `;
     list.appendChild(card);
@@ -4400,6 +5002,7 @@ function openCourseDetail(id) {
       <button class="course-secondary ${course.favorite ? 'active' : ''}" onclick="toggleCourseFavorite(${courseId}, event)">${favLabel}</button>
       <button class="course-secondary" onclick="editCourseFromDetail()">이름 편집</button>
     </div>
+    <button class="course-detail-share" onclick="shareCourseFromDetail()">소셜에 공유</button>
     ${recordDetailRow('저장일', saved || '-')}
     ${recordDetailRow('코스 유형', source)}
     ${course.startLabel ? recordDetailRow('출발지', course.startLabel) : ''}
@@ -4448,9 +5051,13 @@ function isStoredPoint(point) {
 function drawCourseDetailPreview(course) {
   const cv = document.getElementById('courseDetailPreview');
   if (!cv) return;
+  drawStoredCoursePreview(cv, course, 128);
+}
+
+function drawStoredCoursePreview(cv, course, fallbackHeight = 128) {
   const dpr = window.devicePixelRatio || 1;
   const w = cv.offsetWidth || 360;
-  const h = cv.offsetHeight || 128;
+  const h = cv.offsetHeight || fallbackHeight;
   cv.width = w * dpr;
   cv.height = h * dpr;
   const ctx = cv.getContext('2d');
