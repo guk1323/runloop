@@ -182,7 +182,7 @@ if ('serviceWorker' in navigator) {
   /* 완료 오버레이 */
   .finish-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:none;align-items:center;justify-content:center;}
   .finish-overlay.active{display:flex;}
-  .finish-card{background:#fff;border-radius:var(--r);padding:24px 20px;width:320px;max-width:90vw;}
+  .finish-card{background:#fff;border-radius:var(--r);padding:24px 20px;width:320px;max-width:90vw;max-height:88dvh;overflow-y:auto;}
   .finish-emoji{font-size:36px;text-align:center;margin-bottom:8px;}
   .finish-title{font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;}
   .finish-sub{font-size:13px;color:var(--gray-500);text-align:center;margin-bottom:16px;}
@@ -193,6 +193,28 @@ if ('serviceWorker' in navigator) {
   .fstat-v.g{color:var(--coral);}
   .finish-save{width:100%;height:48px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;margin-bottom:8px;}
   .finish-discard{width:100%;height:40px;background:none;border:1px solid var(--gray-300);border-radius:var(--r);font-size:13px;font-family:inherit;cursor:pointer;color:var(--gray-500);}
+  .photo-prompt-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1001;display:none;align-items:center;justify-content:center;}
+  .photo-prompt-overlay.active{display:flex;}
+  .photo-prompt-card{background:#fff;border-radius:var(--r);padding:24px 20px;width:310px;max-width:90vw;text-align:center;box-shadow:0 18px 46px rgba(0,0,0,.18);}
+  .photo-prompt-icon{font-size:34px;margin-bottom:8px;}
+  .photo-prompt-title{font-size:18px;font-weight:800;margin-bottom:6px;color:var(--gray-900);}
+  .photo-prompt-desc{font-size:13px;line-height:1.55;color:var(--gray-500);margin-bottom:18px;}
+  .photo-prompt-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .photo-prompt-btn{height:44px;border-radius:var(--rs);font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;border:1px solid transparent;}
+  .photo-prompt-yes{background:var(--ink);color:#fff;}
+  .photo-prompt-no{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
+  .finish-photo{display:none;margin-bottom:14px;}
+  .finish-photo.active{display:block;}
+  .finish-photo-img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--rs);border:1px solid var(--gray-100);display:block;background:var(--gray-50);}
+  .finish-photo-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+  .finish-photo-actions button{height:36px;border-radius:var(--rs);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;}
+  .finish-photo-retake{background:var(--gray-50);border:1px solid var(--gray-100);color:var(--gray-700);}
+  .finish-photo-remove{background:#fff;border:1px solid var(--gray-300);color:var(--gray-500);}
+  .condition-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+  .condition-value{font-size:13px;font-weight:900;color:var(--coral);}
+  .condition-slider{width:100%;accent-color:var(--coral);}
+  .condition-ticks{display:grid;grid-template-columns:repeat(11,1fr);font-size:10px;color:var(--gray-500);margin-top:4px;text-align:center;}
+  .condition-caption{display:flex;justify-content:space-between;font-size:11px;color:var(--gray-500);margin-top:6px;}
 
   .record-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;}
   .record-icon{width:42px;height:42px;border-radius:50%;background:var(--coral-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
@@ -301,14 +323,12 @@ if ('serviceWorker' in navigator) {
   .trophy-icon.earned{filter:none;opacity:1;}
   .trophy-name{font-size:10px;color:var(--gray-500);}
 
-  .mood-btn{flex:1;padding:7px 0;background:var(--gray-50);border:1px solid var(--gray-100);border-radius:var(--rs);font-size:12px;cursor:pointer;font-family:inherit;transition:all .15s;}
-  .mood-btn.selected{background:var(--coral-light);border-color:var(--coral);color:var(--ink);font-weight:500;}
   .record-memo{font-size:12px;color:var(--gray-500);margin-top:4px;font-style:italic;}
-  .record-mood{font-size:13px;margin-left:4px;}
   .record-detail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;}
   .record-detail-stat{background:var(--gray-50);border-radius:var(--rs);padding:11px 12px;}
   .record-detail-label{font-size:11px;color:var(--gray-500);margin-bottom:4px;}
   .record-detail-value{font-size:18px;font-weight:800;color:var(--gray-900);}
+  .record-detail-photo{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--rs);display:block;margin-bottom:12px;background:var(--gray-50);}
   .record-detail-row{display:flex;justify-content:space-between;gap:12px;padding:10px 0;border-top:1px solid var(--gray-100);font-size:13px;}
   .record-detail-row span:first-child{color:var(--gray-500);}
   .record-detail-row span:last-child{font-weight:700;color:var(--gray-900);text-align:right;}
@@ -939,6 +959,20 @@ if ('serviceWorker' in navigator) {
   </div>
 </div>
 
+<!-- 인증샷 확인 오버레이 -->
+<div class="photo-prompt-overlay" id="photoPromptOverlay">
+  <div class="photo-prompt-card">
+    <div class="photo-prompt-icon">📷</div>
+    <div class="photo-prompt-title">인증샷을 남길까요?</div>
+    <div class="photo-prompt-desc">오늘 코스 기록에 사진 한 장을 함께 저장할 수 있어요.</div>
+    <div class="photo-prompt-actions">
+      <button class="photo-prompt-btn photo-prompt-no" onclick="skipFinishPhoto()">아니오</button>
+      <button class="photo-prompt-btn photo-prompt-yes" onclick="startFinishPhotoCapture()">예</button>
+    </div>
+  </div>
+</div>
+<input type="file" id="finishPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="handleFinishPhotoSelected(event)">
+
 <!-- 런닝 완료 오버레이 -->
 <div class="finish-overlay" id="finishOverlay">
   <div class="finish-card">
@@ -956,20 +990,28 @@ if ('serviceWorker' in navigator) {
       <div style="font-size:11px;color:var(--gray-500);margin-bottom:5px;">기록 제목</div>
       <input type="text" id="finishTitle" style="width:100%;height:40px;border:1px solid var(--gray-300);border-radius:var(--rs);padding:0 12px;font-size:14px;font-family:inherit;outline:none;" placeholder="오늘 런닝 제목을 입력해보세요">
     </div>
+    <div class="finish-photo" id="finishPhotoBox">
+      <div style="font-size:11px;color:var(--gray-500);margin-bottom:5px;">인증샷</div>
+      <img class="finish-photo-img" id="finishPhotoPreview" alt="런닝 인증샷 미리보기">
+      <div class="finish-photo-actions">
+        <button class="finish-photo-retake" onclick="startFinishPhotoCapture()">다시 찍기</button>
+        <button class="finish-photo-remove" onclick="removeFinishPhoto()">사진 삭제</button>
+      </div>
+    </div>
     <!-- 한 줄 메모 -->
     <div style="margin-bottom:14px;">
       <div style="font-size:11px;color:var(--gray-500);margin-bottom:5px;">오늘의 한 줄 메모</div>
       <textarea id="finishMemo" rows="2" style="width:100%;border:1px solid var(--gray-300);border-radius:var(--rs);padding:10px 12px;font-size:13px;font-family:inherit;outline:none;resize:none;line-height:1.5;" placeholder="오늘 컨디션은 어땠나요? 자유롭게 기록해보세요"></textarea>
     </div>
-    <!-- 오늘 기분 -->
+    <!-- 오늘 컨디션 -->
     <div style="margin-bottom:14px;">
-      <div style="font-size:11px;color:var(--gray-500);margin-bottom:6px;">오늘 컨디션</div>
-      <div style="display:flex;gap:8px;" id="moodRow">
-        <button class="mood-btn" onclick="selectMood(this,'🔥')">🔥 최고</button>
-        <button class="mood-btn" onclick="selectMood(this,'😊')">😊 좋음</button>
-        <button class="mood-btn" onclick="selectMood(this,'😐')">😐 보통</button>
-        <button class="mood-btn" onclick="selectMood(this,'😓')">😓 힘듦</button>
+      <div class="condition-head">
+        <div style="font-size:11px;color:var(--gray-500);">오늘 컨디션</div>
+        <div class="condition-value"><span id="conditionScoreValue">5</span>/10</div>
       </div>
+      <input class="condition-slider" id="conditionScore" type="range" min="0" max="10" step="1" value="5" oninput="updateConditionScore(this.value)">
+      <div class="condition-ticks"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
+      <div class="condition-caption"><span>낮음</span><span>최상</span></div>
     </div>
     <button class="finish-save" onclick="saveRecord()">기록 저장 →</button>
     <button class="finish-discard" onclick="closeFinish()">저장 안 함</button>
@@ -3525,6 +3567,8 @@ const R = {
   totalKm: 5, interval: null, courseName: '', watchId: null, gpsActive: false,
   lastLat: null, lastLng: null, gpsAccuracy: null, lowAccuracyWarned: false
 };
+let finishPhotoDataUrl = '';
+let finishPhotoAwaitingFile = false;
 
 function buildKmTrack(total) {
   const wrap = document.getElementById('kmTrack');
@@ -3601,6 +3645,13 @@ function stopRun() {
   clearInterval(R.interval);
   if (R.watchId) { navigator.geolocation.clearWatch(R.watchId); R.watchId = null; }
   R.running = false;
+  resetFinishPhoto();
+  document.getElementById('photoPromptOverlay').classList.add('active');
+}
+
+function skipFinishPhoto() {
+  finishPhotoAwaitingFile = false;
+  document.getElementById('photoPromptOverlay').classList.remove('active');
   showFinish();
 }
 
@@ -3612,19 +3663,116 @@ function showFinish() {
   if (R.dist > 0.05) {
     const pace = R.elapsed / R.dist;
     document.getElementById('fPace').textContent = Math.floor(pace/60) + "'" + String(Math.round(pace%60)).padStart(2,'0') + '"';
+  } else {
+    document.getElementById('fPace').textContent = '—';
   }
   // 입력 초기화
   document.getElementById('finishTitle').value = R.courseName;
   document.getElementById('finishMemo').value = '';
-  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+  updateConditionScore(5);
+  renderFinishPhoto();
   document.getElementById('finishOverlay').classList.add('active');
+}
+
+function startFinishPhotoCapture() {
+  const input = document.getElementById('finishPhotoInput');
+  if (!input) {
+    skipFinishPhoto();
+    return;
+  }
+  document.getElementById('photoPromptOverlay').classList.remove('active');
+  input.value = '';
+  finishPhotoAwaitingFile = true;
+  setTimeout(() => {
+    window.addEventListener('focus', handleFinishPhotoFocusReturn, { once: true });
+  }, 500);
+  input.click();
+}
+
+function handleFinishPhotoFocusReturn() {
+  setTimeout(() => {
+    if (!finishPhotoAwaitingFile) return;
+    finishPhotoAwaitingFile = false;
+    showFinish();
+  }, 350);
+}
+
+async function handleFinishPhotoSelected(event) {
+  const file = event && event.target && event.target.files && event.target.files[0];
+  finishPhotoAwaitingFile = false;
+  if (!file) {
+    showFinish();
+    return;
+  }
+  try {
+    finishPhotoDataUrl = await compressRunPhoto(file);
+    showFinish();
+  } catch (error) {
+    console.warn('Run photo processing failed', error);
+    toast('사진을 불러오지 못했어요');
+    showFinish();
+  }
+}
+
+function compressRunPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const maxSide = 1200;
+        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const width = Math.max(1, Math.round(img.width * scale));
+        const height = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.72));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function resetFinishPhoto() {
+  finishPhotoDataUrl = '';
+  finishPhotoAwaitingFile = false;
+  const input = document.getElementById('finishPhotoInput');
+  if (input) input.value = '';
+  renderFinishPhoto();
+}
+
+function removeFinishPhoto() {
+  finishPhotoDataUrl = '';
+  renderFinishPhoto();
+}
+
+function renderFinishPhoto() {
+  const box = document.getElementById('finishPhotoBox');
+  const img = document.getElementById('finishPhotoPreview');
+  if (!box || !img) return;
+  box.classList.toggle('active', !!finishPhotoDataUrl);
+  if (finishPhotoDataUrl) img.src = finishPhotoDataUrl;
+  else img.removeAttribute('src');
+}
+
+function updateConditionScore(value) {
+  const score = Math.max(0, Math.min(10, parseInt(value, 10) || 0));
+  const input = document.getElementById('conditionScore');
+  const label = document.getElementById('conditionScoreValue');
+  if (input) input.value = score;
+  if (label) label.textContent = score;
 }
 
 function saveRecord() {
   const memo = document.getElementById('finishMemo').value.trim();
   const title = document.getElementById('finishTitle').value.trim();
-  const selectedMood = document.querySelector('.mood-btn.selected');
-  const mood = selectedMood ? selectedMood.textContent.trim() : '';
+  const conditionScore = Math.max(0, Math.min(10, parseInt(document.getElementById('conditionScore').value, 10) || 0));
 
   const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
   const now = new Date();
@@ -3638,7 +3786,8 @@ function saveRecord() {
     createdAt: now.toISOString(),
     pace: R.dist > 0.05 ? (()=>{ const p=R.elapsed/R.dist; return Math.floor(p/60)+"'"+String(Math.round(p%60)).padStart(2,'0')+'"'; })() : '—',
     memo: memo,
-    mood: mood,
+    conditionScore,
+    photo: finishPhotoDataUrl,
     source: R.gpsActive ? 'web_gps' : 'web_sim',
     gpsAccuracy: R.gpsAccuracy ? Math.round(R.gpsAccuracy) : null,
     path: runPath.map(p => ({ lat: p.getLat(), lng: p.getLng() }))
@@ -3647,6 +3796,7 @@ function saveRecord() {
   const earnedPts = Math.round(R.dist * 100);
   document.getElementById('finishOverlay').classList.remove('active');
   document.getElementById('runScreen').classList.remove('active');
+  resetFinishPhoto();
   toast(`기록 저장 완료! +${earnedPts}포인트 🏆`);
 }
 
@@ -4007,10 +4157,10 @@ function openAllRecords() {
       <div class="all-record-card" onclick="openRecordDetail(${i})">
         <div class="all-record-icon">${emojis[i % emojis.length]}</div>
         <div class="all-record-info">
-          <div class="all-record-name">${r.name}</div>
-          <div class="all-record-meta">${r.date} · ${r.time} · 페이스 ${r.pace}/km · ${r.cal}kcal</div>
+          <div class="all-record-name">${escapeHtml(r.name || '런닝 기록')}</div>
+          <div class="all-record-meta">${getAllRecordMeta(r)}</div>
         </div>
-        <div class="all-record-dist">${r.dist}km</div>
+        <div class="all-record-dist">${escapeHtml(r.dist || '-')}km</div>
       </div>`).join('');
   }
   document.getElementById('allRecordsModal').style.display = 'flex';
@@ -4029,14 +4179,17 @@ function openRecordDetail(index) {
   const body = document.getElementById('recordDetailBody');
   const pathCount = Array.isArray(r.path) ? r.path.length : 0;
   title.textContent = r.name || '런닝 기록';
-  date.textContent = [r.date, r.mood].filter(Boolean).join(' · ') || '-';
+  const conditionValue = getRecordConditionValue(r);
+  date.textContent = [r.date, getRecordConditionLabel(r)].filter(Boolean).join(' · ') || '-';
   body.innerHTML = `
+    ${getRecordPhotoHtml(r)}
     <div class="record-detail-grid">
       <div class="record-detail-stat"><div class="record-detail-label">거리</div><div class="record-detail-value">${escapeHtml(r.dist || '-')}km</div></div>
       <div class="record-detail-stat"><div class="record-detail-label">시간</div><div class="record-detail-value">${escapeHtml(r.time || '-')}</div></div>
       <div class="record-detail-stat"><div class="record-detail-label">페이스</div><div class="record-detail-value">${escapeHtml(r.pace || '-')}</div></div>
       <div class="record-detail-stat"><div class="record-detail-label">칼로리</div><div class="record-detail-value">${escapeHtml(String(r.cal || '-'))}kcal</div></div>
     </div>
+    ${conditionValue ? recordDetailRow('컨디션', conditionValue) : ''}
     ${recordDetailRow('기록 출처', getRecordSourceLabel(r.source))}
     ${recordDetailRow('GPS 정확도', r.gpsAccuracy ? '약 ' + r.gpsAccuracy + 'm' : '-')}
     ${recordDetailRow('경로 포인트', pathCount ? pathCount + '개' : '-')}
@@ -4055,6 +4208,40 @@ function closeRecordDetail() {
 
 function recordDetailRow(label, value) {
   return `<div class="record-detail-row"><span>${escapeHtml(label)}</span><span>${escapeHtml(value || '-')}</span></div>`;
+}
+
+function getAllRecordMeta(record) {
+  const parts = [
+    record.date,
+    record.time,
+    record.pace ? '페이스 ' + record.pace + '/km' : '',
+    Number.isFinite(Number(record.cal)) ? record.cal + 'kcal' : '',
+    getRecordConditionLabel(record),
+    hasSafeRecordPhoto(record.photo) ? '사진' : ''
+  ].filter(Boolean);
+  return escapeHtml(parts.join(' · ') || '-');
+}
+
+function getRecordConditionLabel(record) {
+  const value = getRecordConditionValue(record);
+  if (!value) return '';
+  if (String(value).includes('/10')) return '컨디션 ' + value;
+  return value;
+}
+
+function getRecordConditionValue(record) {
+  const score = Number(record && record.conditionScore);
+  if (Number.isFinite(score)) return Math.max(0, Math.min(10, Math.round(score))) + '/10';
+  return record && record.mood ? record.mood : '';
+}
+
+function getRecordPhotoHtml(record) {
+  if (!hasSafeRecordPhoto(record && record.photo)) return '';
+  return `<img class="record-detail-photo" src="${escapeHtml(record.photo)}" alt="런닝 인증샷">`;
+}
+
+function hasSafeRecordPhoto(value) {
+  return /^data:image\/(jpeg|jpg|png|webp);base64,[a-z0-9+/=]+$/i.test(String(value || ''));
 }
 
 function getRecordSourceLabel(source) {
@@ -4706,8 +4893,11 @@ function getWeatherDesc(id) {
 }
 
 function closeFinish() {
+  finishPhotoAwaitingFile = false;
+  document.getElementById('photoPromptOverlay').classList.remove('active');
   document.getElementById('finishOverlay').classList.remove('active');
   document.getElementById('runScreen').classList.remove('active');
+  resetFinishPhoto();
 }
 
 /* ── 런닝 중 실제 카카오맵 ── */
@@ -5196,11 +5386,6 @@ function saveGoalEdit() {
   closeGoalEdit();
   renderMyPage();
   toast('목표가 변경됐어요! 💪');
-}
-
-function selectMood(el, mood) {
-  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
-  el.classList.add('selected');
 }
 
 function saveAiCourse(idx) {
