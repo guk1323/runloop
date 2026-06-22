@@ -246,8 +246,6 @@ if ('serviceWorker' in navigator) {
   .course-detail-label{font-size:11px;color:var(--gray-500);margin-bottom:4px;}
   .course-detail-value{font-size:20px;font-weight:800;color:var(--gray-900);}
   .course-detail-value.g{color:var(--coral);}
-  .course-detail-preview{height:128px;background:#EEEADF;border-radius:var(--rs);overflow:hidden;margin-bottom:10px;position:relative;border:1px solid var(--gray-100);}
-  .course-detail-preview canvas{width:100%;height:100%;display:block;}
   .course-detail-chiprow{display:flex;gap:6px;flex-wrap:wrap;margin:0 0 12px;}
   .course-detail-chip{font-size:11px;font-weight:700;color:var(--gray-700);background:var(--gray-50);border:1px solid var(--gray-100);border-radius:999px;padding:5px 9px;}
   .course-detail-note{font-size:12px;line-height:1.5;color:var(--gray-500);background:var(--coral-light);border-radius:var(--rs);padding:10px 12px;margin:10px 0 12px;}
@@ -404,6 +402,7 @@ if ('serviceWorker' in navigator) {
   .social-publish-btn{width:100%;height:48px;border:none;border-radius:var(--r);background:var(--ink);color:#fff;font-size:15px;font-weight:800;font-family:inherit;cursor:pointer;}
   .course-detail-share,.record-detail-share{width:100%;height:42px;border-radius:var(--rs);background:var(--coral-light);color:var(--ink);border:1px solid rgba(242,122,94,.22);font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;margin-top:8px;}
   .mc-actions{grid-template-columns:repeat(3,1fr);}
+  .mc-btn-map{background:var(--coral-light);color:var(--ink);border-color:rgba(242,122,94,.22);}
   .mc-btn-share{background:var(--coral-light);color:var(--ink);border-color:rgba(242,122,94,.22);}
 </style>
 </head>
@@ -4892,7 +4891,7 @@ function renderMyCourses() {
       </div>
       <div class="mc-actions">
         <button class="mc-btn mc-btn-run" onclick="event.stopPropagation(); startMyCoursRun(${courseId})">시작</button>
-        <button class="mc-btn mc-btn-edit" onclick="event.stopPropagation(); openRename(${courseId})">편집</button>
+        <button class="mc-btn mc-btn-map" onclick="event.stopPropagation(); viewCourseOnMap(${courseId})">지도</button>
         <button class="mc-btn mc-btn-share" onclick="event.stopPropagation(); openSocialComposer('course',{courseId:${courseId}})">공유</button>
       </div>
     `;
@@ -4950,7 +4949,6 @@ function openCourseDetail(id) {
   document.getElementById('courseDetailTitle').textContent = course.name || '코스';
   document.getElementById('courseDetailMeta').textContent = [saved, source].filter(Boolean).join(' · ');
   document.getElementById('courseDetailBody').innerHTML = `
-    <div class="course-detail-preview"><canvas id="courseDetailPreview"></canvas></div>
     <div class="course-detail-chiprow">
       ${chips.map(label => `<span class="course-detail-chip">${escapeHtml(label)}</span>`).join('')}
     </div>
@@ -4959,7 +4957,10 @@ function openCourseDetail(id) {
       <div class="course-detail-stat"><div class="course-detail-label">예상 시간</div><div class="course-detail-value">${meta.minutes.replace('약 ', '')}</div></div>
     </div>
     ${Number.isFinite(manualKm) && manualKm > 0 ? `<div class="course-detail-note">직접 그린 구간이 ${manualKm.toFixed(2)}km 있어요. 실제 주행 전 지도에서 길 흐름을 한 번 확인하는 쪽이 좋아요.</div>` : ''}
-    <button class="course-detail-primary-action" onclick="startCourseFromDetail()">시작하기</button>
+    <div class="course-detail-secondary-actions">
+      <button class="course-primary" onclick="startCourseFromDetail()">시작하기</button>
+      <button class="course-secondary" onclick="viewCourseFromDetail()">지도에서 보기</button>
+    </div>
     <div class="course-detail-secondary-actions">
       <button class="course-secondary ${course.favorite ? 'active' : ''}" onclick="toggleCourseFavorite(${courseId}, event)">${favLabel}</button>
       <button class="course-secondary" onclick="editCourseFromDetail()">이름 편집</button>
@@ -4974,7 +4975,6 @@ function openCourseDetail(id) {
     ${Number.isFinite(manualKm) && manualKm > 0 ? recordDetailRow('직접 그린 구간', manualKm.toFixed(2) + 'km') : ''}
     <button class="course-detail-delete" onclick="deleteCourseFromDetail()">코스 삭제</button>
   `;
-  requestAnimationFrame(() => drawCourseDetailPreview(course));
   document.getElementById('courseDetailModal').style.display = 'flex';
 }
 
@@ -5007,12 +5007,6 @@ function getStoredCoursePreviewPoints(course) {
 
 function isStoredPoint(point) {
   return point && Number.isFinite(parseFloat(point.lat)) && Number.isFinite(parseFloat(point.lng));
-}
-
-function drawCourseDetailPreview(course) {
-  const cv = document.getElementById('courseDetailPreview');
-  if (!cv) return;
-  drawStoredCoursePreview(cv, course, 128);
 }
 
 function drawStoredCoursePreview(cv, course, fallbackHeight = 128) {
@@ -5102,6 +5096,54 @@ function startCourseFromDetail() {
   const id = courseDetailTargetId;
   closeCourseDetail();
   startMyCoursRun(id);
+}
+
+function viewCourseFromDetail() {
+  if (!courseDetailTargetId) return;
+  const id = courseDetailTargetId;
+  closeCourseDetail();
+  viewCourseOnMap(id);
+}
+
+function viewCourseOnMap(id) {
+  const course = getCourseById(id);
+  if (!course) return;
+  const points = getStoredCoursePreviewPoints(course);
+  if (points.length < 2) {
+    toast('지도에 표시할 경로가 없어요');
+    return;
+  }
+  const createTab = document.querySelector('[data-tab="create"]');
+  switchTab('create', createTab);
+  const mapCourse = {
+    ...course,
+    points,
+    routeSource: course.routeSource || 'saved'
+  };
+  showSavedCourseOnCreateMap(mapCourse, 0);
+}
+
+function showSavedCourseOnCreateMap(course, attempt) {
+  setTimeout(() => {
+    if (!S.kakaoReady || !createMap) {
+      if (attempt < 16) {
+        showSavedCourseOnCreateMap(course, attempt + 1);
+      } else {
+        toast('지도를 불러온 뒤 다시 시도해주세요');
+      }
+      return;
+    }
+
+    S.sel = -1;
+    document.querySelectorAll('.course-card').forEach(card => card.classList.remove('selected'));
+    setCreateMode('ai');
+    if (createAiMarker) createAiMarker.setMap(null);
+    bottomSheetOpen = false;
+    const area = document.getElementById('aiCourseArea');
+    if (area) area.style.maxHeight = '0';
+    showAiRoutePreview(course);
+    toast((course.name || '저장 코스') + '를 지도에 표시했어요');
+  }, attempt ? 250 : 120);
 }
 
 function editCourseFromDetail() {
