@@ -3534,12 +3534,42 @@ function serializeLatLngPath(path) {
 
 function normalizeStoredPathPoints(points) {
   if (!Array.isArray(points)) return [];
-  return points
-    .map(point => ({
-      lat: parseFloat(point && point.lat),
-      lng: parseFloat(point && point.lng)
-    }))
-    .filter(point => Number.isFinite(point.lat) && Number.isFinite(point.lng));
+  return points.map(normalizeStoredPoint).filter(Boolean);
+}
+
+function normalizeStoredPoint(point) {
+  if (!point) return null;
+  if (typeof point.getLat === 'function' && typeof point.getLng === 'function') {
+    return normalizeLatLngPair(point.getLat(), point.getLng());
+  }
+  if (Array.isArray(point) && point.length >= 2) {
+    const first = parseFloat(point[0]);
+    const second = parseFloat(point[1]);
+    if (Number.isFinite(first) && Number.isFinite(second)) {
+      return Math.abs(first) > 90 && Math.abs(second) <= 90
+        ? normalizeLatLngPair(second, first)
+        : normalizeLatLngPair(first, second);
+    }
+  }
+  const lat = firstFiniteCoord(point.lat, point.latitude, point.y, point.Ma, point._lat);
+  const lng = firstFiniteCoord(point.lng, point.lon, point.longitude, point.x, point.La, point._lng);
+  return normalizeLatLngPair(lat, lng);
+}
+
+function firstFiniteCoord(...values) {
+  for (const value of values) {
+    const n = parseFloat(value);
+    if (Number.isFinite(n)) return n;
+  }
+  return NaN;
+}
+
+function normalizeLatLngPair(lat, lng) {
+  const safeLat = parseFloat(lat);
+  const safeLng = parseFloat(lng);
+  if (!Number.isFinite(safeLat) || !Number.isFinite(safeLng)) return null;
+  if (Math.abs(safeLat) > 90 || Math.abs(safeLng) > 180) return null;
+  return { lat: safeLat, lng: safeLng };
 }
 
 function roundCoord(value) {
@@ -4710,18 +4740,24 @@ function viewSocialCourseOnMap(id, event) {
   if (event) event.stopPropagation();
   const post = getSocialPosts().find(item => String(item.id) === String(id));
   if (!post || post.type !== 'course' || !post.course) return;
+  const savedCourse = post.course.id !== undefined && post.course.id !== null ? getCourseById(post.course.id) : null;
   const points = getStoredCoursePreviewPoints(post.course);
+  const fallbackPoints = points.length > 1 ? [] : getStoredCoursePreviewPoints(savedCourse);
+  const mapPoints = points.length > 1 ? points : fallbackPoints;
   if (points.length < 2) {
-    toast('지도에 표시할 경로가 없어요');
-    return;
+    if (mapPoints.length < 2) {
+      toast('지도에 표시할 경로가 없어요');
+      return;
+    }
   }
   const createTab = document.querySelector('[data-tab="create"]');
   switchTab('create', createTab);
+  const sourceCourse = mapPoints === points ? post.course : savedCourse;
   showSavedCourseOnCreateMap({
-    ...post.course,
-    name: post.course.name || post.title || '공유 코스',
-    points,
-    routeSource: post.course.routeSource || 'social'
+    ...(sourceCourse || {}),
+    name: (sourceCourse && sourceCourse.name) || post.title || '공유 코스',
+    points: mapPoints,
+    routeSource: (sourceCourse && sourceCourse.routeSource) || 'social'
   }, 0);
 }
 
@@ -5065,7 +5101,7 @@ function getMyCourseCardMeta(course) {
 
 function getCourseById(id) {
   const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
-  return courses.find(c => c.id === id);
+  return courses.find(c => String(c.id) === String(id));
 }
 
 function openCourseDetail(id) {
@@ -5105,12 +5141,16 @@ function isStoredLoopCourse(course) {
 }
 
 function getStoredCoursePreviewPoints(course) {
-  if (Array.isArray(course.points) && course.points.length > 1) return course.points.filter(isStoredPoint);
+  if (!course) return [];
+  const directPoints = getStoredPathCandidate(course, ['points', 'routePoints', 'path', 'route', 'coords']);
+  if (directPoints.length > 1) return directPoints;
   const points = [];
   if (Array.isArray(course.segments)) {
     course.segments.forEach(segment => {
-      if (!segment || !Array.isArray(segment.points)) return;
-      segment.points.filter(isStoredPoint).forEach(point => {
+      const segmentPoints = Array.isArray(segment)
+        ? normalizeStoredPathPoints(segment)
+        : getStoredPathCandidate(segment, ['points', 'routePoints', 'path', 'coords']);
+      segmentPoints.forEach(point => {
         const last = points[points.length - 1];
         if (last && haversineMeters(last.lat, last.lng, point.lat, point.lng) < 1) return;
         points.push(point);
@@ -5121,7 +5161,16 @@ function getStoredCoursePreviewPoints(course) {
 }
 
 function isStoredPoint(point) {
-  return point && Number.isFinite(parseFloat(point.lat)) && Number.isFinite(parseFloat(point.lng));
+  return !!normalizeStoredPoint(point);
+}
+
+function getStoredPathCandidate(source, keys) {
+  if (!source) return [];
+  for (const key of keys) {
+    const points = normalizeStoredPathPoints(source[key]);
+    if (points.length > 1) return points;
+  }
+  return [];
 }
 
 function drawStoredCoursePreview(cv, course, fallbackHeight = 128) {
