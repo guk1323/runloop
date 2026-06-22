@@ -72,11 +72,18 @@ if ('serviceWorker' in navigator) {
   .gen-btn{margin-top:10px;width:100%;height:44px;background:var(--ink);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s,transform .15s;box-shadow:0 10px 22px rgba(28,36,43,.18);}
   .gen-btn:hover{background:#000;transform:translateY(-1px);}
   .gen-btn:disabled{background:var(--gray-300);cursor:not-allowed;}
-  .ai-search-targets{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:rgba(255,255,255,.94);border-radius:var(--rs);padding:3px;box-shadow:0 2px 8px rgba(0,0,0,.13);}
-  .ai-search-targets button{height:30px;border:none;border-radius:6px;background:transparent;color:var(--gray-500);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;}
+  .create-top-panel{position:absolute;top:10px;left:10px;right:10px;z-index:20;display:flex;flex-direction:column;gap:6px;}
+  .create-mode-tabs{display:flex;background:rgba(255,255,255,.94);border-radius:var(--rs);box-shadow:0 2px 8px rgba(0,0,0,.13);padding:3px;}
+  .create-mode-tabs button{flex:1;height:32px;border:none;border-radius:6px;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;background:transparent;color:var(--gray-500);transition:all .2s;}
+  .create-mode-tabs button.active{background:var(--ink);color:#fff;}
+  .ai-search-panel{display:flex;flex-direction:column;gap:6px;background:rgba(255,255,255,.94);border-radius:var(--r);padding:6px;box-shadow:0 2px 10px rgba(0,0,0,.13);}
+  .ai-search-targets{display:grid;grid-template-columns:1fr 1fr .9fr;gap:4px;}
+  .ai-search-targets button{height:30px;border:none;border-radius:6px;background:var(--gray-50);color:var(--gray-500);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;}
   .ai-search-targets button.active{background:var(--ink);color:#fff;}
-  .ai-same-dest-btn{height:32px;border:1px solid rgba(28,36,43,.12);border-radius:var(--rs);background:rgba(255,255,255,.94);color:var(--gray-700);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.11);}
-  .ai-same-dest-btn.active{background:var(--coral-light);border-color:rgba(242,122,94,.28);color:var(--ink);}
+  .ai-same-dest-btn.active{background:var(--coral-light);border:1px solid rgba(242,122,94,.28);color:var(--ink);}
+  .ai-search-row{display:flex;gap:6px;}
+  .ai-location-btn{width:40px;height:40px;background:#fff;border:1px solid var(--gray-100);border-radius:var(--rs);cursor:pointer;font-size:19px;font-weight:800;line-height:1;color:var(--coral-dark);flex-shrink:0;font-family:inherit;}
+  .ai-selected-hidden{display:none!important;}
 
   .course-scroll{flex:1;overflow-y:auto;}
   .course-list{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;}
@@ -646,43 +653,41 @@ if ('serviceWorker' in navigator) {
   <div style="position:relative;flex:1;min-height:0;">
 
     <!-- 상단: 모드 토글 + 검색 -->
-    <div style="position:absolute;top:10px;left:10px;right:10px;z-index:20;display:flex;flex-direction:column;gap:6px;">
+    <div class="create-top-panel">
       <!-- 모드 토글 -->
-      <div style="display:flex;background:#fff;border-radius:var(--rs);box-shadow:0 2px 8px rgba(0,0,0,.15);padding:3px;">
-        <button id="modeAiBtn" onclick="setCreateMode('ai')"
-          style="flex:1;height:32px;border:none;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;background:var(--ink);color:#fff;transition:all .2s;">
+      <div class="create-mode-tabs">
+        <button id="modeAiBtn" class="active" onclick="setCreateMode('ai')">
           ✦ AI 추천
         </button>
-        <button id="modeDrawBtn" onclick="setCreateMode('draw')"
-          style="flex:1;height:32px;border:none;border-radius:6px;font-size:13px;font-weight:500;font-family:inherit;cursor:pointer;background:transparent;color:var(--gray-500);transition:all .2s;">
+        <button id="modeDrawBtn" onclick="setCreateMode('draw')">
           직접 그리기
         </button>
       </div>
       <!-- 검색바 (항상 표시) -->
-      <div id="aiSearchBar" style="display:flex;flex-direction:column;gap:6px;">
+      <div id="aiSearchBar" class="ai-search-panel">
         <div class="ai-search-targets">
           <button id="aiSearchStartBtn" class="active" onclick="setAiSearchTarget('start')">출발지</button>
           <button id="aiSearchDestBtn" onclick="setAiSearchTarget('dest')">목적지</button>
+          <button id="aiSameDestBtn" class="ai-same-dest-btn active" onclick="setAiDestinationSameAsStart()">왕복</button>
         </div>
-        <div style="display:flex;gap:6px;">
+        <div class="ai-search-row">
           <div style="position:relative;flex:1;">
-          <input type="text" class="addr-input" id="addrInput" placeholder="출발지 주소·장소 검색" autocomplete="off"
-            onfocus="prepareAddressSearchInput(this)" onclick="prepareAddressSearchInput(this)" oninput="searchAddress(this.value)"
-            style="box-shadow:0 2px 8px rgba(0,0,0,.15);border-color:transparent;">
+            <input type="text" class="addr-input" id="addrInput" placeholder="출발지 주소·장소 검색" autocomplete="off"
+              onfocus="prepareAddressSearchInput(this)" onclick="prepareAddressSearchInput(this)" oninput="searchAddress(this.value)"
+              style="border-color:var(--gray-100);background:#fff;">
             <div id="addrDropdown" style="display:none;position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-radius:var(--rs);z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;"></div>
           </div>
-          <button onclick="moveToMyLocation()" aria-label="현재 위치로 이동" title="현재 위치" style="width:40px;height:40px;background:#fff;border:none;border-radius:var(--rs);cursor:pointer;font-size:19px;font-weight:800;line-height:1;color:var(--coral-dark);flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.15);">◎</button>
+          <button class="ai-location-btn" onclick="moveToMyLocation()" aria-label="현재 위치로 이동" title="현재 위치">◎</button>
         </div>
-        <button id="aiSameDestBtn" class="ai-same-dest-btn active" onclick="setAiDestinationSameAsStart()">목적지가 출발지와 같음</button>
       </div>
     </div>
 
-    <!-- 선택된 출발지 표시 -->
-    <div id="aiSelectedAddr" style="display:none;position:absolute;top:176px;left:10px;right:10px;z-index:20;background:#fff;border-radius:var(--rs);padding:7px 12px;font-size:12px;font-weight:500;color:var(--gray-900);box-shadow:0 2px 8px rgba(0,0,0,.12);display:none;align-items:center;justify-content:space-between;">
+    <!-- 선택된 출발지/목적지 상태 저장용 -->
+    <div id="aiSelectedAddr" class="ai-selected-hidden">
       <div><span style="color:var(--coral);font-weight:700;">출발지</span><span style="color:var(--gray-300);margin:0 6px;">·</span><span id="aiSelectedAddrText">—</span></div>
       <button onclick="clearSelectedAddr()" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--gray-500);padding:0 0 0 8px;line-height:1;">×</button>
     </div>
-    <div id="aiSelectedDest" style="display:none;position:absolute;top:212px;left:10px;right:10px;z-index:20;background:#fff;border-radius:var(--rs);padding:7px 12px;font-size:12px;font-weight:500;color:var(--gray-900);box-shadow:0 2px 8px rgba(0,0,0,.12);align-items:center;justify-content:space-between;">
+    <div id="aiSelectedDest" class="ai-selected-hidden">
       <div><span style="color:var(--ink);font-weight:700;">목적지</span><span style="color:var(--gray-300);margin:0 6px;">·</span><span id="aiSelectedDestText">—</span></div>
       <button onclick="clearAiDestination()" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--gray-500);padding:0 0 0 8px;line-height:1;">×</button>
     </div>
@@ -1595,8 +1600,8 @@ function setCreateMode(mode) {
   const guide = document.getElementById('aiMapGuide');
 
   if (mode === 'ai') {
-    aiBtn.style.background = 'var(--ink)'; aiBtn.style.color = '#fff';
-    drawBtn.style.background = 'transparent'; drawBtn.style.color = 'var(--gray-500)';
+    aiBtn.classList.add('active');
+    drawBtn.classList.remove('active');
     aiContent.style.display = 'block';
     drawContent.style.display = 'none';
     if (sheetHandle) sheetHandle.style.display = 'flex';
@@ -1613,8 +1618,8 @@ function setCreateMode(mode) {
     S.dots.forEach(d => d.setMap(null));
     if (S.sel >= 0 && S.courses[S.sel]) showAiRoutePreview(S.courses[S.sel]);
   } else {
-    drawBtn.style.background = 'var(--ink)'; drawBtn.style.color = '#fff';
-    aiBtn.style.background = 'transparent'; aiBtn.style.color = 'var(--gray-500)';
+    drawBtn.classList.add('active');
+    aiBtn.classList.remove('active');
     drawContent.style.display = 'block';
     aiContent.style.display = 'none';
     if (sheetHandle) sheetHandle.style.display = 'none';
@@ -2232,8 +2237,8 @@ function setAiMarker(latlng, addrName) {
     zIndex: 5
   });
   if (createMap) createMap.setCenter(latlng);
-  // 출발지 표시
-  document.getElementById('aiSelectedAddr').style.display = 'flex';
+  // 출발지 상태 저장
+  document.getElementById('aiSelectedAddr').style.display = 'none';
   document.getElementById('aiSelectedAddrText').textContent = addrName;
   document.getElementById('aiMapGuide').style.display = 'none';
   document.getElementById('addrInput').value = addrName;
@@ -2260,7 +2265,7 @@ function setAiDestinationMarker(latlng, addrName) {
   if (createMap) createMap.setCenter(latlng);
   const destBox = document.getElementById('aiSelectedDest');
   const destText = document.getElementById('aiSelectedDestText');
-  if (destBox) destBox.style.display = 'flex';
+  if (destBox) destBox.style.display = 'none';
   if (destText) destText.textContent = aiDestination.name;
   document.getElementById('aiMapGuide').style.display = 'none';
   document.getElementById('addrInput').value = aiDestination.name;
