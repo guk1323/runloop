@@ -369,9 +369,12 @@ if ('serviceWorker' in navigator) {
   .social-text{font-size:13px;line-height:1.55;color:var(--gray-700);white-space:pre-wrap;word-break:break-word;}
   .social-meta{font-size:11px;color:var(--gray-500);margin-top:8px;line-height:1.45;}
   .social-photo{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;background:var(--gray-50);}
-  .social-course-preview{height:132px;background:#EEEADF;position:relative;overflow:hidden;border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100);}
-  .social-course-preview canvas{width:100%;height:100%;display:block;}
-  .social-course-chip{position:absolute;right:10px;bottom:10px;background:rgba(28,36,43,.9);color:#fff;border-radius:var(--rp);padding:5px 9px;font-size:11px;font-weight:900;}
+  .social-course-map{margin:0 12px 12px;padding:12px;border:1px solid var(--gray-100);border-radius:var(--r);background:var(--gray-50);display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .social-course-info{min-width:0;flex:1;}
+  .social-course-label{font-size:11px;font-weight:800;color:var(--coral);margin-bottom:4px;}
+  .social-course-name{font-size:14px;font-weight:900;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .social-course-dist{font-size:12px;color:var(--gray-500);margin-top:3px;}
+  .social-course-map-btn{height:34px;padding:0 12px;border-radius:var(--rs);border:1px solid var(--ink);background:var(--ink);color:#fff;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap;flex-shrink:0;}
   .social-actions{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px;border-top:1px solid var(--gray-100);background:var(--gray-50);}
   .social-like{height:34px;padding:0 12px;border-radius:var(--rp);border:1px solid var(--gray-100);background:#fff;color:var(--gray-700);font-size:12px;font-weight:900;font-family:inherit;cursor:pointer;}
   .social-like.active{background:var(--coral-light);border-color:rgba(242,122,94,.22);color:var(--coral-dark);}
@@ -4531,11 +4534,6 @@ function renderSocial() {
   }
 
   feed.innerHTML = filtered.map(renderSocialPost).join('');
-  requestAnimationFrame(() => {
-    filtered
-      .filter(post => post.type === 'course')
-      .forEach(drawSocialCoursePreview);
-  });
 }
 
 function getFilteredSocialPosts(posts) {
@@ -4578,13 +4576,13 @@ function updateSocialFilterButtons() {
 }
 
 function renderSocialPost(post) {
-  const postId = JSON.stringify(post.id);
+  const postId = escapeHtml(JSON.stringify(post.id));
   const domId = getSocialPostDomId(post.id);
   const isCourse = post.type === 'course';
   const isHotCourse = isPopularSocialCourse(post);
   const typeLabel = isCourse ? '코스' : '사진';
   const media = isCourse
-    ? renderSocialCourseMedia(post, domId)
+    ? renderSocialCourseMedia(post, postId)
     : renderSocialPhotoMedia(post);
   return `
     <div class="social-card" id="socialPost-${domId}">
@@ -4612,14 +4610,19 @@ function renderSocialPost(post) {
     </div>`;
 }
 
-function renderSocialCourseMedia(post, domId) {
+function renderSocialCourseMedia(post, postId) {
   const course = post.course || {};
   const dist = Number.parseFloat(course.dist);
   const distLabel = Number.isFinite(dist) ? dist.toFixed(2) + 'km' : '코스';
+  const courseName = course.name || post.title || '공유 코스';
   return `
-    <div class="social-course-preview">
-      <canvas id="socialCourseCanvas-${domId}"></canvas>
-      <div class="social-course-chip">${escapeHtml(distLabel)}</div>
+    <div class="social-course-map">
+      <div class="social-course-info">
+        <div class="social-course-label">공유 코스</div>
+        <div class="social-course-name">${escapeHtml(courseName)}</div>
+        <div class="social-course-dist">${escapeHtml(distLabel)}</div>
+      </div>
+      <button class="social-course-map-btn" onclick="viewSocialCourseOnMap(${postId}, event)">지도에서 보기</button>
     </div>`;
 }
 
@@ -4644,12 +4647,6 @@ function getSocialPostMeta(post) {
     record.dist ? record.dist + 'km' : '',
     record.conditionScore !== undefined && record.conditionScore !== null ? '컨디션 ' + record.conditionScore + '/10' : ''
   ].filter(Boolean).join(' · ') || '공유 사진';
-}
-
-function drawSocialCoursePreview(post) {
-  const canvas = document.getElementById('socialCourseCanvas-' + getSocialPostDomId(post.id));
-  if (!canvas) return;
-  drawStoredCoursePreview(canvas, post.course || {}, 132);
 }
 
 function getSocialPostDomId(id) {
@@ -4707,6 +4704,25 @@ function deleteSocialPost(id, event) {
   saveSocialPosts(posts);
   renderSocial();
   toast('공유글이 삭제됐어요');
+}
+
+function viewSocialCourseOnMap(id, event) {
+  if (event) event.stopPropagation();
+  const post = getSocialPosts().find(item => String(item.id) === String(id));
+  if (!post || post.type !== 'course' || !post.course) return;
+  const points = getStoredCoursePreviewPoints(post.course);
+  if (points.length < 2) {
+    toast('지도에 표시할 경로가 없어요');
+    return;
+  }
+  const createTab = document.querySelector('[data-tab="create"]');
+  switchTab('create', createTab);
+  showSavedCourseOnCreateMap({
+    ...post.course,
+    name: post.course.name || post.title || '공유 코스',
+    points,
+    routeSource: post.course.routeSource || 'social'
+  }, 0);
 }
 
 function openSocialComposer(type = 'course', options = {}) {
