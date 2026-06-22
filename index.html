@@ -926,44 +926,6 @@ if ('serviceWorker' in navigator) {
     </div>
 
     <div class="my-block-head">
-      <div class="my-section">문화 스팟 알림</div>
-    </div>
-    <div class="my-info-panel">
-      <div class="my-info-row">
-        <span>알림</span>
-        <label style="display:flex;align-items:center;gap:7px;font-size:13px;font-weight:800;color:var(--gray-900);">
-          <input type="checkbox" id="cultureAlertEnabled" onchange="saveCultureAlertSettingsFromUI()" style="accent-color:var(--coral);">
-          <span id="cultureAlertEnabledLabel">켜짐</span>
-        </label>
-      </div>
-      <div class="my-info-row">
-        <span>거리 범위</span>
-        <select id="cultureAlertDistance" class="my-setting-input" onchange="saveCultureAlertSettingsFromUI()">
-          <option value="0.5">0.5km</option>
-          <option value="1">1km</option>
-          <option value="2">2km</option>
-          <option value="3">3km</option>
-          <option value="5">5km</option>
-          <option value="10">10km</option>
-        </select>
-      </div>
-      <div class="my-info-row">
-        <span>최소 별점</span>
-        <select id="cultureAlertStars" class="my-setting-input" onchange="saveCultureAlertSettingsFromUI()">
-          <option value="2">★2 이상</option>
-          <option value="3">★3 이상</option>
-          <option value="4">★4 이상</option>
-          <option value="5">★5</option>
-        </select>
-      </div>
-      <div class="my-info-row">
-        <span>브라우저 알림</span>
-        <button id="cultureAlertPermissionBtn" onclick="requestCultureNotificationPermission()" style="height:32px;border-radius:999px;border:1px solid var(--gray-300);background:#fff;color:var(--gray-700);font-size:12px;font-weight:800;font-family:inherit;padding:0 12px;cursor:pointer;">권한 확인</button>
-      </div>
-      <div id="cultureAlertStatus" style="font-size:11px;color:var(--gray-500);line-height:1.45;padding-top:10px;border-top:1px solid var(--gray-100);"></div>
-    </div>
-
-    <div class="my-block-head">
       <div class="my-section">정책</div>
     </div>
     <div class="my-info-panel">
@@ -3302,11 +3264,8 @@ const AI_COURSE_CACHE_KEY = 'runloopAiCourseCacheV12';
 const AI_COURSE_CACHE_MS = 10 * 60 * 1000;
 const HOME_RECOMMENDATION_COUNT = 5;
 const CULTURE_SPOT_SEARCH_RADIUS_METERS = 10000;
-const CULTURE_SPOT_VISIT_RADIUS_METERS = 150;
+const CULTURE_SPOT_VISIT_RADIUS_METERS = 100;
 const CULTURE_SPOT_VISITS_KEY = 'runloopCultureSpotVisitsV1';
-const CULTURE_SPOT_ALERT_SETTINGS_KEY = 'runloopCultureSpotAlertSettingsV1';
-const CULTURE_SPOT_ALERT_HISTORY_KEY = 'runloopCultureSpotAlertHistoryV1';
-const CULTURE_SPOT_ALERT_COOLDOWN_MS = 6 * 60 * 60 * 1000;
 const CULTURE_SPOT_MIN_VALUE_STARS = 2;
 const CULTURE_SPOT_KEYWORDS = ['세계문화유산', '문화재', '국보', '보물', '사적', '궁궐', '왕릉', '유적지', '박물관', '미술관', '기념관', '역사관', '전통문화', '한옥마을', '사찰', '성곽', '공연장', '극장', '전시관'];
 let aiRouteOverlays = [];
@@ -4702,7 +4661,7 @@ function getCultureSpotValue(place, keyword) {
   if (isLowValueCultureSpot(text)) {
     return { stars: 1, label: '일상 시설', type };
   }
-  if (/유네스코|세계문화유산|세계유산|경복궁|창덕궁|종묘|수원화성|남한산성|불국사|석굴암|해인사|하회마을|양동마을|조선왕릉|선정릉|동구릉|서오릉|서삼릉|광릉|홍유릉|영릉|장릉|백제역사유적|공산성|부소산성|미륵사지|왕궁리|고인돌/.test(placeText)) {
+  if (isFiveStarCultureSpot(placeText)) {
     return { stars: 5, label: '세계유산급', type };
   }
   if (/문화재|문화유적|국보|보물|사적|경복궁|창덕궁|창경궁|덕수궁|경희궁|궁궐|왕궁|궁터|왕릉|성곽|성지|유적|유적지|서원|향교|한옥마을|전통마을|사찰|절|성당|근대문화유산/.test(placeText)) {
@@ -4716,6 +4675,23 @@ function getCultureSpotValue(place, keyword) {
     return { stars: 2, label: '지역 문화', type };
   }
   return { stars: 2, label: '문화 후보', type };
+}
+
+function isFiveStarCultureSpot(text) {
+  const compact = String(text || '').replace(/\s+/g, '');
+  const exactNames = [
+    '경복궁', '창덕궁', '종묘', '수원화성', '남한산성',
+    '불국사', '석굴암', '해인사', '하회마을', '양동마을',
+    '공산성', '부소산성', '미륵사지', '왕궁리유적'
+  ];
+  if (exactNames.some(name => compact === name || compact.endsWith(name))) return true;
+  if (/세계문화유산|세계유산|유네스코/.test(compact) && !isWorldHeritageSubSpot(compact)) return true;
+  if (/조선왕릉|백제역사유적|고인돌유적/.test(compact) && !isWorldHeritageSubSpot(compact)) return true;
+  return false;
+}
+
+function isWorldHeritageSubSpot(text) {
+  return /문|장대|정자|루|각|전망대|매표소|안내소|주차장|광장|센터|박물관|홍살문|비각|재실|연못|산책로/.test(text);
 }
 
 function getCultureSpotSearchText(place, keyword) {
@@ -4741,154 +4717,6 @@ function getCultureRewardLabel(stars) {
   if (safeStars >= 4) return '프리미엄 리워드';
   if (safeStars >= 3) return '스페셜 리워드';
   return '기본 리워드';
-}
-
-function getCultureAlertSettings() {
-  const defaults = { enabled: true, distanceKm: 2, minStars: 4 };
-  try {
-    const saved = JSON.parse(localStorage.getItem(CULTURE_SPOT_ALERT_SETTINGS_KEY) || '{}');
-    const distanceKm = clampToOptions(Number(saved.distanceKm), [0.5, 1, 2, 3, 5, 10], defaults.distanceKm);
-    const minStars = clampToOptions(Number(saved.minStars), [2, 3, 4, 5], defaults.minStars);
-    return {
-      enabled: saved.enabled !== false,
-      distanceKm,
-      minStars
-    };
-  } catch (_) {
-    return defaults;
-  }
-}
-
-function clampToOptions(value, options, fallback) {
-  return options.includes(value) ? value : fallback;
-}
-
-function saveCultureAlertSettings(settings) {
-  const current = getCultureAlertSettings();
-  const next = {
-    enabled: settings.enabled !== undefined ? !!settings.enabled : current.enabled,
-    distanceKm: clampToOptions(Number(settings.distanceKm), [0.5, 1, 2, 3, 5, 10], current.distanceKm),
-    minStars: clampToOptions(Number(settings.minStars), [2, 3, 4, 5], current.minStars)
-  };
-  localStorage.setItem(CULTURE_SPOT_ALERT_SETTINGS_KEY, JSON.stringify(next));
-  return next;
-}
-
-function saveCultureAlertSettingsFromUI() {
-  const enabledEl = document.getElementById('cultureAlertEnabled');
-  const distanceEl = document.getElementById('cultureAlertDistance');
-  const starsEl = document.getElementById('cultureAlertStars');
-  saveCultureAlertSettings({
-    enabled: enabledEl ? enabledEl.checked : true,
-    distanceKm: distanceEl ? Number(distanceEl.value) : 2,
-    minStars: starsEl ? Number(starsEl.value) : 4
-  });
-  renderCultureAlertSettings();
-  toast('문화 스팟 알림 설정을 저장했어요');
-  if (S.tab === 'home') loadNearCourses();
-}
-
-function renderCultureAlertSettings() {
-  const settings = getCultureAlertSettings();
-  const enabledEl = document.getElementById('cultureAlertEnabled');
-  const enabledLabel = document.getElementById('cultureAlertEnabledLabel');
-  const distanceEl = document.getElementById('cultureAlertDistance');
-  const starsEl = document.getElementById('cultureAlertStars');
-  const statusEl = document.getElementById('cultureAlertStatus');
-  const permissionBtn = document.getElementById('cultureAlertPermissionBtn');
-  if (enabledEl) enabledEl.checked = settings.enabled;
-  if (enabledLabel) enabledLabel.textContent = settings.enabled ? '켜짐' : '꺼짐';
-  if (distanceEl) distanceEl.value = String(settings.distanceKm);
-  if (starsEl) starsEl.value = String(settings.minStars);
-  const permission = getCultureNotificationPermissionLabel();
-  if (permissionBtn) permissionBtn.textContent = permission === '허용됨' ? '허용됨' : '권한 확인';
-  if (statusEl) {
-    statusEl.textContent = settings.enabled
-      ? `${settings.distanceKm}km 이내 · ★${settings.minStars} 이상 · 브라우저 알림 ${permission}`
-      : '알림 꺼짐';
-  }
-}
-
-function getCultureNotificationPermissionLabel() {
-  if (!('Notification' in window)) return '미지원';
-  if (Notification.permission === 'granted') return '허용됨';
-  if (Notification.permission === 'denied') return '차단됨';
-  return '대기';
-}
-
-async function requestCultureNotificationPermission() {
-  if (!('Notification' in window)) {
-    toast('이 브라우저는 알림을 지원하지 않아요');
-    renderCultureAlertSettings();
-    return;
-  }
-  if (Notification.permission === 'granted') {
-    toast('브라우저 알림이 이미 허용돼 있어요');
-    renderCultureAlertSettings();
-    return;
-  }
-  try {
-    const result = await Notification.requestPermission();
-    toast(result === 'granted' ? '브라우저 알림을 허용했어요' : '브라우저 알림 권한이 허용되지 않았어요');
-  } catch (_) {
-    toast('브라우저 알림 권한을 확인하지 못했어요');
-  }
-  renderCultureAlertSettings();
-}
-
-function checkCultureSpotAlerts(spots) {
-  const settings = getCultureAlertSettings();
-  if (!settings.enabled || document.hidden || !Array.isArray(spots)) return;
-  const candidates = spots
-    .filter(spot => !spot.fallback)
-    .filter(spot => Number(spot.distFromMe) <= settings.distanceKm)
-    .filter(spot => (Number(spot.cultureValueStars) || 1) >= settings.minStars)
-    .sort((a, b) => {
-      const starDiff = (Number(b.cultureValueStars) || 1) - (Number(a.cultureValueStars) || 1);
-      if (starDiff) return starDiff;
-      return Number(a.distFromMe) - Number(b.distFromMe);
-    });
-  if (!candidates.length) return;
-  const spot = candidates[0];
-  const key = getCultureSpotVisitKey(spot);
-  const history = readCultureSpotAlertHistory();
-  const lastAlertAt = Number(history[key] || 0);
-  if (Date.now() - lastAlertAt < CULTURE_SPOT_ALERT_COOLDOWN_MS) return;
-  history[key] = Date.now();
-  writeCultureSpotAlertHistory(history);
-  showCultureSpotAlert(spot);
-}
-
-function readCultureSpotAlertHistory() {
-  try {
-    const history = JSON.parse(localStorage.getItem(CULTURE_SPOT_ALERT_HISTORY_KEY) || '{}');
-    return history && typeof history === 'object' && !Array.isArray(history) ? history : {};
-  } catch (_) {
-    return {};
-  }
-}
-
-function writeCultureSpotAlertHistory(history) {
-  try { localStorage.setItem(CULTURE_SPOT_ALERT_HISTORY_KEY, JSON.stringify(history || {})); } catch (_) {}
-}
-
-function showCultureSpotAlert(spot) {
-  const placeName = String(spot.place_name || '문화 스팟');
-  const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
-  const dist = Number(spot.distFromMe) < 1
-    ? Math.round(Number(spot.distFromMe) * 1000) + 'm'
-    : Number(spot.distFromMe).toFixed(1) + 'km';
-  const message = `근처 ${dist}에 ★${stars} ${placeName} 문화 스팟이 있어요`;
-  toast(message);
-  if ('Notification' in window && Notification.permission === 'granted') {
-    try {
-      new Notification('Runloop 문화 스팟', {
-        body: message,
-        tag: 'runloop-culture-' + getCultureSpotVisitKey(spot),
-        renotify: false
-      });
-    } catch (_) {}
-  }
 }
 
 function getCultureSpotIcon(type) {
@@ -5007,7 +4835,7 @@ function renderNearCourses(results) {
     const rewardClass = visitState.visited ? 'tg' : 'tb';
     const footerText = visitState.visited
       ? `방문 기록됨 · ${rewardLabel} 지급 예정`
-      : `${Math.round(CULTURE_SPOT_VISIT_RADIUS_METERS)}m 안에서 방문 기록 · ${rewardLabel}`;
+      : `방문하면 ${rewardLabel} 지급`;
     return `
       <div style="background:#fff;border-radius:var(--r);${featured}overflow:hidden;margin-bottom:10px;">
         <div style="display:flex;gap:14px;padding:14px;">
@@ -5040,7 +4868,6 @@ function renderNearCourses(results) {
         </div>
       </div>`;
   }).join('');
-  checkCultureSpotAlerts(unique);
 }
 
 function openCultureSpotInfoFromHomeButton(button) {
@@ -7198,7 +7025,6 @@ function renderMyPage() {
     bodyInfo.textContent = [height, weight].filter(Boolean).join(' · ') || '미입력';
   }
   if (sourceInfo) sourceInfo.textContent = getMySourceSummary(records);
-  renderCultureAlertSettings();
 
   // 목표 바
   updateGoalBar();
