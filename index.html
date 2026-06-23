@@ -300,6 +300,11 @@ if ('serviceWorker' in navigator) {
   .near-course-card{background:rgba(255,255,255,.82);border-color:rgba(28,36,43,.07);box-shadow:0 8px 20px rgba(28,36,43,.045);}
   .save-course-btn{background:var(--ink);color:#fff;border:none;border-radius:var(--rp);padding:5px 11px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
   .save-course-btn:hover{background:#111820;}
+  .route-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;}
+  .route-guide-btn{height:34px;border-radius:var(--rp);border:1px solid var(--ink);background:var(--ink);color:#fff;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap;}
+  .route-guide-btn.active{background:#fff;color:var(--coral);border-color:rgba(242,122,94,.45);}
+  .route-guide-status{display:none;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;padding:8px 10px;border-radius:var(--rs);background:var(--gray-50);border:1px solid var(--gray-100);font-size:12px;font-weight:800;color:var(--gray-700);}
+  .route-guide-status strong{color:var(--coral);font-size:13px;}
 
   /* 마이페이지 */
   .my-profile-card{margin:14px;background:linear-gradient(135deg,#1C242B 0%,#2B343B 58%,#F27A5E 150%);border-radius:16px;padding:20px;color:#fff;flex-shrink:0;box-shadow:0 16px 34px rgba(28,36,43,.14);}
@@ -3008,6 +3013,9 @@ document.getElementById('socialComposerModal').addEventListener('click', functio
 
 /* 탭 전환 */
 function switchTab(tab, el) {
+  if (tab !== 'create' && routeGuide.active) {
+    stopRouteGuidance('', { silent: true });
+  }
   S.tab = tab;
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   const tabBtn = el || document.querySelector(`[data-tab="${tab}"]`);
@@ -3279,6 +3287,7 @@ let aiRouteActiveCourse = null;
 let aiRouteZoomListenerAttached = false;
 
 function resetAiCourseSuggestions() {
+  stopRouteGuidance('', { silent: true });
   S.courses = [];
   S.sel = -1;
   clearAiRoutePreview();
@@ -4227,7 +4236,11 @@ function renderCourses() {
           <div class="cname">${escapeHtml(c.name)}</div>
           <div class="ckm-badge">${escapeHtml(c.km)}<span>km</span></div>
         </div>
-        <div style="display:flex;justify-content:flex-end;align-items:center;">
+        <div class="route-guide-status" id="routeGuideStatus-${i}">
+          <span>안내 대기</span><strong>—</strong>
+        </div>
+        <div class="route-card-actions">
+          <button class="route-guide-btn" id="routeGuideBtn-${i}" onclick="event.stopPropagation();toggleRouteGuidance(${i})">안내 시작</button>
           <button class="save-course-btn" onclick="event.stopPropagation();saveAiCourse(${i})">내 코스 저장</button>
         </div>
       </div>`;
@@ -4238,6 +4251,9 @@ function renderCourses() {
 }
 
 function selCourse(i) {
+  if (routeGuide.active && routeGuide.courseIndex !== i) {
+    stopRouteGuidance('', { silent: true });
+  }
   S.sel = i;
   document.querySelectorAll('.course-card').forEach((c, j) => {
     c.className = 'course-card' + (j === i ? ' selected' : '');
@@ -4285,16 +4301,7 @@ function showAiRoutePreview(course, options = {}) {
     map: createMap, center: path[path.length - 1],
     radius: 10, strokeWeight: 3, strokeColor: endColor, fillColor: '#fff', fillOpacity: 1
   }) : null;
-  const routeLabel = isDestinationRoute ? null : new kakao.maps.CustomOverlay({
-    map: createMap,
-    position: getRouteLabelPosition(path),
-    content: '<div style="background:rgba(28,36,43,.9);color:#fff;border-radius:999px;padding:5px 10px;font-size:11px;font-weight:900;box-shadow:0 3px 10px rgba(0,0,0,.16);white-space:nowrap;">왕복</div>',
-    yAnchor: 1.2,
-    zIndex: 6
-  });
-
   aiRouteOverlays = [borderLine, routeLine, startDot]
-    .concat(routeLabel ? [routeLabel] : [])
     .concat(endDot ? [endDot] : []);
 
   if (fitBounds) {
@@ -4330,6 +4337,217 @@ function getAiRouteDistanceLabel(course) {
     if (Number.isFinite(measuredKm) && measuredKm > 0) return measuredKm.toFixed(1) + 'km';
   }
   return '';
+}
+
+const ROUTE_GUIDE_START_MAX_DISTANCE_METERS = 50;
+const ROUTE_GUIDE_OFF_ROUTE_METERS = 90;
+const ROUTE_GUIDE_ARRIVAL_METERS = 25;
+let routeGuide = {
+  active: false,
+  courseIndex: -1,
+  course: null,
+  path: [],
+  totalMeters: 0,
+  watchId: null,
+  overlays: [],
+  offRouteWarned: false
+};
+
+function toggleRouteGuidance(index) {
+  if (routeGuide.active && routeGuide.courseIndex === index) {
+    stopRouteGuidance('안내를 종료했어요');
+    return;
+  }
+  startRouteGuidance(index);
+}
+
+function startRouteGuidance(index) {
+  const course = S.courses[index];
+  const path = getCourseRoutePath(course);
+  if (!path.length) {
+    toast('안내할 지도 경로가 없어요');
+    return;
+  }
+  if (!navigator.geolocation) {
+    toast('GPS를 사용할 수 없어 안내를 시작할 수 없어요');
+    return;
+  }
+  toast('현재 위치 확인 중…');
+  navigator.geolocation.getCurrentPosition(pos => {
+    const current = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+    const nearest = getNearestRouteProgress(current, path);
+    if (!nearest || nearest.distanceMeters > ROUTE_GUIDE_START_MAX_DISTANCE_METERS) {
+      const meters = nearest && Number.isFinite(nearest.distanceMeters) ? Math.round(nearest.distanceMeters) : '';
+      toast(meters ? `경로에서 ${meters}m 떨어져 있어요. 경로 근처에서 시작해주세요` : '경로 근처에서 안내를 시작해주세요');
+      return;
+    }
+    beginRouteGuidance(index, course, path, current, nearest);
+  }, () => {
+    toast('위치 권한을 허용하면 안내를 시작할 수 있어요');
+  }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 });
+}
+
+function beginRouteGuidance(index, course, path, current, nearest) {
+  stopRouteGuidance('', { silent: true });
+  routeGuide = {
+    active: true,
+    courseIndex: index,
+    course,
+    path,
+    totalMeters: pathLengthMeters(path),
+    watchId: null,
+    overlays: [],
+    offRouteWarned: false
+  };
+  S.sel = index;
+  showAiRoutePreview(course, { fitBounds: false });
+  setRouteGuideButtonState(index, true);
+  updateRouteGuidancePosition(current, nearest);
+  routeGuide.watchId = navigator.geolocation.watchPosition(pos => {
+    const latlng = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+    updateRouteGuidancePosition(latlng);
+  }, () => {
+    updateRouteGuideStatus('GPS 대기 중', null, '위치를 다시 확인하고 있어요');
+  }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 });
+  toast('경로 안내를 시작했어요');
+}
+
+function stopRouteGuidance(message, options = {}) {
+  if (routeGuide.watchId !== null && navigator.geolocation) {
+    navigator.geolocation.clearWatch(routeGuide.watchId);
+  }
+  clearRouteGuideOverlays();
+  const previousIndex = routeGuide.courseIndex;
+  routeGuide = {
+    active: false,
+    courseIndex: -1,
+    course: null,
+    path: [],
+    totalMeters: 0,
+    watchId: null,
+    overlays: [],
+    offRouteWarned: false
+  };
+  if (previousIndex >= 0) setRouteGuideButtonState(previousIndex, false);
+  if (message && !options.silent) toast(message);
+}
+
+function getCourseRoutePath(course) {
+  return normalizeStoredPathPoints(course && course.points)
+    .map(point => makeRouteLatLng(point.lat, point.lng))
+    .filter(Boolean);
+}
+
+function updateRouteGuidancePosition(current, nearest = null) {
+  if (!routeGuide.active || !routeGuide.path.length) return;
+  const progress = nearest || getNearestRouteProgress(current, routeGuide.path);
+  if (!progress) return;
+  const remainingMeters = Math.max(0, routeGuide.totalMeters - progress.progressMeters);
+  const offRoute = progress.distanceMeters > ROUTE_GUIDE_OFF_ROUTE_METERS;
+  if (offRoute && !routeGuide.offRouteWarned) {
+    routeGuide.offRouteWarned = true;
+    toast('경로에서 벗어났어요. 가까운 경로로 돌아가주세요');
+  }
+  if (!offRoute) routeGuide.offRouteWarned = false;
+  const status = offRoute ? '경로 이탈' : '안내 중';
+  updateRouteGuideStatus(status, remainingMeters, offRoute ? '경로와 떨어져 있어요' : '');
+  renderRouteGuideOverlays(current, progress);
+  if (createMap) createMap.setCenter(current);
+  if (remainingMeters <= ROUTE_GUIDE_ARRIVAL_METERS) {
+    stopRouteGuidance('도착했어요');
+  }
+}
+
+function updateRouteGuideStatus(status, remainingMeters, subText = '') {
+  const index = routeGuide.courseIndex;
+  const el = document.getElementById(`routeGuideStatus-${index}`);
+  if (!el) return;
+  el.style.display = routeGuide.active ? 'flex' : 'none';
+  const remainingText = Number.isFinite(remainingMeters)
+    ? (remainingMeters < 1000 ? `${Math.round(remainingMeters)}m 남음` : `${(remainingMeters / 1000).toFixed(1)}km 남음`)
+    : '위치 확인 중';
+  el.innerHTML = `<span>${escapeHtml(subText || status)}</span><strong>${escapeHtml(remainingText)}</strong>`;
+}
+
+function setRouteGuideButtonState(index, active) {
+  const btn = document.getElementById(`routeGuideBtn-${index}`);
+  const status = document.getElementById(`routeGuideStatus-${index}`);
+  if (btn) {
+    btn.textContent = active ? '안내 종료' : '안내 시작';
+    btn.classList.toggle('active', !!active);
+  }
+  if (status && !active) status.style.display = 'none';
+}
+
+function renderRouteGuideOverlays(current, progress) {
+  clearRouteGuideOverlays();
+  if (!createMap || !current || !progress) return;
+  const completedPath = routeGuide.path.slice(0, progress.segmentIndex + 1).concat(progress.nearestPoint);
+  if (completedPath.length > 1) {
+    routeGuide.overlays.push(new kakao.maps.Polyline({
+      map: createMap,
+      path: completedPath,
+      strokeWeight: 8,
+      strokeColor: '#F27A5E',
+      strokeOpacity: 0.95,
+      strokeStyle: 'solid'
+    }));
+  }
+  routeGuide.overlays.push(new kakao.maps.CustomOverlay({
+    map: createMap,
+    position: current,
+    content: '<div style="width:17px;height:17px;background:#B7F06A;border:3px solid #1C242B;border-radius:50%;box-shadow:0 0 0 4px rgba(183,240,106,.28);"></div>',
+    zIndex: 9
+  }));
+}
+
+function clearRouteGuideOverlays() {
+  routeGuide.overlays.forEach(overlay => {
+    if (overlay && overlay.setMap) overlay.setMap(null);
+  });
+  routeGuide.overlays = [];
+}
+
+function getNearestRouteProgress(point, path) {
+  if (!point || !Array.isArray(path) || path.length < 2) return null;
+  let traveled = 0;
+  let best = null;
+  for (let i = 0; i < path.length - 1; i++) {
+    const a = path[i];
+    const b = path[i + 1];
+    const segMeters = latLngDistanceMeters(a, b);
+    const projected = projectPointOnSegment(point, a, b);
+    const distanceMeters = latLngDistanceMeters(point, projected.nearestPoint);
+    if (!best || distanceMeters < best.distanceMeters) {
+      best = {
+        distanceMeters,
+        progressMeters: traveled + segMeters * projected.t,
+        segmentIndex: i,
+        nearestPoint: projected.nearestPoint
+      };
+    }
+    traveled += segMeters;
+  }
+  return best;
+}
+
+function projectPointOnSegment(point, a, b) {
+  const avgLat = ((a.getLat() + b.getLat()) / 2) * Math.PI / 180;
+  const metersPerLat = 111320;
+  const metersPerLng = 111320 * Math.cos(avgLat);
+  const ax = a.getLng() * metersPerLng;
+  const ay = a.getLat() * metersPerLat;
+  const bx = b.getLng() * metersPerLng;
+  const by = b.getLat() * metersPerLat;
+  const px = point.getLng() * metersPerLng;
+  const py = point.getLat() * metersPerLat;
+  const dx = bx - ax;
+  const dy = by - ay;
+  const rawT = dx === 0 && dy === 0 ? 0 : ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy);
+  const t = Math.max(0, Math.min(1, rawT));
+  const lat = a.getLat() + (b.getLat() - a.getLat()) * t;
+  const lng = a.getLng() + (b.getLng() - a.getLng()) * t;
+  return { t, nearestPoint: new kakao.maps.LatLng(lat, lng) };
 }
 
 function ensureAiRouteZoomListener() {
@@ -7072,6 +7290,7 @@ function saveAiCourse(idx) {
     startLabel: c.startLabel || getAiCoursePlaceLabel()
   });
   localStorage.setItem('myCourses', JSON.stringify(courses));
+  stopRouteGuidance('', { silent: true });
   toast(name + ' 저장됐어요. 코스 탭에서 시작해요');
   setTimeout(() => {
     const courseTab = document.querySelector('[data-tab="mycourse"]');
