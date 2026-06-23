@@ -387,6 +387,36 @@ if ('serviceWorker' in navigator) {
   .near-course-name{font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .near-course-meta{font-size:12px;color:var(--gray-500);}
   .near-course-dist{font-size:14px;font-weight:700;color:var(--coral);flex-shrink:0;}
+  .culture-spot-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);overflow:hidden;margin-bottom:10px;box-shadow:0 8px 20px rgba(28,36,43,.04);}
+  .culture-spot-card.featured{border:1.5px solid var(--coral);box-shadow:0 8px 20px rgba(242,122,94,.10);}
+  .culture-spot-main{display:flex;gap:12px;padding:14px;}
+  .culture-spot-icon-wrap{position:relative;flex-shrink:0;}
+  .culture-spot-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;}
+  .culture-spot-rank{position:absolute;top:-5px;right:-5px;background:var(--ink);color:#fff;font-size:9px;font-weight:800;padding:2px 5px;border-radius:999px;}
+  .culture-spot-info{flex:1;min-width:0;}
+  .culture-spot-name{font-size:14px;font-weight:800;color:var(--gray-900);margin-bottom:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .culture-spot-pill-row{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+  .culture-spot-pill{height:24px;display:inline-flex;align-items:center;border-radius:999px;background:var(--gray-50);border:1px solid var(--gray-100);padding:0 8px;font-size:11px;font-weight:800;color:var(--gray-600);white-space:nowrap;}
+  .culture-spot-pill.stars{color:var(--coral);background:var(--coral-light);border-color:rgba(242,122,94,.18);letter-spacing:0;}
+  .culture-spot-pill.visited{color:var(--ink);background:#EEF8EA;border-color:#DDECCF;}
+  .culture-spot-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-top:1px solid var(--gray-100);background:var(--gray-50);}
+  .culture-spot-desc{font-size:12px;color:var(--gray-500);min-width:0;line-height:1.35;word-break:keep-all;}
+  .culture-spot-actions{display:flex;gap:6px;flex-shrink:0;}
+  .culture-spot-actions button{height:32px;border-radius:999px;font-size:12px;font-weight:800;padding:0 12px;cursor:pointer;font-family:inherit;}
+  .culture-spot-info-btn{background:#fff;color:var(--gray-700);border:1px solid var(--gray-300);}
+  .culture-spot-route-btn{background:var(--ink);color:#fff;border:none;}
+  .culture-collection-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px;}
+  .culture-collection-card{background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;min-height:58px;}
+  .culture-collection-label{font-size:10px;color:var(--gray-500);font-weight:800;margin-bottom:6px;}
+  .culture-collection-value{font-size:16px;font-weight:900;color:var(--gray-900);line-height:1.2;white-space:nowrap;}
+  .culture-collection-value.g{color:var(--coral);}
+  .culture-visit-list{display:flex;flex-direction:column;gap:8px;}
+  .culture-visit-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--gray-100);border-radius:var(--rs);padding:10px 11px;}
+  .culture-visit-icon{width:34px;height:34px;border-radius:10px;background:var(--coral-light);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+  .culture-visit-info{flex:1;min-width:0;}
+  .culture-visit-name{font-size:13px;font-weight:800;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .culture-visit-meta{font-size:11px;color:var(--gray-500);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .culture-visit-stars{font-size:12px;font-weight:900;color:var(--coral);white-space:nowrap;}
   .social-header{padding:14px 16px 10px;background:#fff;border-bottom:1px solid var(--gray-100);flex-shrink:0;display:flex;justify-content:space-between;align-items:center;gap:12px;}
   .social-title{font-size:16px;font-weight:800;color:var(--gray-900);}
   .social-sub{font-size:12px;color:var(--gray-500);margin-top:3px;}
@@ -903,6 +933,27 @@ if ('serviceWorker' in navigator) {
     </div>
 
     <div class="my-block-head">
+      <div class="my-section">문화 탐방</div>
+    </div>
+    <div class="my-info-panel">
+      <div class="culture-collection-summary">
+        <div class="culture-collection-card">
+          <div class="culture-collection-label">방문한 곳</div>
+          <div class="culture-collection-value g" id="myCultureVisitCount">0곳</div>
+        </div>
+        <div class="culture-collection-card">
+          <div class="culture-collection-label">희귀 유산</div>
+          <div class="culture-collection-value" id="myCultureRareCount">0곳</div>
+        </div>
+        <div class="culture-collection-card">
+          <div class="culture-collection-label">최근 방문</div>
+          <div class="culture-collection-value" id="myCultureLatest">—</div>
+        </div>
+      </div>
+      <div class="culture-visit-list" id="myCultureVisitList"></div>
+    </div>
+
+    <div class="my-block-head">
       <div class="my-section">내 정보</div>
       <button class="my-head-action" onclick="openProfileEdit()">편집</button>
     </div>
@@ -1201,6 +1252,7 @@ const LEAFLET_CSS_URL = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet
 const LEAFLET_JS_URL = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
 const TMAP_PEDESTRIAN_URL = runloopApiUrl('/api/tmap-pedestrian');
 const TMAP_POI_URL = runloopApiUrl('/api/tmap-pois');
+const TOUR_SPOTS_URL = runloopApiUrl('/api/tour-spots');
 const TMAP_MAX_PASS_POINTS = 3;
 const TMAP_CONNECT_TOLERANCE_METERS = 24;
 const TMAP_SNAP_NOTICE_METERS = 45;
@@ -4827,18 +4879,39 @@ function saveRecord() {
 }
 
 /* ── 근처 문화 스팟 (위치 기반) ── */
-function loadNearCourses(options = {}) {
+async function loadNearCourses(options = {}) {
   const wrap = document.getElementById('nearCourseList');
   if (!wrap) return;
   wrap.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--gray-500);"><div class="ml-spin" style="margin:0 auto 8px;"></div><div style="font-size:13px;">10km 이내 문화 스팟을 찾는 중이에요…</div></div>';
 
+  try {
+    const url = new URL(TOUR_SPOTS_URL, window.location.href);
+    url.searchParams.set('lat', String(S.lat));
+    url.searchParams.set('lng', String(S.lng));
+    url.searchParams.set('radius', String(CULTURE_SPOT_SEARCH_RADIUS_METERS));
+    const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
+    if (!response.ok) throw new Error('Tour spot API failed');
+    const data = await response.json();
+    const spots = Array.isArray(data && data.spots) ? data.spots : [];
+    if (spots.length) {
+      renderNearCourses(spots);
+      return;
+    }
+  } catch (error) {
+    console.warn('KTO culture spots unavailable, falling back to Kakao keyword search', error);
+  }
+
+  loadKakaoCultureSpots(options);
+}
+
+function loadKakaoCultureSpots(options = {}) {
   const retry = Number(options.retry || 0);
   if (!S.kakaoReady) {
     if (retry >= 6) {
       renderNearCourses(getFallbackNearCourses());
       return;
     }
-    setTimeout(() => loadNearCourses({ retry: retry + 1 }), 800);
+    setTimeout(() => loadKakaoCultureSpots({ retry: retry + 1 }), 800);
     return;
   }
 
@@ -4965,22 +5038,24 @@ function getCultureValueStarsText(stars) {
   return '★'.repeat(safeStars) + '☆'.repeat(5 - safeStars);
 }
 
-function getCultureRewardLabel(stars) {
+function getCultureMedalLabel(stars) {
   const safeStars = Math.max(1, Math.min(5, Math.round(Number(stars) || 1)));
-  if (safeStars >= 5) return '레전드 리워드';
-  if (safeStars >= 4) return '프리미엄 리워드';
-  if (safeStars >= 3) return '스페셜 리워드';
-  return '기본 리워드';
+  if (safeStars >= 5) return '희귀 유산';
+  if (safeStars >= 4) return '대표 명소';
+  if (safeStars >= 3) return '문화시설';
+  return '지역 문화';
 }
 
 function getCultureSpotOneLine(placeName, type, stars) {
   const safeStars = Math.max(1, Math.min(5, Math.round(Number(stars) || 1)));
-  if (safeStars >= 5) return '한국을 대표하는 문화유산을 직접 둘러볼 수 있어요';
-  if (/문화재/.test(type)) return '역사적 장소를 따라 지역의 시간을 느끼기 좋아요';
-  if (/박물관/.test(type)) return '지역 이야기와 전시를 함께 보기 좋은 실내 스팟이에요';
-  if (/전시|미술/.test(type)) return '작품과 공간 분위기를 천천히 감상하기 좋아요';
-  if (/공연/.test(type)) return '공연과 무대 문화를 경험하기 좋은 장소예요';
-  return '가볍게 들러 지역의 문화 분위기를 느끼기 좋아요';
+  const name = String(placeName || '').trim();
+  const subject = name ? `${name}에서 ` : '';
+  if (safeStars >= 5) return `${subject}한국 대표 문화유산의 분위기를 직접 볼 수 있어요`;
+  if (/문화재/.test(type)) return `${subject}지역의 역사와 오래된 장소성을 살펴보기 좋아요`;
+  if (/박물관/.test(type)) return `${subject}전시와 지역 이야기를 함께 보기 좋은 실내 스팟이에요`;
+  if (/전시|미술/.test(type)) return `${subject}작품과 공간 분위기를 천천히 감상하기 좋아요`;
+  if (/공연/.test(type)) return `${subject}공연과 무대 문화를 경험하기 좋아요`;
+  return `${subject}가볍게 들러 지역의 문화 분위기를 느끼기 좋아요`;
 }
 
 function getCultureSpotIcon(type) {
@@ -5025,14 +5100,14 @@ function setCultureSpotVisit(spot) {
     name: String(spot.place_name || '문화 스팟'),
     type: spot.cultureType || getCultureSpotType(spot, ''),
     valueStars: stars,
-    rewardTier: getCultureRewardLabel(stars),
+    medalTier: getCultureMedalLabel(stars),
     lat: Number(spot.y) || S.lat,
     lng: Number(spot.x) || S.lng,
-    visitedAt: new Date().toISOString(),
-    rewardStatus: 'pending'
+    visitedAt: new Date().toISOString()
   };
   visits[key] = visit;
   try { localStorage.setItem(CULTURE_SPOT_VISITS_KEY, JSON.stringify(visits)); } catch (_) {}
+  if (S.tab === 'mypage') renderMyCultureVisits();
   return { visited: true, isNew: true, data: visit };
 }
 
@@ -5072,10 +5147,10 @@ function renderNearCourses(results) {
 
   const iconBgs = ['#FFF0EC','#F4EFE8','#F0F8DB','#FFF5DB','#EEF8EA'];
   wrap.innerHTML = unique.map((p, i) => {
-    const dist = p.distFromMe < 1
-      ? Math.round(p.distFromMe * 1000) + 'm'
-      : p.distFromMe.toFixed(1) + 'km';
-    const featured = i === 0 ? 'border:1.5px solid var(--coral);box-shadow:0 8px 20px rgba(242,122,94,.10);' : 'border:1px solid var(--gray-100);';
+    const distValue = Number(p.distFromMe);
+    const dist = Number.isFinite(distValue)
+      ? (distValue < 1 ? Math.round(distValue * 1000) + 'm' : distValue.toFixed(1) + 'km')
+      : '근처';
     const placeName = String(p.place_name || '오늘의 문화 스팟');
     const type = p.cultureType || getCultureSpotType(p, '');
     const valueStars = Math.max(1, Math.min(5, Math.round(Number(p.cultureValueStars) || 1)));
@@ -5084,29 +5159,30 @@ function renderNearCourses(results) {
     const lng = Number(p.x) || S.lng;
     const visitState = getCultureSpotVisitState(p);
     const footerText = visitState.visited ? '방문 기록됨' : getCultureSpotOneLine(placeName, type, valueStars);
+    const cardClass = i === 0 ? 'culture-spot-card featured' : 'culture-spot-card';
+    const visitedPill = visitState.visited ? '<span class="culture-spot-pill visited">방문 기록</span>' : '';
     return `
-      <div style="background:#fff;border-radius:var(--r);${featured}overflow:hidden;margin-bottom:10px;">
-        <div style="display:flex;gap:14px;padding:14px;">
-          <div style="position:relative;flex-shrink:0;">
-            <div style="width:52px;height:52px;border-radius:12px;background:${iconBgs[i % iconBgs.length]};display:flex;align-items:center;justify-content:center;font-size:24px;">${getCultureSpotIcon(type)}</div>
-            <div style="position:absolute;top:-5px;right:-5px;background:var(--ink);color:#fff;font-size:9px;font-weight:700;padding:2px 5px;border-radius:999px;">★${valueStars}</div>
+      <div class="${cardClass}">
+        <div class="culture-spot-main">
+          <div class="culture-spot-icon-wrap">
+            <div class="culture-spot-icon" style="background:${iconBgs[i % iconBgs.length]};">${getCultureSpotIcon(type)}</div>
+            <div class="culture-spot-rank">★${valueStars}</div>
           </div>
-          <div style="flex:1;min-width:0;">
-            <div style="font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${escapeHtml(placeName)}</div>
-            <div style="font-size:12px;color:var(--gray-500);font-weight:700;">${escapeHtml(dist)} · ${escapeHtml(type)} · ★${valueStars}</div>
-          </div>
-          <div style="text-align:right;flex-shrink:0;">
-            <div style="font-size:18px;font-weight:800;color:var(--coral);line-height:1;">${escapeHtml(dist)}</div>
-            <div style="font-size:11px;color:var(--gray-500);">거리</div>
+          <div class="culture-spot-info">
+            <div class="culture-spot-name">${escapeHtml(placeName)}</div>
+            <div class="culture-spot-pill-row">
+              <span class="culture-spot-pill">${escapeHtml(dist)}</span>
+              <span class="culture-spot-pill">${escapeHtml(type)}</span>
+              <span class="culture-spot-pill stars">${escapeHtml(getCultureValueStarsText(valueStars))}</span>
+              ${visitedPill}
+            </div>
           </div>
         </div>
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--gray-100);background:var(--gray-50);">
-          <div style="font-size:12px;color:var(--gray-500);min-width:0;line-height:1.35;">
-            ${escapeHtml(footerText)}
-          </div>
-          <div style="display:flex;gap:6px;flex-shrink:0;">
-            <button data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromHomeButton(this)" style="background:#fff;color:var(--gray-700);border:1px solid var(--gray-300);font-size:12px;font-weight:700;padding:7px 12px;border-radius:999px;cursor:pointer;font-family:inherit;">소개</button>
-            <button data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" onclick="goToAiFromHomeButton(this)" style="background:var(--ink);color:#fff;font-size:12px;font-weight:700;padding:7px 12px;border-radius:999px;border:none;cursor:pointer;font-family:inherit;">경로</button>
+        <div class="culture-spot-footer">
+          <div class="culture-spot-desc">${escapeHtml(footerText)}</div>
+          <div class="culture-spot-actions">
+            <button class="culture-spot-info-btn" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromHomeButton(this)">소개</button>
+            <button class="culture-spot-route-btn" data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" onclick="goToAiFromHomeButton(this)">경로</button>
           </div>
         </div>
       </div>`;
@@ -7372,6 +7448,56 @@ function updateGoalBar() {
   if (textEl) textEl.textContent = weekDist.toFixed(1) + ' / ' + goal + 'km';
 }
 
+function getCultureSpotVisitList() {
+  return Object.values(readCultureSpotVisits())
+    .filter(visit => visit && typeof visit === 'object' && visit.name)
+    .sort((a, b) => Date.parse(b.visitedAt || '') - Date.parse(a.visitedAt || ''));
+}
+
+function getCultureVisitStars(visit) {
+  return Math.max(1, Math.min(5, Math.round(Number(visit && visit.valueStars) || 1)));
+}
+
+function getCultureVisitDateLabel(visit) {
+  const time = Date.parse(visit && visit.visitedAt || '');
+  if (!Number.isFinite(time)) return '방문 기록';
+  return new Date(time).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' });
+}
+
+function renderMyCultureVisits() {
+  const countEl = document.getElementById('myCultureVisitCount');
+  const rareEl = document.getElementById('myCultureRareCount');
+  const latestEl = document.getElementById('myCultureLatest');
+  const listEl = document.getElementById('myCultureVisitList');
+  if (!countEl || !rareEl || !latestEl || !listEl) return;
+
+  const visits = getCultureSpotVisitList();
+  const rareCount = visits.filter(visit => getCultureVisitStars(visit) >= 5).length;
+  countEl.textContent = visits.length + '곳';
+  rareEl.textContent = rareCount + '곳';
+  latestEl.textContent = visits[0] ? getCultureVisitDateLabel(visits[0]) : '—';
+
+  if (!visits.length) {
+    listEl.innerHTML = '<div style="text-align:center;padding:14px 0;color:var(--gray-500);font-size:12px;">아직 방문 기록이 없어요</div>';
+    return;
+  }
+
+  listEl.innerHTML = visits.slice(0, 3).map(visit => {
+    const type = visit.type || '문화 스팟';
+    const stars = getCultureVisitStars(visit);
+    const meta = [type, getCultureMedalLabel(stars), getCultureVisitDateLabel(visit)].filter(Boolean).join(' · ');
+    return `
+      <div class="culture-visit-item">
+        <div class="culture-visit-icon">${getCultureSpotIcon(type)}</div>
+        <div class="culture-visit-info">
+          <div class="culture-visit-name">${escapeHtml(visit.name)}</div>
+          <div class="culture-visit-meta">${escapeHtml(meta)}</div>
+        </div>
+        <div class="culture-visit-stars">${escapeHtml(getCultureValueStarsText(stars))}</div>
+      </div>`;
+  }).join('');
+}
+
 function renderMyPage() {
   const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
   const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
@@ -7417,6 +7543,7 @@ function renderMyPage() {
     bodyInfo.textContent = [height, weight].filter(Boolean).join(' · ') || '미입력';
   }
   if (sourceInfo) sourceInfo.textContent = getMySourceSummary(records);
+  renderMyCultureVisits();
 
   // 목표 바
   updateGoalBar();
