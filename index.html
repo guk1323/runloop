@@ -117,12 +117,21 @@ if ('serviceWorker' in navigator) {
   .course-list{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;-webkit-overflow-scrolling:touch;}
   .course-card{background:rgba(255,255,255,.84);border-radius:12px;border:1px solid rgba(28,36,43,.08);overflow:visible;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .15s;box-shadow:0 10px 24px rgba(28,36,43,.05);}
   .course-card:hover{border-color:var(--gray-300);}
-  .course-card.selected{border-color:rgba(28,36,43,.8);box-shadow:0 12px 24px rgba(28,36,43,.12);transform:translateY(-1px);}
+  .course-card.selected{border-color:rgba(242,122,94,.55);box-shadow:0 12px 24px rgba(242,122,94,.16);transform:translateY(-1px);}
   .cmap{height:70px;position:relative;overflow:hidden;background:#EEEADF;}
   .cmap canvas{width:100%;height:100%;display:block;}
   .cinfo{padding:14px;}
   .cinfo-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:12px;}
   .cname{font-size:15px;font-weight:800;flex:1;min-width:0;line-height:1.35;}
+  .route-title-block{flex:1;min-width:0;}
+  .route-point-row{display:flex;align-items:center;gap:7px;min-width:0;}
+  .route-point{display:flex;align-items:center;gap:5px;min-width:0;border:1px solid var(--gray-100);background:#fff;border-radius:999px;padding:4px 8px;box-shadow:0 2px 8px rgba(28,36,43,.04);}
+  .route-point.start{max-width:44%;}
+  .route-point.dest{max-width:48%;background:var(--coral-light);border-color:rgba(242,122,94,.22);}
+  .route-dot{width:7px;height:7px;border-radius:50%;background:var(--gray-300);flex-shrink:0;}
+  .route-point.dest .route-dot{background:var(--coral);}
+  .route-place{font-size:13px;font-weight:900;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;}
+  .route-arrow{width:24px;height:24px;border-radius:999px;background:var(--coral);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;flex-shrink:0;box-shadow:0 4px 10px rgba(242,122,94,.22);}
   .ckm-badge{font-size:22px;font-weight:900;color:#1C242B;letter-spacing:-0.5px;line-height:1;white-space:nowrap;margin-left:8px;}
   .ckm-badge span{font-size:11px;font-weight:600;color:var(--gray-500);letter-spacing:0;}
   .tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:var(--rp);}
@@ -2608,7 +2617,7 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
   aiPendingPlaceOverlay = new kakao.maps.CustomOverlay({
     map: createMap,
     position: new kakao.maps.LatLng(lat, lng),
-    content: '<div style="width:16px;height:16px;background:#1565C0;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.28);"></div>',
+    content: '<div style="width:16px;height:16px;background:#D9654D;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.28);"></div>',
     zIndex: 7
   });
   const card = document.getElementById('aiPlaceCard');
@@ -2722,7 +2731,7 @@ async function previewDirectPedestrianRoute(destination) {
     tags: [],
     meta: '',
     pt: 'urban',
-    color: '#1565C0',
+    color: '#D9654D',
     routeLabel: '',
     startLabel: getAiCoursePlaceLabel(),
     destinationLabel: destination.name,
@@ -3685,7 +3694,7 @@ function buildDestinationDirectCandidate(destination, directMeters) {
     tags: [],
     meta: '',
     pt: 'urban',
-    color: '#1565C0',
+    color: '#D9654D',
     routeLabel: '',
     startLabel: getAiCoursePlaceLabel(),
     destinationLabel: destination.name,
@@ -3715,7 +3724,7 @@ function buildDestinationSpotCandidate(seed, destination, directMeters, index) {
     tags: [],
     meta: '',
     pt: seed.type || 'park',
-    color: '#1565C0',
+    color: '#D9654D',
     routeLabel: '',
     startLabel: getAiCoursePlaceLabel(),
     destinationLabel: destination.name,
@@ -4476,6 +4485,29 @@ function getAiTagClass(label) {
   return 'tg';
 }
 
+function getRouteCardTitleHtml(course) {
+  const isDestinationRoute = course && course.routeKind === 'destination';
+  const destination = getRouteEndpointLabel(course && (course.destinationLabel || course.name), t('destination'));
+  const start = getRouteEndpointLabel(course && course.startLabel, getAiCoursePlaceLabel());
+  if (!isDestinationRoute || !destination) {
+    return `<div class="cname">${escapeHtml(course && course.name || '')}</div>`;
+  }
+  const title = `${start} → ${destination}`;
+  return `
+    <div class="route-title-block" title="${escapeHtml(title)}">
+      <div class="route-point-row">
+        <span class="route-point start"><span class="route-dot"></span><span class="route-place">${escapeHtml(start)}</span></span>
+        <span class="route-arrow">→</span>
+        <span class="route-point dest"><span class="route-dot"></span><span class="route-place">${escapeHtml(destination)}</span></span>
+      </div>
+    </div>`;
+}
+
+function getRouteEndpointLabel(value, fallback) {
+  const label = String(value || fallback || '').replace(/\s+/g, ' ').trim();
+  return label || '—';
+}
+
 function renderCourses() {
   const list = document.getElementById('courseList');
   const em = document.getElementById('emptyState');
@@ -4500,7 +4532,7 @@ function renderCourses() {
     card.innerHTML = `
       <div class="cinfo">
         <div class="cinfo-head">
-          <div class="cname">${escapeHtml(c.name)}</div>
+          ${getRouteCardTitleHtml(c)}
           <div class="ckm-badge">${escapeHtml(c.km)}<span>km</span></div>
           <button class="route-card-close" aria-label="경로 닫기" onclick="event.stopPropagation();dismissRouteSheet()">×</button>
         </div>
@@ -4584,7 +4616,7 @@ function showAiRoutePreview(course, options = {}) {
 }
 
 function getAiRouteStrokeColor(course) {
-  return course && course.routeKind === 'destination' ? '#1C242B' : '#F27A5E';
+  return course && course.routeKind === 'destination' ? '#D9654D' : '#F27A5E';
 }
 
 function getRouteLabelPosition(path) {
