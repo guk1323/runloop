@@ -62,9 +62,12 @@ if ('serviceWorker' in navigator) {
   /* AI 탭 */
   .ai-top{background:var(--paper);padding:14px 16px;border-bottom:1px solid var(--gray-100);flex-shrink:0;}
   .slabel{font-size:11px;font-weight:500;color:var(--gray-500);margin-bottom:7px;letter-spacing:.3px;}
-  .addr-input{width:100%;height:40px;border:1px solid var(--gray-300);border-radius:var(--rs);padding:0 12px;font-size:14px;font-family:inherit;outline:none;background:var(--gray-50);transition:border-color .2s;}
+  .addr-input{width:100%;height:40px;border:1px solid var(--gray-300);border-radius:var(--rs);padding:0 34px 0 12px;font-size:14px;font-family:inherit;outline:none;background:var(--gray-50);transition:border-color .2s;}
   .addr-input:focus{border-color:var(--coral);background:#fff;}
   .addr-input::placeholder{color:var(--gray-500);}
+  .map-search-clear{display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:22px;height:22px;border:none;border-radius:999px;background:var(--gray-100);color:var(--gray-500);font-size:15px;font-weight:900;line-height:1;font-family:inherit;cursor:pointer;align-items:center;justify-content:center;padding:0;}
+  .map-search-clear.visible{display:flex;}
+  .map-search-clear:active{transform:translateY(-50%) scale(.94);}
   .km-row{display:flex;align-items:center;gap:10px;margin-top:10px;}
   .km-label{font-size:13px;color:var(--gray-700);white-space:nowrap;}
   .km-slider{flex:1;accent-color:var(--coral);}
@@ -95,15 +98,15 @@ if ('serviceWorker' in navigator) {
   .culture-map-chip.active{background:var(--ink);border-color:var(--ink);color:#fff;}
   .culture-map-chip.sub.active{background:var(--coral-light);border-color:rgba(242,122,94,.22);color:var(--ink);}
   .create-map-shell{position:relative;flex:1;min-height:220px;}
-  .map-place-card{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:24;background:rgba(255,255,255,.96);border:1px solid rgba(28,36,43,.08);border-radius:14px;padding:11px;box-shadow:0 10px 28px rgba(28,36,43,.18);backdrop-filter:blur(14px);}
-  .map-place-title{font-size:14px;font-weight:900;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:34px;}
+  .map-place-card{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:24;background:rgba(255,255,255,.96);border:1px solid rgba(28,36,43,.08);border-radius:16px;padding:12px;box-shadow:0 10px 28px rgba(28,36,43,.18);backdrop-filter:blur(14px);}
+  .map-place-title{font-size:15px;font-weight:900;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:34px;}
   .map-place-close{position:absolute;top:9px;right:9px;width:28px;height:28px;border:none;border-radius:999px;background:var(--gray-50);color:var(--gray-500);font-size:18px;font-weight:800;line-height:1;font-family:inherit;cursor:pointer;}
   .map-place-close:active{transform:scale(.94);}
   .map-place-sub{display:none;}
-  .map-place-media{display:none;margin-top:9px;grid-template-columns:104px minmax(0,1fr);gap:10px;align-items:stretch;}
+  .map-place-media{display:none;margin-top:10px;grid-template-columns:minmax(132px,42%) minmax(0,1fr);gap:10px;align-items:stretch;}
   .map-place-media.active{display:grid;}
-  .map-place-image{width:104px;height:74px;border-radius:10px;object-fit:cover;background:var(--gray-50);border:1px solid var(--gray-100);}
-  .map-place-copy{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:6px;background:var(--gray-50);border:1px solid var(--gray-100);border-radius:10px;padding:8px;}
+  .map-place-image{width:100%;height:auto;min-height:104px;aspect-ratio:4/3;border-radius:12px;object-fit:cover;background:linear-gradient(135deg,#F4EFE8,#FFF6F1);border:1px solid var(--gray-100);display:block;}
+  .map-place-copy{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:7px;background:var(--gray-50);border:1px solid var(--gray-100);border-radius:12px;padding:9px;}
   .map-place-desc{display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden;}
   .map-place-meta-chip{height:22px;display:inline-flex;align-items:center;max-width:100%;border-radius:999px;background:#fff;border:1px solid var(--gray-100);color:var(--gray-700);font-size:10px;font-weight:900;padding:0 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;}
   .map-place-meta-chip.star{color:var(--coral);background:#FFF6F1;border-color:rgba(242,122,94,.16);flex-shrink:0;}
@@ -145,6 +148,13 @@ if ('serviceWorker' in navigator) {
   .route-point-label{font-size:10px;font-weight:900;color:var(--gray-500);line-height:1;margin-bottom:3px;}
   .route-point.dest .route-point-label{color:var(--coral-dark);}
   .route-place{font-size:13px;font-weight:900;color:var(--ink);line-height:1.28;word-break:keep-all;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .route-guide-route{display:none;grid-template-columns:minmax(0,1fr) 26px minmax(0,1fr);align-items:stretch;gap:7px;width:100%;}
+  .route-guide-place{min-width:0;background:#fff;border:1px solid var(--gray-100);border-radius:12px;padding:8px 9px;box-shadow:0 3px 10px rgba(28,36,43,.04);}
+  .route-guide-place span{display:block;font-size:10px;font-weight:900;color:var(--gray-500);line-height:1;margin-bottom:4px;}
+  .route-guide-place strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;font-weight:900;color:var(--ink);line-height:1.25;word-break:keep-all;overflow-wrap:anywhere;}
+  .route-guide-place.dest{background:var(--coral-light);border-color:rgba(242,122,94,.22);}
+  .route-guide-place.dest span{color:var(--coral-dark);}
+  .route-guide-divider{align-self:center;width:26px;height:26px;border-radius:999px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;box-shadow:0 4px 12px rgba(28,36,43,.16);}
   .ckm-badge{font-size:22px;font-weight:900;color:#1C242B;letter-spacing:-0.5px;line-height:1;white-space:nowrap;margin-left:8px;}
   .ckm-badge span{font-size:11px;font-weight:600;color:var(--gray-500);letter-spacing:0;}
   .tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:var(--rp);}
@@ -358,27 +368,35 @@ if ('serviceWorker' in navigator) {
   .route-card-actions{display:grid;grid-template-columns:1fr;gap:8px;align-items:center;}
   .route-guide-btn{height:34px;border-radius:var(--rp);border:1px solid var(--ink);background:var(--ink);color:#fff;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap;}
   .route-guide-btn.active{background:#fff;color:var(--coral);border-color:rgba(242,122,94,.45);}
-  .route-guide-status{display:none;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;padding:8px 10px;border-radius:var(--rs);background:var(--gray-50);border:1px solid var(--gray-100);font-size:12px;font-weight:800;color:var(--gray-700);}
-  .route-guide-status strong{color:var(--coral);font-size:13px;}
+  .route-guide-status{display:none;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;padding:12px 12px 20px;border-radius:16px;background:linear-gradient(135deg,#1C242B 0%,#27323A 72%,#F27A5E 180%);border:none;font-size:12px;font-weight:800;color:#fff;position:relative;overflow:hidden;box-shadow:0 10px 22px rgba(28,36,43,.16);}
+  .route-guide-status::before{content:'';position:absolute;left:12px;right:12px;bottom:8px;height:4px;border-radius:999px;background:rgba(255,255,255,.16);}
+  .route-guide-status::after{content:'';position:absolute;left:12px;bottom:8px;height:4px;width:var(--guide-progress,0%);max-width:calc(100% - 24px);border-radius:999px;background:var(--lime);}
+  .route-guide-status.off-route{background:linear-gradient(135deg,#6A2C23 0%,#D9654D 130%);}
+  .route-guide-status.off-route::after{background:#fff;}
+  .route-guide-copy{min-width:0;display:flex;flex-direction:column;gap:4px;}
+  .route-guide-label{display:inline-flex;width:max-content;max-width:100%;align-items:center;height:22px;padding:0 8px;border-radius:999px;background:rgba(255,255,255,.14);font-size:11px;font-weight:900;color:#fff;}
+  .route-guide-sub{font-size:12px;font-weight:800;color:rgba(255,255,255,.74);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .route-guide-distance{font-size:24px;font-weight:950;color:#fff;line-height:1;white-space:nowrap;text-align:right;}
   .route-card-close{width:28px;height:28px;border-radius:50%;border:1px solid var(--gray-100);background:#fff;color:var(--gray-500);font-size:20px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;flex-shrink:0;}
   .route-card-close:hover{color:var(--ink);border-color:var(--gray-300);}
-  .course-list.guidance-mode{overflow:hidden!important;padding:8px 12px 10px;}
+  .course-list.guidance-mode{overflow:hidden!important;padding:8px 12px 12px;}
   .course-card.guidance-hidden{display:none;}
-  .course-card.route-guidance-card .cinfo{padding:12px;}
-  .course-card.route-guidance-card .cinfo-head{align-items:center;margin-bottom:8px;}
+  .course-card.route-guidance-card{border-radius:18px;border:1px solid rgba(28,36,43,.08);box-shadow:0 16px 34px rgba(28,36,43,.14);background:rgba(255,255,255,.96);}
+  .course-card.route-guidance-card .cinfo{padding:12px;display:flex;flex-direction:column;}
+  .course-card.route-guidance-card .cinfo-head{align-items:stretch;margin-bottom:0;gap:8px;}
+  .course-card.route-guidance-card .ckm-badge{display:none;}
+  .course-card.route-guidance-card .route-point-list{display:none;}
+  .course-card.route-guidance-card .route-normal-name{display:none;}
+  .course-card.route-guidance-card .route-guide-route{display:grid;}
   .course-card.route-guidance-card .route-card-actions{display:none;}
-  .course-card.route-guidance-card .route-guide-status{display:flex;margin-bottom:0;}
+  .course-card.route-guidance-card .route-guide-status{display:flex;order:-1;}
+  .course-card.route-guidance-card .route-card-close{width:34px;height:auto;min-height:68px;border-radius:14px;background:var(--gray-50);font-size:22px;}
 
   /* 마이페이지 */
   .my-profile-card{margin:14px;background:linear-gradient(135deg,#1C242B 0%,#2B343B 58%,#F27A5E 150%);border-radius:16px;padding:20px;color:#fff;flex-shrink:0;box-shadow:0 16px 34px rgba(28,36,43,.14);}
   .my-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:10px;cursor:pointer;border:2px solid rgba(255,255,255,.4);}
   .my-name{font-size:20px;font-weight:700;margin-bottom:2px;}
   .my-sub{font-size:13px;opacity:.8;}
-  .my-points{display:flex;gap:0;margin-top:14px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2);}
-  .my-point-item{text-align:center;}
-  .my-point-val{font-size:20px;font-weight:700;}
-  .my-point-label{font-size:11px;opacity:.75;margin-top:1px;}
-
   .my-section{padding:14px 16px 8px;font-size:14px;font-weight:700;color:var(--gray-900);}
   .my-setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1px solid var(--gray-100);}
   .my-setting-label{font-size:14px;color:var(--gray-900);}
@@ -410,6 +428,8 @@ if ('serviceWorker' in navigator) {
   .my-goal-main-btn{margin-top:7px;height:28px;padding:0 11px;border:none;border-radius:999px;background:var(--ink);color:#fff;font-size:11px;font-weight:800;font-family:inherit;cursor:pointer;}
   .my-goal-track{height:8px;background:rgba(28,36,43,.1);border-radius:999px;overflow:hidden;}
   .my-goal-fill{height:100%;background:var(--coral);border-radius:999px;width:0%;transition:width .5s;}
+  .week-activity-chart{display:flex;align-items:flex-end;gap:6px;height:76px;margin-top:4px;margin-bottom:7px;}
+  .week-activity-labels{display:flex;gap:6px;}
 
   .goal-bar-wrap{padding:0 16px 14px;background:#fff;}
   .goal-bar-track{height:8px;background:var(--gray-100);border-radius:4px;overflow:hidden;margin-top:6px;}
@@ -447,19 +467,20 @@ if ('serviceWorker' in navigator) {
   .near-course-dist{font-size:14px;font-weight:700;color:var(--coral);flex-shrink:0;}
   .culture-spot-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);overflow:hidden;margin-bottom:10px;box-shadow:0 8px 20px rgba(28,36,43,.04);}
   .culture-spot-card.featured{border:1.5px solid var(--coral);box-shadow:0 8px 20px rgba(242,122,94,.10);}
-  .culture-spot-main{display:flex;gap:12px;padding:14px;}
-  .culture-spot-icon-wrap{position:relative;flex-shrink:0;}
-  .culture-spot-icon{width:50px;height:50px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;}
-  .culture-spot-rank{position:absolute;top:-5px;right:-5px;background:var(--ink);color:#fff;font-size:9px;font-weight:800;padding:2px 5px;border-radius:999px;}
-  .culture-spot-info{flex:1;min-width:0;}
-  .culture-spot-name{font-size:14px;font-weight:800;color:var(--gray-900);margin-bottom:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .culture-spot-main{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;padding:12px;}
+  .culture-spot-photo{position:relative;width:92px;height:92px;border-radius:14px;overflow:hidden;background:var(--coral-light);border:1px solid rgba(242,122,94,.16);flex-shrink:0;}
+  .culture-spot-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .culture-spot-photo-fallback{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--coral-dark);font-size:11px;font-weight:900;text-align:center;padding:8px;}
+  .culture-spot-photo-icon{font-size:26px;line-height:1;}
+  .culture-spot-rank{position:absolute;right:6px;bottom:6px;background:rgba(28,36,43,.9);color:#fff;font-size:10px;font-weight:900;padding:3px 6px;border-radius:999px;box-shadow:0 3px 8px rgba(28,36,43,.18);}
+  .culture-spot-info{min-width:0;display:flex;flex-direction:column;gap:8px;}
+  .culture-spot-name{font-size:14px;font-weight:800;color:var(--gray-900);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   .culture-spot-pill-row{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
   .culture-spot-pill{height:24px;display:inline-flex;align-items:center;border-radius:999px;background:var(--gray-50);border:1px solid var(--gray-100);padding:0 8px;font-size:11px;font-weight:800;color:var(--gray-600);white-space:nowrap;}
   .culture-spot-pill.stars{color:var(--coral);background:var(--coral-light);border-color:rgba(242,122,94,.18);letter-spacing:0;}
   .culture-spot-pill.visited{color:var(--ink);background:#EEF8EA;border-color:#DDECCF;}
-  .culture-spot-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:10px 14px;border-top:1px solid var(--gray-100);background:var(--gray-50);}
-  .culture-spot-actions{display:flex;gap:6px;flex-shrink:0;}
-  .culture-spot-actions button{height:32px;border-radius:999px;font-size:12px;font-weight:800;padding:0 12px;cursor:pointer;font-family:inherit;}
+  .culture-spot-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:auto;}
+  .culture-spot-actions button{height:32px;border-radius:999px;font-size:12px;font-weight:800;padding:0 8px;cursor:pointer;font-family:inherit;white-space:nowrap;}
   .culture-spot-info-btn{background:#fff;color:var(--gray-700);border:1px solid var(--gray-300);}
   .culture-spot-save-btn{background:#fff;color:var(--coral);border:1px solid rgba(242,122,94,.28);}
   .culture-spot-save-btn.active{background:var(--coral-light);color:var(--ink);}
@@ -759,8 +780,7 @@ if ('serviceWorker' in navigator) {
       <div id="nearCultureRefresh" style="font-size:12px;color:var(--coral);font-weight:500;cursor:pointer;" onclick="loadNearCourses()">새로고침</div>
     </div>
     <div class="course-filter" style="padding:0;background:transparent;">
-      <button id="cultureFilterRecommend" class="active" onclick="setCultureSpotFilter('recommend')">추천</button>
-      <button id="cultureFilterDistance" onclick="setCultureSpotFilter('distance')">거리순</button>
+      <button id="cultureFilterDistance" class="active" onclick="setCultureSpotFilter('distance')">거리순</button>
       <button id="cultureFilterStars" onclick="setCultureSpotFilter('stars')">별점순</button>
     </div>
     <div id="nearCourseList">
@@ -795,6 +815,7 @@ if ('serviceWorker' in navigator) {
               onfocus="prepareAddressSearchInput(this)" onclick="prepareAddressSearchInput(this)" oninput="searchAddress(this.value)"
               onkeydown="if(event.key==='Enter'){event.preventDefault();submitMapSearch();}"
               style="border-color:var(--gray-100);background:#fff;">
+            <button id="mapSearchClearBtn" class="map-search-clear" type="button" aria-label="검색어 지우기" onclick="clearMapSearchInput(event)">×</button>
             <div id="addrDropdown" style="display:none;position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-radius:var(--rs);z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;"></div>
           </div>
           <button id="aiSearchSubmit" class="ai-search-submit" onclick="submitMapSearch()">검색</button>
@@ -965,23 +986,6 @@ if ('serviceWorker' in navigator) {
         <div class="my-name" id="myNameDisplay" style="text-align:center;">런너</div>
         <div class="my-sub" id="myJoinDays" style="text-align:center;margin-top:3px;">Running with Runloop</div>
       </div>
-      <!-- 하단: 3개 통계 가운데 정렬 -->
-      <div class="my-points" style="justify-content:center;gap:0;">
-        <div class="my-point-item" style="flex:1;text-align:center;">
-          <div class="my-point-val" id="myTotalDist">0km</div>
-          <div class="my-point-label">총 거리</div>
-        </div>
-        <div style="width:1px;background:rgba(255,255,255,.2);margin:0 4px;"></div>
-        <div class="my-point-item" style="flex:1;text-align:center;">
-          <div class="my-point-val" id="myTotalRuns">0회</div>
-          <div class="my-point-label">활동 횟수</div>
-        </div>
-        <div style="width:1px;background:rgba(255,255,255,.2);margin:0 4px;"></div>
-        <div class="my-point-item" style="flex:1;text-align:center;">
-          <div class="my-point-val" id="myAvgPace">—</div>
-          <div class="my-point-label">평균 페이스</div>
-        </div>
-      </div>
     </div>
 
     <!-- 활동 기록 -->
@@ -1005,22 +1009,8 @@ if ('serviceWorker' in navigator) {
           <div id="homeGoalFill" class="my-goal-fill"></div>
         </div>
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px;">
-        <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
-          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">총 거리</div>
-          <div style="font-size:20px;font-weight:700;color:var(--coral);line-height:1;" id="weekDist">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">km</small></div>
-        </div>
-        <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
-          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">활동 횟수</div>
-          <div style="font-size:20px;font-weight:700;color:var(--gray-900);line-height:1;" id="weekCount">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">회</small></div>
-        </div>
-        <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
-          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">저장 스팟</div>
-          <div style="font-size:20px;font-weight:700;color:var(--gray-700);line-height:1;" id="homeCourseCount">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">개</small></div>
-        </div>
-      </div>
-      <div style="display:flex;align-items:flex-end;gap:5px;height:56px;margin-bottom:5px;" id="weekBarChart"></div>
-      <div style="display:flex;gap:5px;" id="weekBarLabels"></div>
+      <div class="week-activity-chart" id="weekBarChart"></div>
+      <div class="week-activity-labels" id="weekBarLabels"></div>
     </div>
 
     <div class="my-block-head">
@@ -1352,7 +1342,6 @@ const APP_COPY = {
     edit: '편집',
     nearCultureSpots: '근처 문화 스팟',
     refresh: '새로고침',
-    recommend: '추천',
     distanceSort: '거리순',
     starsSort: '별점순',
     searchPlaceholder: '장소·가게 검색',
@@ -1510,7 +1499,6 @@ function applyAppLanguage() {
   });
   setTextContent('nearCultureTitle', t('nearCultureSpots'));
   setTextContent('nearCultureRefresh', t('refresh'));
-  setTextContent('cultureFilterRecommend', t('recommend'));
   setTextContent('cultureFilterDistance', t('distanceSort'));
   setTextContent('cultureFilterStars', t('starsSort'));
   setTextContent('aiSearchSubmit', t('searchAction'));
@@ -2689,6 +2677,7 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
   if (guide) guide.style.display = 'none';
   const input = document.getElementById('addrInput');
   if (input) input.value = aiPendingPlace.name;
+  updateMapSearchClearButton();
   if (createMap) createMap.setCenter(new kakao.maps.LatLng(lat, lng));
 }
 
@@ -2915,6 +2904,7 @@ function clearSelectedAddr() {
   document.getElementById('aiSelectedAddr').style.display = 'none';
   document.getElementById('aiMapGuide').style.display = 'none';
   document.getElementById('addrInput').value = '';
+  updateMapSearchClearButton();
   if (createAiMarker) { createAiMarker.setMap(null); createAiMarker = null; }
   resetAiCourseSuggestions();
 }
@@ -2932,6 +2922,7 @@ function setAiSearchTarget(target) {
     input.placeholder = '장소·가게 검색';
     input.value = getAiSearchInputValue();
   }
+  updateMapSearchClearButton();
   if (dropdown) dropdown.style.display = 'none';
   addrSearchResults = [];
 }
@@ -2970,6 +2961,7 @@ function setAiMarker(latlng, addrName) {
   document.getElementById('aiSelectedAddrText').textContent = addrName;
   document.getElementById('aiMapGuide').style.display = 'none';
   document.getElementById('addrInput').value = addrName;
+  updateMapSearchClearButton();
   // 드롭다운 닫기
   document.getElementById('addrDropdown').style.display = 'none';
 }
@@ -2997,6 +2989,7 @@ function setAiDestinationMarker(latlng, addrName) {
   if (destText) destText.textContent = aiDestination.name;
   document.getElementById('aiMapGuide').style.display = 'none';
   document.getElementById('addrInput').value = aiDestination.name;
+  updateMapSearchClearButton();
   document.getElementById('addrDropdown').style.display = 'none';
 }
 
@@ -3015,6 +3008,7 @@ function clearAiDestination(options = {}) {
   if (aiSearchTarget === 'dest') {
     const input = document.getElementById('addrInput');
     if (input) input.value = '';
+    updateMapSearchClearButton();
   }
   resetAiCourseSuggestions();
 }
@@ -3037,6 +3031,32 @@ let addrSearchTimer = null;
 let addrSearchSeq = 0;
 let addrSearchResults = [];
 
+function updateMapSearchClearButton() {
+  const input = document.getElementById('addrInput');
+  const button = document.getElementById('mapSearchClearBtn');
+  if (!input || !button) return;
+  button.classList.toggle('visible', input.value.trim().length > 0);
+}
+
+function clearMapSearchInput(event) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  clearTimeout(addrSearchTimer);
+  addrSearchSeq++;
+  addrSearchResults = [];
+  const input = document.getElementById('addrInput');
+  const dropdown = document.getElementById('addrDropdown');
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
+  if (dropdown) dropdown.style.display = 'none';
+  setCultureMapSearch('');
+  updateMapSearchClearButton();
+}
+
 function prepareAddressSearchInput(input) {
   if (!input) return;
   if (input.value.trim() === '현재 위치' || input.value.trim() === getAiSearchInputValue()) {
@@ -3044,7 +3064,9 @@ function prepareAddressSearchInput(input) {
     addrSearchResults = [];
     const dropdown = document.getElementById('addrDropdown');
     if (dropdown) dropdown.style.display = 'none';
+    setCultureMapSearch('');
   }
+  updateMapSearchClearButton();
 }
 
 async function fetchAddressSearchResults(query) {
@@ -3064,6 +3086,7 @@ function searchAddress(query) {
   clearTimeout(addrSearchTimer);
   addrSearchSeq++;
   setCultureMapSearch(query);
+  updateMapSearchClearButton();
   const dropdown = document.getElementById('addrDropdown');
   const trimmed = (query || '').trim();
   if (!trimmed || trimmed.length < 2) {
@@ -3097,6 +3120,7 @@ function selectAddress(name, lat, lng) {
   map.setCenter(latlng);
   map.setLevel(4);
   document.getElementById('addrInput').value = name;
+  updateMapSearchClearButton();
   document.getElementById('addrDropdown').style.display = 'none';
   setCultureMapSearch('');
   if (createMode === 'ai') {
@@ -3494,6 +3518,7 @@ function detectLocation() {
     S.lng = pos.coords.longitude;
     // 위치 감지 완료
     document.getElementById('addrInput').value = '현재 위치';
+    updateMapSearchClearButton();
     if (S.map) {
       const latlng = new kakao.maps.LatLng(S.lat, S.lng);
       S.map.setCenter(latlng);
@@ -3535,6 +3560,7 @@ window.addEventListener('load', () => {
       S.lat = pos.coords.latitude;
       S.lng = pos.coords.longitude;
       document.getElementById('addrInput').value = '현재 위치';
+      updateMapSearchClearButton();
       fetchWeather();
       loadNearCourses();
     }, () => {
@@ -3830,7 +3856,7 @@ const CULTURE_SPOT_EN_NAME_MAP = {
 const CULTURE_SPOT_EN_INFO_URL_MAP = {
   '경복궁': 'https://english.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=87740'
 };
-let cultureSpotFilter = 'recommend';
+let cultureSpotFilter = 'distance';
 let cultureMapCategories = [];
 let cultureMapStars = [];
 let cultureMapSearchQuery = '';
@@ -3866,6 +3892,15 @@ function dismissRouteSheet() {
   resetAiCourseSuggestions();
   const input = document.getElementById('addrInput');
   if (input && aiDestination) input.value = aiDestination.name || '';
+  updateMapSearchClearButton();
+}
+
+function closeRouteCard(index) {
+  if (routeGuide.active && routeGuide.courseIndex === index) {
+    stopRouteGuidance('안내를 종료했어요');
+    return;
+  }
+  dismissRouteSheet();
 }
 
 async function generateCourses() {
@@ -4781,7 +4816,12 @@ function getRouteCardTitleHtml(course) {
   const destination = getRouteEndpointLabel(course && (course.destinationLabel || course.name), t('destination'));
   const start = getRouteEndpointLabel(course && course.startLabel, getAiCoursePlaceLabel());
   if (!isDestinationRoute || !destination) {
-    return `<div class="cname">${escapeHtml(course && course.name || '')}</div>`;
+    const name = escapeHtml(course && course.name || '');
+    return `
+      <div class="cname route-normal-name">${name}</div>
+      <div class="route-guide-route single" title="${name}">
+        <div class="route-guide-place dest" style="grid-column:1 / -1;"><span>${escapeHtml(t('destination'))}</span><strong>${name}</strong></div>
+      </div>`;
   }
   const title = `${start} → ${destination}`;
   return `
@@ -4790,6 +4830,11 @@ function getRouteCardTitleHtml(course) {
         <span class="route-rail" aria-hidden="true"><span class="route-dot"></span><span class="route-rail-line"></span><span class="route-arrow">↓</span><span class="route-rail-line"></span><span class="route-dot dest"></span></span>
         <span class="route-point start"><span class="route-point-label">${escapeHtml(t('startPoint'))}</span><span class="route-place">${escapeHtml(start)}</span></span>
         <span class="route-point dest"><span class="route-point-label">${escapeHtml(t('destination'))}</span><span class="route-place">${escapeHtml(destination)}</span></span>
+      </div>
+      <div class="route-guide-route">
+        <div class="route-guide-place"><span>${escapeHtml(t('startPoint'))}</span><strong>${escapeHtml(start)}</strong></div>
+        <div class="route-guide-divider" aria-hidden="true">→</div>
+        <div class="route-guide-place dest"><span>${escapeHtml(t('destination'))}</span><strong>${escapeHtml(destination)}</strong></div>
       </div>
     </div>`;
 }
@@ -4825,10 +4870,10 @@ function renderCourses() {
         <div class="cinfo-head">
           ${getRouteCardTitleHtml(c)}
           <div class="ckm-badge">${escapeHtml(c.km)}<span>km</span></div>
-          <button class="route-card-close" aria-label="경로 닫기" onclick="event.stopPropagation();dismissRouteSheet()">×</button>
+          <button class="route-card-close" aria-label="경로 닫기" onclick="event.stopPropagation();closeRouteCard(${i})">×</button>
         </div>
         <div class="route-guide-status" id="routeGuideStatus-${i}">
-          <span>${escapeHtml(t('guideWaiting'))}</span><strong>—</strong>
+          <div class="route-guide-copy"><span class="route-guide-label">${escapeHtml(t('guideWaiting'))}</span><span class="route-guide-sub">${escapeHtml(t('guideWaiting'))}</span></div><strong class="route-guide-distance">—</strong>
         </div>
         <div class="route-card-actions">
           <button class="route-guide-btn" id="routeGuideBtn-${i}" onclick="event.stopPropagation();toggleRouteGuidance(${i})">${escapeHtml(t('startGuide'))}</button>
@@ -4846,7 +4891,11 @@ function selCourse(i) {
   }
   S.sel = i;
   document.querySelectorAll('.course-card').forEach((c, j) => {
-    c.className = 'course-card' + (j === i ? ' selected' : '');
+    const isGuidingCard = routeGuide.active && routeGuide.courseIndex === j;
+    c.className = 'course-card' +
+      (j === i ? ' selected' : '') +
+      (isGuidingCard ? ' route-guidance-card' : '') +
+      (routeGuide.active && !isGuidingCard ? ' guidance-hidden' : '');
   });
   showAiRoutePreview(S.courses[i]);
 }
@@ -5053,10 +5102,21 @@ function updateRouteGuideStatus(status, remainingMeters, subText = '') {
   const el = document.getElementById(`routeGuideStatus-${index}`);
   if (!el) return;
   el.style.display = routeGuide.active ? 'flex' : 'none';
+  const isOffRoute = /이탈/.test(status || '');
+  el.classList.toggle('off-route', isOffRoute);
   const remainingText = Number.isFinite(remainingMeters)
     ? (remainingMeters < 1000 ? `${Math.round(remainingMeters)}m 남음` : `${(remainingMeters / 1000).toFixed(1)}km 남음`)
     : '위치 확인 중';
-  el.innerHTML = `<span>${escapeHtml(subText || status)}</span><strong>${escapeHtml(remainingText)}</strong>`;
+  const progressPct = Number.isFinite(remainingMeters) && routeGuide.totalMeters > 0
+    ? Math.max(0, Math.min(100, Math.round((1 - remainingMeters / routeGuide.totalMeters) * 100)))
+    : 0;
+  el.style.setProperty('--guide-progress', progressPct + '%');
+  el.innerHTML = `
+    <div class="route-guide-copy">
+      <span class="route-guide-label">${escapeHtml(status || t('guideWaiting'))}</span>
+      <span class="route-guide-sub">${escapeHtml(subText || (isOffRoute ? '가까운 경로로 돌아가주세요' : '목적지까지 안내 중'))}</span>
+    </div>
+    <strong class="route-guide-distance">${escapeHtml(remainingText)}</strong>`;
 }
 
 function setRouteGuideButtonState(index, active) {
@@ -6153,6 +6213,52 @@ function updateSpotPhotoBox(key, photo, prefix = 'spotPhoto') {
   el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || '문화스팟 사진')}" loading="lazy"><div class="spot-photo-credit">${escapeHtml(getCulturePhotoCredit(photo))}</div>`;
 }
 
+function renderHomeCultureSpotPhoto(spot, key, type, displayName, stars) {
+  const domId = getSpotPhotoDomId(key, 'homeSpotPhoto');
+  const photo = getCultureSpotPhoto(spot);
+  const rank = `<div class="culture-spot-rank">★${stars}</div>`;
+  if (photo && photo.imageUrl) {
+    return `
+      <div class="culture-spot-photo" id="${escapeHtml(domId)}" data-key="${escapeHtml(key)}" data-stars="★${stars}">
+        <img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || displayName || '문화스팟 사진')}" loading="lazy">
+        ${rank}
+      </div>`;
+  }
+  return `
+    <div class="culture-spot-photo empty" id="${escapeHtml(domId)}" data-key="${escapeHtml(key)}" data-stars="★${stars}">
+      <div class="culture-spot-photo-fallback">
+        <div class="culture-spot-photo-icon">${getCultureSpotIcon(type)}</div>
+        <div>${escapeHtml(type || t('cultureSpots'))}</div>
+      </div>
+      ${rank}
+    </div>`;
+}
+
+function updateHomeCultureSpotPhoto(key, photo) {
+  if (!key || !photo || !photo.imageUrl) return;
+  const el = document.getElementById(getSpotPhotoDomId(key, 'homeSpotPhoto'));
+  if (el) {
+    const stars = el.dataset.stars || '';
+    el.classList.remove('empty');
+    el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || '문화스팟 사진')}" loading="lazy"><div class="culture-spot-rank">${escapeHtml(stars)}</div>`;
+  }
+  const saveButton = Array.from(document.querySelectorAll('.culture-spot-save-btn')).find(button => button.dataset && button.dataset.key === key);
+  if (saveButton) saveButton.dataset.image = photo.imageUrl;
+}
+
+function hydrateHomeCultureSpotPhotos(spots) {
+  (Array.isArray(spots) ? spots : []).forEach(spot => {
+    const key = getCultureSpotFavoriteKey(spot);
+    if (!key) return;
+    const existing = getCultureSpotPhoto(spot);
+    if (existing && existing.imageUrl) {
+      updateHomeCultureSpotPhoto(key, existing);
+      return;
+    }
+    fetchCultureSpotPhoto({ ...spot, key }).then(photo => updateHomeCultureSpotPhoto(key, photo));
+  });
+}
+
 function hydrateSavedSpotPhotos(spots) {
   (Array.isArray(spots) ? spots : []).forEach(spot => {
     if (!spot || getCultureSpotPhoto(spot)) return;
@@ -6188,7 +6294,6 @@ function renderNearCourses(results) {
     return;
   }
 
-  const iconBgs = ['#FFF0EC','#F4EFE8','#F0F8DB','#FFF5DB','#EEF8EA'];
   wrap.innerHTML = unique.map((p, i) => {
     const distValue = Number(p.distFromMe);
     const dist = Number.isFinite(distValue)
@@ -6210,10 +6315,7 @@ function renderNearCourses(results) {
     return `
       <div class="${cardClass}">
         <div class="culture-spot-main">
-          <div class="culture-spot-icon-wrap">
-            <div class="culture-spot-icon" style="background:${iconBgs[i % iconBgs.length]};">${getCultureSpotIcon(type)}</div>
-            <div class="culture-spot-rank">★${valueStars}</div>
-          </div>
+          ${renderHomeCultureSpotPhoto(p, favoriteKey, type, placeName, valueStars)}
           <div class="culture-spot-info">
             <div class="culture-spot-name">${escapeHtml(placeName)}</div>
             <div class="culture-spot-pill-row">
@@ -6222,17 +6324,16 @@ function renderNearCourses(results) {
               <span class="culture-spot-pill stars">${escapeHtml(getCultureValueStarsText(valueStars))}</span>
               ${visitedPill}
             </div>
-          </div>
-        </div>
-        <div class="culture-spot-footer">
-          <div class="culture-spot-actions">
-            <button class="culture-spot-info-btn" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromHomeButton(this)">${escapeHtml(t('intro'))}</button>
-            <button class="culture-spot-save-btn ${favorited ? 'active' : ''}" data-key="${escapeHtml(favoriteKey)}" data-id="${escapeHtml(String(p.id || p.contentId || p.contentid || ''))}" data-place="${escapeHtml(rawPlaceName)}" data-name-en="${escapeHtml(nameEn)}" data-lat="${lat}" data-lng="${lng}" data-type="${escapeHtml(type)}" data-stars="${valueStars}" data-dist="${Number.isFinite(distValue) ? distValue : ''}" data-address="${escapeHtml(p.address_name || p.addr1 || '')}" data-url="${escapeHtml(introUrl)}" data-image="${escapeHtml(p.firstImage || p.firstimage || '')}" data-source="${escapeHtml(p.source || '')}" onclick="saveCultureSpotFromHomeButton(this)">${favorited ? escapeHtml(t('saved')) : escapeHtml(t('save'))}</button>
-            <button class="culture-spot-route-btn" data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" onclick="goToAiFromHomeButton(this)">${escapeHtml(t('route'))}</button>
+            <div class="culture-spot-actions">
+              <button class="culture-spot-info-btn" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromHomeButton(this)">${escapeHtml(t('intro'))}</button>
+              <button class="culture-spot-save-btn ${favorited ? 'active' : ''}" data-key="${escapeHtml(favoriteKey)}" data-id="${escapeHtml(String(p.id || p.contentId || p.contentid || ''))}" data-place="${escapeHtml(rawPlaceName)}" data-name-en="${escapeHtml(nameEn)}" data-lat="${lat}" data-lng="${lng}" data-type="${escapeHtml(type)}" data-stars="${valueStars}" data-dist="${Number.isFinite(distValue) ? distValue : ''}" data-address="${escapeHtml(p.address_name || p.addr1 || '')}" data-url="${escapeHtml(introUrl)}" data-image="${escapeHtml(p.firstImage || p.firstimage || '')}" data-source="${escapeHtml(p.source || '')}" onclick="saveCultureSpotFromHomeButton(this)">${favorited ? escapeHtml(t('saved')) : escapeHtml(t('save'))}</button>
+              <button class="culture-spot-route-btn" data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" onclick="goToAiFromHomeButton(this)">${escapeHtml(t('route'))}</button>
+            </div>
           </div>
         </div>
       </div>`;
   }).join('');
+  hydrateHomeCultureSpotPhotos(unique);
 }
 
 function getCurrentCultureSpotMapItems() {
@@ -6445,14 +6546,13 @@ function renderCultureSpotMapMarkers(spots) {
 }
 
 function setCultureSpotFilter(filter) {
-  cultureSpotFilter = ['recommend', 'distance', 'stars'].includes(filter) ? filter : 'recommend';
+  cultureSpotFilter = ['distance', 'stars'].includes(filter) ? filter : 'distance';
   updateCultureSpotFilterButtons();
   renderNearCourses(lastCultureSpotResults);
 }
 
 function updateCultureSpotFilterButtons() {
   const map = {
-    recommend: 'cultureFilterRecommend',
     distance: 'cultureFilterDistance',
     stars: 'cultureFilterStars'
   };
@@ -6488,37 +6588,9 @@ function selectHomeCultureSpots(results) {
       .slice(0, HOME_RECOMMENDATION_COUNT);
   }
 
-  deduped.sort((a, b) => {
-    const scoreDiff = getHomeCultureSpotScore(b) - getHomeCultureSpotScore(a);
-    if (scoreDiff) return scoreDiff;
-    return Number(a.distFromMe) - Number(b.distFromMe);
-  });
-
-  const selected = [];
-  deduped.forEach(spot => {
-    if (selected.length >= HOME_RECOMMENDATION_COUNT) return;
-    const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
-    const fiveStarCount = selected.filter(item => Number(item.cultureValueStars) >= 5).length;
-    const hasLowerValueOption = deduped.some(item => !selected.includes(item) && Number(item.cultureValueStars) < 5);
-    if (stars >= 5 && fiveStarCount >= 2 && hasLowerValueOption) return;
-    selected.push(spot);
-  });
-
-  if (selected.length < HOME_RECOMMENDATION_COUNT) {
-    deduped.forEach(spot => {
-      if (selected.length >= HOME_RECOMMENDATION_COUNT) return;
-      if (!selected.includes(spot)) selected.push(spot);
-    });
-  }
-
-  return selected.slice(0, HOME_RECOMMENDATION_COUNT);
-}
-
-function getHomeCultureSpotScore(spot) {
-  const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
-  const dist = Math.max(0, Number(spot.distFromMe) || CULTURE_SPOT_SEARCH_RADIUS_METERS / 1000);
-  const distanceScore = dist <= 0.5 ? 5 : dist <= 1 ? 4.3 : dist <= 2 ? 3.5 : dist <= 5 ? 2.4 : 1.2;
-  return distanceScore + stars * 0.75;
+  return deduped
+    .sort((a, b) => Number(a.distFromMe) - Number(b.distFromMe))
+    .slice(0, HOME_RECOMMENDATION_COUNT);
 }
 
 function openCultureSpotInfoFromHomeButton(button) {
@@ -6554,45 +6626,60 @@ function applyHomeRecommendationToCreate(name, lat, lng, attempt) {
   }, attempt ? 250 : 350);
 }
 
+function getActivityRecordDate(record) {
+  const createdAt = Date.parse(record && record.createdAt || '');
+  if (Number.isFinite(createdAt)) return new Date(createdAt);
+  const match = record && record.date && record.date.match(/(\d+)월\s*(\d+)일/);
+  if (!match) return null;
+  const now = new Date();
+  return new Date(now.getFullYear(), parseInt(match[1], 10) - 1, parseInt(match[2], 10));
+}
+
+function getWeekStartDate(baseDate = new Date()) {
+  const date = new Date(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate());
+  date.setDate(date.getDate() - ((date.getDay() + 6) % 7));
+  return date;
+}
+
+function getWeeklyActivitySummary(records) {
+  const dayDist = Array(7).fill(0);
+  const weekStart = getWeekStartDate();
+  const weekEnd = new Date(weekStart);
+  weekEnd.setDate(weekStart.getDate() + 7);
+
+  (Array.isArray(records) ? records : []).forEach(record => {
+    const activityDate = getActivityRecordDate(record);
+    if (!activityDate) return;
+    const date = new Date(activityDate.getFullYear(), activityDate.getMonth(), activityDate.getDate());
+    if (date < weekStart || date >= weekEnd) return;
+    const index = (date.getDay() + 6) % 7;
+    dayDist[index] += Number(record.dist) || 0;
+  });
+
+  return {
+    dayDist,
+    total: dayDist.reduce((sum, dist) => sum + dist, 0)
+  };
+}
+
 /* 기록 렌더링 */
 function renderRecords() {
   const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
-  const savedSpots = getFavoriteCultureSpotList();
   const wrap = document.getElementById('recordList');
-  // 이번 주 요약
-  const weekTotal = records.reduce((s,r) => s + parseFloat(r.dist), 0);
-  document.getElementById('weekDist').innerHTML = weekTotal.toFixed(1) + '<small style="font-size:10px;font-weight:400;color:var(--gray-500);">km</small>';
-  document.getElementById('weekCount').innerHTML = records.length + '<small style="font-size:10px;font-weight:400;color:var(--gray-500);">회</small>';
-  document.getElementById('homeCourseCount').innerHTML = savedSpots.length + '<small style="font-size:10px;font-weight:400;color:var(--gray-500);">개</small>';
+  const weekly = getWeeklyActivitySummary(records);
+  const weekTotal = weekly.total;
 
-  // ── 요일별 바 차트 ──
   const chartEl  = document.getElementById('weekBarChart');
   const labelEl  = document.getElementById('weekBarLabels');
   if (chartEl && labelEl) {
-    const dayNames = ['일','월','화','수','목','금','토'];
-    const today = new Date().getDay(); // 0=일
-    // 이번 주 월~일 기준 날짜별 거리 집계 (간단히 최근 7개 기록 기반)
-    const dayDist = Array(7).fill(0);
-    records.forEach(r => {
-      // r.date 는 "5월 23일 (토)" 형태
-      const match = r.date && r.date.match(/(\d+)월\s*(\d+)일/);
-      if (match) {
-        const now = new Date();
-        const rDate = new Date(now.getFullYear(), parseInt(match[1])-1, parseInt(match[2]));
-        const diff = Math.floor((new Date(now.getFullYear(), now.getMonth(), now.getDate()) - rDate) / 86400000);
-        if (diff >= 0 && diff < 7) {
-          const idx = ((today - diff) + 7) % 7;
-          dayDist[idx] += parseFloat(r.dist);
-        }
-      }
-    });
-    // 월요일 시작 순서로 재배열 (월=1 ~ 일=0)
-    const ordered = [1,2,3,4,5,6,0].map(d => ({ day: dayNames[d], dist: dayDist[d], isToday: d === today }));
+    const dayNames = ['월','화','수','목','금','토','일'];
+    const todayIndex = (new Date().getDay() + 6) % 7;
+    const ordered = dayNames.map((day, index) => ({ day, dist: weekly.dayDist[index], isToday: index === todayIndex }));
     const maxDist = Math.max(...ordered.map(o => o.dist), 1);
     chartEl.innerHTML = '';
     labelEl.innerHTML = '';
     ordered.forEach(o => {
-      const barH = Math.round((o.dist / maxDist) * 48) + 4;
+      const barH = Math.round((o.dist / maxDist) * 64) + 6;
       const barColor = o.isToday ? 'var(--coral)' : o.dist > 0 ? '#FFD6C8' : 'var(--gray-100)';
       const wrap2 = document.createElement('div');
       wrap2.style.cssText = 'flex:1;display:flex;flex-direction:column;align-items:center;gap:0;height:100%;justify-content:flex-end;';
@@ -6608,7 +6695,6 @@ function renderRecords() {
     });
   }
 
-  // ── 홈 목표 프로그레스 ──
   const goal = parseFloat(localStorage.getItem('weeklyGoal') || '20');
   const pct  = Math.min(Math.round((weekTotal / goal) * 100), 100);
   const fillEl = document.getElementById('homeGoalFill');
@@ -8633,7 +8719,7 @@ function saveGoal() {
 function updateGoalBar() {
   const goal = parseFloat(localStorage.getItem('weeklyGoal') || '20');
   const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
-  const weekDist = records.reduce((s, r) => s + parseFloat(r.dist), 0);
+  const weekDist = getWeeklyActivitySummary(records).total;
   const pct = Math.min(Math.round((weekDist / goal) * 100), 100);
   const fill = document.getElementById('homeGoalFill') || document.getElementById('goalBarFill');
   const pctEl = document.getElementById('goalPct');
@@ -8701,21 +8787,6 @@ function renderMyPage() {
   // 프로필
   if (profile.name) document.getElementById('myNameDisplay').textContent = profile.name;
   if (profile.avatar) document.getElementById('myAvatar').textContent = profile.avatar;
-
-  // 통계
-  const totalDist = records.reduce((s, r) => s + parseFloat(r.dist), 0);
-  const totalPoints = Math.round(totalDist * 100);
-  document.getElementById('myTotalDist').textContent = totalDist.toFixed(1) + 'km';
-  document.getElementById('myTotalRuns').textContent = records.length + '회';
-
-  // 평균 페이스
-  const avgPaceSec = getAvgPaceSecPerKm();
-  const avgPm = Math.floor(avgPaceSec / 60), avgPs = String(avgPaceSec % 60).padStart(2, '0');
-  const validCount = records.filter(r => r.pace && r.pace !== '—').length;
-  const avgPaceEl = document.getElementById('myAvgPace');
-  if (avgPaceEl) {
-    avgPaceEl.textContent = validCount > 0 ? `${avgPm}'${avgPs}"` : '—';
-  }
 
   // 가입일 기반 "Runloop와 함께 N일째"
   const joinDaysEl = document.getElementById('myJoinDays');
