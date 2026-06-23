@@ -115,8 +115,9 @@ if ('serviceWorker' in navigator) {
   .map-place-weather span{min-width:0;overflow:hidden;text-overflow:ellipsis;}
   .map-place-credit{display:none;}
   .map-place-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
-  .map-place-actions.has-save{grid-template-columns:1fr 1fr 1fr;}
-  .map-place-actions button{height:38px;border-radius:var(--rs);font-size:13px;font-weight:900;font-family:inherit;cursor:pointer;}
+  .map-place-actions.has-save{grid-template-columns:repeat(4,minmax(0,1fr));}
+  .map-place-actions button{height:38px;border-radius:var(--rs);font-size:13px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap;}
+  .map-place-info{display:none;background:#fff;border:1px solid var(--gray-300);color:var(--gray-900);}
   .map-place-start{background:#fff;border:1px solid var(--gray-300);color:var(--gray-900);}
   .map-place-dest{background:var(--ink);border:1px solid var(--ink);color:#fff;}
   .map-place-save{display:none;background:var(--coral-light);border:1px solid rgba(242,122,94,.22);color:var(--ink);}
@@ -319,9 +320,11 @@ if ('serviceWorker' in navigator) {
   .mc-btn{height:34px;padding:0 10px;border-radius:var(--rs);font-size:12px;font-weight:800;border:1px solid transparent;cursor:pointer;font-family:inherit;white-space:nowrap;}
   .mc-btn-run{grid-column:span 3;background:var(--ink);color:#fff;}
   .mc-btn-map{grid-column:span 3;}
-  .mc-btn-share,.mc-btn-edit,.mc-btn-delete{grid-column:span 2;}
+  .mc-card.saved-spot .mc-btn-run,.mc-card.saved-spot .mc-btn-map,.mc-card.saved-spot .mc-btn-info{grid-column:span 2;}
+  .mc-btn-share,.mc-btn-edit,.mc-btn-delete,.mc-btn-info{grid-column:span 2;}
   .mc-btn-full{grid-column:1/-1;}
   .mc-btn-edit{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
+  .mc-btn-info{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
   .mc-fav{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;border:1px solid var(--gray-100);background:rgba(255,255,255,.9);color:var(--gray-300);font-size:18px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(39,49,58,.06);}
   .mc-fav.active{background:var(--amber-light);border-color:#E8D6B4;color:var(--amber);}
   .mc-btn-delete{background:#fff;color:var(--red);border-color:var(--red-light);}
@@ -877,6 +880,7 @@ if ('serviceWorker' in navigator) {
         </div>
       </div>
       <div class="map-place-actions">
+        <button class="map-place-info" id="aiPlaceInfoBtn" onclick="openPendingCultureSpotInfo()">소개</button>
         <button class="map-place-start" onclick="applyPendingPlaceAsStart()">출발</button>
         <button class="map-place-dest" onclick="applyPendingPlaceAsDestination()">도착</button>
         <button class="map-place-save" id="aiPlaceSaveBtn" onclick="savePendingCultureSpotFavorite()">저장</button>
@@ -932,10 +936,6 @@ if ('serviceWorker' in navigator) {
   <div style="padding:14px 16px 10px;background:#fff;border-bottom:1px solid var(--gray-100);flex-shrink:0;display:flex;justify-content:space-between;align-items:center;">
     <div id="mySavedSpotTitle" style="font-size:15px;font-weight:700;color:var(--gray-900);">가고 싶은 문화스팟</div>
     <div style="font-size:12px;color:var(--gray-500);" id="myCourseCount">0개</div>
-  </div>
-  <div class="course-filter">
-    <button id="courseFilterAll" class="active" onclick="setMyCourseFilter('all')">전체</button>
-    <button id="courseFilterFav" onclick="setMyCourseFilter('visited')">방문 기록</button>
   </div>
   <div style="flex:1;overflow-y:auto;padding:12px;" id="myCourseList">
     <div id="myCourseEmpty" style="text-align:center;padding:48px 0;color:var(--gray-500);">
@@ -1505,6 +1505,7 @@ function applyAppLanguage() {
   setTextContent('aiSearchStartBtn', t('startPoint'));
   setTextContent('aiSearchDestBtn', t('destination'));
   setTextContent('aiSameDestBtn', t('roundTrip'));
+  setTextContent('aiPlaceInfoBtn', t('intro'));
   setTextContent('cultureMapCatAll', t('all'));
   setTextContent('cultureMapCatCulture', t('heritage'));
   setTextContent('cultureMapCatMuseum', t('museum'));
@@ -6098,8 +6099,13 @@ function updateCultureSpotSaveButtonLabels() {
 function updateAiPlaceSaveButton() {
   const actions = document.querySelector('#aiPlaceCard .map-place-actions');
   const button = document.getElementById('aiPlaceSaveBtn');
+  const infoButton = document.getElementById('aiPlaceInfoBtn');
   const spot = aiPendingPlace && aiPendingPlace.cultureSpot;
   if (actions) actions.classList.toggle('has-save', !!spot);
+  if (infoButton) {
+    infoButton.style.display = spot ? 'block' : 'none';
+    infoButton.textContent = t('intro');
+  }
   if (!button) return;
   if (!spot) {
     button.style.display = 'none';
@@ -6111,6 +6117,13 @@ function updateAiPlaceSaveButton() {
   button.style.display = 'block';
   button.classList.toggle('active', active);
   button.textContent = active ? t('saved') : t('save');
+}
+
+function openPendingCultureSpotInfo() {
+  const spot = aiPendingPlace && (aiPendingPlace.cultureSpot || aiPendingPlace.mediaSpot);
+  if (!spot || spot.transient) return;
+  const displayName = getCultureSpotDisplayName(spot, aiPendingPlace && aiPendingPlace.name || t('cultureSpots'));
+  window.open(getCultureSpotInfoUrl(displayName, spot.place_url), '_blank', 'noopener');
 }
 
 function getCultureSpotFromButton(button) {
@@ -7429,7 +7442,6 @@ function shareRecordPhotoToSocial(index) {
 /* ── 저장 스팟 관리 ── */
 let renameTargetId = null;
 let courseDetailTargetId = null;
-let myCourseFilter = 'all';
 
 function renderMyCourses() {
   const spots = getFavoriteCultureSpotList();
@@ -7437,23 +7449,14 @@ function renderMyCourses() {
   const empty = document.getElementById('myCourseEmpty');
   const count = document.getElementById('myCourseCount');
   const visits = readCultureSpotVisits();
-  const visibleSpots = myCourseFilter === 'visited'
-    ? spots.filter(spot => !!visits[getCultureSpotVisitKey(spot)])
-    : spots;
+  const visibleSpots = spots;
 
-  updateMyCourseFilterButtons();
-  count.textContent = myCourseFilter === 'visited' && spots.length
-    ? visibleSpots.length + ' / ' + spots.length + '곳'
-    : spots.length + '곳';
+  count.textContent = spots.length + '곳';
 
   if (!visibleSpots.length) {
     list.classList.remove('mc-grid');
     empty.style.display = 'block';
-    empty.innerHTML = myCourseFilter === 'visited'
-      ? (appLanguage === 'en'
-        ? '<div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">No visited saved spots yet</div><div style="font-size:13px;line-height:1.6;">A saved spot is marked visited when you get within 100m</div>'
-        : '<div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">방문 기록이 있는 저장 스팟이 없어요</div><div style="font-size:13px;line-height:1.6;">저장한 문화스팟 근처 100m 안에 가면 방문으로 기록돼요</div>')
-      : `<div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">${escapeHtml(t('savedSpotEmptyTitle'))}</div><div style="font-size:13px;line-height:1.6;">${escapeHtml(t('savedSpotEmptyDesc'))}</div>`;
+    empty.innerHTML = `<div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">${escapeHtml(t('savedSpotEmptyTitle'))}</div><div style="font-size:13px;line-height:1.6;">${escapeHtml(t('savedSpotEmptyDesc'))}</div>`;
     list.querySelectorAll('.mc-card').forEach(c => c.remove());
     return;
   }
@@ -7491,24 +7494,13 @@ function renderMyCourses() {
       <div class="mc-actions">
         <button class="mc-btn mc-btn-run" onclick="event.stopPropagation(); startSavedSpotRoute(${keyJson})">${escapeHtml(t('routeView'))}</button>
         <button class="mc-btn mc-btn-map" onclick="event.stopPropagation(); viewCourseOnMap(${keyJson})">${escapeHtml(t('mapView'))}</button>
+        <button class="mc-btn mc-btn-info" onclick="event.stopPropagation(); openCultureSpotInfoFromDetail(${keyJson})">${escapeHtml(t('infoView'))}</button>
         <button class="mc-btn mc-btn-delete mc-btn-full" onclick="event.stopPropagation(); deleteCourseFromCard(${keyJson})">${escapeHtml(t('deleteSaved'))}</button>
       </div>
     `;
     list.appendChild(card);
   });
   hydrateSavedSpotPhotos(visibleSpots);
-}
-
-function setMyCourseFilter(filter) {
-  myCourseFilter = filter === 'visited' ? 'visited' : 'all';
-  renderMyCourses();
-}
-
-function updateMyCourseFilterButtons() {
-  const all = document.getElementById('courseFilterAll');
-  const fav = document.getElementById('courseFilterFav');
-  if (all) all.classList.toggle('active', myCourseFilter === 'all');
-  if (fav) fav.classList.toggle('active', myCourseFilter === 'visited');
 }
 
 function getCourseSavedTime(course) {
