@@ -305,6 +305,8 @@ if ('serviceWorker' in navigator) {
   .route-guide-btn.active{background:#fff;color:var(--coral);border-color:rgba(242,122,94,.45);}
   .route-guide-status{display:none;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;padding:8px 10px;border-radius:var(--rs);background:var(--gray-50);border:1px solid var(--gray-100);font-size:12px;font-weight:800;color:var(--gray-700);}
   .route-guide-status strong{color:var(--coral);font-size:13px;}
+  .route-card-close{width:28px;height:28px;border-radius:50%;border:1px solid var(--gray-100);background:#fff;color:var(--gray-500);font-size:20px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;flex-shrink:0;}
+  .route-card-close:hover{color:var(--ink);border-color:var(--gray-300);}
 
   /* 마이페이지 */
   .my-profile-card{margin:14px;background:linear-gradient(135deg,#1C242B 0%,#2B343B 58%,#F27A5E 150%);border-radius:16px;padding:20px;color:#fff;flex-shrink:0;box-shadow:0 16px 34px rgba(28,36,43,.14);}
@@ -737,13 +739,8 @@ if ('serviceWorker' in navigator) {
 
   <!-- 바텀시트 -->
   <div id="createBottomSheet" style="display:none;background:#fff;border-radius:20px 20px 0 0;box-shadow:0 -4px 20px rgba(0,0,0,.1);flex-shrink:0;">
-    <!-- 핸들 -->
-    <div id="bottomSheetHandle" style="display:flex;justify-content:center;padding:10px 0 6px;cursor:pointer;" onclick="toggleBottomSheet()">
-      <div style="width:36px;height:4px;background:var(--gray-300);border-radius:2px;"></div>
-    </div>
-
     <!-- AI 모드 바텀시트 -->
-    <div id="aiBottomContent" style="padding:0 16px 12px;">
+    <div id="aiBottomContent" style="padding:12px 16px 12px;">
       <div id="aiCourseArea" style="max-height:0;overflow:hidden;transition:max-height .3s;">
         <div class="empty-state" id="emptyState" style="display:none;padding:16px;flex:none;"></div>
         <div class="course-list" id="courseList" style="display:none;max-height:0;overflow-y:auto;"></div>
@@ -1694,7 +1691,6 @@ function setCreateMode(mode) {
   const aiContent = document.getElementById('aiBottomContent');
   const drawContent = document.getElementById('drawBottomContent');
   const sheet = document.getElementById('createBottomSheet');
-  const sheetHandle = document.getElementById('bottomSheetHandle');
   const searchBar = document.getElementById('aiSearchBar');
   const guide = document.getElementById('aiMapGuide');
 
@@ -1703,7 +1699,6 @@ function setCreateMode(mode) {
     if (drawBtn) drawBtn.classList.remove('active');
     if (aiContent) aiContent.style.display = 'block';
     if (drawContent) drawContent.style.display = 'none';
-    if (sheetHandle) sheetHandle.style.display = 'flex';
     if (sheet) {
       sheet.style.borderRadius = '20px 20px 0 0';
       sheet.style.boxShadow = '0 -4px 20px rgba(0,0,0,.1)';
@@ -1723,7 +1718,6 @@ function setCreateMode(mode) {
     if (drawContent) drawContent.style.display = 'block';
     if (aiContent) aiContent.style.display = 'none';
     clearAiPlaceCard();
-    if (sheetHandle) sheetHandle.style.display = 'none';
     if (sheet) {
       sheet.style.borderRadius = '14px 14px 0 0';
       sheet.style.boxShadow = '0 -2px 14px rgba(39,49,58,.08)';
@@ -3304,6 +3298,12 @@ function resetAiCourseSuggestions() {
   setBottomSheetOpen(false);
 }
 
+function dismissRouteSheet() {
+  resetAiCourseSuggestions();
+  const input = document.getElementById('addrInput');
+  if (input && aiDestination) input.value = aiDestination.name || '';
+}
+
 async function generateCourses() {
   const btn = document.getElementById('genBtn');
   const txt = document.getElementById('genText');
@@ -4235,6 +4235,7 @@ function renderCourses() {
         <div class="cinfo-head">
           <div class="cname">${escapeHtml(c.name)}</div>
           <div class="ckm-badge">${escapeHtml(c.km)}<span>km</span></div>
+          <button class="route-card-close" aria-label="경로 닫기" onclick="event.stopPropagation();dismissRouteSheet()">×</button>
         </div>
         <div class="route-guide-status" id="routeGuideStatus-${i}">
           <span>안내 대기</span><strong>—</strong>
