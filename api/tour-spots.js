@@ -233,9 +233,10 @@ function buildKtoCategoryLabel(item, fallback) {
 }
 
 function getVisitKoreaSearchUrl(title, lang = 'ko') {
-  const base = lang === 'en'
-    ? 'https://english.visitkorea.or.kr/svc/search/index.do?keyword='
-    : 'https://korean.visitkorea.or.kr/search/search_list.do?keyword=';
+  if (lang === 'en') {
+    return 'https://www.google.com/search?q=' + encodeURIComponent(`site:english.visitkorea.or.kr/svc/contents/contentsView.do ${title}`);
+  }
+  const base = 'https://korean.visitkorea.or.kr/search/search_list.do?keyword=';
   return base + encodeURIComponent(title);
 }
 

@@ -106,6 +106,9 @@ if ('serviceWorker' in navigator) {
   .map-place-image{width:86px;height:64px;border-radius:10px;object-fit:cover;background:var(--gray-50);border:1px solid var(--gray-100);}
   .map-place-copy{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:4px;}
   .map-place-desc{font-size:11px;line-height:1.35;color:var(--gray-700);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .map-place-weather{display:none;align-items:center;gap:5px;min-width:0;font-size:10px;font-weight:900;color:var(--ink);background:#FFF6F1;border:1px solid rgba(242,122,94,.16);border-radius:999px;padding:4px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .map-place-weather.active{display:flex;}
+  .map-place-weather span{min-width:0;overflow:hidden;text-overflow:ellipsis;}
   .map-place-credit{font-size:10px;color:var(--gray-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .map-place-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
   .map-place-actions.has-save{grid-template-columns:1fr 1fr 1fr;}
@@ -285,6 +288,9 @@ if ('serviceWorker' in navigator) {
   .course-detail-photo{width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:var(--gray-50);border:1px solid var(--gray-100);margin-bottom:12px;position:relative;}
   .course-detail-photo img{width:100%;height:100%;object-fit:cover;display:block;}
   .course-detail-desc{font-size:12px;line-height:1.5;color:var(--gray-600);background:var(--gray-50);border-radius:var(--rs);padding:10px 11px;margin-bottom:12px;}
+  .course-detail-weather{display:none;margin-bottom:12px;background:#FFF6F1;border:1px solid rgba(242,122,94,.16);border-radius:var(--rs);padding:9px 10px;color:var(--ink);font-size:12px;font-weight:900;line-height:1.35;}
+  .course-detail-weather.active{display:block;}
+  .course-detail-weather small{display:block;margin-top:2px;color:var(--gray-500);font-size:11px;font-weight:700;}
   .mc-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-right:34px;}
   .mc-card.saved-spot .mc-card-top{padding-right:0;}
   .mc-title{min-width:0;flex:1;}
@@ -840,6 +846,7 @@ if ('serviceWorker' in navigator) {
         <img class="map-place-image" id="aiPlaceImage" alt="">
         <div class="map-place-copy">
           <div class="map-place-desc" id="aiPlaceDesc"></div>
+          <div class="map-place-weather" id="aiPlaceWeather"></div>
           <div class="map-place-credit" id="aiPlaceCredit"></div>
         </div>
       </div>
@@ -1325,6 +1332,9 @@ const TMAP_PEDESTRIAN_URL = runloopApiUrl('/api/tmap-pedestrian');
 const TMAP_POI_URL = runloopApiUrl('/api/tmap-pois');
 const TOUR_SPOTS_URL = runloopApiUrl('/api/tour-spots');
 const TOUR_PHOTO_URL = runloopApiUrl('/api/tour-photo');
+const TOUR_DETAIL_URL = runloopApiUrl('/api/tour-detail');
+const TOUR_WEATHER_URL = runloopApiUrl('/api/tour-weather');
+const OPEN_WEATHER_MAP_KEY = 'c4e77c4cac686498d868b622be22e841';
 const APP_LANGUAGE_KEY = 'runloopAppLanguageV1';
 let appLanguage = localStorage.getItem(APP_LANGUAGE_KEY) === 'en' ? 'en' : 'ko';
 const APP_COPY = {
@@ -2638,7 +2648,18 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
   const cultureSpot = options && options.spot
     ? { ...options.spot, nameEn: options.spot.nameEn || displayNameEn, y: lat, x: lng }
     : null;
-  aiPendingPlace = { lat, lng, name: displayName, sub: sub || '출발 또는 도착으로 설정하세요', cultureSpot };
+  const mediaSpot = cultureSpot || {
+    place_name: displayName,
+    name: displayName,
+    y: lat,
+    x: lng,
+    lat,
+    lng,
+    cultureType: appLanguage === 'en' ? 'Place' : '장소',
+    cultureValueStars: 1,
+    transient: true
+  };
+  aiPendingPlace = { lat, lng, name: displayName, sub: sub || '출발 또는 도착으로 설정하세요', cultureSpot, mediaSpot };
   if (aiPendingPlaceOverlay) aiPendingPlaceOverlay.setMap(null);
   aiPendingPlaceOverlay = new kakao.maps.CustomOverlay({
     map: createMap,
@@ -2657,7 +2678,7 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
   }
   if (card) card.style.display = 'block';
   updateAiPlaceSaveButton();
-  updateAiPlaceMedia(aiPendingPlace.cultureSpot);
+  updateAiPlaceMedia(aiPendingPlace.mediaSpot);
   const guide = document.getElementById('aiMapGuide');
   if (guide) guide.style.display = 'none';
   const input = document.getElementById('addrInput');
@@ -2681,13 +2702,16 @@ function updateAiPlaceMedia(spot) {
   const media = document.getElementById('aiPlaceMedia');
   const img = document.getElementById('aiPlaceImage');
   const desc = document.getElementById('aiPlaceDesc');
+  const weatherEl = document.getElementById('aiPlaceWeather');
   const credit = document.getElementById('aiPlaceCredit');
-  if (!media || !img || !desc || !credit) return;
+  if (!media || !img || !desc || !weatherEl || !credit) return;
   if (!spot) {
     media.classList.remove('active');
     img.removeAttribute('src');
     img.alt = '';
     desc.textContent = '';
+    weatherEl.classList.remove('active');
+    weatherEl.textContent = '';
     credit.textContent = '';
     return;
   }
@@ -2695,6 +2719,8 @@ function updateAiPlaceMedia(spot) {
   const photo = getCultureSpotPhoto(spot);
   const displayName = getCultureSpotDisplayName(spot);
   desc.textContent = description;
+  hydrateAiPlaceDescription(spot);
+  updateAiPlaceWeather(spot);
   if (photo && photo.imageUrl) {
     media.classList.add('active');
     img.src = photo.imageUrl;
@@ -2707,10 +2733,45 @@ function updateAiPlaceMedia(spot) {
   img.alt = '';
   credit.textContent = appLanguage === 'en' ? 'Photo pending' : '대표 사진 준비 중';
   fetchCultureSpotPhoto({ ...spot, key: getCultureSpotFavoriteKey(spot) }).then(nextPhoto => {
-    if (!nextPhoto || !aiPendingPlace || !aiPendingPlace.cultureSpot) return;
-    const pendingKey = getCultureSpotFavoriteKey(aiPendingPlace.cultureSpot);
+    if (!nextPhoto || !aiPendingPlace || !aiPendingPlace.mediaSpot) return;
+    const pendingKey = getCultureSpotFavoriteKey(aiPendingPlace.mediaSpot);
     if (pendingKey !== getCultureSpotFavoriteKey(spot)) return;
-    updateAiPlaceMedia({ ...aiPendingPlace.cultureSpot, photo: nextPhoto });
+    aiPendingPlace.mediaSpot = { ...aiPendingPlace.mediaSpot, photo: nextPhoto };
+    updateAiPlaceMedia(aiPendingPlace.mediaSpot);
+  });
+}
+
+function hydrateAiPlaceDescription(spot) {
+  if (!spot) return;
+  const key = getCultureSpotFavoriteKey(spot);
+  fetchCultureSpotOverview(spot).then(overview => {
+    if (!overview || !aiPendingPlace || !aiPendingPlace.mediaSpot) return;
+    if (key !== getCultureSpotFavoriteKey(aiPendingPlace.mediaSpot)) return;
+    const desc = document.getElementById('aiPlaceDesc');
+    if (desc) desc.textContent = summarizeCultureOverview(overview, 128);
+    aiPendingPlace.mediaSpot.overview = overview;
+    if (aiPendingPlace.cultureSpot) aiPendingPlace.cultureSpot.overview = overview;
+  });
+}
+
+function updateAiPlaceWeather(spot) {
+  const weatherEl = document.getElementById('aiPlaceWeather');
+  if (!weatherEl || !spot) return;
+  const key = getCultureSpotFavoriteKey(spot);
+  weatherEl.classList.add('active');
+  weatherEl.textContent = appLanguage === 'en' ? 'Weather loading' : '날씨 확인 중';
+  fetchCultureSpotWeather(spot).then(weather => {
+    if (!aiPendingPlace || !aiPendingPlace.mediaSpot) return;
+    if (key !== getCultureSpotFavoriteKey(aiPendingPlace.mediaSpot)) return;
+    const line = formatCultureSpotWeatherLine(weather);
+    const advice = getCultureSpotWeatherAdvice(weather);
+    if (!line && !advice) {
+      weatherEl.classList.remove('active');
+      weatherEl.textContent = '';
+      return;
+    }
+    weatherEl.classList.add('active');
+    weatherEl.innerHTML = `<span>${escapeHtml([line, advice].filter(Boolean).join(' · '))}</span>`;
   });
 }
 
@@ -3634,6 +3695,71 @@ const CULTURE_SPOT_EN_NAME_MAP = {
   '예술의전당': 'Seoul Arts Center',
   '동대문디자인플라자': 'Dongdaemun Design Plaza'
 };
+const CULTURE_SPOT_EN_INFO_URL_MAP = {
+  '경복궁': 'https://english.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=87740'
+};
+const CULTURE_SPOT_DESCRIPTION_MAP = {
+  '경복궁': {
+    ko: '조선 왕조의 중심 궁궐로, 광화문에서 근정전까지 이어지는 축을 따라 한국 궁궐 건축의 규모와 질서를 느낄 수 있어요.',
+    en: 'The main royal palace of the Joseon dynasty, where the axis from Gwanghwamun to Geunjeongjeon reveals the scale and order of Korean palace architecture.'
+  },
+  '창덕궁': {
+    ko: '자연 지형을 살린 궁궐 배치와 후원이 유명한 유네스코 세계유산이에요. 서울 도심 속에서도 조선 궁궐의 깊은 분위기를 느끼기 좋아요.',
+    en: 'A UNESCO World Heritage palace known for its garden and layout shaped around the natural terrain, offering a quieter view of Joseon royal culture in central Seoul.'
+  },
+  '종묘': {
+    ko: '조선 왕실의 제례 공간으로, 절제된 건축과 긴 월대가 만드는 엄숙한 분위기가 인상적인 세계유산이에요.',
+    en: 'A royal ancestral shrine of the Joseon dynasty, recognized as World Heritage for its restrained architecture and solemn ceremonial atmosphere.'
+  },
+  '수원화성': {
+    ko: '정조의 개혁 의지가 담긴 유네스코 세계유산으로, 성곽을 따라 걸으며 역사와 도시 풍경을 함께 볼 수 있어요.',
+    en: 'A UNESCO World Heritage fortress tied to King Jeongjo, where a walk along the walls connects history with the cityscape of Suwon.'
+  },
+  '남한산성': {
+    ko: '산 능선을 따라 이어지는 성곽과 행궁 흔적이 남아 있는 세계유산이에요. 역사 탐방과 걷기 코스를 함께 즐기기 좋아요.',
+    en: 'A World Heritage mountain fortress with walls following the ridgeline and traces of a royal temporary palace, well suited for history and walking.'
+  },
+  '불국사': {
+    ko: '통일신라 불교문화의 정수를 보여주는 세계유산 사찰이에요. 석축, 다리, 목조건축이 어우러진 균형미를 볼 수 있어요.',
+    en: 'A World Heritage temple representing the height of Unified Silla Buddhist culture, known for the harmony of stone terraces, bridges, and wooden architecture.'
+  },
+  '석굴암': {
+    ko: '신라 석조예술의 완성도를 보여주는 세계유산이에요. 본존불과 석굴 구조가 만드는 고요한 공간감이 핵심이에요.',
+    en: 'A World Heritage grotto that shows the refinement of Silla stone art, centered on the serene spatial composition around the main Buddha.'
+  },
+  '해인사': {
+    ko: '팔만대장경과 장경판전으로 대표되는 세계유산 사찰이에요. 산사 분위기와 기록문화의 가치를 함께 느낄 수 있어요.',
+    en: 'A World Heritage temple known for the Tripitaka Koreana and its depository halls, combining mountain-temple scenery with the value of recorded heritage.'
+  },
+  '하회마을': {
+    ko: '낙동강 물길과 전통 가옥이 어우러진 세계유산 마을이에요. 조선시대 양반가의 생활문화와 마을 풍경을 함께 볼 수 있어요.',
+    en: 'A World Heritage village shaped by the Nakdonggang River and traditional houses, offering a view of Joseon-era aristocratic life and rural scenery.'
+  },
+  '양동마을': {
+    ko: '전통 한옥과 계층별 주거 구조가 잘 남아 있는 세계유산 마을이에요. 오래된 생활문화의 결을 천천히 보기 좋아요.',
+    en: 'A World Heritage village where traditional hanok houses and historic residential patterns remain clear, making it a strong place to observe old living culture.'
+  },
+  '국립중앙박물관': {
+    ko: '선사시대 유물부터 불교미술과 회화까지 한국 문화사를 폭넓게 볼 수 있는 대표 박물관이에요. 날씨와 상관없이 깊게 둘러보기 좋아요.',
+    en: 'Korea’s flagship museum, covering cultural history from prehistoric artifacts to Buddhist art and painting, with enough depth for a weather-proof visit.'
+  },
+  '국립현대미술관': {
+    ko: '한국 근현대미술과 동시대 작품을 폭넓게 볼 수 있는 대표 미술관이에요. 전시마다 공간 경험이 달라 천천히 둘러보기 좋아요.',
+    en: 'A major museum for Korean modern and contemporary art, where each exhibition offers a different spatial and visual experience.'
+  },
+  '서울시립미술관': {
+    ko: '덕수궁 돌담길과 가까운 도심 미술관이에요. 산책 동선에 전시 관람을 자연스럽게 더하기 좋아요.',
+    en: 'A central Seoul art museum near Deoksugung Stonewall Walkway, easy to combine with a short walk and an exhibition visit.'
+  },
+  '예술의전당': {
+    ko: '공연장과 전시장, 음악 공간이 모인 서울의 대표 복합문화공간이에요. 공연 전후 산책까지 함께 계획하기 좋아요.',
+    en: 'A leading arts complex in Seoul with concert halls, theaters, and exhibition spaces, well suited for pairing a performance with a walk.'
+  },
+  '동대문디자인플라자': {
+    ko: '곡선형 건축과 전시, 디자인 행사가 어우러진 도심 문화공간이에요. 야간 산책과 사진 기록에도 잘 맞아요.',
+    en: 'An urban design landmark where curving architecture, exhibitions, and design events come together, also strong for evening walks and photos.'
+  }
+};
 let cultureSpotFilter = 'recommend';
 let cultureMapCategories = [];
 let cultureMapStars = [];
@@ -3641,6 +3767,8 @@ let cultureMapSearchQuery = '';
 let cultureMapFiltersOpen = false;
 let lastCultureSpotResults = [];
 let culturePhotoInflight = new Map();
+let cultureOverviewInflight = new Map();
+let cultureWeatherInflight = new Map();
 let aiRouteOverlays = [];
 let aiRouteActiveCourse = null;
 let aiRouteZoomListenerAttached = false;
@@ -5384,6 +5512,21 @@ function getCultureSpotOriginalName(spot, fallback = '문화 스팟') {
   return String(spot && (spot.place_name || spot.name) || fallback).trim() || fallback;
 }
 
+function getCultureSpotCanonicalName(spotOrName) {
+  const raw = typeof spotOrName === 'string'
+    ? spotOrName
+    : getCultureSpotOriginalName(spotOrName, '');
+  const compact = String(raw || '').replace(/\s+/g, '');
+  const lower = compact.toLowerCase();
+  const exact = Object.keys(CULTURE_SPOT_EN_NAME_MAP).find(name => compact === name || compact.endsWith(name));
+  if (exact) return exact;
+  const included = Object.keys(CULTURE_SPOT_EN_NAME_MAP).find(name => compact.includes(name));
+  if (included) return included;
+  const englishMatch = Object.entries(CULTURE_SPOT_EN_NAME_MAP)
+    .find(([, en]) => lower.includes(en.replace(/\s+/g, '').toLowerCase()));
+  return englishMatch ? englishMatch[0] : String(raw || '').trim();
+}
+
 function getCultureValueStarsText(stars) {
   const safeStars = Math.max(1, Math.min(5, Math.round(Number(stars) || 1)));
   return '★'.repeat(safeStars) + '☆'.repeat(5 - safeStars);
@@ -5436,8 +5579,10 @@ function getCultureSpotIcon(type) {
 
 function getCultureSpotInfoUrl(placeName, placeUrl) {
   if (appLanguage === 'en') {
-    if (placeUrl && /^https?:\/\//.test(placeUrl) && /english\.visitkorea\.or\.kr/.test(placeUrl)) return placeUrl;
-    return 'https://english.visitkorea.or.kr/svc/search/index.do?keyword=' + encodeURIComponent(placeName);
+    if (placeUrl && /^https?:\/\//.test(placeUrl) && /english\.visitkorea\.or\.kr/.test(placeUrl) && !/\/svc\/search\/index\.do/.test(placeUrl)) return placeUrl;
+    const canonical = getCultureSpotCanonicalName(placeName);
+    if (CULTURE_SPOT_EN_INFO_URL_MAP[canonical]) return CULTURE_SPOT_EN_INFO_URL_MAP[canonical];
+    return 'https://www.google.com/search?q=' + encodeURIComponent(`site:english.visitkorea.or.kr/svc/contents/contentsView.do ${placeName || canonical}`);
   }
   if (placeUrl && /^https?:\/\//.test(placeUrl)) return placeUrl;
   return 'https://search.naver.com/search.naver?query=' + encodeURIComponent(placeName + ' 소개');
@@ -5565,7 +5710,10 @@ function getCultureSpotPhoto(spot) {
 }
 
 function getCultureSpotPhotoKeyword(spot) {
-  return String(spot && (spot.name || spot.place_name) || '')
+  const rawName = String(spot && (spot.name || spot.place_name) || '');
+  const canonical = getCultureSpotCanonicalName(rawName);
+  const keyword = /[가-힣]/.test(rawName) ? rawName : (/[가-힣]/.test(canonical) ? canonical : rawName);
+  return String(keyword || '')
     .replace(/\([^)]*\)/g, ' ')
     .replace(/\[[^\]]*\]/g, ' ')
     .replace(/관리소|사무소|매표소|주차장|입구|출구|안내소|관광안내소/g, ' ')
@@ -5617,6 +5765,59 @@ async function fetchCultureSpotPhotoFromApi(keyword) {
   }
 }
 
+function getCultureSpotOverviewCacheKey(spot) {
+  const contentId = spot && (spot.contentId || spot.contentid || spot.id);
+  if (contentId && !String(contentId).startsWith('fallback')) return `${appLanguage}:${contentId}`;
+  return `${appLanguage}:${getCultureSpotPhotoCacheKey(spot)}`;
+}
+
+async function fetchCultureSpotOverview(spot) {
+  if (!spot) return '';
+  const existing = cleanCultureOverview(spot.overview || spot.detailOverview || '');
+  if (existing) return existing;
+  const contentId = String(spot.contentId || spot.contentid || spot.id || '').trim();
+  if (!contentId || contentId.startsWith('fallback')) return '';
+  const cacheKey = getCultureSpotOverviewCacheKey(spot);
+  if (cultureOverviewInflight.has(cacheKey)) return cultureOverviewInflight.get(cacheKey);
+  const request = fetchCultureSpotOverviewFromApi(contentId)
+    .finally(() => cultureOverviewInflight.delete(cacheKey));
+  cultureOverviewInflight.set(cacheKey, request);
+  return request;
+}
+
+async function fetchCultureSpotOverviewFromApi(contentId) {
+  try {
+    const url = new URL(TOUR_DETAIL_URL, window.location.href);
+    url.searchParams.set('contentId', contentId);
+    url.searchParams.set('lang', appLanguage);
+    const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
+    if (!response.ok) return '';
+    const data = await response.json();
+    return cleanCultureOverview(data && data.overview || '');
+  } catch (error) {
+    console.warn('KTO detail unavailable', error);
+    return '';
+  }
+}
+
+function cleanCultureOverview(value) {
+  return String(value || '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;|&#160;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function summarizeCultureOverview(value, maxLength = 118) {
+  const text = cleanCultureOverview(value);
+  if (!text) return '';
+  if (text.length <= maxLength) return text;
+  const boundary = text.slice(0, maxLength + 1).search(/[.!?。]\s*[^.!?。]*$/);
+  if (boundary > 45) return text.slice(0, boundary + 1).trim();
+  return text.slice(0, maxLength).replace(/\s+\S*$/, '').trim() + '…';
+}
+
 function saveCultureSpotPhotoToFavorite(key, photo) {
   if (!key || !photo || !photo.imageUrl) return;
   const favorites = readCultureSpotFavorites();
@@ -5629,10 +5830,175 @@ function saveCultureSpotPhotoToFavorite(key, photo) {
 }
 
 function getCultureSpotDescription(spot) {
+  const overview = summarizeCultureOverview(spot && (spot.overview || spot.detailOverview), 128);
+  if (overview) return overview;
+  const canonical = getCultureSpotCanonicalName(spot);
+  const fixed = CULTURE_SPOT_DESCRIPTION_MAP[canonical];
+  if (fixed) return fixed[appLanguage] || fixed.ko;
   const name = getCultureSpotDisplayName(spot, '');
   const type = spot && (spot.cultureType || getCultureSpotType(spot, '')) || '';
   const stars = spot && spot.cultureValueStars;
-  return getCultureSpotOneLine(name, type, stars);
+  return getCultureSpotFallbackDescription(name, type, stars);
+}
+
+function getCultureSpotFallbackDescription(placeName, type, stars) {
+  const safeStars = Math.max(1, Math.min(5, Math.round(Number(stars) || 1)));
+  const name = String(placeName || '').trim();
+  if (appLanguage === 'en') {
+    if (safeStars >= 5) return `${name || 'This place'} is a rare heritage-level stop worth planning around, especially if you want culture to anchor the walk.`;
+    if (/문화재|Heritage|Historic/i.test(type)) return `${name || 'This spot'} is a good place to add Korean history and a sense of place to a walking route.`;
+    if (/박물관|Museum/i.test(type)) return `${name || 'This museum'} works well as a deeper indoor stop for exhibitions, artifacts, and local stories.`;
+    if (/전시|미술|Exhibition|Gallery|Art/i.test(type)) return `${name || 'This venue'} is suited to a slower art or exhibition visit between short walks.`;
+    if (/공연|Performance|Theater|Theatre/i.test(type)) return `${name || 'This venue'} is useful for pairing a route with performing arts or an evening plan.`;
+    return `${name || 'This place'} is a light culture stop that can make a nearby walk feel more purposeful.`;
+  }
+  if (safeStars >= 5) return `${name || '이곳'}은 목적지로 잡고 걸어갈 만한 희소 문화유산급 스팟이에요. 산책의 이유가 분명해집니다.`;
+  if (/문화재/.test(type)) return `${name || '이곳'}은 지역의 역사와 장소성을 함께 보기 좋은 스팟이에요. 걷는 동선에 의미를 더하기 좋아요.`;
+  if (/박물관/.test(type)) return `${name || '이곳'}은 유물과 전시, 지역 이야기를 실내에서 깊게 볼 수 있는 스팟이에요.`;
+  if (/전시|미술/.test(type)) return `${name || '이곳'}은 작품과 공간의 분위기를 천천히 감상하기 좋아요. 짧은 산책과도 잘 어울립니다.`;
+  if (/공연/.test(type)) return `${name || '이곳'}은 공연과 무대 문화를 경험하기 좋은 스팟이에요. 저녁 동선으로도 활용하기 좋아요.`;
+  return `${name || '이곳'}은 가까운 걷기 동선에 문화적 목적을 더해주는 가벼운 방문 스팟이에요.`;
+}
+
+function getCultureSpotWeatherCacheKey(spot) {
+  const latlng = getCultureSpotLatLng(spot);
+  const name = getCultureSpotOriginalName(spot, '').replace(/\s+/g, '').slice(0, 40);
+  const latKey = latlng.lat !== null ? Number(latlng.lat).toFixed(3) : '0.000';
+  const lngKey = latlng.lng !== null ? Number(latlng.lng).toFixed(3) : '0.000';
+  return `${appLanguage}:${name}:${latKey}:${lngKey}`;
+}
+
+async function fetchCultureSpotWeather(spot) {
+  if (!spot) return null;
+  const cacheKey = getCultureSpotWeatherCacheKey(spot);
+  if (cultureWeatherInflight.has(cacheKey)) return cultureWeatherInflight.get(cacheKey);
+  const request = fetchCultureSpotWeatherFromApi(spot)
+    .then(weather => weather || fetchOpenWeatherSpotWeather(spot))
+    .finally(() => cultureWeatherInflight.delete(cacheKey));
+  cultureWeatherInflight.set(cacheKey, request);
+  return request;
+}
+
+async function fetchCultureSpotWeatherFromApi(spot) {
+  const latlng = getCultureSpotLatLng(spot);
+  if (latlng.lat === null || latlng.lng === null) return null;
+  try {
+    const url = new URL(TOUR_WEATHER_URL, window.location.href);
+    url.searchParams.set('lat', String(latlng.lat));
+    url.searchParams.set('lng', String(latlng.lng));
+    url.searchParams.set('name', getCultureSpotOriginalName(spot, ''));
+    const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data && data.weather ? { ...data.weather, source: data.weather.source || 'kma' } : null;
+  } catch (error) {
+    console.warn('KMA tour weather unavailable', error);
+    return null;
+  }
+}
+
+async function fetchOpenWeatherSpotWeather(spot) {
+  const latlng = getCultureSpotLatLng(spot);
+  if (!OPEN_WEATHER_MAP_KEY || latlng.lat === null || latlng.lng === null) return null;
+  try {
+    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latlng.lat}&lon=${latlng.lng}&appid=${OPEN_WEATHER_MAP_KEY}&units=metric&lang=${appLanguage === 'en' ? 'en' : 'kr'}`;
+    const response = await fetch(url);
+    if (!response.ok) return null;
+    const data = await response.json();
+    const weatherId = Number(data.weather && data.weather[0] && data.weather[0].id) || 800;
+    return {
+      source: 'openweather',
+      temp: Number(data.main && data.main.temp),
+      feelsLike: Number(data.main && data.main.feels_like),
+      humidity: Number(data.main && data.main.humidity),
+      wind: Number(data.wind && data.wind.speed),
+      sky: appLanguage === 'en' ? getWeatherDescEn(weatherId) : getWeatherDesc(weatherId),
+      weatherId
+    };
+  } catch (error) {
+    return null;
+  }
+}
+
+function formatCultureSpotWeatherLine(weather) {
+  if (!weather) return '';
+  const temp = Number(weather.temp ?? weather.th3);
+  const sky = localizeSkyText(weather.sky);
+  const pop = Number(weather.pop ?? weather.rainProbability);
+  const parts = [];
+  if (sky) parts.push(sky);
+  if (Number.isFinite(temp)) parts.push(Math.round(temp) + '°');
+  if (Number.isFinite(pop)) parts.push((appLanguage === 'en' ? 'Rain ' : '강수 ') + Math.round(pop) + '%');
+  return parts.join(' · ');
+}
+
+function localizeSkyText(value) {
+  const text = String(value || '').trim();
+  if (appLanguage !== 'en') return text;
+  const map = {
+    '맑음': 'Clear',
+    '구름조금': 'Partly cloudy',
+    '구름많음': 'Cloudy',
+    '흐림': 'Overcast',
+    '비': 'Rain',
+    '눈': 'Snow'
+  };
+  return map[text] || text;
+}
+
+function getCultureSpotWeatherAdvice(weather) {
+  if (!weather) return '';
+  const temp = Number(weather.temp ?? weather.th3);
+  const pop = Number(weather.pop ?? weather.rainProbability);
+  const wind = Number(weather.wind ?? weather.ws);
+  const rainText = String(weather.rain || weather.rn || '');
+  const rainy = Number.isFinite(pop) && pop >= 60 || /비|눈|rain|snow/i.test(rainText);
+  if (appLanguage === 'en') {
+    if (rainy) return 'Check rain before visiting';
+    if (Number.isFinite(temp) && temp >= 30) return 'Plan shade and water';
+    if (Number.isFinite(temp) && temp <= 2) return 'Dress warmly';
+    if (Number.isFinite(wind) && wind >= 8) return 'Expect strong wind';
+    return 'Good for a visit today';
+  }
+  if (rainy) return '비 예보를 확인하고 방문하세요';
+  if (Number.isFinite(temp) && temp >= 30) return '그늘과 물을 챙기기 좋아요';
+  if (Number.isFinite(temp) && temp <= 2) return '따뜻하게 입고 방문하세요';
+  if (Number.isFinite(wind) && wind >= 8) return '바람이 강할 수 있어요';
+  return '오늘 방문하기 좋아요';
+}
+
+function renderSpotWeatherBox(spot, prefix = 'spotWeather') {
+  const key = getSpotPhotoDomId(spot && spot.key || getCultureSpotFavoriteKey(spot), prefix);
+  return `<div class="course-detail-weather" id="${escapeHtml(key)}"></div>`;
+}
+
+function updateSpotWeatherBox(spot, weather, prefix = 'spotWeather') {
+  const key = getSpotPhotoDomId(spot && spot.key || getCultureSpotFavoriteKey(spot), prefix);
+  const el = document.getElementById(key);
+  if (!el || !weather) return;
+  const line = formatCultureSpotWeatherLine(weather);
+  const advice = getCultureSpotWeatherAdvice(weather);
+  if (!line && !advice) return;
+  el.classList.add('active');
+  el.innerHTML = `${escapeHtml(line || advice)}${advice && advice !== line ? `<small>${escapeHtml(advice)}</small>` : ''}`;
+}
+
+function hydrateSpotWeather(spots, prefix = 'spotWeather') {
+  (Array.isArray(spots) ? spots : []).forEach(spot => {
+    fetchCultureSpotWeather(spot).then(weather => updateSpotWeatherBox(spot, weather, prefix));
+  });
+}
+
+function getWeatherDescEn(id) {
+  if (id >= 200 && id < 300) return 'Thunderstorm';
+  if (id >= 300 && id < 400) return 'Drizzle';
+  if (id >= 500 && id < 600) return 'Rain';
+  if (id >= 600 && id < 700) return 'Snow';
+  if (id >= 700 && id < 800) return 'Hazy';
+  if (id === 800) return 'Clear';
+  if (id === 801) return 'Partly cloudy';
+  if (id <= 804) return 'Cloudy';
+  return 'Weather';
 }
 
 function getCulturePhotoCredit(photo) {
@@ -5685,6 +6051,7 @@ function normalizeCultureSpotFavorite(spot, existing = null) {
     place_url: source.place_url || source.url || '',
     firstImage: source.firstImage || source.firstimage || source.imageUrl || '',
     photo: source.photo && source.photo.imageUrl ? source.photo : null,
+    overview: cleanCultureOverview(source.overview || source.detailOverview || ''),
     source: source.source || '',
     savedAt: existing && existing.savedAt ? existing.savedAt : new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -6316,9 +6683,8 @@ function renderRecords() {
 async function fetchWeather() {
   // OpenWeatherMap API 키 없이도 동작하는 데모
   // 실제 키: https://openweathermap.org 에서 무료 발급
-  const OWM_KEY = 'c4e77c4cac686498d868b622be22e841'; // ← 여기에 OpenWeatherMap API 키 입력
 
-  if (!OWM_KEY) {
+  if (!OPEN_WEATHER_MAP_KEY) {
     document.getElementById('wLocation').textContent = '현재 위치';
     document.getElementById('wTemp').textContent = '22°';
     document.getElementById('wDesc').textContent = '맑음';
@@ -6328,7 +6694,7 @@ async function fetchWeather() {
   }
 
   try {
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${S.lat}&lon=${S.lng}&appid=${OWM_KEY}&units=metric&lang=kr`);
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${S.lat}&lon=${S.lng}&appid=${OPEN_WEATHER_MAP_KEY}&units=metric&lang=kr`);
     const d = await res.json();
     const temp = Math.round(d.main.temp);
     const feel = Math.round(d.main.feels_like);
@@ -6367,7 +6733,7 @@ async function fetchWeather() {
     let todayHiLo = getWeatherFallbackHighLow(d, temp);
 
     try {
-      const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${S.lat}&lon=${S.lng}&appid=${OWM_KEY}&units=metric&lang=kr`);
+      const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${S.lat}&lon=${S.lng}&appid=${OPEN_WEATHER_MAP_KEY}&units=metric&lang=kr`);
       const forecastData = await forecastRes.json();
       const forecastSummary = makeForecastWeatherSummary(temp, weatherId, forecastData);
       todayHiLo = getTodayForecastHighLow(d, forecastData) || todayHiLo;
@@ -6388,7 +6754,7 @@ async function fetchWeather() {
 
     // 미세먼지/초미세먼지 통합 등급 (Air Pollution API)
     try {
-      const airRes = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${S.lat}&lon=${S.lng}&appid=${OWM_KEY}`);
+      const airRes = await fetch(`https://api.openweathermap.org/data/2.5/air_pollution?lat=${S.lat}&lon=${S.lng}&appid=${OPEN_WEATHER_MAP_KEY}`);
       const airData = await airRes.json();
       const comp = airData.list[0].components;
       const pm10 = Math.round(comp.pm10);
@@ -7142,7 +7508,8 @@ function openCourseDetail(id) {
   document.getElementById('courseDetailMeta').textContent = [type, `★${stars}`, dist].filter(Boolean).join(' · ');
   document.getElementById('courseDetailBody').innerHTML = `
     ${renderSpotPhotoBox(course, 'detailPhoto')}
-    <div class="course-detail-desc">${escapeHtml(description)}</div>
+    <div class="course-detail-desc" id="courseDetailDesc">${escapeHtml(description)}</div>
+    ${renderSpotWeatherBox(course, 'detailWeather')}
     <div class="course-detail-chiprow">
       <span class="course-detail-chip">${escapeHtml(type)}</span>
       <span class="course-detail-chip">${escapeHtml(getCultureValueStarsText(stars))}</span>
@@ -7168,11 +7535,23 @@ function openCourseDetail(id) {
   `;
   document.getElementById('courseDetailModal').style.display = 'flex';
   hydrateSavedSpotPhotos([course]);
+  hydrateCourseDetailDescription(course);
+  hydrateSpotWeather([course], 'detailWeather');
 }
 
 function closeCourseDetail() {
   document.getElementById('courseDetailModal').style.display = 'none';
   courseDetailTargetId = null;
+}
+
+function hydrateCourseDetailDescription(course) {
+  if (!course) return;
+  const targetKey = course.key;
+  fetchCultureSpotOverview(course).then(overview => {
+    if (!overview || courseDetailTargetId !== targetKey) return;
+    const desc = document.getElementById('courseDetailDesc');
+    if (desc) desc.textContent = summarizeCultureOverview(overview, 148);
+  });
 }
 
 function isStoredLoopCourse(course) {
