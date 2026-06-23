@@ -307,6 +307,12 @@ if ('serviceWorker' in navigator) {
   .route-guide-status strong{color:var(--coral);font-size:13px;}
   .route-card-close{width:28px;height:28px;border-radius:50%;border:1px solid var(--gray-100);background:#fff;color:var(--gray-500);font-size:20px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;flex-shrink:0;}
   .route-card-close:hover{color:var(--ink);border-color:var(--gray-300);}
+  .course-list.guidance-mode{overflow:hidden!important;padding:8px 12px 10px;}
+  .course-card.guidance-hidden{display:none;}
+  .course-card.route-guidance-card .cinfo{padding:12px;}
+  .course-card.route-guidance-card .cinfo-head{align-items:center;margin-bottom:8px;}
+  .course-card.route-guidance-card .route-card-actions{display:none;}
+  .course-card.route-guidance-card .route-guide-status{display:flex;margin-bottom:0;}
 
   /* 마이페이지 */
   .my-profile-card{margin:14px;background:linear-gradient(135deg,#1C242B 0%,#2B343B 58%,#F27A5E 150%);border-radius:16px;padding:20px;color:#fff;flex-shrink:0;box-shadow:0 16px 34px rgba(28,36,43,.14);}
@@ -1589,7 +1595,10 @@ function getAiCourseContentOpenHeight() {
     const gap = parseFloat(styles.rowGap || styles.gap || '0') || 0;
     const paddingTop = parseFloat(styles.paddingTop || '0') || 0;
     const paddingBottom = parseFloat(styles.paddingBottom || '0') || 0;
-    const visibleCards = Array.from(list.children).slice(0, AI_COURSE_VISIBLE_CARD_LIMIT);
+    const cardLimit = routeGuide.active ? 1 : AI_COURSE_VISIBLE_CARD_LIMIT;
+    const visibleCards = Array.from(list.children)
+      .filter(card => getComputedStyle(card).display !== 'none')
+      .slice(0, cardLimit);
     const cardsHeight = visibleCards.reduce((sum, card) => {
       return sum + (card.getBoundingClientRect().height || 96);
     }, 0);
@@ -1615,6 +1624,7 @@ function syncAiCourseListHeight(areaHeight) {
     return;
   }
   list.style.maxHeight = Math.max(0, Math.floor(areaHeight)) + 'px';
+  list.style.overflowY = routeGuide.active ? 'hidden' : 'auto';
 }
 
 function hasAiCourseSheetContent() {
@@ -4218,6 +4228,7 @@ function renderCourses() {
   const list = document.getElementById('courseList');
   const em = document.getElementById('emptyState');
   list.innerHTML = ''; list.style.display = 'flex'; em.style.display = 'none';
+  list.classList.toggle('guidance-mode', !!routeGuide.active);
   if (!S.courses.length) {
     clearAiRoutePreview();
     list.style.display = 'none';
@@ -4229,7 +4240,11 @@ function renderCourses() {
   clearAiRoutePreview();
   S.courses.forEach((c, i) => {
     const card = document.createElement('div');
-    card.className = 'course-card' + (i === S.sel ? ' selected' : '');
+    const isGuidingCard = routeGuide.active && routeGuide.courseIndex === i;
+    card.className = 'course-card' +
+      (i === S.sel ? ' selected' : '') +
+      (isGuidingCard ? ' route-guidance-card' : '') +
+      (routeGuide.active && !isGuidingCard ? ' guidance-hidden' : '');
     card.innerHTML = `
       <div class="cinfo">
         <div class="cinfo-head">
@@ -4474,10 +4489,23 @@ function setRouteGuideButtonState(index, active) {
   const btn = document.getElementById(`routeGuideBtn-${index}`);
   const status = document.getElementById(`routeGuideStatus-${index}`);
   if (btn) {
-    btn.textContent = active ? '안내 종료' : '안내 시작';
+    btn.textContent = '안내 시작';
     btn.classList.toggle('active', !!active);
   }
   if (status && !active) status.style.display = 'none';
+  syncRouteGuidanceCardMode(active ? index : -1);
+}
+
+function syncRouteGuidanceCardMode(activeIndex) {
+  const list = document.getElementById('courseList');
+  if (!list) return;
+  const active = activeIndex >= 0;
+  list.classList.toggle('guidance-mode', active);
+  list.querySelectorAll('.course-card').forEach((card, i) => {
+    card.classList.toggle('route-guidance-card', active && i === activeIndex);
+    card.classList.toggle('guidance-hidden', active && i !== activeIndex);
+  });
+  if (bottomSheetOpen || active) setBottomSheetOpen(active);
 }
 
 function renderRouteGuideOverlays(current, progress) {
