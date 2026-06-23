@@ -99,17 +99,19 @@ if ('serviceWorker' in navigator) {
   .culture-map-filter-count{margin-left:auto;font-size:11px;font-weight:900;color:var(--gray-500);white-space:nowrap;padding:0 4px;flex-shrink:0;}
   .create-map-shell{position:relative;flex:1;min-height:220px;}
   .map-place-card{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:24;background:rgba(255,255,255,.96);border:1px solid rgba(28,36,43,.08);border-radius:14px;padding:12px;box-shadow:0 10px 28px rgba(28,36,43,.18);backdrop-filter:blur(14px);}
-  .map-place-title{font-size:14px;font-weight:900;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .map-place-sub{font-size:11px;color:var(--gray-500);line-height:1.4;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .map-place-title{font-size:14px;font-weight:900;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:34px;}
+  .map-place-close{position:absolute;top:9px;right:9px;width:28px;height:28px;border:none;border-radius:999px;background:var(--gray-50);color:var(--gray-500);font-size:18px;font-weight:800;line-height:1;font-family:inherit;cursor:pointer;}
+  .map-place-close:active{transform:scale(.94);}
+  .map-place-sub{display:none;}
   .map-place-media{display:none;margin-top:9px;grid-template-columns:86px minmax(0,1fr);gap:9px;align-items:stretch;}
   .map-place-media.active{display:grid;}
   .map-place-image{width:86px;height:64px;border-radius:10px;object-fit:cover;background:var(--gray-50);border:1px solid var(--gray-100);}
   .map-place-copy{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:4px;}
-  .map-place-desc{font-size:11px;line-height:1.35;color:var(--gray-700);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .map-place-desc{display:none;}
   .map-place-weather{display:none;align-items:center;gap:5px;min-width:0;font-size:10px;font-weight:900;color:var(--ink);background:#FFF6F1;border:1px solid rgba(242,122,94,.16);border-radius:999px;padding:4px 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .map-place-weather.active{display:flex;}
   .map-place-weather span{min-width:0;overflow:hidden;text-overflow:ellipsis;}
-  .map-place-credit{font-size:10px;color:var(--gray-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .map-place-credit{display:none;}
   .map-place-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
   .map-place-actions.has-save{grid-template-columns:1fr 1fr 1fr;}
   .map-place-actions button{height:38px;border-radius:var(--rs);font-size:13px;font-weight:900;font-family:inherit;cursor:pointer;}
@@ -840,6 +842,7 @@ if ('serviceWorker' in navigator) {
       지도나 검색으로 장소를 선택하세요
     </div>
     <div id="aiPlaceCard" class="map-place-card">
+      <button class="map-place-close" type="button" onclick="clearAiPlaceCard()" aria-label="닫기">×</button>
       <div class="map-place-title" id="aiPlaceTitle">선택한 장소</div>
       <div class="map-place-sub" id="aiPlaceSub">출발 또는 도착으로 설정하세요</div>
       <div class="map-place-media" id="aiPlaceMedia">
@@ -2671,11 +2674,7 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
   const title = document.getElementById('aiPlaceTitle');
   const desc = document.getElementById('aiPlaceSub');
   if (title) title.textContent = aiPendingPlace.name;
-  if (desc) {
-    desc.textContent = createAiMarker
-      ? '도착을 누르면 선택한 출발지에서 도보 경로를 표시해요'
-      : '도착을 누르면 현재 위치에서 도보 경로를 표시해요';
-  }
+  if (desc) desc.textContent = '';
   if (card) card.style.display = 'block';
   updateAiPlaceSaveButton();
   updateAiPlaceMedia(aiPendingPlace.mediaSpot);
@@ -2715,17 +2714,15 @@ function updateAiPlaceMedia(spot) {
     credit.textContent = '';
     return;
   }
-  const description = getCultureSpotDescription(spot);
   const photo = getCultureSpotPhoto(spot);
   const displayName = getCultureSpotDisplayName(spot);
-  desc.textContent = description;
-  hydrateAiPlaceDescription(spot);
+  desc.textContent = '';
   updateAiPlaceWeather(spot);
   if (photo && photo.imageUrl) {
     media.classList.add('active');
     img.src = photo.imageUrl;
     img.alt = photo.title || displayName || '문화스팟 사진';
-    credit.textContent = getCulturePhotoCredit(photo);
+    credit.textContent = '';
     return;
   }
   media.classList.add('active');
