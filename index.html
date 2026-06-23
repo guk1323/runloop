@@ -84,6 +84,16 @@ if ('serviceWorker' in navigator) {
   .ai-search-row{display:flex;gap:6px;}
   .ai-location-btn{width:40px;height:40px;background:#fff;border:1px solid var(--gray-100);border-radius:var(--rs);cursor:pointer;font-size:19px;font-weight:800;line-height:1;color:var(--coral-dark);flex-shrink:0;font-family:inherit;}
   .ai-selected-hidden{display:none!important;}
+  .culture-map-filter{display:flex;flex-direction:column;gap:6px;background:rgba(255,255,255,.94);border-radius:var(--r);padding:7px;box-shadow:0 2px 10px rgba(0,0,0,.13);backdrop-filter:blur(14px);}
+  .culture-map-filter-row{display:flex;align-items:center;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .culture-map-filter-row::-webkit-scrollbar{display:none;}
+  .culture-map-filter-search{width:100%;height:34px;border:1px solid var(--gray-100);border-radius:var(--rs);background:#fff;color:var(--gray-900);font-size:12px;font-weight:700;font-family:inherit;padding:0 10px;outline:none;}
+  .culture-map-filter-search:focus{border-color:var(--coral);}
+  .culture-map-filter-search::placeholder{color:var(--gray-400);}
+  .culture-map-chip{height:28px;padding:0 10px;border-radius:999px;border:1px solid var(--gray-100);background:#fff;color:var(--gray-600);font-size:11px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+  .culture-map-chip.active{background:var(--ink);border-color:var(--ink);color:#fff;}
+  .culture-map-chip.sub.active{background:var(--coral-light);border-color:rgba(242,122,94,.22);color:var(--ink);}
+  .culture-map-filter-count{margin-left:auto;font-size:11px;font-weight:900;color:var(--gray-500);white-space:nowrap;padding:0 4px;flex-shrink:0;}
   .create-map-shell{position:relative;flex:1;min-height:220px;}
   .map-place-card{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:24;background:rgba(255,255,255,.96);border:1px solid rgba(28,36,43,.08);border-radius:14px;padding:12px;box-shadow:0 10px 28px rgba(28,36,43,.18);backdrop-filter:blur(14px);}
   .map-place-title{font-size:14px;font-weight:900;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -738,6 +748,24 @@ if ('serviceWorker' in navigator) {
             <div id="addrDropdown" style="display:none;position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-radius:var(--rs);z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;"></div>
           </div>
           <button class="ai-location-btn" onclick="moveToMyLocation()" aria-label="현재 위치로 이동" title="현재 위치">◎</button>
+        </div>
+      </div>
+      <div id="cultureMapFilterPanel" class="culture-map-filter">
+        <input id="cultureMapSearchInput" class="culture-map-filter-search" type="search" placeholder="문화스팟 검색" autocomplete="off" oninput="setCultureMapSearch(this.value)">
+        <div class="culture-map-filter-row">
+          <button id="cultureMapCatAll" class="culture-map-chip active" onclick="setCultureMapCategory('all')">전체</button>
+          <button id="cultureMapCatCulture" class="culture-map-chip" onclick="setCultureMapCategory('heritage')">유산</button>
+          <button id="cultureMapCatMuseum" class="culture-map-chip" onclick="setCultureMapCategory('museum')">박물관</button>
+          <button id="cultureMapCatExhibit" class="culture-map-chip" onclick="setCultureMapCategory('exhibit')">전시</button>
+          <button id="cultureMapCatPerformance" class="culture-map-chip" onclick="setCultureMapCategory('performance')">공연</button>
+          <button id="cultureMapCatVisited" class="culture-map-chip" onclick="setCultureMapCategory('visited')">방문</button>
+          <span id="cultureMapFilterCount" class="culture-map-filter-count">0곳</span>
+        </div>
+        <div class="culture-map-filter-row">
+          <button id="cultureMapStarsAll" class="culture-map-chip sub active" onclick="setCultureMapMinStars(0)">별점 전체</button>
+          <button id="cultureMapStars3" class="culture-map-chip sub" onclick="setCultureMapMinStars(3)">3점+</button>
+          <button id="cultureMapStars4" class="culture-map-chip sub" onclick="setCultureMapMinStars(4)">4점+</button>
+          <button id="cultureMapStars5" class="culture-map-chip sub" onclick="setCultureMapMinStars(5)">5점</button>
         </div>
       </div>
     </div>
@@ -1754,6 +1782,7 @@ function setCreateMode(mode) {
   const drawContent = document.getElementById('drawBottomContent');
   const sheet = document.getElementById('createBottomSheet');
   const searchBar = document.getElementById('aiSearchBar');
+  const cultureFilterPanel = document.getElementById('cultureMapFilterPanel');
   const guide = document.getElementById('aiMapGuide');
 
   if (mode === 'ai') {
@@ -1766,6 +1795,7 @@ function setCreateMode(mode) {
       sheet.style.boxShadow = '0 -4px 20px rgba(0,0,0,.1)';
     }
     // searchBar 항상 표시
+    if (cultureFilterPanel) cultureFilterPanel.style.display = 'flex';
     if (guide) guide.style.display = 'none';
     // 그리기 경로 숨기기 (지도에서만 제거, 데이터는 유지)
     if (S.polyline) S.polyline.setMap(null);
@@ -1785,6 +1815,7 @@ function setCreateMode(mode) {
       sheet.style.boxShadow = '0 -2px 14px rgba(39,49,58,.08)';
     }
     updateSnapToggle();
+    if (cultureFilterPanel) cultureFilterPanel.style.display = 'none';
     if (guide) guide.style.display = 'none';
     if (createAiMarker) createAiMarker.setMap(null);
     clearCultureSpotMapMarkers();
@@ -2308,6 +2339,7 @@ function moveToMyLocation() {
         zIndex: 3
       });
       if (createMode === 'ai' && map === createMap) setAiMarker(latlng, '현재 위치');
+      loadNearCourses();
       toast('현재 위치로 이동했어요!');
     }, () => toast('위치 권한을 허용해주세요'), { enableHighAccuracy: true, timeout: 8000 });
   }
@@ -3080,6 +3112,8 @@ function switchTab(tab, el) {
   document.getElementById('screen-'+tab).classList.add('active');
   if (tab === 'create') {
     setTimeout(() => { if (S.kakaoReady) initCreateMap(); }, 100);
+    if (!lastCultureSpotResults.length) loadNearCourses();
+    else renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
   }
   if (tab === 'home') {
     fetchWeather();
@@ -3335,8 +3369,12 @@ const CULTURE_SPOT_SEARCH_RADIUS_METERS = 10000;
 const CULTURE_SPOT_VISIT_RADIUS_METERS = 100;
 const CULTURE_SPOT_VISITS_KEY = 'runloopCultureSpotVisitsV1';
 const CULTURE_SPOT_MIN_VALUE_STARS = 2;
+const CULTURE_MAP_MARKER_LIMIT = 80;
 const CULTURE_SPOT_KEYWORDS = ['세계문화유산', '문화재', '국보', '보물', '사적', '궁궐', '왕릉', '유적지', '박물관', '미술관', '기념관', '역사관', '전통문화', '한옥마을', '사찰', '성곽', '공연장', '극장', '전시관'];
 let cultureSpotFilter = 'recommend';
+let cultureMapCategory = 'all';
+let cultureMapMinStars = 0;
+let cultureMapSearchQuery = '';
 let lastCultureSpotResults = [];
 let aiRouteOverlays = [];
 let aiRouteActiveCourse = null;
@@ -5143,7 +5181,7 @@ function renderNearCourses(results) {
   // 중복 제거 + 거리와 문화가치를 균형 있게 섞어 가까운 문화 스팟 표시
   let unique = selectHomeCultureSpots(results);
   if (!unique.length) unique = getFallbackNearCourses();
-  renderCultureSpotMapMarkers(unique);
+  renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
 
   const iconBgs = ['#FFF0EC','#F4EFE8','#F0F8DB','#FFF5DB','#EEF8EA'];
   wrap.innerHTML = unique.map((p, i) => {
@@ -5190,9 +5228,103 @@ function renderNearCourses(results) {
 }
 
 function getCurrentCultureSpotMapItems() {
-  const source = lastCultureSpotResults.length ? lastCultureSpotResults : getFallbackNearCourses();
-  const selected = selectHomeCultureSpots(source);
-  return selected.length ? selected : getFallbackNearCourses();
+  const source = lastCultureSpotResults.length ? lastCultureSpotResults : [];
+  return selectMapCultureSpots(source);
+}
+
+function selectMapCultureSpots(results) {
+  const seen = new Set();
+  const visits = readCultureSpotVisits();
+  const query = normalizeCultureMapFilterText(cultureMapSearchQuery);
+  return (Array.isArray(results) ? results : [])
+    .filter(spot => {
+      if (!spot || spot.fallback) return false;
+      const key = spot.id || getCultureSpotVisitKey(spot);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .filter(spot => matchCultureMapCategory(spot, visits))
+    .filter(spot => {
+      const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
+      return stars >= cultureMapMinStars;
+    })
+    .filter(spot => !query || normalizeCultureMapFilterText([
+      spot.place_name,
+      spot.name,
+      spot.cultureType,
+      spot.cultureValueLabel,
+      spot.category_name,
+      spot.address_name
+    ].filter(Boolean).join(' ')).includes(query))
+    .sort((a, b) => {
+      const distDiff = Number(a.distFromMe) - Number(b.distFromMe);
+      if (Number.isFinite(distDiff) && distDiff) return distDiff;
+      return (Number(b.cultureValueStars) || 1) - (Number(a.cultureValueStars) || 1);
+    })
+    .slice(0, CULTURE_MAP_MARKER_LIMIT);
+}
+
+function matchCultureMapCategory(spot, visits) {
+  if (cultureMapCategory === 'all') return true;
+  if (cultureMapCategory === 'visited') return !!visits[getCultureSpotVisitKey(spot)];
+  const type = String(spot && spot.cultureType || '');
+  if (cultureMapCategory === 'heritage') return /문화재|유산|역사/.test(type);
+  if (cultureMapCategory === 'museum') return /박물관/.test(type);
+  if (cultureMapCategory === 'exhibit') return /전시|미술/.test(type);
+  if (cultureMapCategory === 'performance') return /공연/.test(type);
+  return true;
+}
+
+function normalizeCultureMapFilterText(value) {
+  return String(value || '').replace(/\s+/g, '').toLowerCase();
+}
+
+function setCultureMapCategory(category) {
+  cultureMapCategory = ['all', 'heritage', 'museum', 'exhibit', 'performance', 'visited'].includes(category) ? category : 'all';
+  renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
+}
+
+function setCultureMapMinStars(stars) {
+  const value = Number(stars);
+  cultureMapMinStars = [0, 3, 4, 5].includes(value) ? value : 0;
+  renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
+}
+
+function setCultureMapSearch(value) {
+  cultureMapSearchQuery = String(value || '').trim();
+  renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
+}
+
+function updateCultureMapFilterControls(count) {
+  const categoryMap = {
+    all: 'cultureMapCatAll',
+    heritage: 'cultureMapCatCulture',
+    museum: 'cultureMapCatMuseum',
+    exhibit: 'cultureMapCatExhibit',
+    performance: 'cultureMapCatPerformance',
+    visited: 'cultureMapCatVisited'
+  };
+  Object.keys(categoryMap).forEach(key => {
+    const el = document.getElementById(categoryMap[key]);
+    if (el) el.classList.toggle('active', cultureMapCategory === key);
+  });
+
+  const starsMap = {
+    0: 'cultureMapStarsAll',
+    3: 'cultureMapStars3',
+    4: 'cultureMapStars4',
+    5: 'cultureMapStars5'
+  };
+  Object.keys(starsMap).forEach(key => {
+    const el = document.getElementById(starsMap[key]);
+    if (el) el.classList.toggle('active', cultureMapMinStars === Number(key));
+  });
+
+  const input = document.getElementById('cultureMapSearchInput');
+  if (input && input.value !== cultureMapSearchQuery) input.value = cultureMapSearchQuery;
+  const countEl = document.getElementById('cultureMapFilterCount');
+  if (countEl) countEl.textContent = `${count || 0}곳`;
 }
 
 function clearCultureSpotMapMarkers() {
@@ -5204,9 +5336,11 @@ function clearCultureSpotMapMarkers() {
 
 function renderCultureSpotMapMarkers(spots) {
   clearCultureSpotMapMarkers();
-  if (!createMap || createMode !== 'ai' || !Array.isArray(spots) || !spots.length) return;
+  const visibleSpots = Array.isArray(spots) ? spots : [];
+  updateCultureMapFilterControls(visibleSpots.length);
+  if (!createMap || createMode !== 'ai' || !visibleSpots.length) return;
 
-  spots.forEach(spot => {
+  visibleSpots.forEach(spot => {
     if (!spot || spot.fallback) return;
     const lat = Number(spot.y);
     const lng = Number(spot.x);
