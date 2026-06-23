@@ -72,7 +72,7 @@ if ('serviceWorker' in navigator) {
   .gen-btn{margin-top:10px;width:100%;height:44px;background:var(--ink);color:#fff;border:none;border-radius:12px;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;transition:background .15s,transform .15s;box-shadow:0 10px 22px rgba(28,36,43,.18);}
   .gen-btn:hover{background:#000;transform:translateY(-1px);}
   .gen-btn:disabled{background:var(--gray-300);cursor:not-allowed;}
-  .create-top-panel{position:absolute;top:10px;left:10px;right:10px;z-index:20;display:flex;flex-direction:column;gap:6px;}
+  .create-top-panel{position:absolute;top:10px;left:10px;right:10px;z-index:20;display:flex;flex-direction:column;gap:0;}
   .create-mode-tabs{display:flex;background:rgba(255,255,255,.94);border-radius:var(--rs);box-shadow:0 2px 8px rgba(0,0,0,.13);padding:3px;}
   .create-mode-tabs button{flex:1;height:32px;border:none;border-radius:6px;font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;background:transparent;color:var(--gray-500);transition:all .2s;}
   .create-mode-tabs button.active{background:var(--ink);color:#fff;}
@@ -83,15 +83,10 @@ if ('serviceWorker' in navigator) {
   .ai-same-dest-btn.active{background:var(--coral-light);border:1px solid rgba(242,122,94,.28);color:var(--ink);}
   .ai-search-row{display:flex;gap:6px;}
   .ai-search-submit{min-width:50px;height:40px;padding:0 10px;border:none;border-radius:var(--rs);background:var(--ink);color:#fff;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer;flex-shrink:0;}
-  .ai-location-btn{width:40px;height:40px;background:#fff;border:1px solid var(--gray-100);border-radius:var(--rs);cursor:pointer;font-size:19px;font-weight:800;line-height:1;color:var(--coral-dark);flex-shrink:0;font-family:inherit;}
+  .ai-location-btn{position:absolute;right:14px;bottom:96px;z-index:23;width:46px;height:46px;background:rgba(255,255,255,.96);border:1px solid rgba(28,36,43,.08);border-radius:999px;cursor:pointer;font-size:22px;font-weight:800;line-height:1;color:var(--coral-dark);font-family:inherit;box-shadow:0 8px 22px rgba(28,36,43,.18);backdrop-filter:blur(12px);}
   .ai-selected-hidden{display:none!important;}
-  .culture-map-filter{display:flex;flex-direction:column;gap:6px;background:rgba(255,255,255,.94);border-radius:var(--r);padding:7px;box-shadow:0 2px 10px rgba(0,0,0,.13);backdrop-filter:blur(14px);}
-  .culture-map-filter-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
-  .culture-map-filter-title{display:flex;align-items:center;gap:7px;min-width:0;color:var(--gray-900);font-size:12px;font-weight:900;}
-  .culture-map-filter-title span{color:var(--gray-500);font-size:11px;font-weight:800;white-space:nowrap;}
-  .culture-map-filter-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;}
-  .culture-map-filter-toggle{height:28px;border-radius:999px;border:1px solid var(--gray-100);background:#fff;color:var(--gray-700);font-size:11px;font-weight:900;font-family:inherit;padding:0 10px;cursor:pointer;white-space:nowrap;}
-  .culture-map-search-btn{height:28px;border-radius:999px;border:none;background:var(--ink);color:#fff;font-size:11px;font-weight:900;font-family:inherit;padding:0 11px;cursor:pointer;white-space:nowrap;}
+  .culture-map-filter{display:flex;flex-direction:column;gap:6px;background:transparent;border-radius:0;padding:0;box-shadow:none;}
+  .culture-map-filter-toggle{height:40px;border-radius:var(--rs);border:1px solid var(--gray-100);background:#fff;color:var(--gray-700);font-size:12px;font-weight:900;font-family:inherit;padding:0 12px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
   .culture-map-filter-body{display:none;flex-direction:column;gap:6px;}
   .culture-map-filter.open .culture-map-filter-body{display:flex;}
   .culture-map-filter-row{display:flex;align-items:center;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
@@ -99,7 +94,6 @@ if ('serviceWorker' in navigator) {
   .culture-map-chip{height:28px;padding:0 10px;border-radius:999px;border:1px solid var(--gray-100);background:#fff;color:var(--gray-600);font-size:11px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap;flex-shrink:0;}
   .culture-map-chip.active{background:var(--ink);border-color:var(--ink);color:#fff;}
   .culture-map-chip.sub.active{background:var(--coral-light);border-color:rgba(242,122,94,.22);color:var(--ink);}
-  .culture-map-filter-count{margin-left:auto;font-size:11px;font-weight:900;color:var(--gray-500);white-space:nowrap;padding:0 4px;flex-shrink:0;}
   .create-map-shell{position:relative;flex:1;min-height:220px;}
   .map-place-card{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:24;background:rgba(255,255,255,.96);border:1px solid rgba(28,36,43,.08);border-radius:14px;padding:12px;box-shadow:0 10px 28px rgba(28,36,43,.18);backdrop-filter:blur(14px);}
   .map-place-title{font-size:14px;font-weight:900;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:34px;}
@@ -288,7 +282,13 @@ if ('serviceWorker' in navigator) {
   .mc-card{position:relative;background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:13px;overflow:hidden;display:flex;flex-direction:column;gap:11px;flex-shrink:0;box-shadow:0 8px 18px rgba(39,49,58,.035);}
   .spot-photo{width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#F4EFE8,#FFF6F1);border:1px solid var(--gray-100);position:relative;}
   .spot-photo img{width:100%;height:100%;object-fit:cover;display:block;}
-  .spot-photo.empty{display:flex;align-items:center;justify-content:center;color:var(--gray-400);font-size:12px;font-weight:800;}
+  .spot-photo.empty{display:flex;align-items:center;justify-content:center;color:var(--gray-700);font-size:12px;font-weight:800;isolation:isolate;}
+  .spot-photo.empty::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 18% 20%,rgba(242,122,94,.22),transparent 31%),radial-gradient(circle at 82% 28%,rgba(183,240,106,.26),transparent 30%),linear-gradient(135deg,#FFF7F1 0%,#F4EFE8 48%,#EEF8EA 100%);z-index:-2;}
+  .spot-photo.empty::after{content:"";position:absolute;inset:12px;border:1px solid rgba(28,36,43,.08);border-radius:9px;z-index:-1;}
+  .spot-photo-fallback{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;padding:12px;}
+  .spot-photo-fallback-icon{width:42px;height:42px;border-radius:999px;background:rgba(255,255,255,.72);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 8px 18px rgba(28,36,43,.08);}
+  .spot-photo-fallback-title{max-width:220px;color:var(--ink);font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .spot-photo-fallback-meta{color:var(--gray-500);font-size:10px;font-weight:900;}
   .spot-photo-credit{position:absolute;left:8px;right:8px;bottom:7px;color:#fff;font-size:10px;font-weight:800;text-shadow:0 1px 4px rgba(0,0,0,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .course-detail-photo{width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:var(--gray-50);border:1px solid var(--gray-100);margin-bottom:12px;position:relative;}
   .course-detail-photo img{width:100%;height:100%;object-fit:cover;display:block;}
@@ -798,18 +798,10 @@ if ('serviceWorker' in navigator) {
             <div id="addrDropdown" style="display:none;position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-radius:var(--rs);z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;"></div>
           </div>
           <button id="aiSearchSubmit" class="ai-search-submit" onclick="submitMapSearch()">검색</button>
-          <button class="ai-location-btn" onclick="moveToMyLocation()" aria-label="현재 위치로 이동" title="현재 위치">◎</button>
+          <button id="cultureMapFilterToggle" class="culture-map-filter-toggle" onclick="toggleCultureMapFilters()">필터</button>
         </div>
-      </div>
-      <div id="cultureMapFilterPanel" class="culture-map-filter">
-        <div class="culture-map-filter-head">
-          <div class="culture-map-filter-title"><span id="cultureMapTitleText" style="color:var(--gray-900);font-size:12px;font-weight:900;">문화스팟</span> <span id="cultureMapFilterCount">0곳</span></div>
-          <div class="culture-map-filter-actions">
-            <button id="cultureMapSearchBtn" class="culture-map-search-btn" onclick="submitCultureMapSearch()">검색</button>
-            <button id="cultureMapFilterToggle" class="culture-map-filter-toggle" onclick="toggleCultureMapFilters()">필터</button>
-          </div>
-        </div>
-        <div id="cultureMapFilterBody" class="culture-map-filter-body">
+        <div id="cultureMapFilterPanel" class="culture-map-filter">
+          <div id="cultureMapFilterBody" class="culture-map-filter-body">
           <div class="culture-map-filter-row">
             <button id="cultureMapCatAll" class="culture-map-chip active" onclick="setCultureMapCategory('all')">전체</button>
             <button id="cultureMapCatCulture" class="culture-map-chip" onclick="setCultureMapCategory('heritage')">유산</button>
@@ -825,9 +817,11 @@ if ('serviceWorker' in navigator) {
             <button id="cultureMapStars4" class="culture-map-chip sub" onclick="setCultureMapMinStars(4)">4점</button>
             <button id="cultureMapStars5" class="culture-map-chip sub" onclick="setCultureMapMinStars(5)">5점</button>
           </div>
+          </div>
         </div>
       </div>
     </div>
+    <button class="ai-location-btn" onclick="moveToMyLocation()" aria-label="현재 위치로 이동" title="현재 위치">◎</button>
 
     <!-- 선택된 출발지/목적지 상태 저장용 -->
     <div id="aiSelectedAddr" class="ai-selected-hidden">
@@ -1520,11 +1514,9 @@ function applyAppLanguage() {
   setTextContent('cultureFilterDistance', t('distanceSort'));
   setTextContent('cultureFilterStars', t('starsSort'));
   setTextContent('aiSearchSubmit', t('searchAction'));
-  setTextContent('cultureMapSearchBtn', t('searchAction'));
   setTextContent('aiSearchStartBtn', t('startPoint'));
   setTextContent('aiSearchDestBtn', t('destination'));
   setTextContent('aiSameDestBtn', t('roundTrip'));
-  setTextContent('cultureMapTitleText', t('cultureSpots'));
   setTextContent('cultureMapCatAll', t('all'));
   setTextContent('cultureMapCatCulture', t('heritage'));
   setTextContent('cultureMapCatMuseum', t('museum'));
@@ -2005,6 +1997,9 @@ function initCreateMap() {
       } else if (createMode === 'ai') {
         handleAiMapPlaceTap(e.latLng);
       }
+    });
+    kakao.maps.event.addListener(createMap, 'idle', function() {
+      if (createMode === 'ai') renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
     });
     initDrawTap();
     renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
@@ -2740,7 +2735,7 @@ function updateAiPlaceMedia(spot) {
   media.classList.add('active');
   img.removeAttribute('src');
   img.alt = '';
-  credit.textContent = appLanguage === 'en' ? 'Photo pending' : '대표 사진 준비 중';
+  credit.textContent = '';
   fetchCultureSpotPhoto({ ...spot, key: getCultureSpotFavoriteKey(spot) }).then(nextPhoto => {
     if (!nextPhoto || !aiPendingPlace || !aiPendingPlace.mediaSpot) return;
     const pendingKey = getCultureSpotFavoriteKey(aiPendingPlace.mediaSpot);
@@ -3089,6 +3084,23 @@ function getMapCenterLatLng(map) {
   return Number.isFinite(lat) && Number.isFinite(lng) ? { lat, lng } : null;
 }
 
+function getMapVisibleRadiusMeters(map) {
+  const center = getMapCenterLatLng(map);
+  if (!map || !center || typeof map.getBounds !== 'function') return CULTURE_SPOT_SEARCH_RADIUS_METERS;
+  const bounds = map.getBounds();
+  if (!bounds || typeof bounds.getSouthWest !== 'function' || typeof bounds.getNorthEast !== 'function') return CULTURE_SPOT_SEARCH_RADIUS_METERS;
+  const sw = bounds.getSouthWest();
+  const ne = bounds.getNorthEast();
+  const corners = [
+    [sw.getLat(), sw.getLng()],
+    [sw.getLat(), ne.getLng()],
+    [ne.getLat(), sw.getLng()],
+    [ne.getLat(), ne.getLng()]
+  ];
+  const radius = Math.max(...corners.map(([lat, lng]) => haversineMeters(center.lat, center.lng, lat, lng)));
+  return Math.max(500, Math.min(CULTURE_SPOT_SEARCH_RADIUS_METERS, Math.ceil(radius * 1.08)));
+}
+
 function getCultureMapSearchInputQuery() {
   const input = document.getElementById('addrInput');
   const value = input ? input.value.trim() : '';
@@ -3097,17 +3109,13 @@ function getCultureMapSearchInputQuery() {
 }
 
 function getCultureMapCenterOptions() {
-  const center = getMapCenterLatLng(createMap || aiMap || S.map);
-  return center ? { lat: center.lat, lng: center.lng } : {};
-}
-
-function setCultureMapSearchingState() {
-  const countEl = document.getElementById('cultureMapFilterCount');
-  if (countEl) countEl.textContent = appLanguage === 'en' ? 'Searching' : '검색 중';
+  const map = createMap || aiMap || S.map;
+  const center = getMapCenterLatLng(map);
+  if (!center) return {};
+  return { lat: center.lat, lng: center.lng, radius: getMapVisibleRadiusMeters(map) };
 }
 
 function refreshCultureSpotsOnMapCenter(options = {}) {
-  setCultureMapSearchingState();
   loadNearCourses(getCultureMapCenterOptions());
   if (!options.silent) {
     toast(appLanguage === 'en' ? 'Searching culture spots in this map area' : '현재 지도 위치에서 문화스팟을 찾는 중이에요');
@@ -3756,7 +3764,7 @@ const CULTURE_SPOT_SEARCH_RADIUS_METERS = 10000;
 const CULTURE_SPOT_VISIT_RADIUS_METERS = 100;
 const CULTURE_SPOT_VISITS_KEY = 'runloopCultureSpotVisitsV1';
 const CULTURE_SPOT_FAVORITES_KEY = 'runloopCultureSpotFavoritesV1';
-const CULTURE_SPOT_PHOTO_CACHE_KEY = 'runloopCultureSpotPhotoCacheV1';
+const CULTURE_SPOT_PHOTO_CACHE_KEY = 'runloopCultureSpotPhotoCacheV2';
 const CULTURE_SPOT_PHOTO_CACHE_MS = 7 * 24 * 60 * 60 * 1000;
 const CULTURE_SPOT_MIN_VALUE_STARS = 2;
 const CULTURE_MAP_MARKER_LIMIT = 80;
@@ -3857,6 +3865,7 @@ let cultureMapSearchQuery = '';
 let cultureMapFiltersOpen = false;
 let lastCultureSpotResults = [];
 let culturePhotoInflight = new Map();
+let cultureDetailInflight = new Map();
 let cultureOverviewInflight = new Map();
 let cultureWeatherInflight = new Map();
 let aiRouteOverlays = [];
@@ -5425,12 +5434,13 @@ async function loadNearCourses(options = {}) {
   if (!wrap) return;
   wrap.innerHTML = `<div style="text-align:center;padding:20px 0;color:var(--gray-500);"><div class="ml-spin" style="margin:0 auto 8px;"></div><div style="font-size:13px;">${escapeHtml(t('loadingCulture'))}</div></div>`;
   const searchCenter = getCultureSpotLoadCenter(options);
+  const searchRadius = getCultureSpotLoadRadius(options);
 
   try {
     const url = new URL(TOUR_SPOTS_URL, window.location.href);
     url.searchParams.set('lat', String(searchCenter.lat));
     url.searchParams.set('lng', String(searchCenter.lng));
-    url.searchParams.set('radius', String(CULTURE_SPOT_SEARCH_RADIUS_METERS));
+    url.searchParams.set('radius', String(searchRadius));
     url.searchParams.set('lang', appLanguage);
     const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error('Tour spot API failed');
@@ -5454,9 +5464,18 @@ function getCultureSpotLoadCenter(options = {}) {
   return { lat: S.lat, lng: S.lng };
 }
 
+function getCultureSpotLoadRadius(options = {}) {
+  const radius = Number(options.radius);
+  if (Number.isFinite(radius) && radius > 0) {
+    return Math.max(500, Math.min(CULTURE_SPOT_SEARCH_RADIUS_METERS, Math.round(radius)));
+  }
+  return CULTURE_SPOT_SEARCH_RADIUS_METERS;
+}
+
 function loadKakaoCultureSpots(options = {}) {
   const retry = Number(options.retry || 0);
   const searchCenter = getCultureSpotLoadCenter(options);
+  const searchRadius = getCultureSpotLoadRadius(options);
   if (!S.kakaoReady) {
     if (retry >= 6) {
       renderNearCourses(getFallbackNearCourses());
@@ -5477,7 +5496,7 @@ function loadKakaoCultureSpots(options = {}) {
       if (status === kakao.maps.services.Status.OK) {
         data.slice(0, 4).forEach(p => {
           const dist = getDistKm(searchCenter.lat, searchCenter.lng, parseFloat(p.y), parseFloat(p.x));
-          if (dist <= CULTURE_SPOT_SEARCH_RADIUS_METERS / 1000) {
+          if (dist <= searchRadius / 1000) {
             const value = getCultureSpotValue(p, kw);
             if (!value.excluded && value.stars >= CULTURE_SPOT_MIN_VALUE_STARS) {
               results.push({
@@ -5494,7 +5513,7 @@ function loadKakaoCultureSpots(options = {}) {
       if (done === keywords.length) renderNearCourses(results);
     }, {
       location: new kakao.maps.LatLng(searchCenter.lat, searchCenter.lng),
-      radius: CULTURE_SPOT_SEARCH_RADIUS_METERS,
+      radius: searchRadius,
       sort: kakao.maps.services.SortBy.DISTANCE
     });
   });
@@ -5834,7 +5853,8 @@ async function fetchCultureSpotPhoto(spot) {
   }
   if (culturePhotoInflight.has(cacheKey)) return culturePhotoInflight.get(cacheKey);
 
-  const request = fetchCultureSpotPhotoFromApi(keyword)
+  const request = fetchCultureSpotDetailPhoto(spot)
+    .then(photo => photo || fetchCultureSpotPhotoFromApi(keyword))
     .then(photo => {
       const nextCache = readCultureSpotPhotoCache();
       nextCache[cacheKey] = photo
@@ -5847,6 +5867,20 @@ async function fetchCultureSpotPhoto(spot) {
     .finally(() => culturePhotoInflight.delete(cacheKey));
   culturePhotoInflight.set(cacheKey, request);
   return request;
+}
+
+async function fetchCultureSpotDetailPhoto(spot) {
+  const contentId = String(spot && (spot.contentId || spot.contentid || spot.id) || '').trim();
+  if (!contentId || contentId.startsWith('fallback')) return null;
+  const detail = await fetchCultureSpotDetailFromApi(contentId);
+  const imageUrl = String(detail && detail.firstImage || '').trim();
+  if (!/^https?:\/\//.test(imageUrl)) return null;
+  return {
+    contentId,
+    title: cleanCultureOverview(detail.title || getCultureSpotOriginalName(spot, '')),
+    imageUrl,
+    source: appLanguage === 'en' ? 'VisitKorea' : '한국관광공사 관광정보'
+  };
 }
 
 async function fetchCultureSpotPhotoFromApi(keyword) {
@@ -5885,17 +5919,37 @@ async function fetchCultureSpotOverview(spot) {
 }
 
 async function fetchCultureSpotOverviewFromApi(contentId) {
+  const detail = await fetchCultureSpotDetailFromApi(contentId);
+  return cleanCultureOverview(detail && detail.overview || '');
+}
+
+async function fetchCultureSpotDetailFromApi(contentId) {
+  const cleanId = String(contentId || '').trim();
+  if (!cleanId || cleanId.startsWith('fallback')) return {};
+  const cacheKey = `${appLanguage}:${cleanId}`;
+  if (cultureDetailInflight.has(cacheKey)) return cultureDetailInflight.get(cacheKey);
+  const request = fetchCultureSpotDetailFromApiRaw(cleanId)
+    .finally(() => cultureDetailInflight.delete(cacheKey));
+  cultureDetailInflight.set(cacheKey, request);
+  return request;
+}
+
+async function fetchCultureSpotDetailFromApiRaw(contentId) {
   try {
     const url = new URL(TOUR_DETAIL_URL, window.location.href);
     url.searchParams.set('contentId', contentId);
     url.searchParams.set('lang', appLanguage);
     const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
-    if (!response.ok) return '';
+    if (!response.ok) return {};
     const data = await response.json();
-    return cleanCultureOverview(data && data.overview || '');
+    return {
+      title: cleanCultureOverview(data && data.title || ''),
+      overview: cleanCultureOverview(data && data.overview || ''),
+      firstImage: String(data && data.firstImage || '').trim()
+    };
   } catch (error) {
     console.warn('KTO detail unavailable', error);
-    return '';
+    return {};
   }
 }
 
@@ -6271,7 +6325,15 @@ function renderSpotPhotoBox(spot, prefix = 'spotPhoto') {
   const domId = getSpotPhotoDomId(spot && spot.key, prefix);
   const displayName = getCultureSpotDisplayName(spot, '문화스팟');
   if (!photo || !photo.imageUrl) {
-    return `<div class="spot-photo empty" id="${escapeHtml(domId)}">${appLanguage === 'en' ? 'Photo pending' : '대표 사진 준비 중'}</div>`;
+    const type = spot && (spot.cultureType || getCultureSpotType(spot, '')) || t('cultureSpots');
+    return `
+      <div class="spot-photo empty" id="${escapeHtml(domId)}">
+        <div class="spot-photo-fallback">
+          <div class="spot-photo-fallback-icon">${getCultureSpotIcon(type)}</div>
+          <div class="spot-photo-fallback-title">${escapeHtml(displayName)}</div>
+          <div class="spot-photo-fallback-meta">${escapeHtml(type || t('cultureSpots'))}</div>
+        </div>
+      </div>`;
   }
   return `
     <div class="spot-photo" id="${escapeHtml(domId)}">
@@ -6495,8 +6557,6 @@ function updateCultureMapFilterControls(count) {
   if (panel) panel.classList.toggle('open', cultureMapFiltersOpen);
   const toggle = document.getElementById('cultureMapFilterToggle');
   if (toggle) toggle.textContent = cultureMapFiltersOpen ? t('collapse') : t('filter');
-  const countEl = document.getElementById('cultureMapFilterCount');
-  if (countEl) countEl.textContent = appLanguage === 'en' ? `${count || 0}` : `${count || 0}곳`;
 }
 
 function clearCultureSpotMapMarkers() {
@@ -6506,9 +6566,25 @@ function clearCultureSpotMapMarkers() {
   cultureSpotMapOverlays = [];
 }
 
+function isCultureSpotInsideMapBounds(spot, map) {
+  if (!map || typeof map.getBounds !== 'function') return true;
+  const lat = Number(spot && spot.y);
+  const lng = Number(spot && spot.x);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false;
+  const bounds = map.getBounds();
+  if (!bounds) return true;
+  const latlng = new kakao.maps.LatLng(lat, lng);
+  if (typeof bounds.contain === 'function') return bounds.contain(latlng);
+  if (typeof bounds.getSouthWest !== 'function' || typeof bounds.getNorthEast !== 'function') return true;
+  const sw = bounds.getSouthWest();
+  const ne = bounds.getNorthEast();
+  return lat >= sw.getLat() && lat <= ne.getLat() && lng >= sw.getLng() && lng <= ne.getLng();
+}
+
 function renderCultureSpotMapMarkers(spots) {
   clearCultureSpotMapMarkers();
-  const visibleSpots = Array.isArray(spots) ? spots : [];
+  const sourceSpots = Array.isArray(spots) ? spots : [];
+  const visibleSpots = createMap ? sourceSpots.filter(spot => isCultureSpotInsideMapBounds(spot, createMap)) : sourceSpots;
   updateCultureMapFilterControls(visibleSpots.length);
   if (!createMap || createMode !== 'ai' || !visibleSpots.length) return;
 
