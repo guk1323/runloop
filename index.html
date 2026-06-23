@@ -3803,7 +3803,6 @@ const CULTURE_SPOT_PHOTO_CACHE_KEY = 'runloopCultureSpotPhotoCacheV2';
 const CULTURE_SPOT_PHOTO_CACHE_MS = 7 * 24 * 60 * 60 * 1000;
 const CULTURE_SPOT_MIN_VALUE_STARS = 2;
 const CULTURE_MAP_MARKER_LIMIT = 80;
-const CULTURE_SPOT_KEYWORDS = ['세계문화유산', '문화재', '국보', '보물', '사적', '궁궐', '왕릉', '유적지', '박물관', '미술관', '기념관', '역사관', '전통문화', '한옥마을', '사찰', '성곽', '공연장', '극장', '전시관'];
 const CULTURE_SPOT_EN_NAME_MAP = {
   '경복궁': 'Gyeongbokgung Palace',
   '창덕궁': 'Changdeokgung Palace',
@@ -5419,15 +5418,13 @@ async function loadNearCourses(options = {}) {
     if (!response.ok) throw new Error('Tour spot API failed');
     const data = await response.json();
     const spots = Array.isArray(data && data.spots) ? data.spots : [];
-    if (spots.length) {
-      renderNearCourses(spots);
-      return;
-    }
+    renderNearCourses(spots);
+    return;
   } catch (error) {
-    console.warn('KTO culture spots unavailable, falling back to Kakao keyword search', error);
+    console.warn('KTO culture spots unavailable', error);
   }
 
-  loadKakaoCultureSpots(options);
+  renderNearCourses([]);
 }
 
 function getCultureSpotLoadCenter(options = {}) {
@@ -5445,74 +5442,6 @@ function getCultureSpotLoadRadius(options = {}) {
   return CULTURE_SPOT_SEARCH_RADIUS_METERS;
 }
 
-function loadKakaoCultureSpots(options = {}) {
-  const retry = Number(options.retry || 0);
-  const searchCenter = getCultureSpotLoadCenter(options);
-  const searchRadius = getCultureSpotLoadRadius(options);
-  if (!S.kakaoReady) {
-    if (retry >= 6) {
-      renderNearCourses(getFallbackNearCourses());
-      return;
-    }
-    setTimeout(() => loadKakaoCultureSpots({ ...options, retry: retry + 1 }), 800);
-    return;
-  }
-
-  const ps = new kakao.maps.services.Places();
-  const keywords = CULTURE_SPOT_KEYWORDS;
-  const results = [];
-  let done = 0;
-
-  keywords.forEach(kw => {
-    ps.keywordSearch(kw, (data, status) => {
-      done++;
-      if (status === kakao.maps.services.Status.OK) {
-        data.slice(0, 4).forEach(p => {
-          const dist = getDistKm(searchCenter.lat, searchCenter.lng, parseFloat(p.y), parseFloat(p.x));
-          if (dist <= searchRadius / 1000) {
-            const value = getCultureSpotValue(p, kw);
-            if (!value.excluded && value.stars >= CULTURE_SPOT_MIN_VALUE_STARS) {
-              results.push({
-                ...p,
-                distFromMe: dist,
-                cultureType: value.type,
-                cultureValueStars: value.stars,
-                cultureValueLabel: value.label
-              });
-            }
-          }
-        });
-      }
-      if (done === keywords.length) renderNearCourses(results);
-    }, {
-      location: new kakao.maps.LatLng(searchCenter.lat, searchCenter.lng),
-      radius: searchRadius,
-      sort: kakao.maps.services.SortBy.DISTANCE
-    });
-  });
-}
-
-function getFallbackNearCourses() {
-  return [{
-    id: 'fallback-culture-spot',
-    place_name: getNearCourseFallbackName(),
-    y: S.lat,
-    x: S.lng,
-    distFromMe: 0,
-    cultureType: appLanguage === 'en' ? 'Culture spot' : '문화 스팟',
-    cultureValueStars: 1,
-    cultureValueLabel: appLanguage === 'en' ? 'Needs search' : '탐색 필요',
-    fallback: true
-  }];
-}
-
-function getNearCourseFallbackName() {
-  const loc = document.getElementById('wLocation')?.textContent || '';
-  if (appLanguage === 'en') return 'Culture spots near you';
-  if (loc && !loc.includes('불러오는')) return loc + ' 문화 산책';
-  return '현재 위치 주변 문화 스팟';
-}
-
 function getCultureSpotType(place, keyword) {
   const text = [place.category_name, place.place_name, keyword].filter(Boolean).join(' ');
   const en = appLanguage === 'en';
@@ -5523,60 +5452,6 @@ function getCultureSpotType(place, keyword) {
   if (/공연|극장|콘서트|performance|theater|theatre|concert/i.test(text)) return en ? 'Performance' : '공연';
   if (/팝업|스토어|편집샵|popup|pop-up/i.test(text)) return en ? 'Pop-up' : '팝업';
   return en ? 'Culture spot' : (keyword || '문화 스팟');
-}
-
-function getCultureSpotValue(place, keyword) {
-  const text = getCultureSpotSearchText(place, keyword);
-  const placeText = getCultureSpotSearchText(place, '');
-  const type = getCultureSpotType(place, keyword);
-  if (isLowValueCultureSpot(text)) {
-    return { excluded: true, stars: 0, label: appLanguage === 'en' ? 'Excluded' : '추천 제외', type };
-  }
-  if (isFiveStarCultureSpot(placeText)) {
-    return { stars: 5, label: appLanguage === 'en' ? 'World heritage' : '세계유산급', type };
-  }
-  if (/문화재|문화유적|국보|보물|사적|경복궁|창덕궁|창경궁|덕수궁|경희궁|궁궐|왕궁|궁터|왕릉|성곽|성지|유적|유적지|서원|향교|한옥마을|전통마을|사찰|절|성당|근대문화유산/.test(placeText)) {
-    return { stars: 4, label: appLanguage === 'en' ? 'Historic site' : '역사 명소', type };
-  }
-  if (/국립|시립|도립|구립|박물관|미술관|기념관|역사관|문화관|전시관/.test(placeText)) {
-    const stars = /국립|시립|도립|기념관|역사관/.test(placeText) ? 4 : 3;
-    return { stars, label: appLanguage === 'en' ? (stars >= 4 ? 'Major culture venue' : 'Culture venue') : (stars >= 4 ? '대표 문화시설' : '문화시설'), type };
-  }
-  if (/공연장|극장|아트센터|문화센터|갤러리|전시장|전시/.test(placeText)) {
-    return { stars: 2, label: appLanguage === 'en' ? 'Local culture' : '지역 문화', type };
-  }
-  return { stars: 2, label: appLanguage === 'en' ? 'Culture candidate' : '문화 후보', type };
-}
-
-function isFiveStarCultureSpot(text) {
-  const compact = String(text || '').replace(/\s+/g, '');
-  const exactNames = [
-    '경복궁', '창덕궁', '종묘', '수원화성', '남한산성',
-    '불국사', '석굴암', '해인사', '하회마을', '양동마을',
-    '공산성', '부소산성', '미륵사지', '왕궁리유적'
-  ];
-  if (exactNames.some(name => compact === name || compact.endsWith(name))) return true;
-  if (/세계문화유산|세계유산|유네스코/.test(compact) && !isWorldHeritageSubSpot(compact)) return true;
-  if (/조선왕릉|백제역사유적|고인돌유적/.test(compact) && !isWorldHeritageSubSpot(compact)) return true;
-  return false;
-}
-
-function isWorldHeritageSubSpot(text) {
-  return /문|장대|정자|루|각|전망대|매표소|안내소|주차장|광장|센터|박물관|홍살문|비각|재실|연못|산책로/.test(text);
-}
-
-function getCultureSpotSearchText(place, keyword) {
-  return [place && place.category_name, place && place.place_name, keyword]
-    .filter(Boolean)
-    .join(' ');
-}
-
-function isLowValueCultureSpot(text) {
-  const schoolLike = /학교|대학교|캠퍼스|학원|스터디/.test(text) && !/박물관|미술관|기념관|문화재|사적|유적|역사관/.test(text);
-  const entertainmentLike = /노래연습장|노래방|코인노래|karaoke|유흥|단란주점|주점|술집|호프|펍|바\b|룸살롱|클럽|pc방|피시방|오락실/i.test(text);
-  const subFacilityLike = /관리소|사무소|매표소|주차장|화장실|안내소|관광안내소|입구|출구|고객센터|관리센터/.test(text);
-  const commercialLike = /메가박스|cgv|롯데시네마|씨네큐|영화관|시네마|팝업|편집샵|스토어|백화점|쇼핑몰|마트|카페|식당|주차장|사설/i.test(text);
-  return schoolLike || entertainmentLike || subFacilityLike || commercialLike;
 }
 
 function getCultureSpotDisplayName(spot, fallback = '문화 스팟') {
@@ -6302,17 +6177,16 @@ function getDistKm(lat1, lng1, lat2, lng2) {
 
 function renderNearCourses(results) {
   const wrap = document.getElementById('nearCourseList');
-  if (!results.length) {
-    results = getFallbackNearCourses();
-  }
-
-  lastCultureSpotResults = Array.isArray(results) ? results.slice() : [];
+  const safeResults = Array.isArray(results) ? results : [];
+  lastCultureSpotResults = safeResults.slice();
   updateCultureSpotFilterButtons();
 
-  // 중복 제거 + 거리와 문화가치를 균형 있게 섞어 가까운 문화 스팟 표시
-  let unique = selectHomeCultureSpots(results);
-  if (!unique.length) unique = getFallbackNearCourses();
+  const unique = selectHomeCultureSpots(safeResults);
   renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
+  if (!unique.length) {
+    wrap.innerHTML = `<div style="text-align:center;padding:22px 0;color:var(--gray-500);font-size:13px;line-height:1.5;">${appLanguage === 'en' ? 'No VisitKorea culture spots found in this area.' : '이 위치 주변에 한국관광공사 문화스팟이 없어요.'}</div>`;
+    return;
+  }
 
   const iconBgs = ['#FFF0EC','#F4EFE8','#F0F8DB','#FFF5DB','#EEF8EA'];
   wrap.innerHTML = unique.map((p, i) => {
@@ -6573,7 +6447,7 @@ function renderCultureSpotMapMarkers(spots) {
 function setCultureSpotFilter(filter) {
   cultureSpotFilter = ['recommend', 'distance', 'stars'].includes(filter) ? filter : 'recommend';
   updateCultureSpotFilterButtons();
-  renderNearCourses(lastCultureSpotResults.length ? lastCultureSpotResults : getFallbackNearCourses());
+  renderNearCourses(lastCultureSpotResults);
 }
 
 function updateCultureSpotFilterButtons() {
