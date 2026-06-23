@@ -95,21 +95,23 @@ if ('serviceWorker' in navigator) {
   .culture-map-chip.active{background:var(--ink);border-color:var(--ink);color:#fff;}
   .culture-map-chip.sub.active{background:var(--coral-light);border-color:rgba(242,122,94,.22);color:var(--ink);}
   .create-map-shell{position:relative;flex:1;min-height:220px;}
-  .map-place-card{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:24;background:rgba(255,255,255,.96);border:1px solid rgba(28,36,43,.08);border-radius:14px;padding:12px;box-shadow:0 10px 28px rgba(28,36,43,.18);backdrop-filter:blur(14px);}
+  .map-place-card{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:24;background:rgba(255,255,255,.96);border:1px solid rgba(28,36,43,.08);border-radius:14px;padding:11px;box-shadow:0 10px 28px rgba(28,36,43,.18);backdrop-filter:blur(14px);}
   .map-place-title{font-size:14px;font-weight:900;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:34px;}
   .map-place-close{position:absolute;top:9px;right:9px;width:28px;height:28px;border:none;border-radius:999px;background:var(--gray-50);color:var(--gray-500);font-size:18px;font-weight:800;line-height:1;font-family:inherit;cursor:pointer;}
   .map-place-close:active{transform:scale(.94);}
   .map-place-sub{display:none;}
-  .map-place-media{display:none;margin-top:8px;grid-template-columns:104px minmax(0,1fr);gap:10px;align-items:center;}
+  .map-place-media{display:none;margin-top:9px;grid-template-columns:104px minmax(0,1fr);gap:10px;align-items:stretch;}
   .map-place-media.active{display:grid;}
-  .map-place-image{width:104px;height:72px;border-radius:10px;object-fit:cover;background:var(--gray-50);border:1px solid var(--gray-100);}
-  .map-place-copy{min-width:0;display:flex;flex-direction:column;justify-content:flex-start;gap:4px;}
-  .map-place-desc{display:none;}
-  .map-place-weather{display:none;align-items:center;gap:5px;min-width:0;width:max-content;max-width:100%;font-size:11px;font-weight:900;color:var(--ink);background:#FFF6F1;border:1px solid rgba(242,122,94,.16);border-radius:999px;padding:5px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .map-place-image{width:104px;height:74px;border-radius:10px;object-fit:cover;background:var(--gray-50);border:1px solid var(--gray-100);}
+  .map-place-copy{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:6px;background:var(--gray-50);border:1px solid var(--gray-100);border-radius:10px;padding:8px;}
+  .map-place-desc{display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden;}
+  .map-place-meta-chip{height:22px;display:inline-flex;align-items:center;max-width:100%;border-radius:999px;background:#fff;border:1px solid var(--gray-100);color:var(--gray-700);font-size:10px;font-weight:900;padding:0 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;}
+  .map-place-meta-chip.star{color:var(--coral);background:#FFF6F1;border-color:rgba(242,122,94,.16);flex-shrink:0;}
+  .map-place-weather{display:none;align-items:center;gap:5px;min-width:0;width:100%;font-size:11px;font-weight:900;color:var(--ink);background:#FFF6F1;border:1px solid rgba(242,122,94,.16);border-radius:9px;padding:7px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .map-place-weather.active{display:flex;}
   .map-place-weather span{min-width:0;overflow:hidden;text-overflow:ellipsis;}
   .map-place-credit{display:none;}
-  .map-place-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+  .map-place-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
   .map-place-actions.has-save{grid-template-columns:1fr 1fr 1fr;}
   .map-place-actions button{height:38px;border-radius:var(--rs);font-size:13px;font-weight:900;font-family:inherit;cursor:pointer;}
   .map-place-start{background:#fff;border:1px solid var(--gray-300);color:var(--gray-900);}
@@ -292,7 +294,6 @@ if ('serviceWorker' in navigator) {
   .spot-photo-credit{position:absolute;left:8px;right:8px;bottom:7px;color:#fff;font-size:10px;font-weight:800;text-shadow:0 1px 4px rgba(0,0,0,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .course-detail-photo{width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:var(--gray-50);border:1px solid var(--gray-100);margin-bottom:12px;position:relative;}
   .course-detail-photo img{width:100%;height:100%;object-fit:cover;display:block;}
-  .course-detail-desc{font-size:12px;line-height:1.5;color:var(--gray-600);background:var(--gray-50);border-radius:var(--rs);padding:10px 11px;margin-bottom:12px;}
   .course-detail-weather{display:none;margin-bottom:12px;background:#FFF6F1;border:1px solid rgba(242,122,94,.16);border-radius:var(--rs);padding:9px 10px;color:var(--ink);font-size:12px;font-weight:900;line-height:1.35;}
   .course-detail-weather.active{display:block;}
   .course-detail-weather small{display:block;margin-top:2px;color:var(--gray-500);font-size:11px;font-weight:700;}
@@ -456,8 +457,7 @@ if ('serviceWorker' in navigator) {
   .culture-spot-pill{height:24px;display:inline-flex;align-items:center;border-radius:999px;background:var(--gray-50);border:1px solid var(--gray-100);padding:0 8px;font-size:11px;font-weight:800;color:var(--gray-600);white-space:nowrap;}
   .culture-spot-pill.stars{color:var(--coral);background:var(--coral-light);border-color:rgba(242,122,94,.18);letter-spacing:0;}
   .culture-spot-pill.visited{color:var(--ink);background:#EEF8EA;border-color:#DDECCF;}
-  .culture-spot-footer{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-top:1px solid var(--gray-100);background:var(--gray-50);}
-  .culture-spot-desc{font-size:12px;color:var(--gray-500);min-width:0;line-height:1.35;word-break:keep-all;}
+  .culture-spot-footer{display:flex;align-items:center;justify-content:flex-end;gap:10px;padding:10px 14px;border-top:1px solid var(--gray-100);background:var(--gray-50);}
   .culture-spot-actions{display:flex;gap:6px;flex-shrink:0;}
   .culture-spot-actions button{height:32px;border-radius:999px;font-size:12px;font-weight:800;padding:0 12px;cursor:pointer;font-family:inherit;}
   .culture-spot-info-btn{background:#fff;color:var(--gray-700);border:1px solid var(--gray-300);}
@@ -2715,7 +2715,7 @@ function updateAiPlaceMedia(spot) {
     media.classList.remove('active');
     img.removeAttribute('src');
     img.alt = '';
-    desc.textContent = '';
+    desc.innerHTML = '';
     weatherEl.classList.remove('active');
     weatherEl.textContent = '';
     credit.textContent = '';
@@ -2723,9 +2723,10 @@ function updateAiPlaceMedia(spot) {
   }
   const photo = getCultureSpotPhoto(spot);
   const displayName = getCultureSpotDisplayName(spot);
-  desc.textContent = '';
+  desc.innerHTML = getMapPlaceMetaHtml(spot);
   updateAiPlaceWeather(spot);
   if (photo && photo.imageUrl) {
+    syncAiPendingPlacePhoto(spot, photo);
     media.classList.add('active');
     img.src = photo.imageUrl;
     img.alt = photo.title || displayName || '문화스팟 사진';
@@ -2740,9 +2741,43 @@ function updateAiPlaceMedia(spot) {
     if (!nextPhoto || !aiPendingPlace || !aiPendingPlace.mediaSpot) return;
     const pendingKey = getCultureSpotFavoriteKey(aiPendingPlace.mediaSpot);
     if (pendingKey !== getCultureSpotFavoriteKey(spot)) return;
-    aiPendingPlace.mediaSpot = { ...aiPendingPlace.mediaSpot, photo: nextPhoto };
+    syncAiPendingPlacePhoto(spot, nextPhoto);
     updateAiPlaceMedia(aiPendingPlace.mediaSpot);
   });
+}
+
+function syncAiPendingPlacePhoto(spot, photo) {
+  if (!aiPendingPlace || !photo || !photo.imageUrl) return;
+  const key = getCultureSpotFavoriteKey(spot);
+  if (aiPendingPlace.mediaSpot && key === getCultureSpotFavoriteKey(aiPendingPlace.mediaSpot)) {
+    aiPendingPlace.mediaSpot = {
+      ...aiPendingPlace.mediaSpot,
+      photo,
+      firstImage: aiPendingPlace.mediaSpot.firstImage || photo.imageUrl
+    };
+  }
+  if (aiPendingPlace.cultureSpot && key === getCultureSpotFavoriteKey(aiPendingPlace.cultureSpot)) {
+    aiPendingPlace.cultureSpot = {
+      ...aiPendingPlace.cultureSpot,
+      photo,
+      firstImage: aiPendingPlace.cultureSpot.firstImage || photo.imageUrl
+    };
+  }
+}
+
+function getMapPlaceMetaHtml(spot) {
+  if (!spot) return '';
+  const type = spot.cultureType || (!spot.transient ? getCultureSpotType(spot, '') : '');
+  const stars = Math.round(Number(spot.cultureValueStars) || 0);
+  const dist = Number(spot.distFromMe);
+  const parts = [];
+  if (type) parts.push(`<span class="map-place-meta-chip">${escapeHtml(type)}</span>`);
+  if (stars > 0 && !spot.transient) parts.push(`<span class="map-place-meta-chip star">★${Math.max(1, Math.min(5, stars))}</span>`);
+  if (Number.isFinite(dist)) {
+    const distText = dist < 1 ? Math.round(dist * 1000) + 'm' : dist.toFixed(1) + 'km';
+    parts.push(`<span class="map-place-meta-chip">${escapeHtml(distText)}</span>`);
+  }
+  return parts.join('');
 }
 
 function hydrateAiPlaceDescription(spot) {
@@ -3795,68 +3830,6 @@ const CULTURE_SPOT_EN_NAME_MAP = {
 };
 const CULTURE_SPOT_EN_INFO_URL_MAP = {
   '경복궁': 'https://english.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=87740'
-};
-const CULTURE_SPOT_DESCRIPTION_MAP = {
-  '경복궁': {
-    ko: '조선 왕조의 중심 궁궐로, 광화문에서 근정전까지 이어지는 축을 따라 한국 궁궐 건축의 규모와 질서를 느낄 수 있어요.',
-    en: 'The main royal palace of the Joseon dynasty, where the axis from Gwanghwamun to Geunjeongjeon reveals the scale and order of Korean palace architecture.'
-  },
-  '창덕궁': {
-    ko: '자연 지형을 살린 궁궐 배치와 후원이 유명한 유네스코 세계유산이에요. 서울 도심 속에서도 조선 궁궐의 깊은 분위기를 느끼기 좋아요.',
-    en: 'A UNESCO World Heritage palace known for its garden and layout shaped around the natural terrain, offering a quieter view of Joseon royal culture in central Seoul.'
-  },
-  '종묘': {
-    ko: '조선 왕실의 제례 공간으로, 절제된 건축과 긴 월대가 만드는 엄숙한 분위기가 인상적인 세계유산이에요.',
-    en: 'A royal ancestral shrine of the Joseon dynasty, recognized as World Heritage for its restrained architecture and solemn ceremonial atmosphere.'
-  },
-  '수원화성': {
-    ko: '정조의 개혁 의지가 담긴 유네스코 세계유산으로, 성곽을 따라 걸으며 역사와 도시 풍경을 함께 볼 수 있어요.',
-    en: 'A UNESCO World Heritage fortress tied to King Jeongjo, where a walk along the walls connects history with the cityscape of Suwon.'
-  },
-  '남한산성': {
-    ko: '산 능선을 따라 이어지는 성곽과 행궁 흔적이 남아 있는 세계유산이에요. 역사 탐방과 걷기 코스를 함께 즐기기 좋아요.',
-    en: 'A World Heritage mountain fortress with walls following the ridgeline and traces of a royal temporary palace, well suited for history and walking.'
-  },
-  '불국사': {
-    ko: '통일신라 불교문화의 정수를 보여주는 세계유산 사찰이에요. 석축, 다리, 목조건축이 어우러진 균형미를 볼 수 있어요.',
-    en: 'A World Heritage temple representing the height of Unified Silla Buddhist culture, known for the harmony of stone terraces, bridges, and wooden architecture.'
-  },
-  '석굴암': {
-    ko: '신라 석조예술의 완성도를 보여주는 세계유산이에요. 본존불과 석굴 구조가 만드는 고요한 공간감이 핵심이에요.',
-    en: 'A World Heritage grotto that shows the refinement of Silla stone art, centered on the serene spatial composition around the main Buddha.'
-  },
-  '해인사': {
-    ko: '팔만대장경과 장경판전으로 대표되는 세계유산 사찰이에요. 산사 분위기와 기록문화의 가치를 함께 느낄 수 있어요.',
-    en: 'A World Heritage temple known for the Tripitaka Koreana and its depository halls, combining mountain-temple scenery with the value of recorded heritage.'
-  },
-  '하회마을': {
-    ko: '낙동강 물길과 전통 가옥이 어우러진 세계유산 마을이에요. 조선시대 양반가의 생활문화와 마을 풍경을 함께 볼 수 있어요.',
-    en: 'A World Heritage village shaped by the Nakdonggang River and traditional houses, offering a view of Joseon-era aristocratic life and rural scenery.'
-  },
-  '양동마을': {
-    ko: '전통 한옥과 계층별 주거 구조가 잘 남아 있는 세계유산 마을이에요. 오래된 생활문화의 결을 천천히 보기 좋아요.',
-    en: 'A World Heritage village where traditional hanok houses and historic residential patterns remain clear, making it a strong place to observe old living culture.'
-  },
-  '국립중앙박물관': {
-    ko: '선사시대 유물부터 불교미술과 회화까지 한국 문화사를 폭넓게 볼 수 있는 대표 박물관이에요. 날씨와 상관없이 깊게 둘러보기 좋아요.',
-    en: 'Korea’s flagship museum, covering cultural history from prehistoric artifacts to Buddhist art and painting, with enough depth for a weather-proof visit.'
-  },
-  '국립현대미술관': {
-    ko: '한국 근현대미술과 동시대 작품을 폭넓게 볼 수 있는 대표 미술관이에요. 전시마다 공간 경험이 달라 천천히 둘러보기 좋아요.',
-    en: 'A major museum for Korean modern and contemporary art, where each exhibition offers a different spatial and visual experience.'
-  },
-  '서울시립미술관': {
-    ko: '덕수궁 돌담길과 가까운 도심 미술관이에요. 산책 동선에 전시 관람을 자연스럽게 더하기 좋아요.',
-    en: 'A central Seoul art museum near Deoksugung Stonewall Walkway, easy to combine with a short walk and an exhibition visit.'
-  },
-  '예술의전당': {
-    ko: '공연장과 전시장, 음악 공간이 모인 서울의 대표 복합문화공간이에요. 공연 전후 산책까지 함께 계획하기 좋아요.',
-    en: 'A leading arts complex in Seoul with concert halls, theaters, and exhibition spaces, well suited for pairing a performance with a walk.'
-  },
-  '동대문디자인플라자': {
-    ko: '곡선형 건축과 전시, 디자인 행사가 어우러진 도심 문화공간이에요. 야간 산책과 사진 기록에도 잘 맞아요.',
-    en: 'An urban design landmark where curving architecture, exhibitions, and design events come together, also strong for evening walks and photos.'
-  }
 };
 let cultureSpotFilter = 'recommend';
 let cultureMapCategories = [];
@@ -5664,27 +5637,6 @@ function getCultureMedalLabel(stars) {
   return '지역 문화';
 }
 
-function getCultureSpotOneLine(placeName, type, stars) {
-  const safeStars = Math.max(1, Math.min(5, Math.round(Number(stars) || 1)));
-  const name = String(placeName || '').trim();
-  const subject = name ? `${name}에서 ` : '';
-  if (appLanguage === 'en') {
-    const enSubject = name ? `${name} is ` : 'This spot is ';
-    if (safeStars >= 5) return `${enSubject}a rare heritage place worth planning around`;
-    if (/문화재|Heritage|Historic/i.test(type)) return `${enSubject}good for exploring Korean history and place identity`;
-    if (/박물관|Museum/i.test(type)) return `${enSubject}good for exhibitions and local stories`;
-    if (/전시|미술|Exhibition|Gallery|Art/i.test(type)) return `${enSubject}good for a slow art and exhibition visit`;
-    if (/공연|Performance|Theater|Theatre/i.test(type)) return `${enSubject}good for experiencing local performing arts`;
-    return `${enSubject}a light culture stop near you`;
-  }
-  if (safeStars >= 5) return `${subject}한국 대표 문화유산의 분위기를 직접 볼 수 있어요`;
-  if (/문화재/.test(type)) return `${subject}지역의 역사와 오래된 장소성을 살펴보기 좋아요`;
-  if (/박물관/.test(type)) return `${subject}전시와 지역 이야기를 함께 보기 좋은 실내 스팟이에요`;
-  if (/전시|미술/.test(type)) return `${subject}작품과 공간 분위기를 천천히 감상하기 좋아요`;
-  if (/공연/.test(type)) return `${subject}공연과 무대 문화를 경험하기 좋아요`;
-  return `${subject}가볍게 들러 지역의 문화 분위기를 느끼기 좋아요`;
-}
-
 function getCultureSpotIcon(type) {
   if (/문화재|Heritage|Historic/i.test(type)) return '🏛️';
   if (/전시|미술|Exhibition|Gallery|Art/i.test(type)) return '🖼️';
@@ -5982,37 +5934,6 @@ function saveCultureSpotPhotoToFavorite(key, photo) {
   writeCultureSpotFavorites(favorites);
 }
 
-function getCultureSpotDescription(spot) {
-  const overview = summarizeCultureOverview(spot && (spot.overview || spot.detailOverview), 128);
-  if (overview) return overview;
-  const canonical = getCultureSpotCanonicalName(spot);
-  const fixed = CULTURE_SPOT_DESCRIPTION_MAP[canonical];
-  if (fixed) return fixed[appLanguage] || fixed.ko;
-  const name = getCultureSpotDisplayName(spot, '');
-  const type = spot && (spot.cultureType || getCultureSpotType(spot, '')) || '';
-  const stars = spot && spot.cultureValueStars;
-  return getCultureSpotFallbackDescription(name, type, stars);
-}
-
-function getCultureSpotFallbackDescription(placeName, type, stars) {
-  const safeStars = Math.max(1, Math.min(5, Math.round(Number(stars) || 1)));
-  const name = String(placeName || '').trim();
-  if (appLanguage === 'en') {
-    if (safeStars >= 5) return `${name || 'This place'} is a rare heritage-level stop worth planning around, especially if you want culture to anchor the walk.`;
-    if (/문화재|Heritage|Historic/i.test(type)) return `${name || 'This spot'} is a good place to add Korean history and a sense of place to a walking route.`;
-    if (/박물관|Museum/i.test(type)) return `${name || 'This museum'} works well as a deeper indoor stop for exhibitions, artifacts, and local stories.`;
-    if (/전시|미술|Exhibition|Gallery|Art/i.test(type)) return `${name || 'This venue'} is suited to a slower art or exhibition visit between short walks.`;
-    if (/공연|Performance|Theater|Theatre/i.test(type)) return `${name || 'This venue'} is useful for pairing a route with performing arts or an evening plan.`;
-    return `${name || 'This place'} is a light culture stop that can make a nearby walk feel more purposeful.`;
-  }
-  if (safeStars >= 5) return `${name || '이곳'}은 목적지로 잡고 걸어갈 만한 희소 문화유산급 스팟이에요. 산책의 이유가 분명해집니다.`;
-  if (/문화재/.test(type)) return `${name || '이곳'}은 지역의 역사와 장소성을 함께 보기 좋은 스팟이에요. 걷는 동선에 의미를 더하기 좋아요.`;
-  if (/박물관/.test(type)) return `${name || '이곳'}은 유물과 전시, 지역 이야기를 실내에서 깊게 볼 수 있는 스팟이에요.`;
-  if (/전시|미술/.test(type)) return `${name || '이곳'}은 작품과 공간의 분위기를 천천히 감상하기 좋아요. 짧은 산책과도 잘 어울립니다.`;
-  if (/공연/.test(type)) return `${name || '이곳'}은 공연과 무대 문화를 경험하기 좋은 스팟이에요. 저녁 동선으로도 활용하기 좋아요.`;
-  return `${name || '이곳'}은 가까운 걷기 동선에 문화적 목적을 더해주는 가벼운 방문 스팟이에요.`;
-}
-
 function getCultureSpotWeatherCacheKey(spot) {
   const latlng = getCultureSpotLatLng(spot);
   const name = getCultureSpotOriginalName(spot, '').replace(/\s+/g, '').slice(0, 40);
@@ -6163,10 +6084,13 @@ function normalizeCultureSpotFavorite(spot, existing = null) {
   const stars = Math.max(1, Math.min(5, Math.round(Number(source.cultureValueStars || source.stars) || 1)));
   const dist = Number(source.distFromMe);
   const key = getCultureSpotFavoriteKey({ ...source, place_name: name, y: latlng.lat, x: latlng.lng });
+  const sourcePhoto = source.photo && source.photo.imageUrl ? source.photo : null;
+  const existingPhoto = existing && existing.photo && existing.photo.imageUrl ? existing.photo : null;
+  const firstImage = source.firstImage || source.firstimage || source.imageUrl || sourcePhoto && sourcePhoto.imageUrl || existing && existing.firstImage || existingPhoto && existingPhoto.imageUrl || '';
   return {
     key,
-    id: source.id || source.contentId || source.contentid || '',
-    contentId: source.contentId || source.contentid || source.id || '',
+    id: source.id || source.contentId || source.contentid || existing && existing.id || '',
+    contentId: source.contentId || source.contentid || source.id || existing && existing.contentId || '',
     place_name: name,
     name,
     nameEn,
@@ -6180,10 +6104,10 @@ function normalizeCultureSpotFavorite(spot, existing = null) {
     distFromMe: Number.isFinite(dist) ? dist : null,
     address_name: source.address_name || source.addr1 || source.address || '',
     place_url: source.place_url || source.url || '',
-    firstImage: source.firstImage || source.firstimage || source.imageUrl || '',
-    photo: source.photo && source.photo.imageUrl ? source.photo : null,
-    overview: cleanCultureOverview(source.overview || source.detailOverview || ''),
-    source: source.source || '',
+    firstImage,
+    photo: sourcePhoto || existingPhoto,
+    overview: cleanCultureOverview(source.overview || source.detailOverview || existing && (existing.overview || existing.detailOverview) || ''),
+    source: source.source || existing && existing.source || '',
     savedAt: existing && existing.savedAt ? existing.savedAt : new Date().toISOString(),
     updatedAt: new Date().toISOString()
   };
@@ -6300,6 +6224,11 @@ function savePendingCultureSpotFavorite() {
     spot.place_name = aiPendingPlace.name;
     spot.name = aiPendingPlace.name;
   }
+  const mediaPhoto = getCultureSpotPhoto(aiPendingPlace.mediaSpot);
+  if (mediaPhoto && mediaPhoto.imageUrl) {
+    spot.photo = spot.photo && spot.photo.imageUrl ? spot.photo : mediaPhoto;
+    spot.firstImage = spot.firstImage || mediaPhoto.imageUrl;
+  }
   saveCultureSpotFavorite(spot);
 }
 
@@ -6402,7 +6331,6 @@ function renderNearCourses(results) {
     const visitState = getCultureSpotVisitState(p);
     const favoriteKey = getCultureSpotFavoriteKey(p);
     const favorited = isCultureSpotFavorited(p);
-    const footerText = visitState.visited ? t('visitedDone') : getCultureSpotOneLine(placeName, type, valueStars);
     const cardClass = i === 0 ? 'culture-spot-card featured' : 'culture-spot-card';
     const visitedPill = visitState.visited ? `<span class="culture-spot-pill visited">${escapeHtml(t('visited'))}</span>` : '';
     return `
@@ -6423,7 +6351,6 @@ function renderNearCourses(results) {
           </div>
         </div>
         <div class="culture-spot-footer">
-          <div class="culture-spot-desc">${escapeHtml(footerText)}</div>
           <div class="culture-spot-actions">
             <button class="culture-spot-info-btn" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromHomeButton(this)">${escapeHtml(t('intro'))}</button>
             <button class="culture-spot-save-btn ${favorited ? 'active' : ''}" data-key="${escapeHtml(favoriteKey)}" data-id="${escapeHtml(String(p.id || p.contentId || p.contentid || ''))}" data-place="${escapeHtml(rawPlaceName)}" data-name-en="${escapeHtml(nameEn)}" data-lat="${lat}" data-lng="${lng}" data-type="${escapeHtml(type)}" data-stars="${valueStars}" data-dist="${Number.isFinite(distValue) ? distValue : ''}" data-address="${escapeHtml(p.address_name || p.addr1 || '')}" data-url="${escapeHtml(introUrl)}" data-image="${escapeHtml(p.firstImage || p.firstimage || '')}" data-source="${escapeHtml(p.source || '')}" onclick="saveCultureSpotFromHomeButton(this)">${favorited ? escapeHtml(t('saved')) : escapeHtml(t('save'))}</button>
@@ -7589,7 +7516,6 @@ function renderMyCourses() {
     const card = document.createElement('div');
     card.className = 'mc-card saved-spot';
     card.id = 'mc-' + String(spot.key).replace(/[^a-z0-9_-]/gi, '_');
-    card.onclick = () => openCourseDetail(spot.key);
     card.innerHTML = `
       ${renderSpotPhotoBox(spot, 'spotPhoto')}
       <div class="mc-card-top">
@@ -7654,14 +7580,12 @@ function openCourseDetail(id) {
   const dist = formatCultureSpotDistanceLabel(course.distFromMe);
   const visitState = readCultureSpotVisits()[getCultureSpotVisitKey(course)];
   const savedAt = formatCultureSpotSavedAt(course);
-  const description = getCultureSpotDescription(course);
   const displayName = getCultureSpotDisplayName(course);
 
   document.getElementById('courseDetailTitle').textContent = displayName;
   document.getElementById('courseDetailMeta').textContent = [type, `★${stars}`, dist].filter(Boolean).join(' · ');
   document.getElementById('courseDetailBody').innerHTML = `
     ${renderSpotPhotoBox(course, 'detailPhoto')}
-    <div class="course-detail-desc" id="courseDetailDesc">${escapeHtml(description)}</div>
     ${renderSpotWeatherBox(course, 'detailWeather')}
     <div class="course-detail-chiprow">
       <span class="course-detail-chip">${escapeHtml(type)}</span>
@@ -7688,23 +7612,12 @@ function openCourseDetail(id) {
   `;
   document.getElementById('courseDetailModal').style.display = 'flex';
   hydrateSavedSpotPhotos([course]);
-  hydrateCourseDetailDescription(course);
   hydrateSpotWeather([course], 'detailWeather');
 }
 
 function closeCourseDetail() {
   document.getElementById('courseDetailModal').style.display = 'none';
   courseDetailTargetId = null;
-}
-
-function hydrateCourseDetailDescription(course) {
-  if (!course) return;
-  const targetKey = course.key;
-  fetchCultureSpotOverview(course).then(overview => {
-    if (!overview || courseDetailTargetId !== targetKey) return;
-    const desc = document.getElementById('courseDetailDesc');
-    if (desc) desc.textContent = summarizeCultureOverview(overview, 148);
-  });
 }
 
 function isStoredLoopCourse(course) {
