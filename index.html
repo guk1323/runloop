@@ -85,11 +85,14 @@ if ('serviceWorker' in navigator) {
   .ai-location-btn{width:40px;height:40px;background:#fff;border:1px solid var(--gray-100);border-radius:var(--rs);cursor:pointer;font-size:19px;font-weight:800;line-height:1;color:var(--coral-dark);flex-shrink:0;font-family:inherit;}
   .ai-selected-hidden{display:none!important;}
   .culture-map-filter{display:flex;flex-direction:column;gap:6px;background:rgba(255,255,255,.94);border-radius:var(--r);padding:7px;box-shadow:0 2px 10px rgba(0,0,0,.13);backdrop-filter:blur(14px);}
+  .culture-map-filter-head{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .culture-map-filter-title{display:flex;align-items:center;gap:7px;min-width:0;color:var(--gray-900);font-size:12px;font-weight:900;}
+  .culture-map-filter-title span{color:var(--gray-500);font-size:11px;font-weight:800;white-space:nowrap;}
+  .culture-map-filter-toggle{height:28px;border-radius:999px;border:1px solid var(--gray-100);background:#fff;color:var(--gray-700);font-size:11px;font-weight:900;font-family:inherit;padding:0 10px;cursor:pointer;white-space:nowrap;}
+  .culture-map-filter-body{display:none;flex-direction:column;gap:6px;}
+  .culture-map-filter.open .culture-map-filter-body{display:flex;}
   .culture-map-filter-row{display:flex;align-items:center;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
   .culture-map-filter-row::-webkit-scrollbar{display:none;}
-  .culture-map-filter-search{width:100%;height:34px;border:1px solid var(--gray-100);border-radius:var(--rs);background:#fff;color:var(--gray-900);font-size:12px;font-weight:700;font-family:inherit;padding:0 10px;outline:none;}
-  .culture-map-filter-search:focus{border-color:var(--coral);}
-  .culture-map-filter-search::placeholder{color:var(--gray-400);}
   .culture-map-chip{height:28px;padding:0 10px;border-radius:999px;border:1px solid var(--gray-100);background:#fff;color:var(--gray-600);font-size:11px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap;flex-shrink:0;}
   .culture-map-chip.active{background:var(--ink);border-color:var(--ink);color:#fff;}
   .culture-map-chip.sub.active{background:var(--coral-light);border-color:rgba(242,122,94,.22);color:var(--ink);}
@@ -99,9 +102,12 @@ if ('serviceWorker' in navigator) {
   .map-place-title{font-size:14px;font-weight:900;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .map-place-sub{font-size:11px;color:var(--gray-500);line-height:1.4;margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .map-place-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+  .map-place-actions.has-save{grid-template-columns:1fr 1fr 1fr;}
   .map-place-actions button{height:38px;border-radius:var(--rs);font-size:13px;font-weight:900;font-family:inherit;cursor:pointer;}
   .map-place-start{background:#fff;border:1px solid var(--gray-300);color:var(--gray-900);}
   .map-place-dest{background:var(--ink);border:1px solid var(--ink);color:#fff;}
+  .map-place-save{display:none;background:var(--coral-light);border:1px solid rgba(242,122,94,.22);color:var(--ink);}
+  .map-place-save.active{background:#fff;color:var(--coral);border-color:rgba(242,122,94,.45);}
   .culture-map-marker{display:flex;align-items:center;gap:4px;height:30px;padding:0 9px;border:1px solid rgba(28,36,43,.08);border-radius:999px;background:rgba(255,255,255,.96);color:var(--ink);font-size:11px;font-weight:900;font-family:inherit;box-shadow:0 7px 16px rgba(28,36,43,.18);cursor:pointer;white-space:nowrap;backdrop-filter:blur(10px);}
   .culture-map-marker:active{transform:scale(.96);}
   .culture-map-icon{font-size:14px;line-height:1;}
@@ -255,6 +261,7 @@ if ('serviceWorker' in navigator) {
   .mc-grid{display:flex;flex-direction:column;gap:10px;padding-bottom:108px!important;}
   .mc-card{position:relative;background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:13px;overflow:hidden;display:flex;flex-direction:column;gap:11px;flex-shrink:0;box-shadow:0 8px 18px rgba(39,49,58,.035);}
   .mc-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-right:34px;}
+  .mc-card.saved-spot .mc-card-top{padding-right:0;}
   .mc-title{min-width:0;flex:1;}
   .mc-name{font-size:15px;font-weight:800;color:var(--gray-900);line-height:1.28;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .mc-meta{font-size:11px;color:var(--gray-500);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -266,6 +273,7 @@ if ('serviceWorker' in navigator) {
   .mc-btn-run{grid-column:span 3;background:var(--ink);color:#fff;}
   .mc-btn-map{grid-column:span 3;}
   .mc-btn-share,.mc-btn-edit,.mc-btn-delete{grid-column:span 2;}
+  .mc-btn-full{grid-column:1/-1;}
   .mc-btn-edit{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
   .mc-fav{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;border:1px solid var(--gray-100);background:rgba(255,255,255,.9);color:var(--gray-300);font-size:18px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(39,49,58,.06);}
   .mc-fav.active{background:var(--amber-light);border-color:#E8D6B4;color:var(--amber);}
@@ -310,7 +318,7 @@ if ('serviceWorker' in navigator) {
   .near-course-card{background:rgba(255,255,255,.82);border-color:rgba(28,36,43,.07);box-shadow:0 8px 20px rgba(28,36,43,.045);}
   .save-course-btn{background:var(--ink);color:#fff;border:none;border-radius:var(--rp);padding:5px 11px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
   .save-course-btn:hover{background:#111820;}
-  .route-card-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;}
+  .route-card-actions{display:grid;grid-template-columns:1fr;gap:8px;align-items:center;}
   .route-guide-btn{height:34px;border-radius:var(--rp);border:1px solid var(--ink);background:var(--ink);color:#fff;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap;}
   .route-guide-btn.active{background:#fff;color:var(--coral);border-color:rgba(242,122,94,.45);}
   .route-guide-status{display:none;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;padding:8px 10px;border-radius:var(--rs);background:var(--gray-50);border:1px solid var(--gray-100);font-size:12px;font-weight:800;color:var(--gray-700);}
@@ -414,6 +422,8 @@ if ('serviceWorker' in navigator) {
   .culture-spot-actions{display:flex;gap:6px;flex-shrink:0;}
   .culture-spot-actions button{height:32px;border-radius:999px;font-size:12px;font-weight:800;padding:0 12px;cursor:pointer;font-family:inherit;}
   .culture-spot-info-btn{background:#fff;color:var(--gray-700);border:1px solid var(--gray-300);}
+  .culture-spot-save-btn{background:#fff;color:var(--coral);border:1px solid rgba(242,122,94,.28);}
+  .culture-spot-save-btn.active{background:var(--coral-light);color:var(--ink);}
   .culture-spot-route-btn{background:var(--ink);color:#fff;border:none;}
   .culture-collection-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px;}
   .culture-collection-card{background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;min-height:58px;}
@@ -654,7 +664,7 @@ if ('serviceWorker' in navigator) {
 
 <div class="tabs">
   <button class="tab active" data-tab="home" onclick="switchTab('home',this)"><span class="tab-icon">⌂</span><span>홈</span></button>
-  <button class="tab" data-tab="mycourse" onclick="switchTab('mycourse',this)"><span class="tab-icon">⌁</span><span>코스</span></button>
+  <button class="tab" data-tab="mycourse" onclick="switchTab('mycourse',this)"><span class="tab-icon">⌁</span><span>스팟</span></button>
   <button class="tab" data-tab="create" onclick="switchTab('create',this)"><span class="tab-icon">◎</span><span>지도</span></button>
   <button class="tab" data-tab="social" onclick="switchTab('social',this)"><span class="tab-icon">♡</span><span>소셜</span></button>
   <button class="tab" data-tab="mypage" onclick="switchTab('mypage',this)"><span class="tab-icon">●</span><span>MY</span></button>
@@ -751,21 +761,25 @@ if ('serviceWorker' in navigator) {
         </div>
       </div>
       <div id="cultureMapFilterPanel" class="culture-map-filter">
-        <input id="cultureMapSearchInput" class="culture-map-filter-search" type="search" placeholder="문화스팟 검색" autocomplete="off" oninput="setCultureMapSearch(this.value)">
-        <div class="culture-map-filter-row">
-          <button id="cultureMapCatAll" class="culture-map-chip active" onclick="setCultureMapCategory('all')">전체</button>
-          <button id="cultureMapCatCulture" class="culture-map-chip" onclick="setCultureMapCategory('heritage')">유산</button>
-          <button id="cultureMapCatMuseum" class="culture-map-chip" onclick="setCultureMapCategory('museum')">박물관</button>
-          <button id="cultureMapCatExhibit" class="culture-map-chip" onclick="setCultureMapCategory('exhibit')">전시</button>
-          <button id="cultureMapCatPerformance" class="culture-map-chip" onclick="setCultureMapCategory('performance')">공연</button>
-          <button id="cultureMapCatVisited" class="culture-map-chip" onclick="setCultureMapCategory('visited')">방문</button>
-          <span id="cultureMapFilterCount" class="culture-map-filter-count">0곳</span>
+        <div class="culture-map-filter-head">
+          <div class="culture-map-filter-title">문화스팟 <span id="cultureMapFilterCount">0곳</span></div>
+          <button id="cultureMapFilterToggle" class="culture-map-filter-toggle" onclick="toggleCultureMapFilters()">필터</button>
         </div>
-        <div class="culture-map-filter-row">
-          <button id="cultureMapStarsAll" class="culture-map-chip sub active" onclick="setCultureMapMinStars(0)">별점 전체</button>
-          <button id="cultureMapStars3" class="culture-map-chip sub" onclick="setCultureMapMinStars(3)">3점+</button>
-          <button id="cultureMapStars4" class="culture-map-chip sub" onclick="setCultureMapMinStars(4)">4점+</button>
-          <button id="cultureMapStars5" class="culture-map-chip sub" onclick="setCultureMapMinStars(5)">5점</button>
+        <div id="cultureMapFilterBody" class="culture-map-filter-body">
+          <div class="culture-map-filter-row">
+            <button id="cultureMapCatAll" class="culture-map-chip active" onclick="setCultureMapCategory('all')">전체</button>
+            <button id="cultureMapCatCulture" class="culture-map-chip" onclick="setCultureMapCategory('heritage')">유산</button>
+            <button id="cultureMapCatMuseum" class="culture-map-chip" onclick="setCultureMapCategory('museum')">박물관</button>
+            <button id="cultureMapCatExhibit" class="culture-map-chip" onclick="setCultureMapCategory('exhibit')">전시</button>
+            <button id="cultureMapCatPerformance" class="culture-map-chip" onclick="setCultureMapCategory('performance')">공연</button>
+            <button id="cultureMapCatVisited" class="culture-map-chip" onclick="setCultureMapCategory('visited')">방문</button>
+          </div>
+          <div class="culture-map-filter-row">
+            <button id="cultureMapStarsAll" class="culture-map-chip sub active" onclick="setCultureMapMinStars(0)">별점 전체</button>
+            <button id="cultureMapStars3" class="culture-map-chip sub" onclick="setCultureMapMinStars(3)">3점+</button>
+            <button id="cultureMapStars4" class="culture-map-chip sub" onclick="setCultureMapMinStars(4)">4점+</button>
+            <button id="cultureMapStars5" class="culture-map-chip sub" onclick="setCultureMapMinStars(5)">5점</button>
+          </div>
         </div>
       </div>
     </div>
@@ -796,6 +810,7 @@ if ('serviceWorker' in navigator) {
       <div class="map-place-actions">
         <button class="map-place-start" onclick="applyPendingPlaceAsStart()">출발</button>
         <button class="map-place-dest" onclick="applyPendingPlaceAsDestination()">도착</button>
+        <button class="map-place-save" id="aiPlaceSaveBtn" onclick="savePendingCultureSpotFavorite()">저장</button>
       </div>
     </div>
 
@@ -837,26 +852,26 @@ if ('serviceWorker' in navigator) {
         </div>
       </div>
       <div class="conds" id="conds"></div>
-      <button class="save-btn" id="saveBtn" disabled onclick="saveCourse()" style="margin-top:10px;">지도에서 점을 찍어 코스를 만들어보세요</button>
+      <button class="save-btn" id="saveBtn" disabled style="display:none;margin-top:10px;">경로 확인 완료</button>
     </div>
   </div>
 </div>
 
 
-<!-- 내 코스 화면 -->
+<!-- 저장 스팟 화면 -->
 <div id="screen-mycourse" class="screen">
   <div style="padding:14px 16px 10px;background:#fff;border-bottom:1px solid var(--gray-100);flex-shrink:0;display:flex;justify-content:space-between;align-items:center;">
-    <div style="font-size:15px;font-weight:700;color:var(--gray-900);">저장한 코스</div>
+    <div style="font-size:15px;font-weight:700;color:var(--gray-900);">가고 싶은 문화스팟</div>
     <div style="font-size:12px;color:var(--gray-500);" id="myCourseCount">0개</div>
   </div>
   <div class="course-filter">
     <button id="courseFilterAll" class="active" onclick="setMyCourseFilter('all')">전체</button>
-    <button id="courseFilterFav" onclick="setMyCourseFilter('favorite')">즐겨찾기</button>
+    <button id="courseFilterFav" onclick="setMyCourseFilter('visited')">방문 기록</button>
   </div>
   <div style="flex:1;overflow-y:auto;padding:12px;" id="myCourseList">
     <div id="myCourseEmpty" style="text-align:center;padding:48px 0;color:var(--gray-500);">
-      <div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">저장된 코스가 없어요</div>
-      <div style="font-size:13px;line-height:1.6;">지도나 추천에서 코스를<br>저장해보세요!</div>
+      <div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">저장한 문화스팟이 없어요</div>
+      <div style="font-size:13px;line-height:1.6;">홈이나 지도에서 가고 싶은 스팟을<br>저장해보세요</div>
     </div>
   </div>
 </div>
@@ -911,7 +926,7 @@ if ('serviceWorker' in navigator) {
         <div style="width:1px;background:rgba(255,255,255,.2);margin:0 4px;"></div>
         <div class="my-point-item" style="flex:1;text-align:center;">
           <div class="my-point-val" id="myTotalRuns">0회</div>
-          <div class="my-point-label">런닝 횟수</div>
+          <div class="my-point-label">활동 횟수</div>
         </div>
         <div style="width:1px;background:rgba(255,255,255,.2);margin:0 4px;"></div>
         <div class="my-point-item" style="flex:1;text-align:center;">
@@ -921,9 +936,9 @@ if ('serviceWorker' in navigator) {
       </div>
     </div>
 
-    <!-- 이번 주 러닝 -->
+    <!-- 활동 기록 -->
     <div style="padding:16px 16px 8px;display:flex;justify-content:space-between;align-items:center;">
-      <div class="my-section" style="padding:0;">이번 주 러닝</div>
+      <div class="my-section" style="padding:0;">활동 기록</div>
       <div style="font-size:12px;color:var(--coral);font-weight:500;cursor:pointer;" onclick="openAllRecords()">전체 기록 →</div>
     </div>
     <div style="background:#fff;border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100);padding:16px;">
@@ -948,11 +963,11 @@ if ('serviceWorker' in navigator) {
           <div style="font-size:20px;font-weight:700;color:var(--coral);line-height:1;" id="weekDist">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">km</small></div>
         </div>
         <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
-          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">런닝 횟수</div>
+          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">활동 횟수</div>
           <div style="font-size:20px;font-weight:700;color:var(--gray-900);line-height:1;" id="weekCount">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">회</small></div>
         </div>
         <div style="background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;text-align:center;">
-          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">저장 코스</div>
+          <div style="font-size:10px;color:var(--gray-500);font-weight:500;margin-bottom:3px;letter-spacing:.2px;">저장 스팟</div>
           <div style="font-size:20px;font-weight:700;color:var(--gray-700);line-height:1;" id="homeCourseCount">0<small style="font-size:10px;font-weight:400;color:var(--gray-500);">개</small></div>
         </div>
       </div>
@@ -979,27 +994,6 @@ if ('serviceWorker' in navigator) {
         </div>
       </div>
       <div class="culture-visit-list" id="myCultureVisitList"></div>
-    </div>
-
-    <div class="my-block-head">
-      <div class="my-section">내 정보</div>
-      <button class="my-head-action" onclick="openProfileEdit()">편집</button>
-    </div>
-    <div class="my-info-panel">
-      <div class="my-info-grid">
-        <div class="my-info-card">
-          <div class="my-info-label">주간 목표</div>
-          <div class="my-info-value" id="myGoalInfo">—</div>
-        </div>
-        <div class="my-info-card">
-          <div class="my-info-label">신체 정보</div>
-          <div class="my-info-value" id="myBodyInfo">—</div>
-        </div>
-        <div class="my-info-card">
-          <div class="my-info-label">활동 데이터</div>
-          <div class="my-info-value" id="mySourceInfo">—</div>
-        </div>
-      </div>
     </div>
 
     <div class="my-block-head">
@@ -1080,7 +1074,7 @@ if ('serviceWorker' in navigator) {
 <div id="allRecordsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1001;align-items:flex-end;justify-content:center;">
   <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;max-height:85vh;display:flex;flex-direction:column;">
     <div style="padding:16px 18px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gray-100);">
-      <div style="font-size:16px;font-weight:700;">전체 런닝 기록</div>
+      <div style="font-size:16px;font-weight:700;">전체 활동 기록</div>
       <button onclick="closeAllRecords()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-500);">×</button>
     </div>
     <!-- 기록 목록 -->
@@ -1097,7 +1091,7 @@ if ('serviceWorker' in navigator) {
   <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;max-height:85vh;display:flex;flex-direction:column;">
     <div style="padding:16px 18px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gray-100);">
       <div>
-        <div style="font-size:16px;font-weight:800;" id="recordDetailTitle">런닝 기록</div>
+        <div style="font-size:16px;font-weight:800;" id="recordDetailTitle">활동 기록</div>
         <div style="font-size:12px;color:var(--gray-500);margin-top:3px;" id="recordDetailDate">-</div>
       </div>
       <button onclick="closeRecordDetail()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-500);">×</button>
@@ -1106,12 +1100,12 @@ if ('serviceWorker' in navigator) {
   </div>
 </div>
 
-<!-- 코스 상세 모달 -->
+<!-- 스팟 상세 모달 -->
 <div id="courseDetailModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1002;align-items:flex-end;justify-content:center;">
   <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;max-height:85vh;display:flex;flex-direction:column;">
     <div style="padding:16px 18px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gray-100);">
       <div>
-        <div style="font-size:16px;font-weight:800;" id="courseDetailTitle">코스</div>
+        <div style="font-size:16px;font-weight:800;" id="courseDetailTitle">스팟</div>
         <div style="font-size:12px;color:var(--gray-500);margin-top:3px;" id="courseDetailMeta">-</div>
       </div>
       <button onclick="closeCourseDetail()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-500);">×</button>
@@ -2339,6 +2333,7 @@ function moveToMyLocation() {
         zIndex: 3
       });
       if (createMode === 'ai' && map === createMap) setAiMarker(latlng, '현재 위치');
+      setCultureMapSearch('');
       loadNearCourses();
       toast('현재 위치로 이동했어요!');
     }, () => toast('위치 권한을 허용해주세요'), { enableHighAccuracy: true, timeout: 8000 });
@@ -2407,11 +2402,14 @@ function resolveAiPlaceFromLatLng(latlng) {
   });
 }
 
-function showAiPlaceCard(latlng, name, sub) {
+function showAiPlaceCard(latlng, name, sub, options = {}) {
   const lat = latlng.getLat ? latlng.getLat() : parseFloat(latlng.lat);
   const lng = latlng.getLng ? latlng.getLng() : parseFloat(latlng.lng);
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
-  aiPendingPlace = { lat, lng, name: name || '선택한 장소', sub: sub || '출발 또는 도착으로 설정하세요' };
+  const cultureSpot = options && options.spot
+    ? { ...options.spot, place_name: name || options.spot.place_name, y: lat, x: lng }
+    : null;
+  aiPendingPlace = { lat, lng, name: name || '선택한 장소', sub: sub || '출발 또는 도착으로 설정하세요', cultureSpot };
   if (aiPendingPlaceOverlay) aiPendingPlaceOverlay.setMap(null);
   aiPendingPlaceOverlay = new kakao.maps.CustomOverlay({
     map: createMap,
@@ -2429,6 +2427,7 @@ function showAiPlaceCard(latlng, name, sub) {
       : '도착을 누르면 현재 위치에서 도보 경로를 표시해요';
   }
   if (card) card.style.display = 'block';
+  updateAiPlaceSaveButton();
   const guide = document.getElementById('aiMapGuide');
   if (guide) guide.style.display = 'none';
   const input = document.getElementById('addrInput');
@@ -2440,6 +2439,7 @@ function clearAiPlaceCard() {
   aiPendingPlace = null;
   const card = document.getElementById('aiPlaceCard');
   if (card) card.style.display = 'none';
+  updateAiPlaceSaveButton();
   if (aiPendingPlaceOverlay) {
     aiPendingPlaceOverlay.setMap(null);
     aiPendingPlaceOverlay = null;
@@ -2683,6 +2683,7 @@ function prepareAddressSearchInput(input) {
 function searchAddress(query) {
   clearTimeout(addrSearchTimer);
   addrSearchSeq++;
+  setCultureMapSearch(query);
   const dropdown = document.getElementById('addrDropdown');
   const trimmed = (query || '').trim();
   if (!trimmed || trimmed.length < 2) {
@@ -2723,6 +2724,7 @@ function selectAddress(name, lat, lng) {
   map.setLevel(4);
   document.getElementById('addrInput').value = name;
   document.getElementById('addrDropdown').style.display = 'none';
+  setCultureMapSearch('');
   if (createMode === 'ai') {
     showAiPlaceCard(latlng, name, '검색한 장소');
   }
@@ -3264,12 +3266,9 @@ function refreshStats(km) {
   const crossEl = document.getElementById('dCal');
   if (crossEl) crossEl.textContent = '—';
   const sb = document.getElementById('saveBtn');
-  if (km > 0.05) {
-    sb.disabled = false;
-    sb.textContent = km.toFixed(2) + 'km 코스 저장하기';
-  } else {
+  if (sb) {
     sb.disabled = true;
-    sb.textContent = '지도에서 점을 찍어 코스를 만들어보세요';
+    sb.textContent = km > 0.05 ? '경로 확인 완료' : '지도에서 점을 찍어 경로를 확인해보세요';
   }
 }
 
@@ -3313,39 +3312,7 @@ function makeUniqueCourseName(baseName, existingCourses) {
 }
 
 function saveCourse() {
-  if (S.path.length < 2) { toast('코스를 더 그어주세요!'); return; }
-  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
-  const savedAt = new Date();
-  const suggestedName = buildCourseNameSuggestion(S.distKm, savedAt, S.path, courses);
-  const routeSegments = S.segments.map(segment => ({
-    mode: segment.mode || 'snapped',
-    dist: (pathLengthMeters(segment) / 1000).toFixed(3),
-    points: segment.map(p => ({ lat: p.getLat(), lng: p.getLng() }))
-  }));
-  const manualKm = routeSegments
-    .filter(segment => segment.mode === 'manual')
-    .reduce((sum, segment) => sum + parseFloat(segment.dist), 0);
-  courses.push({
-    id: savedAt.getTime(),
-    name: suggestedName,
-    dist: S.distKm.toFixed(2),
-    date: savedAt.toLocaleDateString('ko-KR', {month:'long',day:'numeric'}),
-    savedAt: savedAt.toISOString(),
-    favorite: false,
-    points: S.path.map(p => ({ lat: p.getLat(), lng: p.getLng() })),
-    segments: routeSegments,
-    manualDist: manualKm.toFixed(2)
-  });
-  localStorage.setItem('myCourses', JSON.stringify(courses));
-  toast(suggestedName + ' 저장됐어요. 코스 탭에서 시작해요');
-  clearDraw();
-  // 코스 탭으로 이동
-  setTimeout(() => {
-    const courseTab = document.querySelector('[data-tab="mycourse"]');
-    if (courseTab) {
-      switchTab('mycourse', courseTab);
-    }
-  }, 300);
+  toast('코스 저장 기능은 현재 사용하지 않아요');
 }
 
 /* AI 추천 코스 */
@@ -3368,6 +3335,7 @@ const HOME_RECOMMENDATION_COUNT = 5;
 const CULTURE_SPOT_SEARCH_RADIUS_METERS = 10000;
 const CULTURE_SPOT_VISIT_RADIUS_METERS = 100;
 const CULTURE_SPOT_VISITS_KEY = 'runloopCultureSpotVisitsV1';
+const CULTURE_SPOT_FAVORITES_KEY = 'runloopCultureSpotFavoritesV1';
 const CULTURE_SPOT_MIN_VALUE_STARS = 2;
 const CULTURE_MAP_MARKER_LIMIT = 80;
 const CULTURE_SPOT_KEYWORDS = ['세계문화유산', '문화재', '국보', '보물', '사적', '궁궐', '왕릉', '유적지', '박물관', '미술관', '기념관', '역사관', '전통문화', '한옥마을', '사찰', '성곽', '공연장', '극장', '전시관'];
@@ -3375,6 +3343,7 @@ let cultureSpotFilter = 'recommend';
 let cultureMapCategory = 'all';
 let cultureMapMinStars = 0;
 let cultureMapSearchQuery = '';
+let cultureMapFiltersOpen = false;
 let lastCultureSpotResults = [];
 let aiRouteOverlays = [];
 let aiRouteActiveCourse = null;
@@ -4347,7 +4316,6 @@ function renderCourses() {
         </div>
         <div class="route-card-actions">
           <button class="route-guide-btn" id="routeGuideBtn-${i}" onclick="event.stopPropagation();toggleRouteGuidance(${i})">안내 시작</button>
-          <button class="save-course-btn" onclick="event.stopPropagation();saveAiCourse(${i})">내 코스 저장</button>
         </div>
       </div>`;
     card.onclick = () => selCourse(i);
@@ -5161,6 +5129,202 @@ function getCultureSpotVisitState(spot) {
   return { visited: false, isNew: false, data: null };
 }
 
+function getCultureSpotLatLng(spot) {
+  const lat = Number(spot && (spot.y ?? spot.lat ?? spot.mapy));
+  const lng = Number(spot && (spot.x ?? spot.lng ?? spot.mapx));
+  return {
+    lat: Number.isFinite(lat) ? lat : null,
+    lng: Number.isFinite(lng) ? lng : null
+  };
+}
+
+function getCultureSpotFavoriteKey(spot) {
+  const stableId = spot && (spot.contentId || spot.contentid || spot.id);
+  if (stableId && !String(stableId).startsWith('fallback')) return 'id:' + String(stableId);
+  return getCultureSpotVisitKey(spot);
+}
+
+function readCultureSpotFavorites() {
+  try {
+    const favorites = JSON.parse(localStorage.getItem(CULTURE_SPOT_FAVORITES_KEY) || '{}');
+    return favorites && typeof favorites === 'object' && !Array.isArray(favorites) ? favorites : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function writeCultureSpotFavorites(favorites) {
+  try {
+    localStorage.setItem(CULTURE_SPOT_FAVORITES_KEY, JSON.stringify(favorites && typeof favorites === 'object' ? favorites : {}));
+  } catch (_) {}
+}
+
+function getFavoriteCultureSpotList() {
+  return Object.values(readCultureSpotFavorites())
+    .filter(Boolean)
+    .sort((a, b) => getCultureSpotSavedTime(b) - getCultureSpotSavedTime(a));
+}
+
+function getFavoriteCultureSpotByKey(key) {
+  const favorites = readCultureSpotFavorites();
+  return favorites[String(key)] || null;
+}
+
+function getCultureSpotSavedTime(spot) {
+  const saved = Date.parse(spot && (spot.savedAt || spot.updatedAt) || '');
+  return Number.isFinite(saved) ? saved : 0;
+}
+
+function normalizeCultureSpotFavorite(spot, existing = null) {
+  const source = spot || {};
+  const latlng = getCultureSpotLatLng(source);
+  const name = String(source.place_name || source.name || '문화 스팟').trim() || '문화 스팟';
+  const type = source.cultureType || source.type || getCultureSpotType(source, '');
+  const stars = Math.max(1, Math.min(5, Math.round(Number(source.cultureValueStars || source.stars) || 1)));
+  const dist = Number(source.distFromMe);
+  const key = getCultureSpotFavoriteKey({ ...source, place_name: name, y: latlng.lat, x: latlng.lng });
+  return {
+    key,
+    id: source.id || source.contentId || source.contentid || '',
+    contentId: source.contentId || source.contentid || source.id || '',
+    place_name: name,
+    name,
+    cultureType: type,
+    cultureValueStars: stars,
+    cultureValueLabel: source.cultureValueLabel || getCultureValueStarsText(stars),
+    y: latlng.lat,
+    x: latlng.lng,
+    lat: latlng.lat,
+    lng: latlng.lng,
+    distFromMe: Number.isFinite(dist) ? dist : null,
+    address_name: source.address_name || source.addr1 || source.address || '',
+    place_url: source.place_url || source.url || '',
+    source: source.source || '',
+    savedAt: existing && existing.savedAt ? existing.savedAt : new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function saveCultureSpotFavorite(spot) {
+  const item = normalizeCultureSpotFavorite(spot);
+  if (item.lat === null || item.lng === null || !Number.isFinite(Number(item.lat)) || !Number.isFinite(Number(item.lng))) {
+    toast('저장할 위치 정보가 없어요');
+    return { saved: false, existed: false, item: null };
+  }
+  const favorites = readCultureSpotFavorites();
+  const existed = !!favorites[item.key];
+  favorites[item.key] = normalizeCultureSpotFavorite(spot, favorites[item.key]);
+  writeCultureSpotFavorites(favorites);
+  refreshCultureSpotFavoriteViews();
+  toast(existed ? '이미 저장한 스팟이에요' : '가고 싶은 스팟에 저장했어요');
+  return { saved: true, existed, item: favorites[item.key] };
+}
+
+function removeCultureSpotFavorite(key) {
+  const favorites = readCultureSpotFavorites();
+  if (!favorites[String(key)]) return false;
+  delete favorites[String(key)];
+  writeCultureSpotFavorites(favorites);
+  refreshCultureSpotFavoriteViews();
+  return true;
+}
+
+function isCultureSpotFavorited(spot) {
+  if (!spot) return false;
+  const favorites = readCultureSpotFavorites();
+  return !!favorites[getCultureSpotFavoriteKey(spot)];
+}
+
+function refreshCultureSpotFavoriteViews() {
+  updateCultureSpotSaveButtonLabels();
+  updateAiPlaceSaveButton();
+  if (S.tab === 'mycourse') renderMyCourses();
+  if (S.tab === 'mypage') renderRecords();
+}
+
+function updateCultureSpotSaveButtonLabels() {
+  const favorites = readCultureSpotFavorites();
+  document.querySelectorAll('.culture-spot-save-btn').forEach(button => {
+    const key = button.dataset ? button.dataset.key : '';
+    const active = !!favorites[key];
+    button.classList.toggle('active', active);
+    button.textContent = active ? '저장됨' : '저장';
+  });
+}
+
+function updateAiPlaceSaveButton() {
+  const actions = document.querySelector('#aiPlaceCard .map-place-actions');
+  const button = document.getElementById('aiPlaceSaveBtn');
+  const spot = aiPendingPlace && aiPendingPlace.cultureSpot;
+  if (actions) actions.classList.toggle('has-save', !!spot);
+  if (!button) return;
+  if (!spot) {
+    button.style.display = 'none';
+    button.classList.remove('active');
+    button.textContent = '저장';
+    return;
+  }
+  const active = isCultureSpotFavorited(spot);
+  button.style.display = 'block';
+  button.classList.toggle('active', active);
+  button.textContent = active ? '저장됨' : '저장';
+}
+
+function getCultureSpotFromButton(button) {
+  const data = button && button.dataset ? button.dataset : {};
+  return {
+    id: data.id || '',
+    contentId: data.id || '',
+    place_name: data.place || '문화 스팟',
+    name: data.place || '문화 스팟',
+    y: Number(data.lat),
+    x: Number(data.lng),
+    lat: Number(data.lat),
+    lng: Number(data.lng),
+    cultureType: data.type || '문화 스팟',
+    cultureValueStars: Number(data.stars) || 1,
+    cultureValueLabel: data.valueLabel || '',
+    distFromMe: data.dist === '' || data.dist === undefined ? null : Number(data.dist),
+    address_name: data.address || '',
+    place_url: data.url || '',
+    source: data.source || ''
+  };
+}
+
+function saveCultureSpotFromHomeButton(button) {
+  if (!button) return;
+  saveCultureSpotFavorite(getCultureSpotFromButton(button));
+}
+
+function savePendingCultureSpotFavorite() {
+  if (!aiPendingPlace || !aiPendingPlace.cultureSpot) {
+    toast('문화스팟을 먼저 선택해주세요');
+    return;
+  }
+  saveCultureSpotFavorite({
+    ...aiPendingPlace.cultureSpot,
+    place_name: aiPendingPlace.name,
+    name: aiPendingPlace.name,
+    y: aiPendingPlace.lat,
+    x: aiPendingPlace.lng,
+    lat: aiPendingPlace.lat,
+    lng: aiPendingPlace.lng
+  });
+}
+
+function formatCultureSpotSavedAt(spot) {
+  const saved = Date.parse(spot && spot.savedAt || '');
+  if (!Number.isFinite(saved)) return '';
+  return new Date(saved).toLocaleDateString('ko-KR', { month:'long', day:'numeric' });
+}
+
+function formatCultureSpotDistanceLabel(distKm) {
+  if (distKm === null || distKm === undefined || distKm === '') return '거리 정보 없음';
+  const value = Number(distKm);
+  if (!Number.isFinite(value)) return '거리 정보 없음';
+  return value < 1 ? Math.round(value * 1000) + 'm' : value.toFixed(1) + 'km';
+}
+
 function getDistKm(lat1, lng1, lat2, lng2) {
   const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
@@ -5196,6 +5360,8 @@ function renderNearCourses(results) {
     const lat = Number(p.y) || S.lat;
     const lng = Number(p.x) || S.lng;
     const visitState = getCultureSpotVisitState(p);
+    const favoriteKey = getCultureSpotFavoriteKey(p);
+    const favorited = isCultureSpotFavorited(p);
     const footerText = visitState.visited ? '방문 기록됨' : getCultureSpotOneLine(placeName, type, valueStars);
     const cardClass = i === 0 ? 'culture-spot-card featured' : 'culture-spot-card';
     const visitedPill = visitState.visited ? '<span class="culture-spot-pill visited">방문 기록</span>' : '';
@@ -5220,6 +5386,7 @@ function renderNearCourses(results) {
           <div class="culture-spot-desc">${escapeHtml(footerText)}</div>
           <div class="culture-spot-actions">
             <button class="culture-spot-info-btn" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromHomeButton(this)">소개</button>
+            <button class="culture-spot-save-btn ${favorited ? 'active' : ''}" data-key="${escapeHtml(favoriteKey)}" data-id="${escapeHtml(String(p.id || p.contentId || p.contentid || ''))}" data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" data-type="${escapeHtml(type)}" data-stars="${valueStars}" data-dist="${Number.isFinite(distValue) ? distValue : ''}" data-address="${escapeHtml(p.address_name || p.addr1 || '')}" data-url="${escapeHtml(introUrl)}" data-source="${escapeHtml(p.source || '')}" onclick="saveCultureSpotFromHomeButton(this)">${favorited ? '저장됨' : '저장'}</button>
             <button class="culture-spot-route-btn" data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" onclick="goToAiFromHomeButton(this)">경로</button>
           </div>
         </div>
@@ -5296,6 +5463,11 @@ function setCultureMapSearch(value) {
   renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
 }
 
+function toggleCultureMapFilters() {
+  cultureMapFiltersOpen = !cultureMapFiltersOpen;
+  updateCultureMapFilterControls(getCurrentCultureSpotMapItems().length);
+}
+
 function updateCultureMapFilterControls(count) {
   const categoryMap = {
     all: 'cultureMapCatAll',
@@ -5321,8 +5493,10 @@ function updateCultureMapFilterControls(count) {
     if (el) el.classList.toggle('active', cultureMapMinStars === Number(key));
   });
 
-  const input = document.getElementById('cultureMapSearchInput');
-  if (input && input.value !== cultureMapSearchQuery) input.value = cultureMapSearchQuery;
+  const panel = document.getElementById('cultureMapFilterPanel');
+  if (panel) panel.classList.toggle('open', cultureMapFiltersOpen);
+  const toggle = document.getElementById('cultureMapFilterToggle');
+  if (toggle) toggle.textContent = cultureMapFiltersOpen ? '접기' : '필터';
   const countEl = document.getElementById('cultureMapFilterCount');
   if (countEl) countEl.textContent = `${count || 0}곳`;
 }
@@ -5378,7 +5552,7 @@ function renderCultureSpotMapMarkers(spots) {
     markerEl.addEventListener('touchstart', stopMarkerEvent, { passive: false });
     markerEl.onclick = event => {
       stopMarkerEvent(event);
-      showAiPlaceCard(position, placeName, `${distText} · ${type} · ★${stars}`);
+      showAiPlaceCard(position, placeName, `${distText} · ${type} · ★${stars}`, { spot });
     };
 
     const overlay = new kakao.maps.CustomOverlay({
@@ -5507,13 +5681,13 @@ function applyHomeRecommendationToCreate(name, lat, lng, attempt) {
 /* 기록 렌더링 */
 function renderRecords() {
   const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
-  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
+  const savedSpots = getFavoriteCultureSpotList();
   const wrap = document.getElementById('recordList');
   // 이번 주 요약
   const weekTotal = records.reduce((s,r) => s + parseFloat(r.dist), 0);
   document.getElementById('weekDist').innerHTML = weekTotal.toFixed(1) + '<small style="font-size:10px;font-weight:400;color:var(--gray-500);">km</small>';
   document.getElementById('weekCount').innerHTML = records.length + '<small style="font-size:10px;font-weight:400;color:var(--gray-500);">회</small>';
-  document.getElementById('homeCourseCount').innerHTML = courses.length + '<small style="font-size:10px;font-weight:400;color:var(--gray-500);">개</small>';
+  document.getElementById('homeCourseCount').innerHTML = savedSpots.length + '<small style="font-size:10px;font-weight:400;color:var(--gray-500);">개</small>';
 
   // ── 요일별 바 차트 ──
   const chartEl  = document.getElementById('weekBarChart');
@@ -5568,7 +5742,7 @@ function renderRecords() {
 
   if (!wrap) return;
   if (!records.length) {
-    wrap.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--gray-500);"><div style="font-size:32px;margin-bottom:8px;">👟</div><div style="font-size:14px;font-weight:500;color:var(--gray-700);">아직 기록이 없어요</div><div style="font-size:13px;margin-top:4px;">코스 탭에서 첫 런닝을 시작해보세요!</div></div>';
+    wrap.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--gray-500);"><div style="font-size:32px;margin-bottom:8px;">👟</div><div style="font-size:14px;font-weight:500;color:var(--gray-700);">아직 기록이 없어요</div><div style="font-size:13px;margin-top:4px;">지도에서 첫 활동을 시작해보세요!</div></div>';
     return;
   }
   const emojis = ['🏃','🌟','💪','🔥','⚡'];
@@ -5696,7 +5870,7 @@ function openAllRecords() {
       <div class="all-record-card" onclick="openRecordDetail(${i})">
         <div class="all-record-icon">${emojis[i % emojis.length]}</div>
         <div class="all-record-info">
-          <div class="all-record-name">${escapeHtml(r.name || '런닝 기록')}</div>
+          <div class="all-record-name">${escapeHtml(r.name || '활동 기록')}</div>
           <div class="all-record-meta">${getAllRecordMeta(r)}</div>
         </div>
         <div class="all-record-dist">${escapeHtml(r.dist || '-')}km</div>
@@ -5717,7 +5891,7 @@ function openRecordDetail(index) {
   const date = document.getElementById('recordDetailDate');
   const body = document.getElementById('recordDetailBody');
   const pathCount = Array.isArray(r.path) ? r.path.length : 0;
-  title.textContent = r.name || '런닝 기록';
+  title.textContent = r.name || '활동 기록';
   const conditionValue = getRecordConditionValue(r);
   date.textContent = [r.date, getRecordConditionLabel(r)].filter(Boolean).join(' · ') || '-';
   body.innerHTML = `
@@ -5803,7 +5977,7 @@ function escapeHtml(value) {
 }
 
 function clearAllRecords() {
-  if (!confirm('모든 런닝 기록을 삭제할까요?')) return;
+  if (!confirm('모든 활동 기록을 삭제할까요?')) return;
   localStorage.removeItem('runRecords');
   closeAllRecords();
   renderRecords();
@@ -6291,67 +6465,69 @@ function shareRecordPhotoToSocial(index) {
   openSocialComposer('photo', { recordIndex: index });
 }
 
-/* ── 내 코스 관리 ── */
+/* ── 저장 스팟 관리 ── */
 let renameTargetId = null;
 let courseDetailTargetId = null;
 let myCourseFilter = 'all';
 
 function renderMyCourses() {
-  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
+  const spots = getFavoriteCultureSpotList();
   const list = document.getElementById('myCourseList');
   const empty = document.getElementById('myCourseEmpty');
   const count = document.getElementById('myCourseCount');
-  const sortedCourses = [...courses].sort((a, b) => getCourseSavedTime(b) - getCourseSavedTime(a));
-  const visibleCourses = myCourseFilter === 'favorite'
-    ? sortedCourses.filter(c => !!c.favorite)
-    : sortedCourses;
+  const visits = readCultureSpotVisits();
+  const visibleSpots = myCourseFilter === 'visited'
+    ? spots.filter(spot => !!visits[getCultureSpotVisitKey(spot)])
+    : spots;
 
   updateMyCourseFilterButtons();
-  count.textContent = myCourseFilter === 'favorite' && courses.length
-    ? visibleCourses.length + ' / ' + courses.length + '개'
-    : courses.length + '개';
+  count.textContent = myCourseFilter === 'visited' && spots.length
+    ? visibleSpots.length + ' / ' + spots.length + '곳'
+    : spots.length + '곳';
 
-  if (!visibleCourses.length) {
+  if (!visibleSpots.length) {
     list.classList.remove('mc-grid');
     empty.style.display = 'block';
-    empty.innerHTML = myCourseFilter === 'favorite'
-      ? '<div style="font-size:32px;margin-bottom:10px;">☆</div><div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">즐겨찾기한 코스가 없어요</div><div style="font-size:13px;line-height:1.6;">자주 뛰는 코스에 별을 눌러두세요</div>'
-      : '<div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">저장된 코스가 없어요</div><div style="font-size:13px;line-height:1.6;">지도나 추천에서 코스를<br>저장해보세요</div>';
-    // 카드들 제거
+    empty.innerHTML = myCourseFilter === 'visited'
+      ? '<div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">방문 기록이 있는 저장 스팟이 없어요</div><div style="font-size:13px;line-height:1.6;">저장한 문화스팟 근처 100m 안에 가면 방문으로 기록돼요</div>'
+      : '<div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">저장한 문화스팟이 없어요</div><div style="font-size:13px;line-height:1.6;">홈이나 지도에서 가고 싶은 스팟을<br>저장해보세요</div>';
     list.querySelectorAll('.mc-card').forEach(c => c.remove());
     return;
   }
   empty.style.display = 'none';
   list.classList.add('mc-grid');
 
-  // 기존 카드 제거 후 재렌더
   list.querySelectorAll('.mc-card').forEach(c => c.remove());
 
-  visibleCourses.forEach(c => {
-    const meta = getMyCourseCardMeta(c);
-    const courseId = escapeHtml(JSON.stringify(c.id));
-    const isFavorite = !!c.favorite;
+  visibleSpots.forEach(spot => {
+    const keyJson = escapeHtml(JSON.stringify(spot.key));
+    const type = spot.cultureType || getCultureSpotType(spot, '');
+    const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
+    const visited = !!visits[getCultureSpotVisitKey(spot)];
+    const meta = [
+      type,
+      formatCultureSpotSavedAt(spot) ? '저장 ' + formatCultureSpotSavedAt(spot) : '',
+      visited ? '방문 기록' : ''
+    ].filter(Boolean).join(' · ');
     const card = document.createElement('div');
-    card.className = 'mc-card';
-    card.id = 'mc-' + c.id;
+    card.className = 'mc-card saved-spot';
+    card.id = 'mc-' + String(spot.key).replace(/[^a-z0-9_-]/gi, '_');
+    card.onclick = () => openCourseDetail(spot.key);
     card.innerHTML = `
-      <button class="mc-fav ${isFavorite ? 'active' : ''}" onclick="toggleCourseFavorite(${courseId}, event)" aria-label="${isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}" title="${isFavorite ? '즐겨찾기 해제' : '즐겨찾기 추가'}">${isFavorite ? '★' : '☆'}</button>
       <div class="mc-card-top">
         <div class="mc-title">
-          <div class="mc-name">${escapeHtml(c.name || '코스')}</div>
-          <div class="mc-meta">${meta.minutes} · ${escapeHtml(formatCourseSavedAt(c) || c.date || '-')}</div>
+          <div class="mc-name">${escapeHtml(spot.name || spot.place_name || '문화 스팟')}</div>
+          <div class="mc-meta">${escapeHtml(meta || '저장한 문화스팟')}</div>
         </div>
         <div class="mc-distance">
-          <div class="mc-distance-value">${meta.distance}</div>
-          <div class="mc-distance-unit">km</div>
+          <div class="mc-distance-value">★${stars}</div>
+          <div class="mc-distance-unit">${escapeHtml(formatCultureSpotDistanceLabel(spot.distFromMe))}</div>
         </div>
       </div>
       <div class="mc-actions">
-        <button class="mc-btn mc-btn-run" onclick="event.stopPropagation(); startMyCoursRun(${courseId})">코스 시작</button>
-        <button class="mc-btn mc-btn-map" onclick="event.stopPropagation(); viewCourseOnMap(${courseId})">지도에서 보기</button>
-        <button class="mc-btn mc-btn-share" onclick="event.stopPropagation(); openSocialComposer('course',{courseId:${courseId}})">소셜 공유</button>
-        <button class="mc-btn mc-btn-edit" onclick="event.stopPropagation(); openRename(${courseId})">제목 편집</button>
-        <button class="mc-btn mc-btn-delete" onclick="event.stopPropagation(); deleteCourseFromCard(${courseId})">코스 삭제</button>
+        <button class="mc-btn mc-btn-run" onclick="event.stopPropagation(); startSavedSpotRoute(${keyJson})">경로 보기</button>
+        <button class="mc-btn mc-btn-map" onclick="event.stopPropagation(); viewCourseOnMap(${keyJson})">지도에서 보기</button>
+        <button class="mc-btn mc-btn-delete mc-btn-full" onclick="event.stopPropagation(); deleteCourseFromCard(${keyJson})">저장 삭제</button>
       </div>
     `;
     list.appendChild(card);
@@ -6359,7 +6535,7 @@ function renderMyCourses() {
 }
 
 function setMyCourseFilter(filter) {
-  myCourseFilter = filter === 'favorite' ? 'favorite' : 'all';
+  myCourseFilter = filter === 'visited' ? 'visited' : 'all';
   renderMyCourses();
 }
 
@@ -6367,7 +6543,7 @@ function updateMyCourseFilterButtons() {
   const all = document.getElementById('courseFilterAll');
   const fav = document.getElementById('courseFilterFav');
   if (all) all.classList.toggle('active', myCourseFilter === 'all');
-  if (fav) fav.classList.toggle('active', myCourseFilter === 'favorite');
+  if (fav) fav.classList.toggle('active', myCourseFilter === 'visited');
 }
 
 function getCourseSavedTime(course) {
@@ -6390,26 +6566,41 @@ function getCourseById(id) {
 }
 
 function openCourseDetail(id) {
-  const course = getCourseById(id);
+  const course = getFavoriteCultureSpotByKey(id);
   if (!course) return;
   courseDetailTargetId = id;
-  const meta = getMyCourseCardMeta(course);
-  const courseId = escapeHtml(JSON.stringify(id));
-  const favLabel = course.favorite ? '★ 즐겨찾기 해제' : '☆ 즐겨찾기';
+  const spotId = escapeHtml(JSON.stringify(id));
+  const type = course.cultureType || getCultureSpotType(course, '');
+  const stars = Math.max(1, Math.min(5, Math.round(Number(course.cultureValueStars) || 1)));
+  const dist = formatCultureSpotDistanceLabel(course.distFromMe);
+  const visitState = readCultureSpotVisits()[getCultureSpotVisitKey(course)];
+  const savedAt = formatCultureSpotSavedAt(course);
 
-  document.getElementById('courseDetailTitle').textContent = course.name || '코스';
-  document.getElementById('courseDetailMeta').textContent = `${meta.distance}km · ${meta.minutes}`;
+  document.getElementById('courseDetailTitle').textContent = course.name || course.place_name || '문화 스팟';
+  document.getElementById('courseDetailMeta').textContent = [type, `★${stars}`, dist].filter(Boolean).join(' · ');
   document.getElementById('courseDetailBody').innerHTML = `
+    <div class="course-detail-chiprow">
+      <span class="course-detail-chip">${escapeHtml(type)}</span>
+      <span class="course-detail-chip">${escapeHtml(getCultureValueStarsText(stars))}</span>
+      <span class="course-detail-chip">${visitState ? '방문 기록' : '방문 전'}</span>
+    </div>
+    <div class="course-detail-grid">
+      <div class="course-detail-stat">
+        <div class="course-detail-label">문화 가치</div>
+        <div class="course-detail-value g">★${stars}</div>
+      </div>
+      <div class="course-detail-stat">
+        <div class="course-detail-label">거리</div>
+        <div class="course-detail-value">${escapeHtml(dist)}</div>
+      </div>
+    </div>
+    ${savedAt ? `<div class="course-detail-chiprow"><span class="course-detail-chip">저장 ${escapeHtml(savedAt)}</span></div>` : ''}
+    <button class="course-detail-primary-action" onclick="startCourseFromDetail()">경로 보기</button>
     <div class="course-detail-secondary-actions">
-      <button class="course-primary" onclick="startCourseFromDetail()">시작하기</button>
       <button class="course-secondary" onclick="viewCourseFromDetail()">지도에서 보기</button>
+      <button class="course-secondary" onclick="openCultureSpotInfoFromDetail(${spotId})">소개 보기</button>
     </div>
-    <div class="course-detail-secondary-actions">
-      <button class="course-secondary ${course.favorite ? 'active' : ''}" onclick="toggleCourseFavorite(${courseId}, event)">${favLabel}</button>
-      <button class="course-secondary" onclick="editCourseFromDetail()">이름 편집</button>
-    </div>
-    <button class="course-detail-share" onclick="shareCourseFromDetail()">소셜에 공유</button>
-    <button class="course-detail-delete" onclick="deleteCourseFromDetail()">코스 삭제</button>
+    <button class="course-detail-delete" onclick="deleteCourseFromDetail()">저장 삭제</button>
   `;
   document.getElementById('courseDetailModal').style.display = 'flex';
 }
@@ -6544,7 +6735,7 @@ function startCourseFromDetail() {
   if (!courseDetailTargetId) return;
   const id = courseDetailTargetId;
   closeCourseDetail();
-  startMyCoursRun(id);
+  startSavedSpotRoute(id);
 }
 
 function viewCourseFromDetail() {
@@ -6555,21 +6746,37 @@ function viewCourseFromDetail() {
 }
 
 function viewCourseOnMap(id) {
-  const course = getCourseById(id);
+  const course = getFavoriteCultureSpotByKey(id);
   if (!course) return;
-  const points = getStoredCoursePreviewPoints(course);
-  if (points.length < 2) {
-    toast('지도에 표시할 경로가 없어요');
-    return;
-  }
   const createTab = document.querySelector('[data-tab="create"]');
   switchTab('create', createTab);
-  const mapCourse = {
-    ...course,
-    points,
-    routeSource: course.routeSource || 'saved'
-  };
-  showSavedCourseOnCreateMap(mapCourse, 0);
+  showSavedSpotOnCreateMap(course, 0);
+}
+
+function showSavedSpotOnCreateMap(spot, attempt) {
+  setTimeout(() => {
+    if (!S.kakaoReady || !createMap) {
+      if (attempt < 16) {
+        showSavedSpotOnCreateMap(spot, attempt + 1);
+      } else {
+        toast('지도를 불러온 뒤 다시 시도해주세요');
+      }
+      return;
+    }
+    setCreateMode('ai');
+    resetAiCourseSuggestions();
+    const latlng = getCultureSpotLatLng(spot);
+    if (latlng.lat === null || latlng.lng === null || !Number.isFinite(Number(latlng.lat)) || !Number.isFinite(Number(latlng.lng))) {
+      toast('지도에 표시할 위치 정보가 없어요');
+      return;
+    }
+    const position = new kakao.maps.LatLng(latlng.lat, latlng.lng);
+    const type = spot.cultureType || getCultureSpotType(spot, '');
+    const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
+    showAiPlaceCard(position, spot.name || spot.place_name || '문화 스팟', `${formatCultureSpotDistanceLabel(spot.distFromMe)} · ${type} · ★${stars}`, { spot });
+    createMap.setCenter(position);
+    toast((spot.name || spot.place_name || '문화 스팟') + '을 지도에 표시했어요');
+  }, attempt ? 250 : 120);
 }
 
 function showSavedCourseOnCreateMap(course, attempt) {
@@ -6594,23 +6801,37 @@ function showSavedCourseOnCreateMap(course, attempt) {
 }
 
 function editCourseFromDetail() {
-  if (!courseDetailTargetId) return;
-  const id = courseDetailTargetId;
-  closeCourseDetail();
-  openRename(id);
+  openCultureSpotInfoFromDetail(courseDetailTargetId);
 }
 
 function deleteCourseFromDetail() {
   if (!courseDetailTargetId) return;
   const id = courseDetailTargetId;
-  if (!confirm('이 코스를 삭제할까요?')) return;
+  if (!confirm('이 스팟 저장을 삭제할까요?')) return;
   closeCourseDetail();
-  removeMyCourse(id);
+  if (removeCultureSpotFavorite(id)) toast('저장한 스팟을 삭제했어요');
 }
 
 function deleteCourseFromCard(id) {
-  if (!confirm('이 코스를 삭제할까요?')) return;
-  removeMyCourse(id);
+  if (!confirm('이 스팟 저장을 삭제할까요?')) return;
+  if (removeCultureSpotFavorite(id)) toast('저장한 스팟을 삭제했어요');
+}
+
+function startSavedSpotRoute(id) {
+  const spot = getFavoriteCultureSpotByKey(id);
+  if (!spot) return;
+  const latlng = getCultureSpotLatLng(spot);
+  if (latlng.lat === null || latlng.lng === null || !Number.isFinite(Number(latlng.lat)) || !Number.isFinite(Number(latlng.lng))) {
+    toast('경로를 찾을 위치 정보가 없어요');
+    return;
+  }
+  goToAiWithLocation(spot.name || spot.place_name || '문화 스팟', latlng.lat, latlng.lng);
+}
+
+function openCultureSpotInfoFromDetail(id) {
+  const spot = getFavoriteCultureSpotByKey(id);
+  if (!spot) return;
+  window.open(getCultureSpotInfoUrl(spot.name || spot.place_name || '문화 스팟', spot.place_url), '_blank', 'noopener');
 }
 
 function openRename(id) {
@@ -7295,9 +7516,6 @@ function toast(msg) {
 }
 
 /* ══════════════════════════════════════
-   AI 코스 → 내 코스 저장
-══════════════════════════════════════ */
-/* ══════════════════════════════════════
    온보딩
 ══════════════════════════════════════ */
 let obSelectedGender = '';
@@ -7493,48 +7711,6 @@ function saveGoalEdit() {
   closeGoalEdit();
   renderMyPage();
   toast('목표가 변경됐어요! 💪');
-}
-
-function saveAiCourse(idx) {
-  const c = S.courses[idx];
-  if (!c) return;
-  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
-  const points = normalizeStoredPathPoints(c.points);
-  if (points.length < 2) {
-    toast('저장할 지도 경로가 없어요');
-    return;
-  }
-  const savedAt = new Date();
-  const name = makeUniqueCourseName(c.name || buildCourseNameSuggestion(parseFloat(c.km), savedAt, [], courses), courses);
-  const path = points.map(point => makeRouteLatLng(point.lat, point.lng));
-  const dist = pathLengthMeters(path) / 1000;
-  courses.push({
-    id: savedAt.getTime(),
-    name,
-    dist: (Number.isFinite(dist) && dist > 0 ? dist : parseFloat(c.km) || 0).toFixed(2),
-    date: savedAt.toLocaleDateString('ko-KR', {month:'long', day:'numeric'}),
-    savedAt: savedAt.toISOString(),
-    favorite: false,
-    points,
-    segments: [{
-      mode: c.routeSource === 'tmap' ? 'tmap' : 'ai',
-      dist: (Number.isFinite(dist) && dist > 0 ? dist : parseFloat(c.km) || 0).toFixed(3),
-      points
-    }],
-    manualDist: '0.00',
-    fromAi: true,
-    tags: c.tags,
-    routeLabel: c.routeLabel || '',
-    routeSource: c.routeSource || '',
-    startLabel: c.startLabel || getAiCoursePlaceLabel()
-  });
-  localStorage.setItem('myCourses', JSON.stringify(courses));
-  stopRouteGuidance('', { silent: true });
-  toast(name + ' 저장됐어요. 코스 탭에서 시작해요');
-  setTimeout(() => {
-    const courseTab = document.querySelector('[data-tab="mycourse"]');
-    if (courseTab) switchTab('mycourse', courseTab);
-  }, 300);
 }
 
 /* ══════════════════════════════════════
