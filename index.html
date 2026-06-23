@@ -772,12 +772,13 @@ if ('serviceWorker' in navigator) {
             <button id="cultureMapCatMuseum" class="culture-map-chip" onclick="setCultureMapCategory('museum')">박물관</button>
             <button id="cultureMapCatExhibit" class="culture-map-chip" onclick="setCultureMapCategory('exhibit')">전시</button>
             <button id="cultureMapCatPerformance" class="culture-map-chip" onclick="setCultureMapCategory('performance')">공연</button>
-            <button id="cultureMapCatVisited" class="culture-map-chip" onclick="setCultureMapCategory('visited')">방문</button>
           </div>
           <div class="culture-map-filter-row">
             <button id="cultureMapStarsAll" class="culture-map-chip sub active" onclick="setCultureMapMinStars(0)">별점 전체</button>
-            <button id="cultureMapStars3" class="culture-map-chip sub" onclick="setCultureMapMinStars(3)">3점+</button>
-            <button id="cultureMapStars4" class="culture-map-chip sub" onclick="setCultureMapMinStars(4)">4점+</button>
+            <button id="cultureMapStars1" class="culture-map-chip sub" onclick="setCultureMapMinStars(1)">1점</button>
+            <button id="cultureMapStars2" class="culture-map-chip sub" onclick="setCultureMapMinStars(2)">2점</button>
+            <button id="cultureMapStars3" class="culture-map-chip sub" onclick="setCultureMapMinStars(3)">3점</button>
+            <button id="cultureMapStars4" class="culture-map-chip sub" onclick="setCultureMapMinStars(4)">4점</button>
             <button id="cultureMapStars5" class="culture-map-chip sub" onclick="setCultureMapMinStars(5)">5점</button>
           </div>
         </div>
@@ -3340,8 +3341,8 @@ const CULTURE_SPOT_MIN_VALUE_STARS = 2;
 const CULTURE_MAP_MARKER_LIMIT = 80;
 const CULTURE_SPOT_KEYWORDS = ['세계문화유산', '문화재', '국보', '보물', '사적', '궁궐', '왕릉', '유적지', '박물관', '미술관', '기념관', '역사관', '전통문화', '한옥마을', '사찰', '성곽', '공연장', '극장', '전시관'];
 let cultureSpotFilter = 'recommend';
-let cultureMapCategory = 'all';
-let cultureMapMinStars = 0;
+let cultureMapCategories = [];
+let cultureMapStars = [];
 let cultureMapSearchQuery = '';
 let cultureMapFiltersOpen = false;
 let lastCultureSpotResults = [];
@@ -5401,7 +5402,6 @@ function getCurrentCultureSpotMapItems() {
 
 function selectMapCultureSpots(results) {
   const seen = new Set();
-  const visits = readCultureSpotVisits();
   const query = normalizeCultureMapFilterText(cultureMapSearchQuery);
   return (Array.isArray(results) ? results : [])
     .filter(spot => {
@@ -5411,10 +5411,10 @@ function selectMapCultureSpots(results) {
       seen.add(key);
       return true;
     })
-    .filter(spot => matchCultureMapCategory(spot, visits))
+    .filter(spot => matchCultureMapCategory(spot))
     .filter(spot => {
       const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
-      return stars >= cultureMapMinStars;
+      return !cultureMapStars.length || cultureMapStars.includes(stars);
     })
     .filter(spot => !query || normalizeCultureMapFilterText([
       spot.place_name,
@@ -5432,15 +5432,16 @@ function selectMapCultureSpots(results) {
     .slice(0, CULTURE_MAP_MARKER_LIMIT);
 }
 
-function matchCultureMapCategory(spot, visits) {
-  if (cultureMapCategory === 'all') return true;
-  if (cultureMapCategory === 'visited') return !!visits[getCultureSpotVisitKey(spot)];
+function matchCultureMapCategory(spot) {
+  if (!cultureMapCategories.length) return true;
   const type = String(spot && spot.cultureType || '');
-  if (cultureMapCategory === 'heritage') return /문화재|유산|역사/.test(type);
-  if (cultureMapCategory === 'museum') return /박물관/.test(type);
-  if (cultureMapCategory === 'exhibit') return /전시|미술/.test(type);
-  if (cultureMapCategory === 'performance') return /공연/.test(type);
-  return true;
+  return cultureMapCategories.some(category => {
+    if (category === 'heritage') return /문화재|유산|역사/.test(type);
+    if (category === 'museum') return /박물관/.test(type);
+    if (category === 'exhibit') return /전시|미술/.test(type);
+    if (category === 'performance') return /공연/.test(type);
+    return false;
+  });
 }
 
 function normalizeCultureMapFilterText(value) {
@@ -5448,13 +5449,27 @@ function normalizeCultureMapFilterText(value) {
 }
 
 function setCultureMapCategory(category) {
-  cultureMapCategory = ['all', 'heritage', 'museum', 'exhibit', 'performance', 'visited'].includes(category) ? category : 'all';
+  const value = String(category || '');
+  const allowed = ['heritage', 'museum', 'exhibit', 'performance'];
+  if (value === 'all') {
+    cultureMapCategories = [];
+  } else if (allowed.includes(value)) {
+    cultureMapCategories = cultureMapCategories.includes(value)
+      ? cultureMapCategories.filter(item => item !== value)
+      : [...cultureMapCategories, value];
+  }
   renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
 }
 
 function setCultureMapMinStars(stars) {
   const value = Number(stars);
-  cultureMapMinStars = [0, 3, 4, 5].includes(value) ? value : 0;
+  if (value === 0) {
+    cultureMapStars = [];
+  } else if ([1, 2, 3, 4, 5].includes(value)) {
+    cultureMapStars = cultureMapStars.includes(value)
+      ? cultureMapStars.filter(item => item !== value)
+      : [...cultureMapStars, value];
+  }
   renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
 }
 
@@ -5474,23 +5489,27 @@ function updateCultureMapFilterControls(count) {
     heritage: 'cultureMapCatCulture',
     museum: 'cultureMapCatMuseum',
     exhibit: 'cultureMapCatExhibit',
-    performance: 'cultureMapCatPerformance',
-    visited: 'cultureMapCatVisited'
+    performance: 'cultureMapCatPerformance'
   };
   Object.keys(categoryMap).forEach(key => {
     const el = document.getElementById(categoryMap[key]);
-    if (el) el.classList.toggle('active', cultureMapCategory === key);
+    if (!el) return;
+    el.classList.toggle('active', key === 'all' ? !cultureMapCategories.length : cultureMapCategories.includes(key));
   });
 
   const starsMap = {
     0: 'cultureMapStarsAll',
+    1: 'cultureMapStars1',
+    2: 'cultureMapStars2',
     3: 'cultureMapStars3',
     4: 'cultureMapStars4',
     5: 'cultureMapStars5'
   };
   Object.keys(starsMap).forEach(key => {
     const el = document.getElementById(starsMap[key]);
-    if (el) el.classList.toggle('active', cultureMapMinStars === Number(key));
+    if (!el) return;
+    const value = Number(key);
+    el.classList.toggle('active', value === 0 ? !cultureMapStars.length : cultureMapStars.includes(value));
   });
 
   const panel = document.getElementById('cultureMapFilterPanel');
