@@ -29,6 +29,7 @@ if ('serviceWorker' in navigator) {
   :root {
     --ink:#1C242B;--paper:#FFFDF8;--cream:#F0EEE8;
     --coral:#F27A5E;--coral-dark:#A94B37;--coral-light:#FFF0EA;
+    --spot-favorite:#E85D9E;--spot-visited:#2F8F6B;--spot-both:#8B6FD6;
     --lime:#B7F06A;--mint:#CDEFE2;--route:#D9654D;
     --green:var(--ink);--green-light:var(--coral-light);--green-dark:#101820;
     --amber:#8D6A36;--amber-light:#F6EAD3;
@@ -59,6 +60,10 @@ if ('serviceWorker' in navigator) {
 
   .screen{display:none;flex:1;flex-direction:column;overflow:hidden;min-height:0;padding-bottom:92px;}
   .screen.active{display:flex;}
+  .spot-status-default{--spot-status-color:var(--coral);}
+  .spot-status-favorite{--spot-status-color:var(--spot-favorite);}
+  .spot-status-visited{--spot-status-color:var(--spot-visited);}
+  .spot-status-both{--spot-status-color:var(--spot-both);}
 
   /* AI 탭 */
   .ai-top{background:var(--paper);padding:14px 16px;border-bottom:1px solid var(--gray-100);flex-shrink:0;}
@@ -101,13 +106,10 @@ if ('serviceWorker' in navigator) {
   .map-place-image{width:100%;height:100%;object-fit:cover;display:none;}
   .map-place-image.active{display:block;}
   .map-place-photo-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gray-600);font-size:12px;font-weight:900;text-align:center;}
-  .map-place-visited-badge,.culture-spot-visited-badge,.spot-visited-badge{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:999px;background:rgba(28,36,43,.86);color:#fff;border:1px solid rgba(255,255,255,.8);box-shadow:0 6px 14px rgba(28,36,43,.18);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;line-height:1;}
-  .map-place-visited-badge{display:none;}
-  .map-place-photo-frame .map-place-visited-badge,.culture-spot-photo .culture-spot-visited-badge{left:8px;right:auto;}
   .map-place-copy{min-width:0;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
   .map-place-desc{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;}
   .map-place-meta-chip{height:28px;display:inline-flex;align-items:center;max-width:100%;border-radius:999px;background:#fff;border:1px solid var(--gray-100);color:var(--gray-700);font-size:12px;font-weight:900;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;}
-  .map-place-meta-chip.star{color:var(--coral);background:#FFF6F1;border-color:rgba(242,122,94,.16);flex-shrink:0;}
+  .map-place-meta-chip.star{color:var(--spot-status-color,var(--coral));background:#FFF6F1;border-color:rgba(242,122,94,.16);flex-shrink:0;}
   .map-place-weather{display:none;align-items:center;gap:5px;min-width:0;max-width:100%;font-size:12px;font-weight:900;color:var(--ink);background:#FFF6F1;border:1px solid rgba(242,122,94,.16);border-radius:999px;padding:7px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .map-place-weather.active{display:flex;}
   .map-place-weather span{min-width:0;overflow:hidden;text-overflow:ellipsis;}
@@ -119,10 +121,10 @@ if ('serviceWorker' in navigator) {
   .map-place-dest{background:var(--ink);border:1px solid var(--ink);color:#fff;}
   .map-place-save{display:none;background:var(--coral-light);border:1px solid rgba(242,122,94,.22);color:var(--ink);}
   .map-place-save.active{background:#fff;color:var(--coral);border-color:rgba(242,122,94,.45);}
-  .culture-map-marker{display:flex;align-items:center;gap:4px;height:30px;padding:0 9px;border:1px solid rgba(28,36,43,.08);border-radius:999px;background:rgba(255,255,255,.96);color:var(--ink);font-size:11px;font-weight:900;font-family:inherit;box-shadow:0 7px 16px rgba(28,36,43,.18);cursor:pointer;white-space:nowrap;backdrop-filter:blur(10px);}
+  .culture-map-marker{display:flex;align-items:center;gap:5px;height:30px;padding:0 10px;border:1px solid rgba(255,255,255,.72);border-radius:999px;background:var(--spot-status-color,var(--coral));color:#fff;font-size:11px;font-weight:950;font-family:inherit;box-shadow:0 7px 16px rgba(28,36,43,.18);cursor:pointer;white-space:nowrap;backdrop-filter:blur(10px);}
   .culture-map-marker:active{transform:scale(.96);}
-  .culture-map-icon{font-size:14px;line-height:1;}
-  .culture-map-star{color:var(--coral);letter-spacing:0;}
+  .culture-map-name{max-width:66px;overflow:hidden;text-overflow:ellipsis;letter-spacing:0;}
+  .culture-map-star{color:#fff;letter-spacing:0;}
 
   .course-scroll{flex:1;overflow-y:auto;}
   .course-list{padding:10px 12px 12px;display:flex;flex-direction:column;gap:8px;-webkit-overflow-scrolling:touch;}
@@ -310,7 +312,7 @@ if ('serviceWorker' in navigator) {
   .mc-name{font-size:15px;font-weight:800;color:var(--gray-900);line-height:1.28;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .mc-meta{font-size:11px;color:var(--gray-500);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .mc-distance{text-align:right;flex-shrink:0;}
-  .mc-distance-value{font-size:23px;font-weight:900;color:var(--coral);line-height:1;}
+  .mc-distance-value{font-size:23px;font-weight:900;color:var(--spot-status-color,var(--coral));line-height:1;}
   .mc-distance-unit{font-size:11px;color:var(--gray-500);margin-top:1px;}
   .mc-actions{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;flex-shrink:0;padding-top:10px;border-top:1px solid var(--gray-100);}
   .mc-btn{height:34px;padding:0 10px;border-radius:var(--rs);font-size:12px;font-weight:800;border:1px solid transparent;cursor:pointer;font-family:inherit;white-space:nowrap;}
@@ -322,14 +324,10 @@ if ('serviceWorker' in navigator) {
   .mc-btn-full{grid-column:1/-1;}
   .mc-btn-edit{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
   .mc-fav{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;border:1px solid var(--gray-100);background:rgba(255,255,255,.9);color:var(--gray-300);font-size:18px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(39,49,58,.06);}
-  .mc-fav.active{background:var(--amber-light);border-color:#E8D6B4;color:var(--amber);}
+  .mc-fav.active{background:#FDEAF3;border-color:rgba(232,93,158,.28);color:var(--spot-favorite);}
   .map-place-heart{display:none;}
   .map-place-heart.visible{display:flex;}
-  .interest-header{padding:14px 16px 10px;background:#fff;border-bottom:1px solid var(--gray-100);flex-shrink:0;}
-  .interest-header-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;}
-  .interest-title{display:flex;align-items:center;gap:7px;font-size:16px;font-weight:900;color:var(--gray-900);}
-  .interest-title-icon{font-size:18px;color:var(--coral);}
-  .interest-count{font-size:12px;color:var(--gray-500);font-weight:800;white-space:nowrap;}
+  .interest-header{padding:12px 16px 10px;background:#fff;border-bottom:1px solid var(--gray-100);flex-shrink:0;}
   .interest-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}
   .interest-tab{height:34px;border-radius:999px;border:1px solid var(--gray-100);background:#fff;color:var(--gray-500);font-size:12px;font-weight:900;font-family:inherit;cursor:pointer;}
   .interest-tab.active{background:var(--ink);border-color:var(--ink);color:#fff;}
@@ -583,7 +581,7 @@ if ('serviceWorker' in navigator) {
   .culture-spot-name{font-size:17px;font-weight:900;color:var(--gray-900);line-height:1.32;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   .culture-spot-meta{font-size:12px;font-weight:800;color:var(--gray-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .culture-spot-score{text-align:right;flex-shrink:0;min-width:60px;}
-  .culture-spot-score-value{font-size:25px;font-weight:900;color:var(--coral);line-height:1;}
+  .culture-spot-score-value{font-size:25px;font-weight:900;color:var(--spot-status-color,var(--coral));line-height:1;}
   .culture-spot-score-dist{font-size:12px;font-weight:900;color:var(--gray-500);margin-top:2px;}
   .culture-spot-pill-row{display:none;}
   .culture-spot-pill{height:24px;display:inline-flex;align-items:center;border-radius:999px;background:var(--gray-50);border:1px solid var(--gray-100);padding:0 8px;font-size:11px;font-weight:800;color:var(--gray-600);white-space:nowrap;}
@@ -976,7 +974,6 @@ if ('serviceWorker' in navigator) {
         <div class="map-place-photo-frame">
           <img class="map-place-image" id="aiPlaceImage" alt="">
           <div class="map-place-photo-empty" id="aiPlaceImageFallback">사진 준비중</div>
-          <div class="map-place-visited-badge" id="aiPlaceVisitedBadge" aria-label="방문함">✓</div>
           <button class="mc-fav map-place-heart" id="aiPlaceSaveHeartBtn" type="button" onclick="savePendingCultureSpotFavorite(event)" aria-label="관심 장소 저장">♥</button>
         </div>
         <div class="map-place-copy">
@@ -1039,10 +1036,6 @@ if ('serviceWorker' in navigator) {
 <!-- 관심 화면 -->
 <div id="screen-mycourse" class="screen">
   <div class="interest-header">
-    <div class="interest-header-top">
-      <div class="interest-title" id="mySavedSpotTitle"><span class="interest-title-icon">♥</span><span>관심</span></div>
-      <div class="interest-count" id="myCourseCount">0개</div>
-    </div>
     <div class="interest-tabs" role="tablist" aria-label="관심 목록">
       <button class="interest-tab active" id="interestPlacesTab" type="button" onclick="setInterestTab('places')">장소</button>
       <button class="interest-tab" id="interestSchedulesTab" type="button" onclick="setInterestTab('schedules')">일정</button>
@@ -1638,6 +1631,12 @@ const DRAW_ROUTE_PLANNED_COLOR = '#FFD6C8';
 const DRAW_ROUTE_WEIGHT = 6;
 const DRAW_ROUTE_OPACITY = 0.58;
 const AI_ROUTE_RETURN_COLOR = '#A94B37';
+const CULTURE_SPOT_STATUS_COLORS = {
+  default: '#F27A5E',
+  favorite: '#E85D9E',
+  visited: '#2F8F6B',
+  both: '#8B6FD6'
+};
 
 function getRunloopApiOrigin() {
   const protocol = window.location && window.location.protocol;
@@ -1657,8 +1656,6 @@ function t(key) {
 }
 
 function updateInterestStaticLabels() {
-  const title = document.getElementById('mySavedSpotTitle');
-  if (title) title.innerHTML = `<span class="interest-title-icon">♥</span><span>${escapeHtml(t('savedSpotTitle'))}</span>`;
   setTextContent('interestPlacesTab', t('interestPlaces'));
   setTextContent('interestSchedulesTab', t('interestSchedules'));
   setTextContent('interestVisitedTab', t('interestVisited'));
@@ -2889,11 +2886,10 @@ function updateAiPlaceMedia(spot) {
   const media = document.getElementById('aiPlaceMedia');
   const img = document.getElementById('aiPlaceImage');
   const fallback = document.getElementById('aiPlaceImageFallback');
-  const visitedBadge = document.getElementById('aiPlaceVisitedBadge');
   const desc = document.getElementById('aiPlaceDesc');
   const weatherEl = document.getElementById('aiPlaceWeather');
   const credit = document.getElementById('aiPlaceCredit');
-  if (!media || !img || !fallback || !visitedBadge || !desc || !weatherEl || !credit) return;
+  if (!media || !img || !fallback || !desc || !weatherEl || !credit) return;
   if (!spot) {
     media.classList.remove('active');
     img.removeAttribute('src');
@@ -2902,7 +2898,6 @@ function updateAiPlaceMedia(spot) {
     img.onclick = null;
     img.removeAttribute('title');
     fallback.style.display = 'none';
-    visitedBadge.style.display = 'none';
     desc.innerHTML = '';
     weatherEl.classList.remove('active');
     weatherEl.textContent = '';
@@ -2911,7 +2906,6 @@ function updateAiPlaceMedia(spot) {
   }
   const photo = getCultureSpotPhoto(spot);
   const displayName = getCultureSpotDisplayName(spot);
-  visitedBadge.style.display = isCultureSpotMarkedVisited(spot) ? 'flex' : 'none';
   desc.innerHTML = getMapPlaceMetaHtml(spot);
   updateAiPlaceWeather(spot);
   if (photo && photo.imageUrl) {
@@ -2968,7 +2962,7 @@ function getMapPlaceMetaHtml(spot) {
   const stars = Math.round(Number(spot.cultureValueStars) || 0);
   const dist = Number(spot.distFromMe);
   const parts = [];
-  if (stars > 0 && !spot.transient) parts.push(`<span class="map-place-meta-chip star">★${Math.max(1, Math.min(5, stars))}</span>`);
+  if (stars > 0 && !spot.transient) parts.push(`<span class="map-place-meta-chip star ${escapeHtml(getCultureSpotStatusClass(spot))}">★${Math.max(1, Math.min(5, stars))}</span>`);
   if (Number.isFinite(dist)) {
     const distText = dist < 1 ? Math.round(dist * 1000) + 'm' : dist.toFixed(1) + 'km';
     parts.push(`<span class="map-place-meta-chip">${escapeHtml(distText)}</span>`);
@@ -4044,6 +4038,8 @@ const CULTURE_SPOT_FAVORITES_KEY = 'runloopCultureSpotFavoritesV1';
 const SCHEDULE_FAVORITES_KEY = 'runloopScheduleFavoritesV1';
 const CULTURE_SPOT_PHOTO_CACHE_KEY = 'runloopCultureSpotPhotoCacheV3';
 const CULTURE_SPOT_PHOTO_CACHE_MS = 7 * 24 * 60 * 60 * 1000;
+const CULTURE_SPOT_PHOTO_CACHE_VERSION = 'v2';
+const CULTURE_SPOT_PHOTO_MISSING_CACHE_MS = 6 * 60 * 60 * 1000;
 const CULTURE_SPOT_MIN_VALUE_STARS = 2;
 const CULTURE_MAP_MARKER_LIMIT = 80;
 const CULTURE_SPOT_EN_NAME_MAP = {
@@ -6572,7 +6568,7 @@ async function fetchCultureSpotPhoto(spot) {
   const cacheKey = getCultureSpotPhotoCacheKey(spot);
   const cache = readCultureSpotPhotoCache();
   const cached = cache[cacheKey];
-  if (cached && cached.missing && Date.now() - Number(cached.cachedAt || 0) < CULTURE_SPOT_PHOTO_CACHE_MS) {
+  if (cached && cached.missing && cached.version === CULTURE_SPOT_PHOTO_CACHE_VERSION && Date.now() - Number(cached.cachedAt || 0) < CULTURE_SPOT_PHOTO_MISSING_CACHE_MS) {
     return null;
   }
   if (culturePhotoInflight.has(cacheKey)) return culturePhotoInflight.get(cacheKey);
@@ -6584,7 +6580,7 @@ async function fetchCultureSpotPhoto(spot) {
       const nextCache = readCultureSpotPhotoCache();
       nextCache[cacheKey] = photo
         ? { cachedAt: Date.now(), photo }
-        : { cachedAt: Date.now(), missing: true };
+        : { cachedAt: Date.now(), missing: true, version: CULTURE_SPOT_PHOTO_CACHE_VERSION };
       writeCultureSpotPhotoCache(nextCache);
       if (photo && spot.key) saveCultureSpotPhotoToFavorite(spot.key, photo);
       return photo;
@@ -6931,9 +6927,34 @@ function isCultureSpotFavorited(spot) {
   return !!favorites[getCultureSpotFavoriteKey(spot)];
 }
 
+function getCultureSpotStatus(spot) {
+  const favorite = isCultureSpotFavorited(spot);
+  const visited = isCultureSpotMarkedVisited(spot);
+  if (favorite && visited) return 'both';
+  if (favorite) return 'favorite';
+  if (visited) return 'visited';
+  return 'default';
+}
+
+function getCultureSpotStatusClass(spot) {
+  return 'spot-status-' + getCultureSpotStatus(spot);
+}
+
+function getCultureSpotStatusColor(spot) {
+  return CULTURE_SPOT_STATUS_COLORS[getCultureSpotStatus(spot)] || CULTURE_SPOT_STATUS_COLORS.default;
+}
+
+function getCultureSpotMarkerName(name) {
+  const chars = Array.from(String(name || '').replace(/\s+/g, '').trim());
+  if (chars.length <= 5) return chars.join('');
+  return chars.slice(0, 5).join('') + '…';
+}
+
 function refreshCultureSpotFavoriteViews() {
   updateCultureSpotSaveButtonLabels();
   updateAiPlaceSaveButton();
+  if (aiPendingPlace && aiPendingPlace.mediaSpot) updateAiPlaceMedia(aiPendingPlace.mediaSpot);
+  if (S.tab === 'create') renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
   renderHomeActions();
   if (S.tab === 'mycourse') renderMyCourses();
   if (S.tab === 'mypage') renderRecords();
@@ -7080,10 +7101,6 @@ function isCultureSpotMarkedVisited(spot) {
   return !!readCultureSpotVisits()[getCultureSpotVisitKey(spot)];
 }
 
-function renderCultureSpotVisitedBadge(className) {
-  return `<div class="${escapeHtml(className)}" title="${escapeHtml(t('visitedDone'))}" aria-label="${escapeHtml(t('visitedDone'))}">✓</div>`;
-}
-
 function getCultureSpotFavoriteDataAttrs(spot, key = '') {
   const latlng = getCultureSpotLatLng(spot);
   const rawName = getCultureSpotOriginalName(spot, '문화 스팟');
@@ -7152,22 +7169,17 @@ function renderSpotPhotoBox(spot, prefix = 'spotPhoto') {
   const domId = getSpotPhotoDomId(spot && spot.key, prefix);
   const displayName = getCultureSpotDisplayName(spot, '문화스팟');
   const introUrl = getCultureSpotIntroUrl(spot, displayName);
-  const visited = isCultureSpotMarkedVisited(spot);
-  const visitedAttr = visited ? '1' : '0';
-  const visitedBadge = visited ? renderCultureSpotVisitedBadge('spot-visited-badge') : '';
   if (!photo || !photo.imageUrl) {
     return `
-      <div class="spot-photo empty" id="${escapeHtml(domId)}" data-url="${escapeHtml(introUrl)}" data-visited="${visitedAttr}">
+      <div class="spot-photo empty" id="${escapeHtml(domId)}" data-url="${escapeHtml(introUrl)}">
         <div class="spot-photo-fallback">
           <div class="spot-photo-fallback-title">${escapeHtml(t('photoPreparing'))}</div>
         </div>
-        ${visitedBadge}
       </div>`;
   }
   return `
-    <div class="spot-photo clickable" id="${escapeHtml(domId)}" data-url="${escapeHtml(introUrl)}" data-visited="${visitedAttr}" onclick="openCultureSpotInfoFromPhoto(event,this)" title="${escapeHtml(t('infoView'))}">
+    <div class="spot-photo clickable" id="${escapeHtml(domId)}" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromPhoto(event,this)" title="${escapeHtml(t('infoView'))}">
       <img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || displayName || '문화스팟 사진')}" loading="lazy">
-      ${visitedBadge}
       <div class="spot-photo-credit">${escapeHtml(getCulturePhotoCredit(photo))}</div>
     </div>`;
 }
@@ -7179,30 +7191,25 @@ function updateSpotPhotoBox(key, photo, prefix = 'spotPhoto') {
   el.classList.add('clickable');
   el.setAttribute('onclick', 'openCultureSpotInfoFromPhoto(event,this)');
   el.title = t('infoView');
-  const visitedBadge = el.dataset && el.dataset.visited === '1' ? renderCultureSpotVisitedBadge('spot-visited-badge') : '';
-  el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || '문화스팟 사진')}" loading="lazy">${visitedBadge}<div class="spot-photo-credit">${escapeHtml(getCulturePhotoCredit(photo))}</div>`;
+  el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || '문화스팟 사진')}" loading="lazy"><div class="spot-photo-credit">${escapeHtml(getCulturePhotoCredit(photo))}</div>`;
 }
 
-function renderHomeCultureSpotPhoto(spot, key, displayName, introUrl = '', visited = false) {
+function renderHomeCultureSpotPhoto(spot, key, displayName, introUrl = '') {
   const domId = getSpotPhotoDomId(key, 'homeSpotPhoto');
   const photo = getCultureSpotPhoto(spot);
-  const visitedAttr = visited ? '1' : '0';
-  const visitedBadge = visited ? renderCultureSpotVisitedBadge('culture-spot-visited-badge') : '';
   const heart = renderCultureSpotHeartButton(spot, key);
   if (photo && photo.imageUrl) {
     return `
-      <div class="culture-spot-photo clickable" id="${escapeHtml(domId)}" data-key="${escapeHtml(key)}" data-visited="${visitedAttr}" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromPhoto(event,this)" title="${escapeHtml(t('infoView'))}">
+      <div class="culture-spot-photo clickable" id="${escapeHtml(domId)}" data-key="${escapeHtml(key)}" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromPhoto(event,this)" title="${escapeHtml(t('infoView'))}">
         <img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || displayName || '문화스팟 사진')}" loading="lazy">
-        ${visitedBadge}
         ${heart}
       </div>`;
   }
   return `
-    <div class="culture-spot-photo empty" id="${escapeHtml(domId)}" data-key="${escapeHtml(key)}" data-visited="${visitedAttr}" data-url="${escapeHtml(introUrl)}">
+    <div class="culture-spot-photo empty" id="${escapeHtml(domId)}" data-key="${escapeHtml(key)}" data-url="${escapeHtml(introUrl)}">
       <div class="culture-spot-photo-fallback">
         <div>${escapeHtml(t('photoPreparing'))}</div>
       </div>
-      ${visitedBadge}
       ${heart}
     </div>`;
 }
@@ -7215,9 +7222,8 @@ function updateHomeCultureSpotPhoto(key, photo) {
     el.classList.add('clickable');
     el.setAttribute('onclick', 'openCultureSpotInfoFromPhoto(event,this)');
     el.title = t('infoView');
-    const visitedBadge = el.dataset && el.dataset.visited === '1' ? renderCultureSpotVisitedBadge('culture-spot-visited-badge') : '';
     const heart = el.querySelector('.culture-spot-heart') ? el.querySelector('.culture-spot-heart').outerHTML : '';
-    el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || '문화스팟 사진')}" loading="lazy">${visitedBadge}${heart}`;
+    el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || '문화스팟 사진')}" loading="lazy">${heart}`;
   }
   const saveButton = Array.from(document.querySelectorAll('.culture-spot-save-btn,.culture-spot-heart')).find(button => button.dataset && button.dataset.key === key);
   if (saveButton) saveButton.dataset.image = photo.imageUrl;
@@ -7243,6 +7249,7 @@ function hydrateSavedSpotPhotos(spots) {
       if (!photo) return;
       updateSpotPhotoBox(spot.key, photo, 'spotPhoto');
       updateSpotPhotoBox(spot.key, photo, 'detailPhoto');
+      updateSpotPhotoBox(spot.key, photo, 'visitedSpotPhoto');
       if (aiPendingPlace && aiPendingPlace.cultureSpot && getCultureSpotFavoriteKey(aiPendingPlace.cultureSpot) === spot.key) {
         updateAiPlaceMedia({ ...aiPendingPlace.cultureSpot, photo });
       }
@@ -7285,15 +7292,15 @@ function renderNearCourses(results) {
     const introUrl = getCultureSpotInfoUrl(placeName, p.place_url);
     const lat = Number(p.y) || S.lat;
     const lng = Number(p.x) || S.lng;
-    const visitState = getCultureSpotVisitState(p);
+    getCultureSpotVisitState(p);
     const favoriteKey = getCultureSpotFavoriteKey(p);
     const favorited = isCultureSpotFavorited(p);
-    const cardClass = i === 0 ? 'culture-spot-card featured' : 'culture-spot-card';
+    const cardClass = ['culture-spot-card', i === 0 ? 'featured' : '', getCultureSpotStatusClass(p)].filter(Boolean).join(' ');
     const metaHtml = favorited ? `<div class="culture-spot-meta">${escapeHtml(t('saved'))}</div>` : '';
     return `
       <div class="${cardClass}">
         <div class="culture-spot-main">
-          ${renderHomeCultureSpotPhoto(p, favoriteKey, placeName, introUrl, visitState.visited)}
+          ${renderHomeCultureSpotPhoto(p, favoriteKey, placeName, introUrl)}
           <div class="culture-spot-card-top">
             <div class="culture-spot-info">
               <div class="culture-spot-name">${escapeHtml(placeName)}</div>
@@ -7374,7 +7381,6 @@ function renderCultureSpotMapMarkers(spots) {
     const lng = Number(spot.x);
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
 
-    const type = spot.cultureType || getCultureSpotType(spot, '');
     const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
     const placeName = getCultureSpotDisplayName(spot);
     const dist = Number(spot.distFromMe);
@@ -7384,16 +7390,17 @@ function renderCultureSpotMapMarkers(spots) {
     const position = new kakao.maps.LatLng(lat, lng);
     const markerEl = document.createElement('button');
     markerEl.type = 'button';
-    markerEl.className = 'culture-map-marker';
+    markerEl.className = `culture-map-marker ${getCultureSpotStatusClass(spot)}`;
+    markerEl.style.setProperty('--spot-status-color', getCultureSpotStatusColor(spot));
     markerEl.setAttribute('aria-label', `${placeName} ${t('cultureSpots')}`);
 
-    const iconEl = document.createElement('span');
-    iconEl.className = 'culture-map-icon';
-    iconEl.textContent = getCultureSpotIcon(type);
+    const nameEl = document.createElement('span');
+    nameEl.className = 'culture-map-name';
+    nameEl.textContent = getCultureSpotMarkerName(placeName);
     const starEl = document.createElement('span');
     starEl.className = 'culture-map-star';
     starEl.textContent = `★${stars}`;
-    markerEl.append(iconEl, starEl);
+    markerEl.append(nameEl, starEl);
 
     const stopMarkerEvent = event => {
       event.preventDefault();
@@ -8652,8 +8659,7 @@ function setInterestTab(tab) {
 function renderMyCourses() {
   const spots = getFavoriteCultureSpotList();
   const list = document.getElementById('myCourseList');
-  const count = document.getElementById('myCourseCount');
-  if (!list || !count) return;
+  if (!list) return;
   updateInterestStaticLabels();
   document.querySelectorAll('.interest-tab').forEach(button => button.classList.remove('active'));
   const activeTab = document.getElementById(`interest${interestTab.charAt(0).toUpperCase()}${interestTab.slice(1)}Tab`);
@@ -8661,7 +8667,6 @@ function renderMyCourses() {
 
   if (interestTab === 'schedules') {
     const schedules = getSavedScheduleList();
-    count.textContent = schedules.length + (appLanguage === 'en' ? '' : '개');
     if (!schedules.length) {
       renderInterestEmpty(list, t('savedScheduleEmptyTitle'), t('savedScheduleEmptyDesc'));
       return;
@@ -8674,7 +8679,6 @@ function renderMyCourses() {
   if (interestTab === 'visited') {
     const visits = getCultureSpotVisitList();
     const visitedSpots = visits.map(getVisitedSpotAsCultureSpot);
-    count.textContent = visits.length + (appLanguage === 'en' ? '' : '곳');
     if (!visits.length) {
       renderInterestEmpty(list, t('visitedSpotEmptyTitle'), t('visitedSpotEmptyDesc'));
       return;
@@ -8685,7 +8689,6 @@ function renderMyCourses() {
     return;
   }
 
-  count.textContent = spots.length + (appLanguage === 'en' ? '' : '곳');
   if (!spots.length) {
     renderInterestEmpty(list, t('savedSpotEmptyTitle'), t('savedSpotEmptyDesc'));
     return;
@@ -8711,8 +8714,9 @@ function renderSavedSpotCard(spot) {
     const meta = [
       formatCultureSpotSavedAt(spot) ? '저장 ' + formatCultureSpotSavedAt(spot) : ''
     ].filter(Boolean).join(' · ');
+    const statusClass = getCultureSpotStatusClass(spot);
     return `
-      <div class="mc-card saved-spot" id="mc-${escapeHtml(String(spot.key).replace(/[^a-z0-9_-]/gi, '_'))}">
+      <div class="mc-card saved-spot ${escapeHtml(statusClass)}" id="mc-${escapeHtml(String(spot.key).replace(/[^a-z0-9_-]/gi, '_'))}">
       ${renderSpotPhotoBox(spot, 'spotPhoto')}
       ${renderCultureSpotHeartButton(spot, spot.key, 'saved-spot-heart')}
       <div class="mc-card-top">
@@ -8781,8 +8785,9 @@ function renderVisitedSpotCard(spot) {
   const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
   const displayName = getCultureSpotDisplayName(spot, spot.name || '문화 스팟');
   const meta = [getCultureVisitDateLabel(spot)].filter(Boolean).join(' · ');
+  const statusClass = getCultureSpotStatusClass(spot);
   return `
-    <div class="mc-card visited-spot-card" id="visited-${escapeHtml(String(spot.key).replace(/[^a-z0-9_-]/gi, '_'))}">
+    <div class="mc-card visited-spot-card ${escapeHtml(statusClass)}" id="visited-${escapeHtml(String(spot.key).replace(/[^a-z0-9_-]/gi, '_'))}">
       ${renderSpotPhotoBox(spot, 'visitedSpotPhoto')}
       <div class="mc-card-top">
         <div class="mc-title">
