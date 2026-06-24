@@ -831,7 +831,6 @@ if ('serviceWorker' in navigator) {
   <button class="tab active" data-tab="home" onclick="switchTab('home',this)"><span class="tab-icon">⌂</span><span>홈</span></button>
   <button class="tab" data-tab="mycourse" onclick="switchTab('mycourse',this)"><span class="tab-icon">♥</span><span>관심</span></button>
   <button class="tab" data-tab="create" onclick="switchTab('create',this)"><span class="tab-icon">◎</span><span>지도</span></button>
-  <button class="tab" data-tab="social" onclick="switchTab('social',this)"><span class="tab-icon">♡</span><span>소셜</span></button>
   <button class="tab" data-tab="mypage" onclick="switchTab('mypage',this)"><span class="tab-icon">●</span><span>MY</span></button>
 </div>
 
@@ -1051,31 +1050,6 @@ if ('serviceWorker' in navigator) {
   </div>
 </div>
 
-<!-- 소셜 화면 -->
-<div id="screen-social" class="screen">
-  <div class="social-header">
-    <div>
-      <div class="social-title">소셜</div>
-      <div class="social-sub"><span id="socialPostCount">0개</span> · AI 추천 후보 <span id="socialAiCandidateCount">0개</span></div>
-    </div>
-    <button class="social-compose-btn" onclick="openSocialComposer()">공유하기</button>
-  </div>
-  <div class="social-filter">
-    <button id="socialFilterAll" class="active" onclick="setSocialFilter('all')">전체</button>
-    <button id="socialFilterCourse" onclick="setSocialFilter('course')">코스</button>
-    <button id="socialFilterPhoto" onclick="setSocialFilter('photo')">사진</button>
-    <button id="socialFilterPopular" onclick="setSocialFilter('popular')">인기</button>
-  </div>
-  <div class="social-scroll">
-    <div class="social-summary">
-      <div class="social-stat"><span>공유</span><strong id="socialShareStat">0</strong></div>
-      <div class="social-stat"><span>좋아요</span><strong id="socialLikeStat">0</strong></div>
-      <div class="social-stat"><span>후보</span><strong id="socialCandidateStat">0</strong></div>
-    </div>
-    <div class="social-feed" id="socialFeed"></div>
-  </div>
-</div>
-
 <!-- 마이페이지 -->
 <div id="screen-mypage" class="screen">
   <div style="flex:1;overflow-y:auto;">
@@ -1275,52 +1249,6 @@ if ('serviceWorker' in navigator) {
     <div style="flex:1;overflow-y:auto;padding:14px 16px 18px;" id="courseDetailBody"></div>
   </div>
 </div>
-
-<!-- 소셜 공유 모달 -->
-<div id="socialComposerModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1003;align-items:flex-end;justify-content:center;">
-  <div class="social-composer-sheet">
-    <div style="padding:16px 18px 12px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gray-100);">
-      <div style="font-size:16px;font-weight:800;">소셜에 공유</div>
-      <button onclick="closeSocialComposer()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-500);">×</button>
-    </div>
-    <div class="social-composer-body">
-      <div class="social-type-tabs">
-        <button id="socialTypeCourse" class="active" onclick="switchSocialShareType('course')">코스</button>
-        <button id="socialTypePhoto" onclick="switchSocialShareType('photo')">사진</button>
-      </div>
-
-      <div id="socialCourseFields">
-        <div class="social-field">
-          <div class="social-label">공유할 코스</div>
-          <select class="social-select" id="socialCourseSelect" onchange="updateSocialCourseDraft()"></select>
-        </div>
-      </div>
-
-      <div id="socialPhotoFields" style="display:none;">
-        <div class="social-field">
-          <div class="social-label">기록 인증샷</div>
-          <select class="social-select" id="socialRecordPhotoSelect" onchange="selectSocialRecordPhoto()"></select>
-          <div class="social-photo-picker">
-            <button class="social-photo-pick" onclick="document.getElementById('socialPhotoInput').click()">사진 선택</button>
-            <button class="social-photo-clear" onclick="clearSocialPhoto()">사진 삭제</button>
-          </div>
-          <img class="social-photo-preview" id="socialPhotoPreview" alt="공유할 사진 미리보기">
-        </div>
-      </div>
-
-      <div class="social-field">
-        <div class="social-label">제목</div>
-        <input class="social-input" id="socialTitleInput" maxlength="32" placeholder="공유 제목">
-      </div>
-      <div class="social-field">
-        <div class="social-label">메모</div>
-        <textarea class="social-textarea" id="socialTextInput" maxlength="180" placeholder="코스 느낌이나 풍경을 짧게 남겨보세요"></textarea>
-      </div>
-      <button class="social-publish-btn" onclick="publishSocialPost()">공유하기</button>
-    </div>
-  </div>
-</div>
-<input type="file" id="socialPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="handleSocialPhotoSelected(event)">
 
 <div class="toast" id="toast"></div>
 
@@ -2019,16 +1947,7 @@ function setAppLanguage(lang) {
   }
   appLanguage = next;
   localStorage.setItem(APP_LANGUAGE_KEY, appLanguage);
-  lastCultureSpotResults = [];
-  cultureScheduleItems = [];
-  cultureScheduleLoadedAt = 0;
-  cultureScheduleCenterKey = '';
-  applyAppLanguage();
-  loadNearCourses();
-  loadCultureSchedule({ force: true, silent: true });
-  if (S.tab === 'mycourse') renderMyCourses();
-  if (S.tab === 'mypage') renderMyPage();
-  toast(t('langChanged'));
+  window.location.reload();
 }
 
 function applyAppLanguage() {
@@ -2037,7 +1956,6 @@ function applyAppLanguage() {
     home: t('home'),
     mycourse: t('spots'),
     create: t('map'),
-    social: t('social'),
     mypage: t('my')
   };
   Object.entries(tabLabels).forEach(([tab, label]) => {
@@ -3191,7 +3109,13 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
   const lat = latlng.getLat ? latlng.getLat() : parseFloat(latlng.lat);
   const lng = latlng.getLng ? latlng.getLng() : parseFloat(latlng.lng);
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
-  const displayName = name || (options && options.spot ? getCultureSpotDisplayName(options.spot, t('destination')) : (appLanguage === 'en' ? 'Selected place' : '선택한 장소'));
+  const rawName = String(name || '').trim();
+  const fallbackName = rawName && !(appLanguage === 'en' && hasKoreanText(rawName))
+    ? rawName
+    : (appLanguage === 'en' ? 'Selected place' : '선택한 장소');
+  const displayName = options && options.spot
+    ? getCultureSpotDisplayName(options.spot, fallbackName)
+    : fallbackName;
   const displayNameEn = appLanguage === 'en' && !/[가-힣]/.test(displayName) ? displayName : '';
   const cultureSpot = options && options.spot
     ? { ...options.spot, nameEn: options.spot.nameEn || displayNameEn, y: lat, x: lng }
@@ -3207,7 +3131,15 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
     cultureValueStars: 1,
     transient: true
   };
-  aiPendingPlace = { lat, lng, name: displayName, sub: sub || (appLanguage === 'en' ? 'Set as start or destination' : '출발 또는 도착으로 설정하세요'), cultureSpot, mediaSpot };
+  const safeSub = String(sub || '').trim();
+  aiPendingPlace = {
+    lat,
+    lng,
+    name: displayName,
+    sub: safeSub && !(appLanguage === 'en' && hasKoreanText(safeSub)) ? safeSub : (appLanguage === 'en' ? 'Set as start or destination' : '출발 또는 도착으로 설정하세요'),
+    cultureSpot,
+    mediaSpot
+  };
   if (aiPendingPlaceOverlay) aiPendingPlaceOverlay.setMap(null);
   aiPendingPlaceOverlay = new kakao.maps.CustomOverlay({
     map: createMap,
@@ -4150,9 +4082,12 @@ document.getElementById('courseDetailModal').addEventListener('click', function(
   if (e.target === this) closeCourseDetail();
 });
 
-document.getElementById('socialComposerModal').addEventListener('click', function(e) {
-  if (e.target === this) closeSocialComposer();
-});
+const socialComposerModal = document.getElementById('socialComposerModal');
+if (socialComposerModal) {
+  socialComposerModal.addEventListener('click', function(e) {
+    if (e.target === this) closeSocialComposer();
+  });
+}
 
 /* 탭 전환 */
 function switchTab(tab, el) {
@@ -4165,7 +4100,9 @@ function switchTab(tab, el) {
   const tabBtn = el || document.querySelector(`[data-tab="${tab}"]`);
   if (tabBtn) tabBtn.classList.add('active');
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-'+tab).classList.add('active');
+  const targetScreen = document.getElementById('screen-'+tab);
+  if (!targetScreen) return switchTab('home', document.querySelector('[data-tab="home"]'));
+  targetScreen.classList.add('active');
   if (tab === 'create') {
     setTimeout(() => { if (S.kakaoReady) initCreateMap(); }, 100);
     if (!lastCultureSpotResults.length) loadNearCourses();
@@ -4178,7 +4115,6 @@ function switchTab(tab, el) {
     loadCultureSchedule({ silent: true });
   }
   if (tab === 'mycourse') renderMyCourses();
-  if (tab === 'social') renderSocial();
   if (tab === 'mypage') {
     syncHealthActivity({ silent: true });
     renderRecords();
@@ -6123,7 +6059,13 @@ function getHomeScheduleItems() {
 
 function renderHomeSportsList() {
   const list = document.getElementById('homeSportsList');
+  const block = document.querySelector('.home-sports-block');
+  if (block) block.style.display = appLanguage === 'en' ? 'none' : '';
   if (!list) return;
+  if (appLanguage === 'en') {
+    list.innerHTML = '';
+    return;
+  }
   const items = getHomeSportsScheduleItems();
   if (!items.length) {
     list.innerHTML = `<div class="home-sports-empty">${escapeHtml(cultureScheduleLoading ? t('scheduleBannerLoading') : t('homeSportsEmpty'))}</div>`;
@@ -6159,11 +6101,12 @@ function sortHomeSportsScheduleEntries(a, b) {
 function renderHomeSportsItem(event, index) {
   const date = formatScheduleDateRange(event);
   const distance = formatApproxScheduleDistance(event);
-  const meta = [event.place, distance].filter(Boolean).join(' · ') || t('scheduleBannerMeta');
+  const title = getScheduleDisplayTitle(event);
+  const meta = [getScheduleDisplayPlace(event), distance].filter(Boolean).join(' · ') || t('scheduleBannerMeta');
   return `
     <div class="home-sports-item" role="button" tabindex="0" onclick="openCultureSchedulePage('sports')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCultureSchedulePage('sports');}" data-index="${index}">
       <span style="min-width:0;">
-        <span class="home-sports-name">${escapeHtml(event.title || t('schedule'))}</span>
+        <span class="home-sports-name">${escapeHtml(title)}</span>
         <span class="home-sports-meta">${escapeHtml(meta)}</span>
       </span>
       <span class="home-sports-side">
@@ -6196,6 +6139,8 @@ function renderHomeScheduleCard(event, index) {
   const date = formatHomeScheduleDateRange(event);
   const distance = formatScheduleDistance(event);
   const scheduleIndex = getScheduleItemIndex(event);
+  const title = getScheduleDisplayTitle(event, t('scheduleBannerTitle'));
+  const place = getScheduleDisplayPlace(event);
   return `
     <div class="home-promo-card" role="button" tabindex="0" onclick="openCultureSchedulePage('culture')" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCultureSchedulePage('culture');}" data-index="${index}">
       <span class="home-promo-copy">
@@ -6203,13 +6148,13 @@ function renderHomeScheduleCard(event, index) {
           ${date ? `<span class="home-promo-distance">${escapeHtml(date)}</span>` : ''}
           ${distance ? `<span class="home-promo-distance">${escapeHtml(distance)}</span>` : ''}
         </span>
-        <span class="home-promo-title">${escapeHtml(event.title || t('scheduleBannerTitle'))}</span>
-        <span class="home-promo-desc">${escapeHtml(event.place || t('scheduleBannerDesc'))}</span>
+        <span class="home-promo-title">${escapeHtml(title)}</span>
+        <span class="home-promo-desc">${escapeHtml(place || t('scheduleBannerDesc'))}</span>
         <span class="home-promo-meta">${escapeHtml(localizeProviderName(event.source) || t('scheduleBannerMeta'))}</span>
       </span>
       <span class="home-promo-side">
         <span class="home-promo-image-wrap${image ? ' has-image' : ''}">
-          ${image ? `<img class="home-promo-image" src="${escapeHtml(image)}" alt="${escapeHtml(event.title || t('schedule'))}" loading="lazy">` : `<span class="home-promo-fallback">${escapeHtml(t('schedulePhotoFallback'))}</span>`}
+          ${image ? `<img class="home-promo-image" src="${escapeHtml(image)}" alt="${escapeHtml(title)}" loading="lazy">` : `<span class="home-promo-fallback">${escapeHtml(t('schedulePhotoFallback'))}</span>`}
         </span>
       </span>
       ${renderScheduleHeartButton(event, scheduleIndex, 'home-schedule-heart')}
@@ -6374,12 +6319,12 @@ function renderCultureSchedulePage() {
     return;
   }
   const cultureEntries = getSchedulePageEntries('culture');
-  const sportsEntries = getSchedulePageEntries('sports');
+  const sportsEntries = appLanguage === 'en' ? [] : getSchedulePageEntries('sports');
   const sections = [];
   if (schedulePageMode === 'all' || schedulePageMode === 'culture') {
     sections.push(renderScheduleSection(t('scheduleCultureSection'), cultureEntries, renderCultureScheduleCard));
   }
-  if (schedulePageMode === 'all' || schedulePageMode === 'sports') {
+  if (appLanguage !== 'en' && (schedulePageMode === 'all' || schedulePageMode === 'sports')) {
     sections.push(renderScheduleSection(t('scheduleSportsSection'), sportsEntries, renderSportsScheduleCard));
   }
   const visibleSections = sections.filter(Boolean);
@@ -6419,17 +6364,19 @@ function renderScheduleSection(title, entries, renderer) {
 function renderCultureScheduleCard(event, index) {
   const hasPoint = Number.isFinite(Number(event.lat)) && Number.isFinite(Number(event.lng));
   const image = String(event.image || '').trim();
+  const title = getScheduleDisplayTitle(event);
+  const place = getScheduleDisplayPlace(event);
   return `
     <div class="schedule-card">
       <div class="schedule-card-photo clickable" onclick="openCultureScheduleItem(${index})">
-        ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(event.title || t('schedule'))}" loading="lazy">` : escapeHtml(t('schedulePhotoFallback'))}
+        ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(title)}" loading="lazy">` : escapeHtml(t('schedulePhotoFallback'))}
       </div>
       <div class="schedule-card-body">
         <div class="schedule-topline">
           <div class="schedule-date">${escapeHtml(formatScheduleDateRange(event))}</div>
         </div>
-        <div class="schedule-name">${escapeHtml(event.title || t('schedule'))}</div>
-        <div class="schedule-place">${escapeHtml([event.place, formatScheduleDistance(event)].filter(Boolean).join(' · ') || t('scheduleBannerMeta'))}</div>
+        <div class="schedule-name">${escapeHtml(title)}</div>
+        <div class="schedule-place">${escapeHtml([place, formatScheduleDistance(event)].filter(Boolean).join(' · ') || t('scheduleBannerMeta'))}</div>
         ${hasPoint ? `<div class="schedule-actions single"><button class="schedule-map-btn" type="button" onclick="showCultureScheduleOnMap(${index})">${escapeHtml(t('scheduleMap'))}</button></div>` : ''}
       </div>
       ${renderScheduleHeartButton(event, index)}
@@ -6438,7 +6385,8 @@ function renderCultureScheduleCard(event, index) {
 
 function renderSportsScheduleCard(event, index) {
   const distance = formatApproxScheduleDistance(event);
-  const placeMeta = [event.place, distance].filter(Boolean).join(' · ') || t('scheduleBannerMeta');
+  const title = getScheduleDisplayTitle(event);
+  const placeMeta = [getScheduleDisplayPlace(event), distance].filter(Boolean).join(' · ') || t('scheduleBannerMeta');
   return `
     <div class="schedule-card text-only" onclick="openCultureScheduleItem(${index})">
       <div class="schedule-text-row">
@@ -6446,7 +6394,7 @@ function renderSportsScheduleCard(event, index) {
           <div class="schedule-topline">
             <div class="schedule-date">${escapeHtml(formatScheduleDateRange(event))}</div>
           </div>
-          <div class="schedule-name">${escapeHtml(event.title || t('schedule'))}</div>
+          <div class="schedule-name">${escapeHtml(title)}</div>
           <div class="schedule-place">${escapeHtml(placeMeta)}</div>
           <div class="schedule-source">${escapeHtml(localizeProviderName(event.source) || '')}</div>
         </div>
@@ -6465,11 +6413,11 @@ function openCultureScheduleItem(index) {
 function showCultureScheduleOnMap(index) {
   const event = cultureScheduleItems[index];
   if (!event || !Number.isFinite(Number(event.lat)) || !Number.isFinite(Number(event.lng))) return;
-  goToAiWithLocation(event.title || t('schedule'), Number(event.lat), Number(event.lng));
+  goToAiWithLocation(getScheduleDisplayTitle(event), Number(event.lat), Number(event.lng));
 }
 
 function formatScheduleEventMeta(event) {
-  return [formatScheduleDateRange(event), event.place].filter(Boolean).join(' · ');
+  return [formatScheduleDateRange(event), getScheduleDisplayPlace(event)].filter(Boolean).join(' · ');
 }
 
 function formatScheduleDistance(event) {
@@ -6520,6 +6468,40 @@ function getScheduleCategory(event) {
   if (type === 'sports') return appLanguage === 'en' ? 'Sports' : '체육';
   if (type === 'festival') return appLanguage === 'en' ? 'Festival' : '축제';
   return t('schedule');
+}
+
+function getScheduleGenericTitle(event) {
+  if (appLanguage !== 'en') return t('schedule');
+  const type = String(event && event.type || '').toLowerCase();
+  if (type === 'sports') return 'Sports event';
+  if (type === 'festival') return 'Festival';
+  return 'Event';
+}
+
+function getScheduleDisplayTitle(event, fallback = '') {
+  const candidates = appLanguage === 'en'
+    ? [event && event.titleEn, event && event.englishTitle, event && event.title, fallback]
+    : [event && event.title, fallback, t('schedule')];
+  for (const candidate of candidates) {
+    const text = String(candidate || '').trim();
+    if (!text) continue;
+    if (appLanguage === 'en' && hasKoreanText(text)) continue;
+    return text;
+  }
+  return appLanguage === 'en' ? getScheduleGenericTitle(event) : (fallback || t('schedule'));
+}
+
+function getScheduleDisplayPlace(event) {
+  const candidates = appLanguage === 'en'
+    ? [event && event.placeEn, event && event.englishPlace, event && event.place]
+    : [event && event.place];
+  for (const candidate of candidates) {
+    const text = String(candidate || '').trim();
+    if (!text) continue;
+    if (appLanguage === 'en' && hasKoreanText(text)) continue;
+    return text;
+  }
+  return '';
 }
 
 function getScheduleTodayKey() {
@@ -6604,15 +6586,23 @@ function normalizeScheduleFavorite(event, existing = null) {
   const key = getScheduleFavoriteKey(source);
   const lat = Number(source.lat);
   const lng = Number(source.lng);
+  const title = String(source.title || existing && existing.title || t('schedule')).trim() || t('schedule');
+  const rawTitleEn = String(source.titleEn || source.englishTitle || existing && existing.titleEn || '').trim();
+  const titleEn = rawTitleEn && !hasKoreanText(rawTitleEn) ? rawTitleEn : (appLanguage === 'en' && !hasKoreanText(title) ? title : '');
+  const place = String(source.place || existing && existing.place || '').trim();
+  const rawPlaceEn = String(source.placeEn || source.englishPlace || existing && existing.placeEn || '').trim();
+  const placeEn = rawPlaceEn && !hasKoreanText(rawPlaceEn) ? rawPlaceEn : (appLanguage === 'en' && !hasKoreanText(place) ? place : '');
   return {
     key,
     id: source.id || source.contentId || source.contentid || '',
-    title: String(source.title || t('schedule')).trim() || t('schedule'),
+    title,
+    titleEn,
     type: source.type || '',
     category: source.category || getScheduleCategory(source),
     startDate: source.startDate || '',
     endDate: source.endDate || '',
-    place: source.place || '',
+    place,
+    placeEn,
     distFromMe: source.distFromMe === null || source.distFromMe === undefined ? null : Number(source.distFromMe),
     lat: Number.isFinite(lat) ? lat : null,
     lng: Number.isFinite(lng) ? lng : null,
@@ -6757,10 +6747,10 @@ function getCultureSpotType(place, keyword) {
 function getCultureSpotDisplayName(spot, fallback = '문화 스팟') {
   const raw = String(spot && (spot.place_name || spot.name) || fallback).trim() || fallback;
   if (appLanguage !== 'en') return raw;
-  const storedEnglishName = String(spot && (spot.nameEn || spot.titleEn || spot.englishName) || '').trim();
+  const storedEnglishName = String(spot && (spot.nameEn || spot.titleEn || spot.englishName || spot.placeNameEn) || '').trim();
   if (storedEnglishName && !/[가-힣]/.test(storedEnglishName)) return storedEnglishName;
   if (!/[가-힣]/.test(raw)) return raw;
-  return getEnglishCultureSpotName(raw) || raw;
+  return getEnglishCultureSpotName(raw) || getCultureSpotGenericEnglishName(spot);
 }
 
 function getEnglishCultureSpotName(name) {
@@ -6772,6 +6762,22 @@ function getEnglishCultureSpotName(name) {
   const included = Object.entries(CULTURE_SPOT_EN_NAME_MAP)
     .find(([ko]) => compact.includes(ko));
   return included ? included[1] : '';
+}
+
+function getCultureSpotGenericEnglishName(spot) {
+  const text = [
+    spot && spot.cultureType,
+    spot && spot.category_name,
+    spot && spot.cultureValueLabel,
+    spot && spot.place_name,
+    spot && spot.name
+  ].filter(Boolean).join(' ');
+  if (/문화재|유산|역사|궁|왕릉|서원|향교|사찰|성곽|유적|heritage|historic|palace|fortress|temple|shrine|tomb|unesco/i.test(text)) return 'Heritage site';
+  if (/박물관|기념관|museum|memorial/i.test(text)) return 'Museum';
+  if (/미술관|갤러리|전시|gallery|exhibition|art museum/i.test(text)) return 'Exhibition venue';
+  if (/공연|극장|아트센터|콘서트|performance|theater|theatre|concert|arts center/i.test(text)) return 'Performance venue';
+  if (/영화관|시네마|cinema|movie/i.test(text)) return 'Cinema';
+  return 'Culture spot';
 }
 
 function getCultureSpotOriginalName(spot, fallback = '문화 스팟') {
@@ -7533,8 +7539,7 @@ function updateAiPlaceSaveButton() {
 function openPendingCultureSpotInfo() {
   const spot = aiPendingPlace && (aiPendingPlace.cultureSpot || aiPendingPlace.mediaSpot);
   if (!spot || spot.transient) return;
-  const displayName = getCultureSpotDisplayName(spot, aiPendingPlace && aiPendingPlace.name || t('cultureSpots'));
-  window.open(getCultureSpotInfoUrl(displayName, spot.place_url), '_blank', 'noopener');
+  window.open(getCultureSpotIntroUrl(spot, aiPendingPlace && aiPendingPlace.name || t('cultureSpots')), '_blank', 'noopener');
 }
 
 function getCultureSpotFromButton(button) {
@@ -7648,7 +7653,12 @@ function getSpotPhotoDomId(key, prefix = 'spotPhoto') {
 
 function getCultureSpotIntroUrl(spot, fallbackName = '') {
   if (!spot) return '';
-  return getCultureSpotInfoUrl(getCultureSpotDisplayName(spot, fallbackName || t('cultureSpots')), spot.place_url);
+  const displayName = getCultureSpotDisplayName(spot, fallbackName || t('cultureSpots'));
+  const originalName = getCultureSpotOriginalName(spot, displayName);
+  const lookupName = appLanguage === 'en'
+    ? (getEnglishCultureSpotName(originalName) || displayName || originalName)
+    : displayName;
+  return getCultureSpotInfoUrl(lookupName, spot.place_url);
 }
 
 function isCultureSpotMarkedVisited(spot) {
@@ -7844,7 +7854,7 @@ function renderNearCourses(results) {
     const nameEn = p.nameEn || (placeName !== rawPlaceName && !/[가-힣]/.test(placeName) ? placeName : '');
     const type = p.cultureType || getCultureSpotType(p, '');
     const valueStars = Math.max(1, Math.min(5, Math.round(Number(p.cultureValueStars) || 1)));
-    const introUrl = getCultureSpotInfoUrl(placeName, p.place_url);
+    const introUrl = getCultureSpotIntroUrl(p, placeName);
     const lat = Number(p.y) || S.lat;
     const lng = Number(p.x) || S.lng;
     getCultureSpotVisitState(p);
@@ -7941,7 +7951,7 @@ function renderCultureSpotMapMarkers(spots) {
     const dist = Number(spot.distFromMe);
     const distText = Number.isFinite(dist)
       ? (dist < 1 ? Math.round(dist * 1000) + 'm' : dist.toFixed(1) + 'km')
-      : '근처';
+      : (appLanguage === 'en' ? 'Nearby' : '근처');
     const position = new kakao.maps.LatLng(lat, lng);
     const markerEl = document.createElement('button');
     markerEl.type = 'button';
@@ -8654,7 +8664,6 @@ function openRecordDetail(index) {
       <div style="font-size:11px;color:var(--gray-500);margin-bottom:6px;">${escapeHtml(appLanguage === 'en' ? 'Memo' : '메모')}</div>
       <div style="font-size:13px;line-height:1.55;color:var(--gray-900);">${escapeHtml(r.memo || (appLanguage === 'en' ? 'No memo' : '남긴 메모가 없어요'))}</div>
     </div>
-    ${hasSafeRecordPhoto(r.photo) ? `<button class="record-detail-share" onclick="shareRecordPhotoToSocial(${index})">${escapeHtml(appLanguage === 'en' ? 'Share Photo to Social' : '인증샷 소셜 공유')}</button>` : ''}
   `;
   document.getElementById('recordDetailModal').style.display = 'flex';
   localizeStaticDom(document.getElementById('recordDetailModal'));
@@ -9162,9 +9171,8 @@ function publishSocialPost() {
   posts.unshift(post);
   saveSocialPosts(posts);
   closeSocialComposer();
-  const socialTab = document.querySelector('[data-tab="social"]');
-  switchTab('social', socialTab);
-  toast('소셜에 공유했어요');
+  switchTab('mycourse', document.querySelector('[data-tab="mycourse"]'));
+  toast(appLanguage === 'en' ? 'Saved locally' : '로컬에 저장했어요');
 }
 
 function createSocialCourseSnapshot(course) {
@@ -9326,17 +9334,18 @@ function renderSavedScheduleCard(item) {
   const keyJson = escapeHtml(JSON.stringify(item.key));
   const image = String(item.image || '').trim();
   const link = String(item.link || '').trim() || getSearchLinkForSchedule(item.title || '');
-  const meta = [item.place, formatScheduleDistance(item), localizeProviderName(item.source)].filter(Boolean).join(' · ');
+  const title = getScheduleDisplayTitle(item);
+  const meta = [getScheduleDisplayPlace(item), formatScheduleDistance(item), localizeProviderName(item.source)].filter(Boolean).join(' · ');
   return `
     <div class="mc-card saved-schedule-card" role="button" tabindex="0" onclick="openSavedScheduleFavorite(${keyJson})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openSavedScheduleFavorite(${keyJson});}">
       ${image ? `
         <div class="spot-photo clickable" data-url="${escapeHtml(link)}" onclick="openCultureSpotInfoFromPhoto(event,this)" title="${escapeHtml(t('infoView'))}">
-          <img src="${escapeHtml(image)}" alt="${escapeHtml(item.title || t('schedule'))}" loading="lazy">
+          <img src="${escapeHtml(image)}" alt="${escapeHtml(title)}" loading="lazy">
         </div>` : ''}
       <div class="saved-schedule-top">
         <div style="min-width:0;">
           <div class="saved-schedule-date">${escapeHtml(formatScheduleDateRange(item))}</div>
-          <div class="saved-schedule-title">${escapeHtml(item.title || t('schedule'))}</div>
+          <div class="saved-schedule-title">${escapeHtml(title)}</div>
           <div class="saved-schedule-meta">${escapeHtml(meta || t('scheduleBannerMeta'))}</div>
         </div>
         <button class="mc-fav saved-schedule-heart active" type="button" onclick="removeSavedScheduleFavoriteFromButton(event, ${keyJson})" aria-label="${escapeHtml(t('favoriteRemove'))}" title="${escapeHtml(t('favoriteRemove'))}">♥</button>

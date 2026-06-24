@@ -64,8 +64,9 @@ export default async function handler(req, res) {
   const lang = getKtoLanguage(getQueryValue(query.lang));
   const debug = isTruthy(getQueryValue(query.debug));
   const ktoServiceKey = getKtoServiceKey(lang);
-  const sportsServiceKey = getSportsServiceKey();
-  if (!ktoServiceKey && !sportsServiceKey && !KSPORTS_PORTAL_URL) {
+  const sportsEnabled = lang !== 'en';
+  const sportsServiceKey = sportsEnabled ? getSportsServiceKey() : '';
+  if (!ktoServiceKey && !sportsServiceKey && !(sportsEnabled && KSPORTS_PORTAL_URL)) {
     return res.status(500).json({ error: `${KTO_KEY_ENV[lang]} or ${KSPORTS_KEY_ENV} is not configured` });
   }
 
@@ -94,19 +95,21 @@ export default async function handler(req, res) {
         }
       );
     }
-    if (sportsServiceKey) {
+    if (sportsEnabled && sportsServiceKey) {
       requests.push({
         label: 'ksports-open-data',
         run: () => fetchSportsItems({ rows: Math.min(rows * 8, 800), pageNo: 1 }, sportsServiceKey)
       });
     }
 
-    getSportsPortalMonths(today, days).forEach(month => {
-      requests.push({
-        label: `ksports-portal-${month.year}-${String(month.month).padStart(2, '0')}`,
-        run: () => fetchSportsPortalItems(month)
+    if (sportsEnabled) {
+      getSportsPortalMonths(today, days).forEach(month => {
+        requests.push({
+          label: `ksports-portal-${month.year}-${String(month.month).padStart(2, '0')}`,
+          run: () => fetchSportsPortalItems(month)
+        });
       });
-    });
+    }
 
     const results = await Promise.allSettled(requests.map(request => request.run()));
     const diagnostics = [];
