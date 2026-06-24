@@ -83,18 +83,6 @@ export default async function handler(req, res) {
     if (ktoServiceKey) {
       requests.push(
         {
-          label: 'kto-location',
-          run: () => fetchKtoItems('locationBasedList2', {
-            mapX: lng,
-            mapY: lat,
-            radius: Math.min(radius, 20000),
-            arrange: 'E',
-            contentTypeId: 15,
-            numOfRows: rows,
-            pageNo: 1
-          }, ktoServiceKey, lang)
-        },
-        {
           label: 'kto-festival',
           run: () => fetchKtoItems('searchFestival2', {
             eventStartDate: startDate,
@@ -141,8 +129,7 @@ export default async function handler(req, res) {
 
     const events = dedupeEvents(merged)
       .filter(event => {
-        if (!event.endDate) return true;
-        return String(event.endDate) >= startDate;
+        return isCurrentOrUpcomingEvent(event, startDate, endDate);
       })
       .filter(event => {
         const dist = getEventDistanceValue(event);
@@ -168,6 +155,15 @@ export default async function handler(req, res) {
     console.error('KTO tour event proxy failed', error);
     return res.status(400).json({ error: 'Invalid KTO tour event request' });
   }
+}
+
+function isCurrentOrUpcomingEvent(event, startDate, endDate) {
+  const start = cleanDate(event && event.startDate);
+  const end = cleanDate(event && event.endDate) || start;
+  if (!start && !end) return false;
+  if (end && end < startDate) return false;
+  if (start && start > endDate) return false;
+  return true;
 }
 
 async function fetchKtoItems(operation, params, serviceKey, lang) {
