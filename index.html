@@ -388,22 +388,19 @@ if ('serviceWorker' in navigator) {
 
   /* 마이페이지 */
   .my-profile-card{margin:14px;background:linear-gradient(135deg,#1C242B 0%,#2B343B 58%,#F27A5E 150%);border-radius:16px;padding:20px;color:#fff;flex-shrink:0;box-shadow:0 16px 34px rgba(28,36,43,.14);}
+  .my-profile-top{display:flex;justify-content:flex-end;margin-bottom:8px;}
+  .my-settings-btn{width:34px;height:34px;border-radius:999px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.15);color:#fff;font-size:18px;font-weight:900;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;}
   .my-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:10px;cursor:pointer;border:2px solid rgba(255,255,255,.4);}
   .my-name{font-size:20px;font-weight:700;margin-bottom:2px;}
   .my-sub{font-size:13px;opacity:.8;}
-  .my-level-card{margin:0 14px 2px;background:#fff;border:1px solid rgba(28,36,43,.07);border-radius:16px;padding:15px 16px;box-shadow:0 12px 26px rgba(28,36,43,.07);}
-  .my-level-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
-  .my-level-label{font-size:11px;font-weight:900;color:var(--coral-dark);margin-bottom:5px;}
-  .my-level-number{font-size:31px;font-weight:950;color:var(--ink);line-height:1;letter-spacing:0;}
-  .my-level-xp{font-size:12px;font-weight:900;color:var(--gray-500);text-align:right;line-height:1.35;}
-  .my-level-track{height:9px;background:var(--gray-100);border-radius:999px;overflow:hidden;margin-bottom:8px;}
-  .my-level-fill{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,var(--coral) 0%,var(--lime) 100%);transition:width .45s;}
-  .my-level-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;font-weight:800;color:var(--gray-500);margin-bottom:12px;}
-  .my-level-row strong{color:var(--ink);font-weight:900;}
-  .my-level-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
-  .my-level-stat{min-width:0;background:var(--gray-50);border:1px solid rgba(28,36,43,.04);border-radius:12px;padding:9px 8px;}
-  .my-level-stat span{display:block;font-size:10px;font-weight:800;color:var(--gray-500);margin-bottom:4px;white-space:nowrap;}
-  .my-level-stat strong{display:block;font-size:14px;font-weight:950;color:var(--ink);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .my-profile-level{width:100%;margin-top:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:10px 12px;}
+  .my-profile-level-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+  .my-profile-level-head strong{font-size:18px;font-weight:950;line-height:1;color:#fff;}
+  .my-profile-level-head span{font-size:12px;font-weight:900;color:rgba(255,255,255,.72);}
+  .my-profile-level-track{height:7px;background:rgba(255,255,255,.18);border-radius:999px;overflow:hidden;margin-bottom:7px;}
+  .my-profile-level-fill{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,var(--coral) 0%,var(--lime) 100%);transition:width .45s;}
+  .my-profile-level-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;font-weight:800;color:rgba(255,255,255,.66);}
+  .my-profile-level-foot strong{color:#fff;font-weight:950;}
   .my-section{padding:14px 16px 8px;font-size:14px;font-weight:700;color:var(--gray-900);}
   .my-setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1px solid var(--gray-100);}
   .my-setting-label{font-size:14px;color:var(--gray-900);}
@@ -960,38 +957,25 @@ if ('serviceWorker' in navigator) {
 
     <!-- 프로필 카드 -->
     <div class="my-profile-card">
-      <!-- 상단: 편집 버튼 -->
-      <div style="display:flex;justify-content:flex-end;margin-bottom:12px;">
-        <button onclick="openProfileEdit()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);border-radius:var(--rs);padding:5px 12px;color:#fff;font-size:12px;font-family:inherit;cursor:pointer;">편집</button>
+      <div class="my-profile-top">
+        <button class="my-settings-btn" onclick="openMySettings()" aria-label="설정" title="설정">⚙</button>
       </div>
       <!-- 중앙: 아바타 + 이름 -->
       <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:16px;">
         <div class="my-avatar" id="myAvatar" onclick="openAvatarEdit()" title="탭해서 변경" style="width:72px;height:72px;font-size:36px;margin-bottom:10px;">🏃</div>
         <div class="my-name" id="myNameDisplay" style="text-align:center;">런너</div>
         <div class="my-sub" id="myJoinDays" style="text-align:center;margin-top:3px;">Running with Runloop</div>
-      </div>
-    </div>
-
-    <div class="my-level-card">
-      <div class="my-level-top">
-        <div>
-          <div class="my-level-label" id="myLevelLabel">활동 레벨</div>
-          <div class="my-level-number" id="myLevelNumber">LV 1</div>
+        <div class="my-profile-level">
+          <div class="my-profile-level-head">
+            <strong id="myLevelNumber">LV 1</strong>
+            <span id="myLevelTotalXp">0 XP</span>
+          </div>
+          <div class="my-profile-level-track"><div class="my-profile-level-fill" id="myLevelFill"></div></div>
+          <div class="my-profile-level-foot">
+            <span id="myLevelNextText">다음 레벨까지 0 XP</span>
+            <strong id="myLevelPercent">0%</strong>
+          </div>
         </div>
-        <div class="my-level-xp">
-          <div id="myLevelTotalXp">0 XP</div>
-          <div id="myLevelNextText">다음 레벨까지 0 XP</div>
-        </div>
-      </div>
-      <div class="my-level-track"><div class="my-level-fill" id="myLevelFill"></div></div>
-      <div class="my-level-row">
-        <span id="myLevelProgressText">0 / 0 XP</span>
-        <strong id="myLevelPercent">0%</strong>
-      </div>
-      <div class="my-level-stats">
-        <div class="my-level-stat"><span id="myLevelWeekLabel">이번 주</span><strong id="myLevelWeekXp">+0 XP</strong></div>
-        <div class="my-level-stat"><span id="myLevelDaysLabel">활동일</span><strong id="myLevelActiveDays">0일</strong></div>
-        <div class="my-level-stat"><span id="myLevelDistanceLabel">누적 거리</span><strong id="myLevelDistance">0.0km</strong></div>
       </div>
     </div>
 
@@ -1009,7 +993,6 @@ if ('serviceWorker' in navigator) {
           </div>
           <div>
             <div class="my-goal-main-text" id="homeGoalText">0.0 / 20km</div>
-            <button class="my-goal-main-btn" onclick="openGoalEdit()">목표 변경</button>
           </div>
         </div>
         <div class="my-goal-track">
@@ -1041,29 +1024,32 @@ if ('serviceWorker' in navigator) {
       <div class="culture-visit-list" id="myCultureVisitList"></div>
     </div>
 
-    <div class="my-block-head">
-      <div class="my-section" id="appSettingsTitle">앱 설정</div>
+    <div style="height:20px;"></div>
+  </div>
+</div>
+
+<!-- MY 설정 모달 -->
+<div id="mySettingsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1002;align-items:flex-end;justify-content:center;">
+  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:20px 18px 28px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+      <div style="font-size:16px;font-weight:800;" id="appSettingsTitle">앱 설정</div>
+      <button onclick="closeMySettings()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-500);">×</button>
     </div>
-    <div class="my-info-panel">
-      <div class="my-info-row">
+    <div class="my-info-panel" style="border:1px solid var(--gray-100);border-radius:14px;padding:0;overflow:hidden;">
+      <div class="my-info-row" style="padding:14px 14px;">
         <span id="appLanguageLabel">언어</span>
         <div class="language-toggle" aria-label="앱 언어 선택">
           <button id="langKoBtn" type="button" onclick="setAppLanguage('ko')">한국어</button>
           <button id="langEnBtn" type="button" onclick="setAppLanguage('en')">English</button>
         </div>
       </div>
-    </div>
-
-    <div class="my-block-head">
-      <div class="my-section" id="policyTitle">정책</div>
-    </div>
-    <div class="my-info-panel">
-      <a class="my-info-row" href="/privacy.html" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;">
+      <button class="my-info-row" onclick="closeMySettings();openGoalEdit();" style="width:100%;padding:14px;border:none;background:#fff;font-family:inherit;cursor:pointer;text-align:left;">
+        <span id="settingsGoalLabel">주간 목표</span><strong id="settingsGoalValue" style="color:var(--coral);">20km</strong>
+      </button>
+      <a class="my-info-row" href="/privacy.html" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;padding:14px;">
         <span id="privacyLabel">개인정보처리방침</span><strong id="privacyViewLabel" style="color:var(--coral);">보기</strong>
       </a>
     </div>
-
-    <div style="height:20px;"></div>
   </div>
 </div>
 
@@ -1381,6 +1367,7 @@ const APP_COPY = {
     savedSpotEmptyDesc: '홈이나 지도에서 가고 싶은 스팟을 저장해보세요',
     appSettings: '앱 설정',
     language: '언어',
+    weeklyGoal: '주간 목표',
     policy: '정책',
     privacy: '개인정보처리방침',
     view: '보기',
@@ -1427,6 +1414,7 @@ const APP_COPY = {
     savedSpotEmptyDesc: 'Save places you want to visit from Home or Map',
     appSettings: 'App Settings',
     language: 'Language',
+    weeklyGoal: 'Weekly goal',
     policy: 'Policy',
     privacy: 'Privacy Policy',
     view: 'View',
@@ -1513,6 +1501,7 @@ function applyAppLanguage() {
   setTextContent('mySavedSpotTitle', t('savedSpotTitle'));
   setTextContent('appSettingsTitle', t('appSettings'));
   setTextContent('appLanguageLabel', t('language'));
+  setTextContent('settingsGoalLabel', t('weeklyGoal'));
   setTextContent('policyTitle', t('policy'));
   setTextContent('privacyLabel', t('privacy'));
   setTextContent('privacyViewLabel', t('view'));
@@ -3583,6 +3572,10 @@ document.getElementById('courseDetailModal').addEventListener('click', function(
 
 document.getElementById('socialComposerModal').addEventListener('click', function(e) {
   if (e.target === this) closeSocialComposer();
+});
+
+document.getElementById('mySettingsModal').addEventListener('click', function(e) {
+  if (e.target === this) closeMySettings();
 });
 
 /* 탭 전환 */
@@ -6841,34 +6834,16 @@ function renderMyLevel(records, weeklyGoal) {
   const nextRemaining = Math.max(0, summary.nextXp - summary.currentXp);
   const labels = appLanguage === 'en'
     ? {
-        level: 'Activity Level',
         next: `Next level in ${nextRemaining.toLocaleString('en-US')} XP`,
-        week: 'This week',
-        days: 'Active days',
-        distance: 'Total distance',
-        dayUnit: 'd'
       }
     : {
-        level: '활동 레벨',
         next: `다음 레벨까지 ${nextRemaining.toLocaleString('ko-KR')} XP`,
-        week: '이번 주',
-        days: '활동일',
-        distance: '누적 거리',
-        dayUnit: '일'
       };
 
-  setTextContent('myLevelLabel', labels.level);
   setTextContent('myLevelNumber', `LV ${summary.level}`);
   setTextContent('myLevelTotalXp', `${summary.totalXp.toLocaleString(appLanguage === 'en' ? 'en-US' : 'ko-KR')} XP`);
   setTextContent('myLevelNextText', labels.next);
-  setTextContent('myLevelProgressText', `${summary.currentXp.toLocaleString(appLanguage === 'en' ? 'en-US' : 'ko-KR')} / ${summary.nextXp.toLocaleString(appLanguage === 'en' ? 'en-US' : 'ko-KR')} XP`);
   setTextContent('myLevelPercent', `${summary.percent}%`);
-  setTextContent('myLevelWeekLabel', labels.week);
-  setTextContent('myLevelWeekXp', `+${summary.currentWeekXp.toLocaleString(appLanguage === 'en' ? 'en-US' : 'ko-KR')} XP`);
-  setTextContent('myLevelDaysLabel', labels.days);
-  setTextContent('myLevelActiveDays', `${summary.currentWeekActiveDays}${labels.dayUnit}`);
-  setTextContent('myLevelDistanceLabel', labels.distance);
-  setTextContent('myLevelDistance', `${summary.totalDistance.toFixed(1)}km`);
   const fill = document.getElementById('myLevelFill');
   if (fill) fill.style.width = summary.percent + '%';
 }
@@ -8806,6 +8781,22 @@ function obFinish() {
 /* ── 프로필 편집 모달 ── */
 let editSelectedAvatar = '🏃';
 
+function openMySettings() {
+  updateMySettingsValues();
+  document.getElementById('mySettingsModal').style.display = 'flex';
+}
+
+function closeMySettings() {
+  document.getElementById('mySettingsModal').style.display = 'none';
+}
+
+function updateMySettingsValues() {
+  const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
+  const goal = parseFloat(localStorage.getItem('weeklyGoal') || profile.goal || '20');
+  const valueEl = document.getElementById('settingsGoalValue');
+  if (valueEl) valueEl.textContent = Number.isFinite(goal) ? goal + 'km' : '—';
+}
+
 function openProfileEdit() {
   const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
   editSelectedAvatar = profile.avatar || '🏃';
@@ -8872,6 +8863,7 @@ function selectGoalOption(el, km) {
 function saveGoalEdit() {
   localStorage.setItem('weeklyGoal', editSelectedGoal);
   closeGoalEdit();
+  updateMySettingsValues();
   renderMyPage();
   toast('목표가 변경됐어요! 💪');
 }
@@ -9002,6 +8994,7 @@ function renderMyPage() {
     bodyInfo.textContent = [height, weight].filter(Boolean).join(' · ') || '미입력';
   }
   if (sourceInfo) sourceInfo.textContent = getMySourceSummary(records);
+  updateMySettingsValues();
   renderMyLevel(records, goal);
   renderMyCultureVisits();
 
