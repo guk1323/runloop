@@ -90,22 +90,24 @@ if ('serviceWorker' in navigator) {
   .ai-location-btn{position:absolute;right:14px;bottom:96px;z-index:23;width:46px;height:46px;background:rgba(255,255,255,.96);border:1px solid rgba(28,36,43,.08);border-radius:999px;cursor:pointer;font-size:22px;font-weight:800;line-height:1;color:var(--coral-dark);font-family:inherit;box-shadow:0 8px 22px rgba(28,36,43,.18);backdrop-filter:blur(12px);}
   .ai-selected-hidden{display:none!important;}
   .create-map-shell{position:relative;flex:1;min-height:220px;}
-  .map-place-card{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:24;background:rgba(255,255,255,.96);border:1px solid rgba(28,36,43,.08);border-radius:16px;padding:12px;box-shadow:0 10px 28px rgba(28,36,43,.18);backdrop-filter:blur(14px);}
-  .map-place-title{font-size:15px;font-weight:900;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:34px;}
+  .map-place-card{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:24;background:rgba(255,255,255,.97);border:1px solid rgba(28,36,43,.08);border-radius:18px;padding:13px;box-shadow:0 12px 30px rgba(28,36,43,.18);backdrop-filter:blur(14px);}
+  .map-place-title{font-size:18px;font-weight:900;color:var(--ink);line-height:1.28;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;padding-right:36px;}
   .map-place-close{position:absolute;top:9px;right:9px;width:28px;height:28px;border:none;border-radius:999px;background:var(--gray-50);color:var(--gray-500);font-size:18px;font-weight:800;line-height:1;font-family:inherit;cursor:pointer;}
   .map-place-close:active{transform:scale(.94);}
   .map-place-sub{display:none;}
-  .map-place-media{display:none;margin-top:10px;grid-template-columns:minmax(132px,42%) minmax(0,1fr);gap:10px;align-items:stretch;}
-  .map-place-media.active{display:grid;}
-  .map-place-photo-frame{position:relative;width:100%;min-height:104px;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#FFF7F1 0%,#F4EFE8 52%,#EEF8EA 100%);border:1px solid var(--gray-100);display:flex;align-items:center;justify-content:center;}
+  .map-place-media{display:none;margin-top:10px;gap:9px;}
+  .map-place-media.active{display:flex;flex-direction:column;}
+  .map-place-photo-frame{position:relative;width:100%;min-height:150px;aspect-ratio:16/8.5;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#FFF7F1 0%,#F4EFE8 52%,#EEF8EA 100%);border:1px solid var(--gray-100);display:flex;align-items:center;justify-content:center;}
   .map-place-image{width:100%;height:100%;object-fit:cover;display:none;}
   .map-place-image.active{display:block;}
   .map-place-photo-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gray-600);font-size:12px;font-weight:900;text-align:center;}
-  .map-place-copy{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:7px;background:var(--gray-50);border:1px solid var(--gray-100);border-radius:12px;padding:9px;}
-  .map-place-desc{display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden;}
-  .map-place-meta-chip{height:22px;display:inline-flex;align-items:center;max-width:100%;border-radius:999px;background:#fff;border:1px solid var(--gray-100);color:var(--gray-700);font-size:10px;font-weight:900;padding:0 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;}
+  .map-place-visited-badge,.culture-spot-visited-badge,.spot-visited-badge{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:999px;background:rgba(28,36,43,.86);color:#fff;border:1px solid rgba(255,255,255,.8);box-shadow:0 6px 14px rgba(28,36,43,.18);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;line-height:1;}
+  .map-place-visited-badge{display:none;}
+  .map-place-copy{min-width:0;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
+  .map-place-desc{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;}
+  .map-place-meta-chip{height:28px;display:inline-flex;align-items:center;max-width:100%;border-radius:999px;background:#fff;border:1px solid var(--gray-100);color:var(--gray-700);font-size:12px;font-weight:900;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;}
   .map-place-meta-chip.star{color:var(--coral);background:#FFF6F1;border-color:rgba(242,122,94,.16);flex-shrink:0;}
-  .map-place-weather{display:none;align-items:center;gap:5px;min-width:0;width:100%;font-size:11px;font-weight:900;color:var(--ink);background:#FFF6F1;border:1px solid rgba(242,122,94,.16);border-radius:9px;padding:7px 8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .map-place-weather{display:none;align-items:center;gap:5px;min-width:0;max-width:100%;font-size:12px;font-weight:900;color:var(--ink);background:#FFF6F1;border:1px solid rgba(242,122,94,.16);border-radius:999px;padding:7px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .map-place-weather.active{display:flex;}
   .map-place-weather span{min-width:0;overflow:hidden;text-overflow:ellipsis;}
   .map-place-credit{display:none;}
@@ -479,21 +481,25 @@ if ('serviceWorker' in navigator) {
   .near-course-name{font-size:14px;font-weight:700;color:var(--gray-900);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .near-course-meta{font-size:12px;color:var(--gray-500);}
   .near-course-dist{font-size:14px;font-weight:700;color:var(--coral);flex-shrink:0;}
-  .culture-spot-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);overflow:hidden;margin-bottom:10px;box-shadow:0 8px 20px rgba(28,36,43,.04);}
-  .culture-spot-card.featured{border:1.5px solid var(--coral);box-shadow:0 8px 20px rgba(242,122,94,.10);}
-  .culture-spot-main{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;padding:12px;}
-  .culture-spot-photo{position:relative;width:92px;height:92px;border-radius:14px;overflow:hidden;background:var(--coral-light);border:1px solid rgba(242,122,94,.16);flex-shrink:0;}
+  .culture-spot-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);overflow:hidden;margin-bottom:12px;box-shadow:0 8px 20px rgba(28,36,43,.04);}
+  .culture-spot-card.featured{border:1.5px solid var(--coral);box-shadow:0 8px 22px rgba(242,122,94,.12);}
+  .culture-spot-main{display:flex;flex-direction:column;gap:12px;padding:12px;}
+  .culture-spot-photo{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;background:var(--coral-light);border:1px solid rgba(242,122,94,.16);flex-shrink:0;}
   .culture-spot-photo img{width:100%;height:100%;object-fit:cover;display:block;}
   .culture-spot-photo-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--coral-dark);font-size:11px;font-weight:900;text-align:center;padding:10px;line-height:1.35;}
-  .culture-spot-rank{position:absolute;right:6px;bottom:6px;background:rgba(28,36,43,.9);color:#fff;font-size:10px;font-weight:900;padding:3px 6px;border-radius:999px;box-shadow:0 3px 8px rgba(28,36,43,.18);}
-  .culture-spot-info{min-width:0;display:flex;flex-direction:column;gap:8px;}
-  .culture-spot-name{font-size:14px;font-weight:800;color:var(--gray-900);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-  .culture-spot-pill-row{display:flex;gap:5px;align-items:center;flex-wrap:wrap;}
+  .culture-spot-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;}
+  .culture-spot-info{min-width:0;flex:1;display:flex;flex-direction:column;gap:5px;}
+  .culture-spot-name{font-size:17px;font-weight:900;color:var(--gray-900);line-height:1.32;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .culture-spot-meta{font-size:12px;font-weight:800;color:var(--gray-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .culture-spot-score{text-align:right;flex-shrink:0;min-width:60px;}
+  .culture-spot-score-value{font-size:25px;font-weight:900;color:var(--coral);line-height:1;}
+  .culture-spot-score-dist{font-size:12px;font-weight:900;color:var(--gray-500);margin-top:2px;}
+  .culture-spot-pill-row{display:none;}
   .culture-spot-pill{height:24px;display:inline-flex;align-items:center;border-radius:999px;background:var(--gray-50);border:1px solid var(--gray-100);padding:0 8px;font-size:11px;font-weight:800;color:var(--gray-600);white-space:nowrap;}
   .culture-spot-pill.stars{color:var(--coral);background:var(--coral-light);border-color:rgba(242,122,94,.18);letter-spacing:0;}
   .culture-spot-pill.visited{color:var(--ink);background:#EEF8EA;border-color:#DDECCF;}
-  .culture-spot-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:auto;}
-  .culture-spot-actions button{height:32px;border-radius:999px;font-size:12px;font-weight:800;padding:0 8px;cursor:pointer;font-family:inherit;white-space:nowrap;}
+  .culture-spot-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding-top:10px;border-top:1px solid var(--gray-100);}
+  .culture-spot-actions button{height:42px;border-radius:var(--rs);font-size:13px;font-weight:900;padding:0 8px;cursor:pointer;font-family:inherit;white-space:nowrap;}
   .culture-spot-save-btn{background:#fff;color:var(--coral);border:1px solid rgba(242,122,94,.28);}
   .culture-spot-save-btn.active{background:var(--coral-light);color:var(--ink);}
   .culture-spot-route-btn{background:var(--ink);color:#fff;border:none;}
@@ -873,6 +879,7 @@ if ('serviceWorker' in navigator) {
         <div class="map-place-photo-frame">
           <img class="map-place-image" id="aiPlaceImage" alt="">
           <div class="map-place-photo-empty" id="aiPlaceImageFallback">사진 준비중</div>
+          <div class="map-place-visited-badge" id="aiPlaceVisitedBadge" aria-label="방문함">✓</div>
         </div>
         <div class="map-place-copy">
           <div class="map-place-desc" id="aiPlaceDesc"></div>
@@ -2712,10 +2719,11 @@ function updateAiPlaceMedia(spot) {
   const media = document.getElementById('aiPlaceMedia');
   const img = document.getElementById('aiPlaceImage');
   const fallback = document.getElementById('aiPlaceImageFallback');
+  const visitedBadge = document.getElementById('aiPlaceVisitedBadge');
   const desc = document.getElementById('aiPlaceDesc');
   const weatherEl = document.getElementById('aiPlaceWeather');
   const credit = document.getElementById('aiPlaceCredit');
-  if (!media || !img || !fallback || !desc || !weatherEl || !credit) return;
+  if (!media || !img || !fallback || !visitedBadge || !desc || !weatherEl || !credit) return;
   if (!spot) {
     media.classList.remove('active');
     img.removeAttribute('src');
@@ -2724,6 +2732,7 @@ function updateAiPlaceMedia(spot) {
     img.onclick = null;
     img.removeAttribute('title');
     fallback.style.display = 'none';
+    visitedBadge.style.display = 'none';
     desc.innerHTML = '';
     weatherEl.classList.remove('active');
     weatherEl.textContent = '';
@@ -2732,6 +2741,7 @@ function updateAiPlaceMedia(spot) {
   }
   const photo = getCultureSpotPhoto(spot);
   const displayName = getCultureSpotDisplayName(spot);
+  visitedBadge.style.display = isCultureSpotMarkedVisited(spot) ? 'flex' : 'none';
   desc.innerHTML = getMapPlaceMetaHtml(spot);
   updateAiPlaceWeather(spot);
   if (photo && photo.imageUrl) {
@@ -6245,6 +6255,15 @@ function getCultureSpotIntroUrl(spot, fallbackName = '') {
   return getCultureSpotInfoUrl(getCultureSpotDisplayName(spot, fallbackName || t('cultureSpots')), spot.place_url);
 }
 
+function isCultureSpotMarkedVisited(spot) {
+  if (!spot) return false;
+  return !!readCultureSpotVisits()[getCultureSpotVisitKey(spot)];
+}
+
+function renderCultureSpotVisitedBadge(className) {
+  return `<div class="${escapeHtml(className)}" title="${escapeHtml(t('visitedDone'))}" aria-label="${escapeHtml(t('visitedDone'))}">✓</div>`;
+}
+
 function openCultureSpotInfoFromPhoto(event, element) {
   if (event) event.stopPropagation();
   const url = element && element.dataset ? element.dataset.url : '';
@@ -6257,17 +6276,22 @@ function renderSpotPhotoBox(spot, prefix = 'spotPhoto') {
   const domId = getSpotPhotoDomId(spot && spot.key, prefix);
   const displayName = getCultureSpotDisplayName(spot, '문화스팟');
   const introUrl = getCultureSpotIntroUrl(spot, displayName);
+  const visited = isCultureSpotMarkedVisited(spot);
+  const visitedAttr = visited ? '1' : '0';
+  const visitedBadge = visited ? renderCultureSpotVisitedBadge('spot-visited-badge') : '';
   if (!photo || !photo.imageUrl) {
     return `
-      <div class="spot-photo empty" id="${escapeHtml(domId)}" data-url="${escapeHtml(introUrl)}">
+      <div class="spot-photo empty" id="${escapeHtml(domId)}" data-url="${escapeHtml(introUrl)}" data-visited="${visitedAttr}">
         <div class="spot-photo-fallback">
           <div class="spot-photo-fallback-title">${escapeHtml(t('photoPreparing'))}</div>
         </div>
+        ${visitedBadge}
       </div>`;
   }
   return `
-    <div class="spot-photo clickable" id="${escapeHtml(domId)}" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromPhoto(event,this)" title="${escapeHtml(t('infoView'))}">
+    <div class="spot-photo clickable" id="${escapeHtml(domId)}" data-url="${escapeHtml(introUrl)}" data-visited="${visitedAttr}" onclick="openCultureSpotInfoFromPhoto(event,this)" title="${escapeHtml(t('infoView'))}">
       <img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || displayName || '문화스팟 사진')}" loading="lazy">
+      ${visitedBadge}
       <div class="spot-photo-credit">${escapeHtml(getCulturePhotoCredit(photo))}</div>
     </div>`;
 }
@@ -6279,26 +6303,28 @@ function updateSpotPhotoBox(key, photo, prefix = 'spotPhoto') {
   el.classList.add('clickable');
   el.setAttribute('onclick', 'openCultureSpotInfoFromPhoto(event,this)');
   el.title = t('infoView');
-  el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || '문화스팟 사진')}" loading="lazy"><div class="spot-photo-credit">${escapeHtml(getCulturePhotoCredit(photo))}</div>`;
+  const visitedBadge = el.dataset && el.dataset.visited === '1' ? renderCultureSpotVisitedBadge('spot-visited-badge') : '';
+  el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || '문화스팟 사진')}" loading="lazy">${visitedBadge}<div class="spot-photo-credit">${escapeHtml(getCulturePhotoCredit(photo))}</div>`;
 }
 
-function renderHomeCultureSpotPhoto(spot, key, displayName, stars, introUrl = '') {
+function renderHomeCultureSpotPhoto(spot, key, displayName, introUrl = '', visited = false) {
   const domId = getSpotPhotoDomId(key, 'homeSpotPhoto');
   const photo = getCultureSpotPhoto(spot);
-  const rank = `<div class="culture-spot-rank">★${stars}</div>`;
+  const visitedAttr = visited ? '1' : '0';
+  const visitedBadge = visited ? renderCultureSpotVisitedBadge('culture-spot-visited-badge') : '';
   if (photo && photo.imageUrl) {
     return `
-      <div class="culture-spot-photo clickable" id="${escapeHtml(domId)}" data-key="${escapeHtml(key)}" data-stars="★${stars}" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromPhoto(event,this)" title="${escapeHtml(t('infoView'))}">
+      <div class="culture-spot-photo clickable" id="${escapeHtml(domId)}" data-key="${escapeHtml(key)}" data-visited="${visitedAttr}" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromPhoto(event,this)" title="${escapeHtml(t('infoView'))}">
         <img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || displayName || '문화스팟 사진')}" loading="lazy">
-        ${rank}
+        ${visitedBadge}
       </div>`;
   }
   return `
-    <div class="culture-spot-photo empty" id="${escapeHtml(domId)}" data-key="${escapeHtml(key)}" data-stars="★${stars}" data-url="${escapeHtml(introUrl)}">
+    <div class="culture-spot-photo empty" id="${escapeHtml(domId)}" data-key="${escapeHtml(key)}" data-visited="${visitedAttr}" data-url="${escapeHtml(introUrl)}">
       <div class="culture-spot-photo-fallback">
         <div>${escapeHtml(t('photoPreparing'))}</div>
       </div>
-      ${rank}
+      ${visitedBadge}
     </div>`;
 }
 
@@ -6306,12 +6332,12 @@ function updateHomeCultureSpotPhoto(key, photo) {
   if (!key || !photo || !photo.imageUrl) return;
   const el = document.getElementById(getSpotPhotoDomId(key, 'homeSpotPhoto'));
   if (el) {
-    const stars = el.dataset.stars || '';
     el.classList.remove('empty');
     el.classList.add('clickable');
     el.setAttribute('onclick', 'openCultureSpotInfoFromPhoto(event,this)');
     el.title = t('infoView');
-    el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || '문화스팟 사진')}" loading="lazy"><div class="culture-spot-rank">${escapeHtml(stars)}</div>`;
+    const visitedBadge = el.dataset && el.dataset.visited === '1' ? renderCultureSpotVisitedBadge('culture-spot-visited-badge') : '';
+    el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || '문화스팟 사진')}" loading="lazy">${visitedBadge}`;
   }
   const saveButton = Array.from(document.querySelectorAll('.culture-spot-save-btn')).find(button => button.dataset && button.dataset.key === key);
   if (saveButton) saveButton.dataset.image = photo.imageUrl;
@@ -6382,22 +6408,24 @@ function renderNearCourses(results) {
     const favoriteKey = getCultureSpotFavoriteKey(p);
     const favorited = isCultureSpotFavorited(p);
     const cardClass = i === 0 ? 'culture-spot-card featured' : 'culture-spot-card';
-    const visitedPill = visitState.visited ? `<span class="culture-spot-pill visited">${escapeHtml(t('visited'))}</span>` : '';
+    const metaHtml = favorited ? `<div class="culture-spot-meta">${escapeHtml(t('saved'))}</div>` : '';
     return `
       <div class="${cardClass}">
         <div class="culture-spot-main">
-          ${renderHomeCultureSpotPhoto(p, favoriteKey, placeName, valueStars, introUrl)}
-          <div class="culture-spot-info">
-            <div class="culture-spot-name">${escapeHtml(placeName)}</div>
-            <div class="culture-spot-pill-row">
-              <span class="culture-spot-pill">${escapeHtml(dist)}</span>
-              <span class="culture-spot-pill stars">${escapeHtml(getCultureValueStarsText(valueStars))}</span>
-              ${visitedPill}
+          ${renderHomeCultureSpotPhoto(p, favoriteKey, placeName, introUrl, visitState.visited)}
+          <div class="culture-spot-card-top">
+            <div class="culture-spot-info">
+              <div class="culture-spot-name">${escapeHtml(placeName)}</div>
+              ${metaHtml}
             </div>
-            <div class="culture-spot-actions">
-              <button class="culture-spot-save-btn ${favorited ? 'active' : ''}" data-key="${escapeHtml(favoriteKey)}" data-id="${escapeHtml(String(p.id || p.contentId || p.contentid || ''))}" data-place="${escapeHtml(rawPlaceName)}" data-name-en="${escapeHtml(nameEn)}" data-lat="${lat}" data-lng="${lng}" data-type="${escapeHtml(type)}" data-stars="${valueStars}" data-dist="${Number.isFinite(distValue) ? distValue : ''}" data-address="${escapeHtml(p.address_name || p.addr1 || '')}" data-url="${escapeHtml(introUrl)}" data-image="${escapeHtml(p.firstImage || p.firstimage || '')}" data-source="${escapeHtml(p.source || '')}" onclick="saveCultureSpotFromHomeButton(this)">${favorited ? escapeHtml(t('saved')) : escapeHtml(t('save'))}</button>
-              <button class="culture-spot-route-btn" data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" onclick="goToAiFromHomeButton(this)">${escapeHtml(t('route'))}</button>
+            <div class="culture-spot-score">
+              <div class="culture-spot-score-value">★${valueStars}</div>
+              <div class="culture-spot-score-dist">${escapeHtml(dist)}</div>
             </div>
+          </div>
+          <div class="culture-spot-actions">
+            <button class="culture-spot-save-btn ${favorited ? 'active' : ''}" data-key="${escapeHtml(favoriteKey)}" data-id="${escapeHtml(String(p.id || p.contentId || p.contentid || ''))}" data-place="${escapeHtml(rawPlaceName)}" data-name-en="${escapeHtml(nameEn)}" data-lat="${lat}" data-lng="${lng}" data-type="${escapeHtml(type)}" data-stars="${valueStars}" data-dist="${Number.isFinite(distValue) ? distValue : ''}" data-address="${escapeHtml(p.address_name || p.addr1 || '')}" data-url="${escapeHtml(introUrl)}" data-image="${escapeHtml(p.firstImage || p.firstimage || '')}" data-source="${escapeHtml(p.source || '')}" onclick="saveCultureSpotFromHomeButton(this)">${favorited ? escapeHtml(t('saved')) : escapeHtml(t('save'))}</button>
+            <button class="culture-spot-route-btn" data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" onclick="goToAiFromHomeButton(this)">${escapeHtml(t('route'))}</button>
           </div>
         </div>
       </div>`;
@@ -7740,7 +7768,6 @@ function renderMyCourses() {
   const list = document.getElementById('myCourseList');
   const empty = document.getElementById('myCourseEmpty');
   const count = document.getElementById('myCourseCount');
-  const visits = readCultureSpotVisits();
   const visibleSpots = spots;
 
   count.textContent = spots.length + '곳';
@@ -7761,10 +7788,8 @@ function renderMyCourses() {
     const keyJson = escapeHtml(JSON.stringify(spot.key));
     const displayName = getCultureSpotDisplayName(spot);
     const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
-    const visited = !!visits[getCultureSpotVisitKey(spot)];
     const meta = [
-      formatCultureSpotSavedAt(spot) ? '저장 ' + formatCultureSpotSavedAt(spot) : '',
-      visited ? '방문 기록' : ''
+      formatCultureSpotSavedAt(spot) ? '저장 ' + formatCultureSpotSavedAt(spot) : ''
     ].filter(Boolean).join(' · ');
     const card = document.createElement('div');
     card.className = 'mc-card saved-spot';
@@ -7815,10 +7840,8 @@ function openCourseDetail(id) {
   const course = getFavoriteCultureSpotByKey(id);
   if (!course) return;
   courseDetailTargetId = id;
-  const spotId = escapeHtml(JSON.stringify(id));
   const stars = Math.max(1, Math.min(5, Math.round(Number(course.cultureValueStars) || 1)));
   const dist = formatCultureSpotDistanceLabel(course.distFromMe);
-  const visitState = readCultureSpotVisits()[getCultureSpotVisitKey(course)];
   const savedAt = formatCultureSpotSavedAt(course);
   const displayName = getCultureSpotDisplayName(course);
 
@@ -7829,7 +7852,6 @@ function openCourseDetail(id) {
     ${renderSpotWeatherBox(course, 'detailWeather')}
     <div class="course-detail-chiprow">
       <span class="course-detail-chip">${escapeHtml(getCultureValueStarsText(stars))}</span>
-      <span class="course-detail-chip">${visitState ? '방문 기록' : '방문 전'}</span>
     </div>
     <div class="course-detail-grid">
       <div class="course-detail-stat">
