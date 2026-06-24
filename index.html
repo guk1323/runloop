@@ -391,6 +391,19 @@ if ('serviceWorker' in navigator) {
   .my-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:10px;cursor:pointer;border:2px solid rgba(255,255,255,.4);}
   .my-name{font-size:20px;font-weight:700;margin-bottom:2px;}
   .my-sub{font-size:13px;opacity:.8;}
+  .my-level-card{margin:0 14px 2px;background:#fff;border:1px solid rgba(28,36,43,.07);border-radius:16px;padding:15px 16px;box-shadow:0 12px 26px rgba(28,36,43,.07);}
+  .my-level-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
+  .my-level-label{font-size:11px;font-weight:900;color:var(--coral-dark);margin-bottom:5px;}
+  .my-level-number{font-size:31px;font-weight:950;color:var(--ink);line-height:1;letter-spacing:0;}
+  .my-level-xp{font-size:12px;font-weight:900;color:var(--gray-500);text-align:right;line-height:1.35;}
+  .my-level-track{height:9px;background:var(--gray-100);border-radius:999px;overflow:hidden;margin-bottom:8px;}
+  .my-level-fill{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,var(--coral) 0%,var(--lime) 100%);transition:width .45s;}
+  .my-level-row{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:11px;font-weight:800;color:var(--gray-500);margin-bottom:12px;}
+  .my-level-row strong{color:var(--ink);font-weight:900;}
+  .my-level-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;}
+  .my-level-stat{min-width:0;background:var(--gray-50);border:1px solid rgba(28,36,43,.04);border-radius:12px;padding:9px 8px;}
+  .my-level-stat span{display:block;font-size:10px;font-weight:800;color:var(--gray-500);margin-bottom:4px;white-space:nowrap;}
+  .my-level-stat strong{display:block;font-size:14px;font-weight:950;color:var(--ink);line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .my-section{padding:14px 16px 8px;font-size:14px;font-weight:700;color:var(--gray-900);}
   .my-setting-row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:#fff;border-bottom:1px solid var(--gray-100);}
   .my-setting-label{font-size:14px;color:var(--gray-900);}
@@ -959,6 +972,29 @@ if ('serviceWorker' in navigator) {
       </div>
     </div>
 
+    <div class="my-level-card">
+      <div class="my-level-top">
+        <div>
+          <div class="my-level-label" id="myLevelLabel">활동 레벨</div>
+          <div class="my-level-number" id="myLevelNumber">LV 1</div>
+        </div>
+        <div class="my-level-xp">
+          <div id="myLevelTotalXp">0 XP</div>
+          <div id="myLevelNextText">다음 레벨까지 0 XP</div>
+        </div>
+      </div>
+      <div class="my-level-track"><div class="my-level-fill" id="myLevelFill"></div></div>
+      <div class="my-level-row">
+        <span id="myLevelProgressText">0 / 0 XP</span>
+        <strong id="myLevelPercent">0%</strong>
+      </div>
+      <div class="my-level-stats">
+        <div class="my-level-stat"><span id="myLevelWeekLabel">이번 주</span><strong id="myLevelWeekXp">+0 XP</strong></div>
+        <div class="my-level-stat"><span id="myLevelDaysLabel">활동일</span><strong id="myLevelActiveDays">0일</strong></div>
+        <div class="my-level-stat"><span id="myLevelDistanceLabel">누적 거리</span><strong id="myLevelDistance">0.0km</strong></div>
+      </div>
+    </div>
+
     <!-- 활동 기록 -->
     <div style="padding:16px 16px 8px;display:flex;justify-content:space-between;align-items:center;">
       <div class="my-section" style="padding:0;">활동 기록</div>
@@ -1308,6 +1344,11 @@ const HEALTH_ACTIVITY_LAST_SYNC_KEY = 'runloopHealthActivityLastSyncV1';
 const HEALTH_ACTIVITY_SYNC_INTERVAL_MS = 10 * 60 * 1000;
 const HEALTH_ACTIVITY_MIN_DISTANCE_METERS = 20;
 const HEALTH_ACTIVITY_MIN_STEPS = 20;
+const ACTIVITY_XP_PER_KM = 55;
+const ACTIVITY_DAILY_ACTIVE_XP = 35;
+const ACTIVITY_DAILY_GOAL_XP = 90;
+const ACTIVITY_DAILY_STRETCH_XP = 35;
+const ACTIVITY_WEEKLY_GOAL_XP = 180;
 let appLanguage = localStorage.getItem(APP_LANGUAGE_KEY) === 'en' ? 'en' : 'ko';
 const APP_COPY = {
   ko: {
@@ -6682,6 +6723,156 @@ async function syncHealthActivity(options = {}) {
   }
 }
 
+function getActivityDailyTotals(records) {
+  const daily = new Map();
+  (Array.isArray(records) ? records : []).forEach(record => {
+    const activityDate = getActivityRecordDate(record);
+    if (!activityDate) return;
+    const key = getLocalDateKey(activityDate);
+    const entry = daily.get(key) || {
+      key,
+      date: new Date(activityDate.getFullYear(), activityDate.getMonth(), activityDate.getDate()),
+      manualKm: 0,
+      healthKm: 0,
+      hasHealth: false
+    };
+    const distance = Math.max(0, Number(record && record.dist) || 0);
+    if (record && record.source === 'healthkit') {
+      entry.hasHealth = true;
+      entry.healthKm = Math.max(entry.healthKm, distance);
+    } else {
+      entry.manualKm += distance;
+    }
+    daily.set(key, entry);
+  });
+
+  return Array.from(daily.values())
+    .map(entry => ({
+      key: entry.key,
+      date: entry.date,
+      distKm: entry.hasHealth ? entry.healthKm : entry.manualKm
+    }))
+    .filter(entry => entry.distKm > 0)
+    .sort((a, b) => a.date - b.date);
+}
+
+function getDailyActivityXp(distanceKm, weeklyGoal) {
+  const safeDistance = Math.max(0, Number(distanceKm) || 0);
+  const safeGoal = Math.max(1, Number(weeklyGoal) || 20);
+  const dailyGoal = Math.max(0.8, safeGoal / 7);
+  const goalRatio = safeDistance / dailyGoal;
+  const distanceXp = Math.round(safeDistance * ACTIVITY_XP_PER_KM);
+  const activeXp = safeDistance >= Math.min(1.2, dailyGoal * 0.35) ? ACTIVITY_DAILY_ACTIVE_XP : 0;
+  const goalXp = goalRatio >= 1 ? ACTIVITY_DAILY_GOAL_XP : Math.round(Math.min(goalRatio, 1) * 35);
+  const stretchXp = goalRatio >= 1.5 ? ACTIVITY_DAILY_STRETCH_XP : 0;
+  return Math.max(0, distanceXp + activeXp + goalXp + stretchXp);
+}
+
+function getWeeklyActivityXpBonus(weekDistance, weeklyGoal) {
+  const safeGoal = Math.max(1, Number(weeklyGoal) || 20);
+  if ((Number(weekDistance) || 0) < safeGoal) return 0;
+  const weight = Math.max(0.75, Math.min(1.6, Math.sqrt(safeGoal / 20)));
+  return Math.round(ACTIVITY_WEEKLY_GOAL_XP * weight);
+}
+
+function getXpNeededForLevel(level) {
+  const safeLevel = Math.max(1, Number(level) || 1);
+  return Math.round(650 + Math.pow(safeLevel, 1.35) * 260);
+}
+
+function getLevelProgress(totalXp) {
+  let level = 1;
+  let remaining = Math.max(0, Math.round(Number(totalXp) || 0));
+  let nextXp = getXpNeededForLevel(level);
+  while (remaining >= nextXp && level < 200) {
+    remaining -= nextXp;
+    level += 1;
+    nextXp = getXpNeededForLevel(level);
+  }
+  return {
+    level,
+    currentXp: remaining,
+    nextXp,
+    percent: nextXp > 0 ? Math.min(100, Math.round((remaining / nextXp) * 100)) : 100
+  };
+}
+
+function getActivityLevelSummary(records, weeklyGoal) {
+  const dailyTotals = getActivityDailyTotals(records);
+  const currentWeekKey = getLocalDateKey(getWeekStartDate());
+  const weekStats = new Map();
+  let totalXp = 0;
+  let currentWeekXp = 0;
+  let currentWeekActiveDays = 0;
+  let totalDistance = 0;
+
+  dailyTotals.forEach(day => {
+    const dayXp = getDailyActivityXp(day.distKm, weeklyGoal);
+    const weekKey = getLocalDateKey(getWeekStartDate(day.date));
+    const week = weekStats.get(weekKey) || { distance: 0, xp: 0 };
+    week.distance += day.distKm;
+    week.xp += dayXp;
+    weekStats.set(weekKey, week);
+    totalXp += dayXp;
+    totalDistance += day.distKm;
+    if (weekKey === currentWeekKey) {
+      currentWeekXp += dayXp;
+      currentWeekActiveDays += 1;
+    }
+  });
+
+  weekStats.forEach((week, weekKey) => {
+    const bonus = getWeeklyActivityXpBonus(week.distance, weeklyGoal);
+    totalXp += bonus;
+    if (weekKey === currentWeekKey) currentWeekXp += bonus;
+  });
+
+  return {
+    ...getLevelProgress(totalXp),
+    totalXp: Math.round(totalXp),
+    currentWeekXp: Math.round(currentWeekXp),
+    currentWeekActiveDays,
+    totalDistance
+  };
+}
+
+function renderMyLevel(records, weeklyGoal) {
+  const summary = getActivityLevelSummary(records, weeklyGoal);
+  const nextRemaining = Math.max(0, summary.nextXp - summary.currentXp);
+  const labels = appLanguage === 'en'
+    ? {
+        level: 'Activity Level',
+        next: `Next level in ${nextRemaining.toLocaleString('en-US')} XP`,
+        week: 'This week',
+        days: 'Active days',
+        distance: 'Total distance',
+        dayUnit: 'd'
+      }
+    : {
+        level: '활동 레벨',
+        next: `다음 레벨까지 ${nextRemaining.toLocaleString('ko-KR')} XP`,
+        week: '이번 주',
+        days: '활동일',
+        distance: '누적 거리',
+        dayUnit: '일'
+      };
+
+  setTextContent('myLevelLabel', labels.level);
+  setTextContent('myLevelNumber', `LV ${summary.level}`);
+  setTextContent('myLevelTotalXp', `${summary.totalXp.toLocaleString(appLanguage === 'en' ? 'en-US' : 'ko-KR')} XP`);
+  setTextContent('myLevelNextText', labels.next);
+  setTextContent('myLevelProgressText', `${summary.currentXp.toLocaleString(appLanguage === 'en' ? 'en-US' : 'ko-KR')} / ${summary.nextXp.toLocaleString(appLanguage === 'en' ? 'en-US' : 'ko-KR')} XP`);
+  setTextContent('myLevelPercent', `${summary.percent}%`);
+  setTextContent('myLevelWeekLabel', labels.week);
+  setTextContent('myLevelWeekXp', `+${summary.currentWeekXp.toLocaleString(appLanguage === 'en' ? 'en-US' : 'ko-KR')} XP`);
+  setTextContent('myLevelDaysLabel', labels.days);
+  setTextContent('myLevelActiveDays', `${summary.currentWeekActiveDays}${labels.dayUnit}`);
+  setTextContent('myLevelDistanceLabel', labels.distance);
+  setTextContent('myLevelDistance', `${summary.totalDistance.toFixed(1)}km`);
+  const fill = document.getElementById('myLevelFill');
+  if (fill) fill.style.width = summary.percent + '%';
+}
+
 /* 기록 렌더링 */
 function renderRecords() {
   const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
@@ -8811,6 +9002,7 @@ function renderMyPage() {
     bodyInfo.textContent = [height, weight].filter(Boolean).join(' · ') || '미입력';
   }
   if (sourceInfo) sourceInfo.textContent = getMySourceSummary(records);
+  renderMyLevel(records, goal);
   renderMyCultureVisits();
 
   // 목표 바
