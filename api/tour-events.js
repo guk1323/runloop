@@ -7,6 +7,7 @@ const KTO_KEY_ENV = {
   en: 'KTO_EN_SERVICE_KEY'
 };
 const KSPORTS_API_URL = 'https://api.odcloud.kr/api/3072953/v1/uddi:2ca4b21a-482b-40d9-bd2f-f8812e2205f4';
+const KSPORTS_PORTAL_URL = 'https://g1.sports.or.kr/schedule/month.do';
 const KSPORTS_KEY_ENV = 'KSPORTS_SERVICE_KEY';
 const ALLOWED_ORIGINS = new Set([
   'https://runloop-jet.vercel.app',
@@ -20,25 +21,33 @@ const REGION_CENTERS = [
   { pattern: /수원/, lat: 37.2636, lng: 127.0286 },
   { pattern: /용인/, lat: 37.2411, lng: 127.1776 },
   { pattern: /화성/, lat: 37.1995, lng: 126.8310 },
+  { pattern: /오산|동탄/, lat: 37.1498, lng: 127.0772 },
   { pattern: /성남|분당|판교/, lat: 37.4200, lng: 127.1265 },
+  { pattern: /경기\s*광주|경기도\s*광주|광주시/, lat: 37.4292, lng: 127.2550 },
   { pattern: /안양|군포|의왕/, lat: 37.3943, lng: 126.9568 },
   { pattern: /부천|광명/, lat: 37.5034, lng: 126.7660 },
   { pattern: /고양|파주/, lat: 37.6584, lng: 126.8320 },
+  { pattern: /남양주/, lat: 37.6360, lng: 127.2165 },
+  { pattern: /의정부/, lat: 37.7381, lng: 127.0337 },
+  { pattern: /평택/, lat: 36.9921, lng: 127.1127 },
+  { pattern: /안성/, lat: 37.0079, lng: 127.2798 },
+  { pattern: /이천/, lat: 37.2720, lng: 127.4350 },
+  { pattern: /여주/, lat: 37.2980, lng: 127.6371 },
   { pattern: /인천/, lat: 37.4563, lng: 126.7052 },
-  { pattern: /경기|경기도/, lat: 37.2636, lng: 127.0286 },
+  { pattern: /경기도|경기\s/, lat: 37.2636, lng: 127.0286 },
   { pattern: /부산/, lat: 35.1796, lng: 129.0756 },
   { pattern: /대구/, lat: 35.8714, lng: 128.6014 },
   { pattern: /광주/, lat: 35.1595, lng: 126.8526 },
   { pattern: /대전/, lat: 36.3504, lng: 127.3845 },
   { pattern: /울산/, lat: 35.5384, lng: 129.3114 },
   { pattern: /세종/, lat: 36.4800, lng: 127.2890 },
-  { pattern: /강원|춘천/, lat: 37.8813, lng: 127.7298 },
-  { pattern: /충북|청주/, lat: 36.6424, lng: 127.4890 },
-  { pattern: /충남|천안|아산/, lat: 36.8151, lng: 127.1139 },
-  { pattern: /전북|전주/, lat: 35.8242, lng: 127.1480 },
-  { pattern: /전남|목포|여수|순천/, lat: 34.8118, lng: 126.3922 },
-  { pattern: /경북|포항|경주/, lat: 36.0190, lng: 129.3435 },
-  { pattern: /경남|창원|김해/, lat: 35.2285, lng: 128.6811 },
+  { pattern: /강원|강원도|강원특별자치도|춘천|강릉|양구|인제|평창/, lat: 37.8813, lng: 127.7298 },
+  { pattern: /충북|충청북도|청주|제천|괴산|보은/, lat: 36.6424, lng: 127.4890 },
+  { pattern: /충남|충청남도|천안|아산|논산|보령|부여|청양/, lat: 36.8151, lng: 127.1139 },
+  { pattern: /전북|전라북도|전북특별자치도|전주|익산|군산|남원|무주|순창|김제/, lat: 35.8242, lng: 127.1480 },
+  { pattern: /전남|전라남도|목포|여수|순천|장흥|강진|나주/, lat: 34.8118, lng: 126.3922 },
+  { pattern: /경북|경상북도|포항|경주|김천|구미|문경|영천|상주/, lat: 36.0190, lng: 129.3435 },
+  { pattern: /경남|경상남도|창원|김해|고성|창녕|함안/, lat: 35.2285, lng: 128.6811 },
   { pattern: /제주/, lat: 33.4996, lng: 126.5312 }
 ];
 
@@ -53,9 +62,10 @@ export default async function handler(req, res) {
 
   const query = req.query || {};
   const lang = getKtoLanguage(getQueryValue(query.lang));
+  const debug = isTruthy(getQueryValue(query.debug));
   const ktoServiceKey = getKtoServiceKey(lang);
   const sportsServiceKey = getSportsServiceKey();
-  if (!ktoServiceKey && !sportsServiceKey) {
+  if (!ktoServiceKey && !sportsServiceKey && !KSPORTS_PORTAL_URL) {
     return res.status(500).json({ error: `${KTO_KEY_ENV[lang]} or ${KSPORTS_KEY_ENV} is not configured` });
   }
 
@@ -72,32 +82,58 @@ export default async function handler(req, res) {
 
     if (ktoServiceKey) {
       requests.push(
-        fetchKtoItems('locationBasedList2', {
-          mapX: lng,
-          mapY: lat,
-          radius: Math.min(radius, 20000),
-          arrange: 'E',
-          contentTypeId: 15,
-          numOfRows: rows,
-          pageNo: 1
-        }, ktoServiceKey, lang),
-        fetchKtoItems('searchFestival2', {
-          eventStartDate: startDate,
-          eventEndDate: endDate,
-          arrange: 'A',
-          numOfRows: rows,
-          pageNo: 1
-        }, ktoServiceKey, lang)
+        {
+          label: 'kto-location',
+          run: () => fetchKtoItems('locationBasedList2', {
+            mapX: lng,
+            mapY: lat,
+            radius: Math.min(radius, 20000),
+            arrange: 'E',
+            contentTypeId: 15,
+            numOfRows: rows,
+            pageNo: 1
+          }, ktoServiceKey, lang)
+        },
+        {
+          label: 'kto-festival',
+          run: () => fetchKtoItems('searchFestival2', {
+            eventStartDate: startDate,
+            eventEndDate: endDate,
+            arrange: 'A',
+            numOfRows: rows,
+            pageNo: 1
+          }, ktoServiceKey, lang)
+        }
       );
     }
     if (sportsServiceKey) {
-      requests.push(fetchSportsItems({ rows: Math.min(rows * 8, 800), pageNo: 1 }, sportsServiceKey));
+      requests.push({
+        label: 'ksports-open-data',
+        run: () => fetchSportsItems({ rows: Math.min(rows * 8, 800), pageNo: 1 }, sportsServiceKey)
+      });
     }
 
-    const results = await Promise.allSettled(requests);
+    getSportsPortalMonths(today, days).forEach(month => {
+      requests.push({
+        label: `ksports-portal-${month.year}-${String(month.month).padStart(2, '0')}`,
+        run: () => fetchSportsPortalItems(month)
+      });
+    });
 
-    const merged = results
-      .flatMap(result => result.status === 'fulfilled' ? result.value : [])
+    const results = await Promise.allSettled(requests.map(request => request.run()));
+    const diagnostics = [];
+    const rawItems = results.flatMap((result, index) => {
+      const label = requests[index] && requests[index].label;
+      if (result.status !== 'fulfilled') {
+        diagnostics.push({ label, ok: false, error: cleanText(result.reason && result.reason.message || result.reason, 160) });
+        return [];
+      }
+      const items = Array.isArray(result.value) ? result.value : [];
+      diagnostics.push({ label, ok: true, count: items.length, sampleKeys: getSampleKeys(items[0]) });
+      return items;
+    });
+
+    const merged = rawItems
       .map(item => item && item.__source === 'ksports'
         ? normalizeSportsEvent(item, lat, lng, lang)
         : normalizeKtoEvent(item, lat, lng, lang))
@@ -109,13 +145,25 @@ export default async function handler(req, res) {
         return String(event.endDate) >= startDate;
       })
       .filter(event => {
-        if (event.distFromMe === null) return event.type === 'sports';
-        return Number(event.distFromMe) * 1000 <= radius * 1.2;
+        const dist = getEventDistanceValue(event);
+        if (dist === null) return event.type === 'sports';
+        return dist * 1000 <= radius * 1.2;
       })
       .sort(sortEvents)
       .slice(0, Math.min(rows, 60));
 
-    return res.status(200).json({ events, lang });
+    const payload = { events, lang };
+    if (debug) {
+      payload.debug = {
+        ktoServiceKeyConfigured: !!ktoServiceKey,
+        sportsServiceKeyConfigured: !!sportsServiceKey,
+        diagnostics,
+        rawItemCount: rawItems.length,
+        normalizedCount: merged.length,
+        eventTypeCount: countBy(events, event => event.type || 'unknown')
+      };
+    }
+    return res.status(200).json(payload);
   } catch (error) {
     console.error('KTO tour event proxy failed', error);
     return res.status(400).json({ error: 'Invalid KTO tour event request' });
@@ -188,16 +236,93 @@ async function fetchSportsItems(params, serviceKey) {
   return toArray(parsed && parsed.data).map(item => ({ ...item, __source: 'ksports' }));
 }
 
+async function fetchSportsPortalItems(params) {
+  const url = new URL(KSPORTS_PORTAL_URL);
+  url.search = new URLSearchParams({
+    searchYear: String(params.year),
+    searchMonth: String(params.month).padStart(2, '0'),
+    searchGubun: ''
+  }).toString();
+
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'text/html,application/xhtml+xml',
+      'User-Agent': 'Runloop/1.0'
+    }
+  });
+  const text = await response.text();
+  if (!response.ok) throw new Error(`KSPORTS portal failed with ${response.status}: ${text.slice(0, 120)}`);
+  return parseSportsPortalHtml(text, url.toString());
+}
+
+function parseSportsPortalHtml(html, link) {
+  const items = [];
+  const blocks = String(html || '').matchAll(/<div\s+class="con-item"[^>]*>([\s\S]*?)(?=<div\s+class="con-item"|<\/form>|<\/section>|$)/gi);
+  for (const blockMatch of blocks) {
+    const block = blockMatch[1] || '';
+    const category = stripHtml((block.match(/<h3[^>]*>([\s\S]*?)<\/h3>/i) || [])[1] || '체육');
+    const entries = block.matchAll(/<dl[^>]*>([\s\S]*?)<\/dl>/gi);
+    for (const entryMatch of entries) {
+      const entry = entryMatch[1] || '';
+      const title = stripHtml((entry.match(/<dt[^>]*>([\s\S]*?)<\/dt>/i) || [])[1] || '');
+      const dateText = stripHtml((entry.match(/<dd[^>]*class="date"[^>]*>([\s\S]*?)<\/dd>/i) || [])[1] || '');
+      const place = getSportsPortalPlace(entry);
+      const [startRaw, endRaw] = splitDateRange(dateText);
+      if (!title || (!startRaw && !endRaw)) continue;
+      items.push({
+        __source: 'ksports',
+        __portal: true,
+        '대회명': title,
+        '대회구분': category,
+        '시작일자': startRaw,
+        '종료일자': endRaw,
+        '개최지': place,
+        '자료바로가기': link
+      });
+    }
+  }
+  return items;
+}
+
+function getSportsPortalPlace(entry) {
+  const ddMatches = Array.from(String(entry || '').matchAll(/<dd(?![^>]*class="date")[^>]*>([\s\S]*?)<\/dd>/gi));
+  const place = ddMatches.map(match => stripHtml(match[1])).find(Boolean);
+  return place || '';
+}
+
 function normalizeSportsEvent(item, userLat, userLng, lang) {
-  const title = cleanText(item['대회명'] || item['행사명'] || item['대회명칭'] || item['대회설명'] || '', 120);
+  const title = cleanText(firstValue(item, [
+    '대회명',
+    '행사명',
+    '대회명칭',
+    '대회제목',
+    '제목',
+    'title',
+    '대회설명'
+  ]), 120);
   if (!title) return null;
-  const place = cleanText(item['개최지'] || item['대회장소'] || item['장소'] || '', 160);
+  const place = cleanText(firstValue(item, [
+    '개최지',
+    '개최장소',
+    '행사장소',
+    '대회장소',
+    '장소',
+    '경기장',
+    '경기장소',
+    'place'
+  ]), 160);
   const point = inferRegionPoint(place);
-  const startDate = cleanDate(item['시작일자'] || item['대회시작일'] || item['경기일'] || '');
-  const endDate = cleanDate(item['종료일자'] || item['대회종료일'] || item['경기일'] || '');
+  const period = cleanText(firstValue(item, ['기간', '대회기간', '행사기간', '일정', 'date']), 120);
+  const periodParts = splitDateRange(period);
+  const startDate = cleanDate(firstValue(item, ['시작일자', '대회시작일', '행사시작일', '경기일', 'startDate']) || periodParts[0]);
+  let endDate = cleanDate(firstValue(item, ['종료일자', '대회종료일', '행사종료일', '경기일', 'endDate']) || periodParts[1]);
   if (!startDate && !endDate) return null;
+  if (startDate && endDate && endDate < startDate) endDate = startDate;
   const distFromMe = point ? getDistKm(userLat, userLng, point.lat, point.lng) : null;
-  const org = cleanText(item['종목단체'] || item['개최단체'] || '', 80);
+  const org = cleanText(firstValue(item, ['종목단체', '개최단체', '행사주최', '주최', 'organizer']), 80);
+  const source = item.__portal
+    ? (lang === 'en' ? 'Korean Sport & Olympic Committee' : '대한체육회 스포츠지원포털')
+    : (lang === 'en' ? 'Korean Sport & Olympic Committee' : '대한체육회');
   return {
     id: cleanText(`sports:${title}:${startDate}:${place}`, 140),
     contentId: '',
@@ -209,11 +334,11 @@ function normalizeSportsEvent(item, userLat, userLng, lang) {
     lat: point ? point.lat : null,
     lng: point ? point.lng : null,
     distFromMe,
-    tel: cleanText(item['전화번호'] || '', 80),
-    link: cleanUrl(item['자료바로가기'] || item['단체홈페이지'] || '') || getSearchLink(title, lang),
+    tel: cleanText(firstValue(item, ['전화번호', '문의전화', 'tel']), 80),
+    link: cleanUrl(firstValue(item, ['자료바로가기', '단체홈페이지', '홈페이지', '바로가기', 'url'])) || getSearchLink(title, lang),
     category: lang === 'en' ? 'Sports' : '체육',
     type: 'sports',
-    source: lang === 'en' ? 'Korean Sport & Olympic Committee' : '대한체육회',
+    source,
     organizer: org
   };
 }
@@ -229,12 +354,19 @@ function dedupeEvents(events) {
 }
 
 function sortEvents(a, b) {
-  const aDist = Number.isFinite(Number(a.distFromMe)) ? Number(a.distFromMe) : 9999;
-  const bDist = Number.isFinite(Number(b.distFromMe)) ? Number(b.distFromMe) : 9999;
+  const aDist = getEventDistanceValue(a) ?? 9999;
+  const bDist = getEventDistanceValue(b) ?? 9999;
   if (Math.abs(aDist - bDist) > 0.05) return aDist - bDist;
   const aDate = a.startDate || '99999999';
   const bDate = b.startDate || '99999999';
   return aDate.localeCompare(bDate);
+}
+
+function getEventDistanceValue(event) {
+  const value = event && event.distFromMe;
+  if (value === null || value === undefined || value === '') return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
 }
 
 function getKtoLanguage(value) {
@@ -270,6 +402,31 @@ function inferRegionPoint(place) {
 function getSearchLink(title, lang) {
   const query = lang === 'en' ? `${title} Korea festival` : `${title} 행사`;
   return `https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`;
+}
+
+function getSportsPortalMonths(start, days) {
+  const months = [];
+  const seen = new Set();
+  const end = new Date(start.getTime() + Math.max(0, Number(days) || 0) * 86400000);
+  const cursor = new Date(start.getFullYear(), start.getMonth(), 1);
+  while (cursor <= end && months.length < 4) {
+    const year = cursor.getFullYear();
+    const month = cursor.getMonth() + 1;
+    const key = `${year}-${month}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      months.push({ year, month });
+    }
+    cursor.setMonth(cursor.getMonth() + 1);
+  }
+  return months;
+}
+
+function splitDateRange(value) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!text) return ['', ''];
+  const parts = text.split(/\s*(?:~|–|—|부터|까지)\s*|\s+-\s+/).filter(Boolean);
+  return [parts[0] || text, parts[1] || parts[0] || ''];
 }
 
 function formatKtoDate(date) {
@@ -312,6 +469,47 @@ function cleanText(value, maxLength) {
 function cleanUrl(value) {
   const url = String(value || '').trim();
   return /^https?:\/\//.test(url) ? url : '';
+}
+
+function firstValue(item, keys) {
+  for (const key of keys) {
+    const value = item && item[key];
+    if (value !== undefined && value !== null && String(value).trim() !== '') return value;
+  }
+  return '';
+}
+
+function stripHtml(value) {
+  return decodeHtml(String(value || '').replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
+}
+
+function decodeHtml(value) {
+  return String(value || '')
+    .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCharCode(Number.parseInt(code, 16)))
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'");
+}
+
+function getSampleKeys(item) {
+  if (!item || typeof item !== 'object') return [];
+  return Object.keys(item).filter(key => !key.startsWith('__')).slice(0, 12);
+}
+
+function countBy(items, getter) {
+  return items.reduce((acc, item) => {
+    const key = getter(item);
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
+}
+
+function isTruthy(value) {
+  return /^(1|true|yes|debug)$/i.test(String(value || '').trim());
 }
 
 function getDistKm(lat1, lng1, lat2, lng2) {

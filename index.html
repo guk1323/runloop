@@ -5654,8 +5654,8 @@ function getHomeScheduleItems() {
   return (Array.isArray(cultureScheduleItems) ? cultureScheduleItems : [])
     .filter(event => {
       if (!event || !event.title) return false;
-      const dist = Number(event.distFromMe);
-      if (!Number.isFinite(dist) || dist > 10) return false;
+      const dist = getScheduleDistanceValue(event);
+      if (dist === null || dist > 10) return false;
       const startKey = getScheduleDateKey(event.startDate) || todayKey;
       const endKey = getScheduleDateKey(event.endDate) || startKey;
       return endKey >= todayKey && startKey <= limitKey;
@@ -5701,8 +5701,8 @@ function renderHomeScheduleCard(event, index) {
           <span class="home-promo-distance">${escapeHtml(formatScheduleDistance(event) || t('scheduleBannerMeta'))}</span>
         </span>
         <span class="home-promo-title">${escapeHtml(event.title || t('scheduleBannerTitle'))}</span>
-        <span class="home-promo-desc">${escapeHtml(formatScheduleEventMeta(event) || t('scheduleBannerDesc'))}</span>
-        <span class="home-promo-meta">${escapeHtml([formatScheduleDateRange(event), event.source].filter(Boolean).join(' · '))}</span>
+        <span class="home-promo-desc">${escapeHtml(formatHomeScheduleDescription(event) || t('scheduleBannerDesc'))}</span>
+        <span class="home-promo-meta">${escapeHtml([formatHomeScheduleDateRange(event), event.source].filter(Boolean).join(' · '))}</span>
       </span>
       <span class="home-promo-side">
         <span class="home-promo-image-wrap${image ? ' has-image' : ''}">
@@ -5714,8 +5714,8 @@ function renderHomeScheduleCard(event, index) {
 }
 
 function getHomeScheduleScore(event) {
-  const dist = Number(event && event.distFromMe);
-  const distanceScore = !Number.isFinite(dist) ? 0 : dist <= 1 ? 45 : dist <= 3 ? 38 : dist <= 5 ? 30 : dist <= 10 ? 15 : 0;
+  const dist = getScheduleDistanceValue(event);
+  const distanceScore = dist === null ? 0 : dist <= 1 ? 45 : dist <= 3 ? 38 : dist <= 5 ? 30 : dist <= 10 ? 15 : 0;
   const days = getScheduleDaysUntilStart(event);
   const dateScore = days <= 0 ? 25 : days <= 3 ? 22 : days <= 7 ? 18 : days <= 14 ? 12 : days <= 30 ? 6 : 0;
   const category = getScheduleCategory(event);
@@ -5756,7 +5756,7 @@ function setupHomeScheduleCarousel(count) {
     if (S.tab !== 'home' || document.hidden) return;
     homeScheduleCarouselIndex = (homeScheduleCarouselIndex + 1) % count;
     scrollHomeScheduleTo(homeScheduleCarouselIndex);
-  }, 4200);
+  }, 7000);
 }
 
 function scrollHomeScheduleTo(index) {
@@ -5911,10 +5911,21 @@ function formatScheduleEventMeta(event) {
   return [formatScheduleDateRange(event), event.place].filter(Boolean).join(' · ');
 }
 
+function formatHomeScheduleDescription(event) {
+  return [formatHomeScheduleDateRange(event), event.place].filter(Boolean).join(' · ');
+}
+
 function formatScheduleDistance(event) {
-  const dist = Number(event && event.distFromMe);
-  if (!Number.isFinite(dist)) return '';
+  const dist = getScheduleDistanceValue(event);
+  if (dist === null) return '';
   return dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`;
+}
+
+function getScheduleDistanceValue(event) {
+  const value = event && event.distFromMe;
+  if (value === null || value === undefined || value === '') return null;
+  const dist = Number(value);
+  return Number.isFinite(dist) ? dist : null;
 }
 
 function formatScheduleDateRange(event) {
@@ -5922,6 +5933,13 @@ function formatScheduleDateRange(event) {
   const end = formatScheduleDate(event && event.endDate);
   if (start && end && start !== end) return `${start} - ${end}`;
   return start || end || t('scheduleBannerKicker');
+}
+
+function formatHomeScheduleDateRange(event) {
+  const start = formatScheduleDate(event && event.startDate);
+  const end = formatScheduleDate(event && event.endDate);
+  if (start && end && start !== end) return `${start} - ${end}`;
+  return start || end || '';
 }
 
 function getScheduleCategory(event) {
