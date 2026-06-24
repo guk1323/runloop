@@ -673,41 +673,41 @@ if ('serviceWorker' in navigator) {
 
   <!-- 스텝 4: 목표 설정 -->
   <div id="ob-step-4" style="flex:1;display:none;flex-direction:column;padding:40px 24px 32px;">
-    <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;">주간 런닝 목표를<br>설정해요</div>
+    <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;">하루 활동 목표를<br>설정해요</div>
     <div style="font-size:14px;color:var(--gray-500);margin-bottom:32px;">나중에 MY 탭에서 바꿀 수 있어요</div>
 
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;">
-      <div class="ob-goal-item selected" onclick="selectObGoal(this,10)">
+      <div class="ob-goal-item selected" onclick="selectObGoal(this,2)">
         <div style="font-size:22px;">🌱</div>
         <div>
           <div style="font-size:14px;font-weight:700;">가볍게 시작</div>
-          <div style="font-size:12px;color:var(--gray-500);">주 10km · 주 2~3회</div>
+          <div style="font-size:12px;color:var(--gray-500);">하루 2km</div>
         </div>
-        <div style="margin-left:auto;font-size:18px;" id="ob-check-10">✓</div>
+        <div style="margin-left:auto;font-size:18px;" id="ob-check-2">✓</div>
       </div>
-      <div class="ob-goal-item" onclick="selectObGoal(this,20)">
+      <div class="ob-goal-item" onclick="selectObGoal(this,3)">
         <div style="font-size:22px;">🏃</div>
         <div>
           <div style="font-size:14px;font-weight:700;">꾸준하게</div>
-          <div style="font-size:12px;color:var(--gray-500);">주 20km · 주 3~4회</div>
+          <div style="font-size:12px;color:var(--gray-500);">하루 3km</div>
         </div>
-        <div style="margin-left:auto;font-size:18px;opacity:0;" id="ob-check-20">✓</div>
+        <div style="margin-left:auto;font-size:18px;opacity:0;" id="ob-check-3">✓</div>
       </div>
-      <div class="ob-goal-item" onclick="selectObGoal(this,35)">
+      <div class="ob-goal-item" onclick="selectObGoal(this,5)">
         <div style="font-size:22px;">💪</div>
         <div>
           <div style="font-size:14px;font-weight:700;">열심히</div>
-          <div style="font-size:12px;color:var(--gray-500);">주 35km · 주 4~5회</div>
+          <div style="font-size:12px;color:var(--gray-500);">하루 5km</div>
         </div>
-        <div style="margin-left:auto;font-size:18px;opacity:0;" id="ob-check-35">✓</div>
+        <div style="margin-left:auto;font-size:18px;opacity:0;" id="ob-check-5">✓</div>
       </div>
-      <div class="ob-goal-item" onclick="selectObGoal(this,50)">
+      <div class="ob-goal-item" onclick="selectObGoal(this,7)">
         <div style="font-size:22px;">🔥</div>
         <div>
           <div style="font-size:14px;font-weight:700;">진지하게</div>
-          <div style="font-size:12px;color:var(--gray-500);">주 50km · 주 5~6회</div>
+          <div style="font-size:12px;color:var(--gray-500);">하루 7km</div>
         </div>
-        <div style="margin-left:auto;font-size:18px;opacity:0;" id="ob-check-50">✓</div>
+        <div style="margin-left:auto;font-size:18px;opacity:0;" id="ob-check-7">✓</div>
       </div>
     </div>
 
@@ -988,11 +988,11 @@ if ('serviceWorker' in navigator) {
       <div class="my-goal-main">
         <div class="my-goal-main-top">
           <div>
-            <div class="my-goal-label">주간 목표 달성률</div>
+            <div class="my-goal-label">오늘 목표 달성률</div>
             <div class="my-goal-percent"><strong id="goalPct">0%</strong><span>달성</span></div>
           </div>
           <div>
-            <div class="my-goal-main-text" id="homeGoalText">0.0 / 20km</div>
+            <div class="my-goal-main-text" id="homeGoalText">0.0 / 3km</div>
           </div>
         </div>
         <div class="my-goal-track">
@@ -1044,7 +1044,7 @@ if ('serviceWorker' in navigator) {
         </div>
       </div>
       <button class="my-info-row" onclick="closeMySettings();openGoalEdit();" style="width:100%;padding:14px;border:none;background:#fff;font-family:inherit;cursor:pointer;text-align:left;">
-        <span id="settingsGoalLabel">주간 목표</span><strong id="settingsGoalValue" style="color:var(--coral);">20km</strong>
+        <span id="settingsGoalLabel">일일 목표</span><strong id="settingsGoalValue" style="color:var(--coral);">3km</strong>
       </button>
       <a class="my-info-row" href="/privacy.html" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;padding:14px;">
         <span id="privacyLabel">개인정보처리방침</span><strong id="privacyViewLabel" style="color:var(--coral);">보기</strong>
@@ -1087,14 +1087,14 @@ if ('serviceWorker' in navigator) {
 <div id="goalEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1002;align-items:flex-end;justify-content:center;">
   <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:24px 20px 32px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-      <div style="font-size:16px;font-weight:700;">주간 목표 변경</div>
+      <div style="font-size:16px;font-weight:700;">하루 활동 목표 변경</div>
       <button onclick="closeGoalEdit()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-500);">×</button>
     </div>
     <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:20px;" id="goalEditOptions">
-      <div class="ob-goal-item" onclick="selectGoalOption(this,10)"><div style="font-size:20px;">🌱</div><div><div style="font-size:14px;font-weight:700;">가볍게</div><div style="font-size:12px;color:var(--gray-500);">주 10km</div></div><div style="margin-left:auto;color:var(--coral);font-weight:700;opacity:0;" id="gc-10">✓</div></div>
-      <div class="ob-goal-item" onclick="selectGoalOption(this,20)"><div style="font-size:20px;">🏃</div><div><div style="font-size:14px;font-weight:700;">꾸준하게</div><div style="font-size:12px;color:var(--gray-500);">주 20km</div></div><div style="margin-left:auto;color:var(--coral);font-weight:700;opacity:0;" id="gc-20">✓</div></div>
-      <div class="ob-goal-item" onclick="selectGoalOption(this,35)"><div style="font-size:20px;">💪</div><div><div style="font-size:14px;font-weight:700;">열심히</div><div style="font-size:12px;color:var(--gray-500);">주 35km</div></div><div style="margin-left:auto;color:var(--coral);font-weight:700;opacity:0;" id="gc-35">✓</div></div>
-      <div class="ob-goal-item" onclick="selectGoalOption(this,50)"><div style="font-size:20px;">🔥</div><div><div style="font-size:14px;font-weight:700;">진지하게</div><div style="font-size:12px;color:var(--gray-500);">주 50km</div></div><div style="margin-left:auto;color:var(--coral);font-weight:700;opacity:0;" id="gc-50">✓</div></div>
+      <div class="ob-goal-item" onclick="selectGoalOption(this,2)"><div style="font-size:20px;">🌱</div><div><div style="font-size:14px;font-weight:700;">가볍게 시작</div><div style="font-size:12px;color:var(--gray-500);">하루 2km</div></div><div style="margin-left:auto;color:var(--coral);font-weight:700;opacity:0;" id="gc-2">✓</div></div>
+      <div class="ob-goal-item" onclick="selectGoalOption(this,3)"><div style="font-size:20px;">🏃</div><div><div style="font-size:14px;font-weight:700;">꾸준하게</div><div style="font-size:12px;color:var(--gray-500);">하루 3km</div></div><div style="margin-left:auto;color:var(--coral);font-weight:700;opacity:0;" id="gc-3">✓</div></div>
+      <div class="ob-goal-item" onclick="selectGoalOption(this,5)"><div style="font-size:20px;">💪</div><div><div style="font-size:14px;font-weight:700;">열심히</div><div style="font-size:12px;color:var(--gray-500);">하루 5km</div></div><div style="margin-left:auto;color:var(--coral);font-weight:700;opacity:0;" id="gc-5">✓</div></div>
+      <div class="ob-goal-item" onclick="selectGoalOption(this,7)"><div style="font-size:20px;">🔥</div><div><div style="font-size:14px;font-weight:700;">진지하게</div><div style="font-size:12px;color:var(--gray-500);">하루 7km</div></div><div style="margin-left:auto;color:var(--coral);font-weight:700;opacity:0;" id="gc-7">✓</div></div>
     </div>
     <button onclick="saveGoalEdit()" style="width:100%;height:48px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">저장</button>
   </div>
@@ -1325,6 +1325,8 @@ const TOUR_DETAIL_URL = runloopApiUrl('/api/tour-detail');
 const TOUR_WEATHER_URL = runloopApiUrl('/api/tour-weather');
 const OPEN_WEATHER_MAP_KEY = 'c4e77c4cac686498d868b622be22e841';
 const APP_LANGUAGE_KEY = 'runloopAppLanguageV1';
+const DAILY_GOAL_KEY = 'runloopDailyGoalKmV1';
+const LEGACY_WEEKLY_GOAL_KEY = 'weeklyGoal';
 const HEALTH_ACTIVITY_PERMISSION_KEY = 'runloopHealthActivityPermissionV1';
 const HEALTH_ACTIVITY_LAST_SYNC_KEY = 'runloopHealthActivityLastSyncV1';
 const HEALTH_ACTIVITY_SYNC_INTERVAL_MS = 10 * 60 * 1000;
@@ -1334,7 +1336,7 @@ const ACTIVITY_XP_PER_KM = 55;
 const ACTIVITY_DAILY_ACTIVE_XP = 35;
 const ACTIVITY_DAILY_GOAL_XP = 90;
 const ACTIVITY_DAILY_STRETCH_XP = 35;
-const ACTIVITY_WEEKLY_GOAL_XP = 180;
+const DAILY_GOAL_OPTIONS = [2, 3, 5, 7];
 let appLanguage = localStorage.getItem(APP_LANGUAGE_KEY) === 'en' ? 'en' : 'ko';
 const APP_COPY = {
   ko: {
@@ -1367,7 +1369,7 @@ const APP_COPY = {
     savedSpotEmptyDesc: '홈이나 지도에서 가고 싶은 스팟을 저장해보세요',
     appSettings: '앱 설정',
     language: '언어',
-    weeklyGoal: '주간 목표',
+    dailyGoal: '일일 목표',
     policy: '정책',
     privacy: '개인정보처리방침',
     view: '보기',
@@ -1414,7 +1416,7 @@ const APP_COPY = {
     savedSpotEmptyDesc: 'Save places you want to visit from Home or Map',
     appSettings: 'App Settings',
     language: 'Language',
-    weeklyGoal: 'Weekly goal',
+    dailyGoal: 'Daily goal',
     policy: 'Policy',
     privacy: 'Privacy Policy',
     view: 'View',
@@ -1501,7 +1503,7 @@ function applyAppLanguage() {
   setTextContent('mySavedSpotTitle', t('savedSpotTitle'));
   setTextContent('appSettingsTitle', t('appSettings'));
   setTextContent('appLanguageLabel', t('language'));
-  setTextContent('settingsGoalLabel', t('weeklyGoal'));
+  setTextContent('settingsGoalLabel', t('dailyGoal'));
   setTextContent('policyTitle', t('policy'));
   setTextContent('privacyLabel', t('privacy'));
   setTextContent('privacyViewLabel', t('view'));
@@ -6590,6 +6592,24 @@ function getWeeklyActivitySummary(records) {
   };
 }
 
+function getDailyGoal() {
+  const saved = parseFloat(localStorage.getItem(DAILY_GOAL_KEY) || '');
+  if (Number.isFinite(saved) && saved > 0) return saved;
+
+  const legacy = parseFloat(localStorage.getItem(LEGACY_WEEKLY_GOAL_KEY) || '');
+  const converted = Number.isFinite(legacy) && legacy > 0
+    ? (legacy <= 10 ? 2 : legacy <= 20 ? 3 : legacy <= 35 ? 5 : 7)
+    : 3;
+  localStorage.setItem(DAILY_GOAL_KEY, converted);
+  return converted;
+}
+
+function setDailyGoal(value) {
+  const goal = DAILY_GOAL_OPTIONS.includes(Number(value)) ? Number(value) : 3;
+  localStorage.setItem(DAILY_GOAL_KEY, goal);
+  return goal;
+}
+
 let healthActivitySyncing = false;
 
 function getHealthActivityPlugin() {
@@ -6749,23 +6769,21 @@ function getActivityDailyTotals(records) {
     .sort((a, b) => a.date - b.date);
 }
 
-function getDailyActivityXp(distanceKm, weeklyGoal) {
+function getTodayActivityDistance(records) {
+  const todayKey = getLocalDateKey();
+  const today = getActivityDailyTotals(records).find(entry => entry.key === todayKey);
+  return today ? today.distKm : 0;
+}
+
+function getDailyActivityXp(distanceKm, dailyGoal) {
   const safeDistance = Math.max(0, Number(distanceKm) || 0);
-  const safeGoal = Math.max(1, Number(weeklyGoal) || 20);
-  const dailyGoal = Math.max(0.8, safeGoal / 7);
-  const goalRatio = safeDistance / dailyGoal;
+  const safeGoal = Math.max(1, Number(dailyGoal) || 3);
+  const goalRatio = safeDistance / safeGoal;
   const distanceXp = Math.round(safeDistance * ACTIVITY_XP_PER_KM);
-  const activeXp = safeDistance >= Math.min(1.2, dailyGoal * 0.35) ? ACTIVITY_DAILY_ACTIVE_XP : 0;
+  const activeXp = safeDistance >= Math.min(1.2, safeGoal * 0.35) ? ACTIVITY_DAILY_ACTIVE_XP : 0;
   const goalXp = goalRatio >= 1 ? ACTIVITY_DAILY_GOAL_XP : Math.round(Math.min(goalRatio, 1) * 35);
   const stretchXp = goalRatio >= 1.5 ? ACTIVITY_DAILY_STRETCH_XP : 0;
   return Math.max(0, distanceXp + activeXp + goalXp + stretchXp);
-}
-
-function getWeeklyActivityXpBonus(weekDistance, weeklyGoal) {
-  const safeGoal = Math.max(1, Number(weeklyGoal) || 20);
-  if ((Number(weekDistance) || 0) < safeGoal) return 0;
-  const weight = Math.max(0.75, Math.min(1.6, Math.sqrt(safeGoal / 20)));
-  return Math.round(ACTIVITY_WEEKLY_GOAL_XP * weight);
 }
 
 function getXpNeededForLevel(level) {
@@ -6790,34 +6808,23 @@ function getLevelProgress(totalXp) {
   };
 }
 
-function getActivityLevelSummary(records, weeklyGoal) {
+function getActivityLevelSummary(records, dailyGoal) {
   const dailyTotals = getActivityDailyTotals(records);
   const currentWeekKey = getLocalDateKey(getWeekStartDate());
-  const weekStats = new Map();
   let totalXp = 0;
   let currentWeekXp = 0;
   let currentWeekActiveDays = 0;
   let totalDistance = 0;
 
   dailyTotals.forEach(day => {
-    const dayXp = getDailyActivityXp(day.distKm, weeklyGoal);
+    const dayXp = getDailyActivityXp(day.distKm, dailyGoal);
     const weekKey = getLocalDateKey(getWeekStartDate(day.date));
-    const week = weekStats.get(weekKey) || { distance: 0, xp: 0 };
-    week.distance += day.distKm;
-    week.xp += dayXp;
-    weekStats.set(weekKey, week);
     totalXp += dayXp;
     totalDistance += day.distKm;
     if (weekKey === currentWeekKey) {
       currentWeekXp += dayXp;
       currentWeekActiveDays += 1;
     }
-  });
-
-  weekStats.forEach((week, weekKey) => {
-    const bonus = getWeeklyActivityXpBonus(week.distance, weeklyGoal);
-    totalXp += bonus;
-    if (weekKey === currentWeekKey) currentWeekXp += bonus;
   });
 
   return {
@@ -6829,8 +6836,8 @@ function getActivityLevelSummary(records, weeklyGoal) {
   };
 }
 
-function renderMyLevel(records, weeklyGoal) {
-  const summary = getActivityLevelSummary(records, weeklyGoal);
+function renderMyLevel(records, dailyGoal) {
+  const summary = getActivityLevelSummary(records, dailyGoal);
   const nextRemaining = Math.max(0, summary.nextXp - summary.currentXp);
   const labels = appLanguage === 'en'
     ? {
@@ -6853,7 +6860,7 @@ function renderRecords() {
   const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
   const wrap = document.getElementById('recordList');
   const weekly = getWeeklyActivitySummary(records);
-  const weekTotal = weekly.total;
+  const todayTotal = getTodayActivityDistance(records);
 
   const chartEl  = document.getElementById('weekBarChart');
   const labelEl  = document.getElementById('weekBarLabels');
@@ -6881,12 +6888,12 @@ function renderRecords() {
     });
   }
 
-  const goal = parseFloat(localStorage.getItem('weeklyGoal') || '20');
-  const pct  = Math.min(Math.round((weekTotal / goal) * 100), 100);
+  const goal = getDailyGoal();
+  const pct  = Math.min(Math.round((todayTotal / goal) * 100), 100);
   const fillEl = document.getElementById('homeGoalFill');
   const textEl = document.getElementById('homeGoalText');
   if (fillEl) fillEl.style.width = pct + '%';
-  if (textEl) textEl.textContent = weekTotal.toFixed(1) + ' / ' + goal + 'km';
+  if (textEl) textEl.textContent = todayTotal.toFixed(1) + ' / ' + goal + 'km';
 
   if (!wrap) return;
   if (!records.length) {
@@ -8676,7 +8683,7 @@ function selectGender(g) {
 }
 
 let obSelectedAvatar = '🏃';
-let obSelectedGoal = 10;
+let obSelectedGoal = 2;
 
 function checkOnboarding() {
   const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
@@ -8755,7 +8762,7 @@ function obFinish() {
     gender: obSelectedGender || null
   };
   localStorage.setItem('runProfile', JSON.stringify(profile));
-  localStorage.setItem('weeklyGoal', obSelectedGoal);
+  setDailyGoal(obSelectedGoal);
   const ob = document.getElementById('onboarding');
   ob.classList.remove('active');
   ob.style.display = 'none';
@@ -8792,7 +8799,7 @@ function closeMySettings() {
 
 function updateMySettingsValues() {
   const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
-  const goal = parseFloat(localStorage.getItem('weeklyGoal') || profile.goal || '20');
+  const goal = getDailyGoal();
   const valueEl = document.getElementById('settingsGoalValue');
   if (valueEl) valueEl.textContent = Number.isFinite(goal) ? goal + 'km' : '—';
 }
@@ -8833,11 +8840,11 @@ function saveProfileEdit() {
 }
 
 /* ── 목표 변경 모달 ── */
-let editSelectedGoal = 20;
+let editSelectedGoal = 3;
 
 function openGoalEdit() {
-  editSelectedGoal = parseInt(localStorage.getItem('weeklyGoal') || '20');
-  [10,20,35,50].forEach(v => {
+  editSelectedGoal = getDailyGoal();
+  DAILY_GOAL_OPTIONS.forEach(v => {
     const el = document.getElementById('gc-' + v);
     const row = el ? el.closest('.ob-goal-item') : null;
     if (el) el.style.opacity = v === editSelectedGoal ? '1' : '0';
@@ -8854,14 +8861,14 @@ function selectGoalOption(el, km) {
   editSelectedGoal = km;
   document.querySelectorAll('#goalEditOptions .ob-goal-item').forEach(i => i.classList.remove('selected'));
   el.classList.add('selected');
-  [10,20,35,50].forEach(v => {
+  DAILY_GOAL_OPTIONS.forEach(v => {
     const c = document.getElementById('gc-' + v);
     if (c) c.style.opacity = v === km ? '1' : '0';
   });
 }
 
 function saveGoalEdit() {
-  localStorage.setItem('weeklyGoal', editSelectedGoal);
+  setDailyGoal(editSelectedGoal);
   closeGoalEdit();
   updateMySettingsValues();
   renderMyPage();
@@ -8894,23 +8901,24 @@ function saveProfile() {
 }
 
 function saveGoal() {
-  const goal = parseFloat(document.getElementById('weeklyGoalInput').value) || 20;
-  localStorage.setItem('weeklyGoal', goal);
+  const input = document.getElementById('dailyGoalInput') || document.getElementById('weeklyGoalInput');
+  const goal = parseFloat(input && input.value) || 3;
+  setDailyGoal(goal);
   updateGoalBar();
   toast('목표가 설정됐어요! 💪');
 }
 
 function updateGoalBar() {
-  const goal = parseFloat(localStorage.getItem('weeklyGoal') || '20');
+  const goal = getDailyGoal();
   const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
-  const weekDist = getWeeklyActivitySummary(records).total;
-  const pct = Math.min(Math.round((weekDist / goal) * 100), 100);
+  const todayDist = getTodayActivityDistance(records);
+  const pct = Math.min(Math.round((todayDist / goal) * 100), 100);
   const fill = document.getElementById('homeGoalFill') || document.getElementById('goalBarFill');
   const pctEl = document.getElementById('goalPct');
   const textEl = document.getElementById('homeGoalText');
   if (fill) fill.style.width = pct + '%';
   if (pctEl) pctEl.textContent = pct + '%';
-  if (textEl) textEl.textContent = weekDist.toFixed(1) + ' / ' + goal + 'km';
+  if (textEl) textEl.textContent = todayDist.toFixed(1) + ' / ' + goal + 'km';
 }
 
 function getCultureSpotVisitList() {
@@ -8986,7 +8994,7 @@ function renderMyPage() {
   const goalInfo = document.getElementById('myGoalInfo');
   const bodyInfo = document.getElementById('myBodyInfo');
   const sourceInfo = document.getElementById('mySourceInfo');
-  const goal = parseFloat(localStorage.getItem('weeklyGoal') || profile.goal || '20');
+  const goal = getDailyGoal();
   if (goalInfo) goalInfo.textContent = Number.isFinite(goal) ? goal + 'km' : '—';
   if (bodyInfo) {
     const height = profile.height ? profile.height + 'cm' : '';
