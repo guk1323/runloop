@@ -475,18 +475,14 @@ if ('serviceWorker' in navigator) {
   .settings-back-btn{width:38px;height:38px;border-radius:999px;border:1px solid var(--gray-100);background:#fff;color:var(--ink);font-size:24px;font-weight:900;line-height:1;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(28,36,43,.06);}
   .settings-title{font-size:19px;font-weight:900;color:var(--ink);}
   .schedule-page{display:flex;flex-direction:column;gap:12px;}
-  .schedule-hero{border-radius:18px;padding:18px;background:linear-gradient(135deg,#1C242B 0%,#29333B 62%,#F27A5E 155%);color:#fff;box-shadow:0 16px 34px rgba(28,36,43,.14);}
-  .schedule-hero-kicker{font-size:11px;font-weight:950;color:rgba(255,255,255,.7);margin-bottom:8px;}
-  .schedule-hero-title{font-size:20px;font-weight:950;line-height:1.28;margin-bottom:7px;word-break:keep-all;}
-  .schedule-hero-desc{font-size:12px;font-weight:800;line-height:1.5;color:rgba(255,255,255,.72);}
   .schedule-list{display:flex;flex-direction:column;gap:10px;}
   .schedule-section{display:flex;flex-direction:column;gap:10px;}
   .schedule-section + .schedule-section{margin-top:6px;}
   .schedule-section-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:2px 2px 0;}
   .schedule-section-title{font-size:14px;font-weight:950;color:var(--ink);}
   .schedule-section-count{font-size:11px;font-weight:900;color:var(--gray-500);}
-  .schedule-card{background:#fff;border:1px solid rgba(28,36,43,.08);border-radius:16px;padding:12px;box-shadow:0 10px 24px rgba(28,36,43,.045);display:grid;grid-template-columns:94px minmax(0,1fr);gap:12px;}
-  .schedule-card.text-only{display:block;padding:13px 14px;cursor:pointer;}
+  .schedule-card{position:relative;background:#fff;border:1px solid rgba(28,36,43,.08);border-radius:16px;padding:12px 48px 12px 12px;box-shadow:0 10px 24px rgba(28,36,43,.045);display:grid;grid-template-columns:94px minmax(0,1fr);gap:12px;}
+  .schedule-card.text-only{display:block;padding:13px 50px 13px 14px;cursor:pointer;}
   .schedule-card-photo{position:relative;width:94px;aspect-ratio:1/1;border-radius:14px;background:var(--gray-50);border:1px solid var(--gray-100);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--gray-500);font-size:11px;font-weight:900;text-align:center;line-height:1.35;}
   .schedule-card-photo.clickable{cursor:pointer;}
   .schedule-card-photo img{width:100%;height:100%;object-fit:cover;display:block;}
@@ -499,10 +495,10 @@ if ('serviceWorker' in navigator) {
   .schedule-place{font-size:12px;font-weight:800;color:var(--gray-500);line-height:1.38;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:10px;}
   .schedule-card.text-only .schedule-place{margin-bottom:0;}
   .schedule-source{margin-top:8px;font-size:11px;font-weight:800;color:var(--gray-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .schedule-text-row{display:grid;grid-template-columns:minmax(0,1fr) 32px;gap:10px;align-items:start;}
+  .schedule-text-row{display:block;}
   .schedule-text-row-main{min-width:0;}
-  .schedule-heart{z-index:3;}
-  .text-schedule-heart{position:static;width:32px;height:32px;}
+  .schedule-heart{top:14px;right:14px;z-index:3;}
+  .text-schedule-heart{top:14px;right:14px;width:32px;height:32px;}
   .schedule-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:auto;}
   .schedule-actions.single{grid-template-columns:1fr;}
   .schedule-actions button{height:34px;border-radius:11px;font-size:12px;font-weight:950;font-family:inherit;cursor:pointer;}
@@ -1203,11 +1199,6 @@ if ('serviceWorker' in navigator) {
       <button class="settings-back-btn" type="button" onclick="closeCultureSchedulePage()" aria-label="뒤로 가기">‹</button>
       <div class="settings-title" id="cultureScheduleTitle">주변 일정</div>
     </div>
-    <div class="schedule-hero">
-      <div class="schedule-hero-kicker" id="cultureScheduleKicker">이번 주 주변 일정</div>
-      <div class="schedule-hero-title" id="cultureScheduleHeroTitle">주변에서 열리는 일정을 모아봤어요</div>
-      <div class="schedule-hero-desc" id="cultureScheduleHeroDesc">한국관광공사와 대한체육회 데이터를 기준으로 가까운 일정과 진행 중인 행사를 보여줘요.</div>
-    </div>
     <div class="schedule-list" id="cultureScheduleList"></div>
   </div>
 </div>
@@ -1745,9 +1736,6 @@ function applyAppLanguage() {
   setTextContent('homeSportsTitle', t('homeSportsTitle'));
   setTextContent('homeSportsOpen', t('homeSportsOpen'));
   setTextContent('cultureScheduleTitle', t('schedule'));
-  setTextContent('cultureScheduleKicker', t('scheduleBannerKicker'));
-  setTextContent('cultureScheduleHeroTitle', t('scheduleHeroTitle'));
-  setTextContent('cultureScheduleHeroDesc', t('scheduleHeroDesc'));
   renderHomeActions();
   setTextContent('aiSearchSubmit', t('searchAction'));
   setTextContent('aiSearchStartBtn', t('startPoint'));
@@ -6066,7 +6054,6 @@ function renderCultureScheduleCard(event, index) {
     <div class="schedule-card">
       <div class="schedule-card-photo clickable" onclick="openCultureScheduleItem(${index})">
         ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(event.title || t('schedule'))}" loading="lazy">` : escapeHtml(t('schedulePhotoFallback'))}
-        ${renderScheduleHeartButton(event, index)}
       </div>
       <div class="schedule-card-body">
         <div class="schedule-topline">
@@ -6076,6 +6063,7 @@ function renderCultureScheduleCard(event, index) {
         <div class="schedule-place">${escapeHtml([event.place, formatScheduleDistance(event)].filter(Boolean).join(' · ') || t('scheduleBannerMeta'))}</div>
         ${hasPoint ? `<div class="schedule-actions single"><button class="schedule-map-btn" type="button" onclick="showCultureScheduleOnMap(${index})">${escapeHtml(t('scheduleMap'))}</button></div>` : ''}
       </div>
+      ${renderScheduleHeartButton(event, index)}
     </div>`;
 }
 
@@ -6093,8 +6081,8 @@ function renderSportsScheduleCard(event, index) {
           <div class="schedule-place">${escapeHtml(placeMeta)}</div>
           <div class="schedule-source">${escapeHtml(event.source || '')}</div>
         </div>
-        ${renderScheduleHeartButton(event, index, 'text-schedule-heart')}
       </div>
+      ${renderScheduleHeartButton(event, index, 'text-schedule-heart')}
     </div>`;
 }
 
