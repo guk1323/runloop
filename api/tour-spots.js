@@ -31,6 +31,7 @@ const RARE_HERITAGE_SEEDS = [
   { id: 'wanggungri', name: '왕궁리유적', nameEn: 'Wanggung-ri Historic Site', lat: 35.972847, lng: 127.053673, region: '전북 익산시' }
 ];
 const HERITAGE_SUBPLACE_PATTERN = /관리소|사무소|매표소|주차장|화장실|안내소|관광안내소|입구|출구|고객센터|센터$|분소|관리센터|office|ticket|parking|restroom|toilet|information|entrance|exit|management center/i;
+const KTO_EXCLUDED_SUBPLACE_PATTERN = /관리소|사무소|매표소|주차장|화장실|입구|출구|고객센터|분소|관리센터|office|ticket|parking|restroom|toilet|entrance|exit|management center/i;
 
 export default async function handler(req, res) {
   applyCors(req, res);
@@ -405,22 +406,17 @@ function getKtoCultureValue(item, title, lang = 'ko') {
   const type = getKtoCultureType(item, title, lang);
   const label = makeCultureLabeler(lang);
 
+  if (isTouristInfoPoint(text, cat3)) return { stars: 1, label: label('light'), type };
   if (isFiveStarCultureTitle(title, lang)) return { stars: 5, label: label('rare'), type };
   if (cat2 === 'A0201' || /궁|고궁|궁궐|왕릉|문화재|유적|사적|성곽|서원|향교|한옥|사찰|절|성당|근대문화유산|palace|royal|tomb|heritage|historic|fortress|shrine|temple|hanok|unesco/i.test(text)) {
     return { stars: 4, label: label('history'), type };
   }
-  if (contentTypeId === '14') {
-    if (/국립|시립|도립|기념관|역사관|national|city|memorial|history/i.test(text) || ['A02060100', 'A02060200'].includes(cat3)) {
-      return { stars: 4, label: label('major'), type };
-    }
-    if (/박물관|미술관|전시관|갤러리|공연장|아트센터|문화예술회관|museum|gallery|exhibition|theater|theatre|performance|art center|arts center|culture/i.test(text)) {
-      return { stars: 3, label: label('facility'), type };
-    }
-    return { stars: 2, label: label('local'), type };
-  }
-  if (/전시|공연|문화관|기념관|박물관|미술관|exhibition|performance|memorial|museum|gallery/i.test(text)) {
+  if (isMajorCultureVenue(text)) return { stars: 4, label: label('major'), type };
+  if (isMuseumOrExhibitionVenue(text, cat3)) {
     return { stars: 3, label: label('facility'), type };
   }
+  if (isPerformanceOrLocalVenue(text, cat3)) return { stars: 2, label: label('local'), type };
+  if (isLightCulturePoint(text, cat3) || contentTypeId === '14') return { stars: 1, label: label('light'), type };
   return { excluded: true, stars: 0, label: label('excluded'), type };
 }
 
@@ -428,21 +424,51 @@ function getKtoCultureType(item, title, lang = 'ko') {
   const text = [title, item.cat2, item.cat3].filter(Boolean).join(' ');
   const cat3 = String(item.cat3 || '');
   const en = lang === 'en';
+  if (isTouristInfoPoint(text, cat3)) return en ? 'Culture point' : '문화 포인트';
   if (/A0201|궁|고궁|왕릉|문화재|유적|사적|성곽|서원|향교|한옥|사찰|절|성당|palace|royal|tomb|heritage|historic|fortress|shrine|temple|hanok|unesco/i.test(text)) return en ? 'Heritage' : '문화재';
   if (/박물관|기념관|museum|memorial/i.test(text) || ['A02060100', 'A02060200'].includes(cat3)) return en ? 'Museum' : '박물관';
   if (/미술관|갤러리|전시|gallery|exhibition|art museum/i.test(text) || ['A02060300', 'A02060500'].includes(cat3)) return en ? 'Exhibition' : '전시';
   if (/공연|극장|아트센터|문화예술회관|performance|theater|theatre|art center|arts center/i.test(text) || cat3 === 'A02060600') return en ? 'Performance' : '공연';
+  if (/도서관|문화원|안내소|관광안내|조형물|기념비|동상|표지석|library|information|monument|statue|sculpture/i.test(text) || ['A02060700', 'A02060800', 'A02060900', 'A02061100'].includes(cat3)) {
+    return en ? 'Culture point' : '문화 포인트';
+  }
   return en ? 'Culture spot' : '문화 스팟';
 }
 
 function isExcludedKtoSpot(item, title) {
   const text = [title, item.addr1, item.addr2].filter(Boolean).join(' ');
   const cat3 = String(item.cat3 || '');
-  if (/관리소|사무소|매표소|주차장|화장실|안내소|관광안내소|입구|출구|고객센터|센터$|분소|관리센터|office|ticket|parking|restroom|toilet|information|entrance|exit|management center/i.test(text)) return true;
+  if (KTO_EXCLUDED_SUBPLACE_PATTERN.test(text)) return true;
   if (/노래연습장|노래방|코인노래|karaoke|유흥|단란주점|주점|호프|펍|룸살롱|클럽|pc방|피시방|오락실/i.test(text)) return true;
-  if (/CGV|롯데시네마|메가박스|씨네큐|백화점|쇼핑몰|마트|카페|식당|사설/i.test(text)) return true;
-  if (['A02060900', 'A02061000', 'A02061200', 'A02061300', 'A02061400'].includes(cat3)) return true;
+  if (/CGV|롯데시네마|메가박스|씨네큐|백화점|쇼핑몰|마트|카페|식당|사설|교보문고|영풍문고|서점|bookstore/i.test(text)) return true;
+  if (['A02061000', 'A02061200', 'A02061300', 'A02061400'].includes(cat3)) return true;
   return false;
+}
+
+function isMajorCultureVenue(text) {
+  return /국립|국가|대한민국|예술의전당|세종문화회관|동대문디자인플라자|전쟁기념관|독립기념관|국립현대미술관|국립중앙박물관|national|seoul arts center|sejong center|war memorial|independence hall|ddp|leeum/i.test(text);
+}
+
+function isMuseumOrExhibitionVenue(text, cat3) {
+  if (/갤러리|화랑|전시실|gallery/i.test(text) && !/미술관|박물관|art museum|museum/i.test(text)) return false;
+  return /박물관|미술관|전시관|기념관|역사관|문학관|과학관|아카이브|museum|art museum|exhibition hall|memorial|history museum|archive/i.test(text)
+    || ['A02060100', 'A02060200', 'A02060300'].includes(cat3)
+    || (cat3 === 'A02060500' && /미술관|art museum/i.test(text));
+}
+
+function isPerformanceOrLocalVenue(text, cat3) {
+  return /공연장|극장|아트센터|아트홀|문화예술회관|문화회관|문화센터|문화원|전수관|전수시설|체험관|콘서트홀|오페라|performance|theater|theatre|art center|arts center|concert hall|opera|culture center/i.test(text)
+    || ['A02060600', 'A02060700', 'A02060800', 'A02061100'].includes(cat3);
+}
+
+function isLightCulturePoint(text, cat3) {
+  return /도서관|작은도서관|갤러리|화랑|전시실|조형물|기념비|동상|표지석|비석|탑|문화의집|문화공간|library|gallery|exhibition room|monument|statue|sculpture|memorial stone|culture house/i.test(text)
+    || ['A02060900', 'A02060500'].includes(cat3)
+    || isTouristInfoPoint(text, cat3);
+}
+
+function isTouristInfoPoint(text, cat3) {
+  return /관광안내소|안내소|관광안내|tourist information|information center/i.test(text);
 }
 
 function isFiveStarCultureTitle(title, lang = 'ko') {
@@ -473,6 +499,7 @@ function makeCultureLabeler(lang) {
         major: 'Major culture venue',
         facility: 'Culture venue',
         local: 'Local culture',
+        light: 'Light culture point',
         excluded: 'Excluded'
       }
     : {
@@ -481,6 +508,7 @@ function makeCultureLabeler(lang) {
         major: '대표 문화시설',
         facility: '문화시설',
         local: '지역 문화',
+        light: '문화 포인트',
         excluded: '추천 제외'
       };
   return key => labels[key] || labels.local;
