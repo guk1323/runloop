@@ -387,7 +387,7 @@ if ('serviceWorker' in navigator) {
   .home-promo-cta{height:33px;border-radius:999px;background:var(--ink);color:#fff;font-size:12px;font-weight:950;display:flex;align-items:center;justify-content:center;white-space:nowrap;}
   .home-promo-dots{display:flex;justify-content:center;gap:5px;margin-top:8px;}
   .home-promo-dots span{width:5px;height:5px;border-radius:999px;background:var(--gray-300);}
-  .home-promo-dots span:first-child{width:14px;background:var(--coral);}
+  .home-promo-dots span.active{width:14px;background:var(--coral);}
   .near-course-card{background:rgba(255,255,255,.82);border-color:rgba(28,36,43,.07);box-shadow:0 8px 20px rgba(28,36,43,.045);}
   .save-course-btn{background:var(--ink);color:#fff;border:none;border-radius:var(--rp);padding:5px 11px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
   .save-course-btn:hover{background:#111820;}
@@ -859,7 +859,6 @@ if ('serviceWorker' in navigator) {
           <div class="home-promo-kicker" id="homeScheduleKicker">이번 주 주변 일정</div>
           <div class="home-promo-head-title" id="homeScheduleTitle">가까운 문화·체육 일정을 추천해요</div>
         </div>
-        <button class="home-promo-open" id="homeScheduleButton" type="button" onclick="openCultureSchedulePage()">일정 보기</button>
       </div>
       <div class="home-promo-track" id="homeScheduleTrack">
         <button class="home-promo-card" type="button" onclick="openCultureSchedulePage()">
@@ -1624,6 +1623,7 @@ function setAppLanguage(lang) {
   lastCultureSpotResults = [];
   cultureScheduleItems = [];
   cultureScheduleLoadedAt = 0;
+  cultureScheduleCenterKey = '';
   applyAppLanguage();
   loadNearCourses();
   loadCultureSchedule({ force: true, silent: true });
@@ -1647,7 +1647,6 @@ function applyAppLanguage() {
   });
   setTextContent('homeScheduleKicker', t('scheduleBannerKicker'));
   setTextContent('homeScheduleTitle', t('scheduleBannerTitle'));
-  setTextContent('homeScheduleButton', t('scheduleBannerButton'));
   setTextContent('cultureScheduleTitle', t('schedule'));
   setTextContent('cultureScheduleKicker', t('scheduleBannerKicker'));
   setTextContent('cultureScheduleHeroTitle', t('scheduleHeroTitle'));
@@ -4027,6 +4026,10 @@ let lastCultureSpotResults = [];
 let cultureScheduleItems = [];
 let cultureScheduleLoadedAt = 0;
 let cultureScheduleLoading = false;
+let cultureScheduleCenterKey = '';
+let cultureSchedulePendingReload = false;
+let homeScheduleCarouselTimer = null;
+let homeScheduleCarouselIndex = 0;
 let scheduleReturnTab = 'home';
 const CULTURE_SCHEDULE_TTL_MS = 15 * 60 * 1000;
 let culturePhotoInflight = new Map();
@@ -5636,11 +5639,12 @@ function renderHomeActions() {
   if (titleEl) titleEl.textContent = cultureScheduleLoading && !homeItems.length ? t('scheduleBannerLoading') : t('scheduleBannerTitle');
   if (!homeItems.length) {
     track.innerHTML = renderHomeScheduleFallbackCard();
+    clearHomeScheduleCarousel();
     if (dots) dots.innerHTML = '';
     return;
   }
   track.innerHTML = homeItems.map((event, index) => renderHomeScheduleCard(event, index)).join('');
-  if (dots) dots.innerHTML = homeItems.map(() => '<span></span>').join('');
+  setupHomeScheduleCarousel(homeItems.length);
 }
 
 function getHomeScheduleItems() {
@@ -5720,6 +5724,57 @@ function getHomeScheduleScore(event) {
   return distanceScore + dateScore + categoryScore + qualityScore;
 }
 
+function clearHomeScheduleCarousel() {
+  if (homeScheduleCarouselTimer) clearInterval(homeScheduleCarouselTimer);
+  homeScheduleCarouselTimer = null;
+  homeScheduleCarouselIndex = 0;
+  const track = document.getElementById('homeScheduleTrack');
+  if (track) track.onscroll = null;
+}
+
+function setupHomeScheduleCarousel(count) {
+  clearHomeScheduleCarousel();
+  const track = document.getElementById('homeScheduleTrack');
+  const dots = document.getElementById('homeScheduleDots');
+  if (!track) return;
+  if (dots) dots.innerHTML = Array.from({ length: count }, (_, index) => `<span class="${index === 0 ? 'active' : ''}"></span>`).join('');
+  if (count <= 1) return;
+  let scrollTimer = null;
+  track.onscroll = () => {
+    if (scrollTimer) clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(() => {
+      const cards = Array.from(track.querySelectorAll('.home-promo-card'));
+      const nearest = cards.reduce((best, card, index) => {
+        const delta = Math.abs(card.offsetLeft - track.offsetLeft - track.scrollLeft);
+        return delta < best.delta ? { index, delta } : best;
+      }, { index: 0, delta: Infinity }).index;
+      homeScheduleCarouselIndex = nearest;
+      updateHomeScheduleDots(nearest);
+    }, 90);
+  };
+  homeScheduleCarouselTimer = setInterval(() => {
+    if (S.tab !== 'home' || document.hidden) return;
+    homeScheduleCarouselIndex = (homeScheduleCarouselIndex + 1) % count;
+    scrollHomeScheduleTo(homeScheduleCarouselIndex);
+  }, 4200);
+}
+
+function scrollHomeScheduleTo(index) {
+  const track = document.getElementById('homeScheduleTrack');
+  if (!track) return;
+  const cards = Array.from(track.querySelectorAll('.home-promo-card'));
+  const card = cards[index];
+  if (!card) return;
+  track.scrollTo({ left: card.offsetLeft - track.offsetLeft, behavior: 'smooth' });
+  updateHomeScheduleDots(index);
+}
+
+function updateHomeScheduleDots(index) {
+  document.querySelectorAll('#homeScheduleDots span').forEach((dot, dotIndex) => {
+    dot.classList.toggle('active', dotIndex === index);
+  });
+}
+
 function openCultureSchedulePage() {
   scheduleReturnTab = S.tab && S.tab !== 'schedule' ? S.tab : 'home';
   if (routeGuide.active) stopRouteGuidance('', { silent: true });
@@ -5741,19 +5796,24 @@ async function loadCultureSchedule(options = {}) {
   const force = !!options.force;
   const silent = !!options.silent;
   const now = Date.now();
-  if (!force && cultureScheduleItems.length && now - cultureScheduleLoadedAt < CULTURE_SCHEDULE_TTL_MS) {
+  const center = getScheduleRequestCenter();
+  const requestCenterKey = getScheduleCenterKey(center);
+  if (!force && cultureScheduleItems.length && cultureScheduleCenterKey === requestCenterKey && now - cultureScheduleLoadedAt < CULTURE_SCHEDULE_TTL_MS) {
     renderHomeActions();
     if (S.tab === 'schedule') renderCultureSchedulePage();
     return cultureScheduleItems;
   }
-  if (cultureScheduleLoading) return cultureScheduleItems;
+  if (cultureScheduleLoading) {
+    if (force || cultureScheduleCenterKey !== requestCenterKey) cultureSchedulePendingReload = true;
+    return cultureScheduleItems;
+  }
   cultureScheduleLoading = true;
   renderHomeActions();
   if (S.tab === 'schedule') renderCultureSchedulePage();
   try {
     const url = new URL(TOUR_EVENTS_URL, window.location.href);
-    url.searchParams.set('lat', String(Number.isFinite(Number(S.lat)) ? S.lat : 37.5503));
-    url.searchParams.set('lng', String(Number.isFinite(Number(S.lng)) ? S.lng : 126.92));
+    url.searchParams.set('lat', String(center.lat));
+    url.searchParams.set('lng', String(center.lng));
     url.searchParams.set('radius', '50000');
     url.searchParams.set('rows', '100');
     url.searchParams.set('days', '60');
@@ -5763,17 +5823,39 @@ async function loadCultureSchedule(options = {}) {
     const data = await response.json();
     cultureScheduleItems = Array.isArray(data && data.events) ? data.events.filter(event => event && event.title).slice(0, 60) : [];
     cultureScheduleLoadedAt = Date.now();
+    cultureScheduleCenterKey = requestCenterKey;
   } catch (error) {
     console.warn('Tour event schedule unavailable', error);
     if (!silent && S.tab === 'schedule') toast(t('scheduleEmptyTitle'));
     cultureScheduleItems = [];
     cultureScheduleLoadedAt = Date.now();
+    cultureScheduleCenterKey = requestCenterKey;
   } finally {
     cultureScheduleLoading = false;
-    renderHomeActions();
-    if (S.tab === 'schedule') renderCultureSchedulePage();
+    const shouldReload = cultureSchedulePendingReload;
+    if (shouldReload) {
+      cultureSchedulePendingReload = false;
+      cultureScheduleLoadedAt = 0;
+      setTimeout(() => loadCultureSchedule({ force: true, silent: true }), 0);
+    } else {
+      renderHomeActions();
+      if (S.tab === 'schedule') renderCultureSchedulePage();
+    }
   }
   return cultureScheduleItems;
+}
+
+function getScheduleRequestCenter() {
+  const lat = Number(S.lat);
+  const lng = Number(S.lng);
+  return {
+    lat: Number.isFinite(lat) ? lat : 37.5503,
+    lng: Number.isFinite(lng) ? lng : 126.92
+  };
+}
+
+function getScheduleCenterKey(center) {
+  return `${Number(center.lat).toFixed(3)},${Number(center.lng).toFixed(3)},${appLanguage}`;
 }
 
 function renderCultureSchedulePage() {

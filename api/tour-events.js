@@ -113,7 +113,7 @@ export default async function handler(req, res) {
         return Number(event.distFromMe) * 1000 <= radius * 1.2;
       })
       .sort(sortEvents)
-      .slice(0, 20);
+      .slice(0, Math.min(rows, 60));
 
     return res.status(200).json({ events, lang });
   } catch (error) {
@@ -229,12 +229,12 @@ function dedupeEvents(events) {
 }
 
 function sortEvents(a, b) {
-  const aDate = a.startDate || '99999999';
-  const bDate = b.startDate || '99999999';
-  if (aDate !== bDate) return aDate.localeCompare(bDate);
   const aDist = Number.isFinite(Number(a.distFromMe)) ? Number(a.distFromMe) : 9999;
   const bDist = Number.isFinite(Number(b.distFromMe)) ? Number(b.distFromMe) : 9999;
-  return aDist - bDist;
+  if (Math.abs(aDist - bDist) > 0.05) return aDist - bDist;
+  const aDate = a.startDate || '99999999';
+  const bDate = b.startDate || '99999999';
+  return aDate.localeCompare(bDate);
 }
 
 function getKtoLanguage(value) {
