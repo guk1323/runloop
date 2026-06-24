@@ -360,21 +360,21 @@ if ('serviceWorker' in navigator) {
   .all-record-dist{font-size:15px;font-weight:700;color:var(--coral);}
 
   #weatherCard{background:linear-gradient(135deg,#FFFFFF 0%,#FFF6F1 100%)!important;border:1px solid rgba(28,36,43,.07)!important;box-shadow:0 12px 28px rgba(28,36,43,.06)!important;}
-  .home-action-stack{display:flex;flex-direction:column;gap:10px;}
-  .home-action-card{width:100%;border-radius:var(--r);border:1px solid rgba(28,36,43,.08);background:#fff;padding:14px;box-shadow:0 10px 24px rgba(28,36,43,.05);}
-  .home-map-action{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;font-family:inherit;cursor:pointer;}
-  button.home-map-action{appearance:none;color:inherit;}
-  .home-action-icon{width:38px;height:38px;border-radius:12px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;flex-shrink:0;}
-  .home-action-copy{min-width:0;flex:1;}
-  .home-action-title{display:block;font-size:15px;font-weight:900;color:var(--ink);margin-bottom:4px;}
-  .home-action-desc{display:block;font-size:12px;font-weight:700;color:var(--gray-500);line-height:1.45;}
-  .home-action-cta{height:34px;border-radius:999px;background:var(--coral-light);color:var(--ink);border:1px solid rgba(242,122,94,.18);padding:0 12px;font-size:12px;font-weight:900;white-space:nowrap;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-  .home-recent-card{display:none;align-items:center;gap:12px;}
-  .home-recent-main{min-width:0;flex:1;}
-  .home-recent-label{font-size:11px;font-weight:900;color:var(--coral);margin-bottom:3px;}
-  .home-recent-name{font-size:14px;font-weight:900;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .home-recent-meta{font-size:11px;font-weight:800;color:var(--gray-500);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .home-recent-route{height:38px;border-radius:var(--rs);background:var(--ink);border:none;color:#fff;padding:0 15px;font-size:13px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+  .home-promo-card{width:100%;min-height:132px;border-radius:var(--r);border:1px solid rgba(28,36,43,.08);background:linear-gradient(135deg,#FFFFFF 0%,#FFF5EF 100%);padding:15px;box-shadow:0 12px 28px rgba(28,36,43,.06);display:grid;grid-template-columns:minmax(0,1fr) 108px;gap:13px;text-align:left;font-family:inherit;color:inherit;cursor:pointer;appearance:none;overflow:hidden;position:relative;}
+  .home-promo-card::after{content:'';position:absolute;right:-32px;bottom:-34px;width:112px;height:112px;border-radius:50%;background:rgba(242,122,94,.08);pointer-events:none;}
+  .home-promo-copy{min-width:0;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1;}
+  .home-promo-kicker{font-size:11px;font-weight:950;color:var(--coral);margin-bottom:7px;line-height:1;}
+  .home-promo-title{font-size:18px;font-weight:950;color:var(--ink);line-height:1.28;margin-bottom:7px;word-break:keep-all;}
+  .home-promo-desc{font-size:12px;font-weight:800;color:var(--gray-600);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .home-promo-meta{margin-top:10px;font-size:11px;font-weight:900;color:var(--gray-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .home-promo-side{min-width:0;display:flex;flex-direction:column;gap:8px;position:relative;z-index:1;}
+  .home-promo-image-wrap{width:100%;aspect-ratio:1/1;border-radius:14px;background:linear-gradient(135deg,#1C242B 0%,#3A4650 64%,#F27A5E 150%);border:1px solid rgba(28,36,43,.08);overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:950;letter-spacing:0;}
+  .home-promo-image-wrap.has-image{background:var(--gray-50);}
+  .home-promo-image{display:none;width:100%;height:100%;object-fit:cover;}
+  .home-promo-image-wrap.has-image .home-promo-image{display:block;}
+  .home-promo-fallback{padding:10px;text-align:center;line-height:1.25;}
+  .home-promo-image-wrap.has-image .home-promo-fallback{display:none;}
+  .home-promo-cta{height:33px;border-radius:999px;background:var(--ink);color:#fff;font-size:12px;font-weight:950;display:flex;align-items:center;justify-content:center;white-space:nowrap;}
   .near-course-card{background:rgba(255,255,255,.82);border-color:rgba(28,36,43,.07);box-shadow:0 8px 20px rgba(28,36,43,.045);}
   .save-course-btn{background:var(--ink);color:#fff;border:none;border-radius:var(--rp);padding:5px 11px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
   .save-course-btn:hover{background:#111820;}
@@ -432,6 +432,27 @@ if ('serviceWorker' in navigator) {
   .settings-page-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
   .settings-back-btn{width:38px;height:38px;border-radius:999px;border:1px solid var(--gray-100);background:#fff;color:var(--ink);font-size:24px;font-weight:900;line-height:1;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(28,36,43,.06);}
   .settings-title{font-size:19px;font-weight:900;color:var(--ink);}
+  .schedule-page{display:flex;flex-direction:column;gap:12px;}
+  .schedule-hero{border-radius:18px;padding:18px;background:linear-gradient(135deg,#1C242B 0%,#29333B 62%,#F27A5E 155%);color:#fff;box-shadow:0 16px 34px rgba(28,36,43,.14);}
+  .schedule-hero-kicker{font-size:11px;font-weight:950;color:rgba(255,255,255,.7);margin-bottom:8px;}
+  .schedule-hero-title{font-size:20px;font-weight:950;line-height:1.28;margin-bottom:7px;word-break:keep-all;}
+  .schedule-hero-desc{font-size:12px;font-weight:800;line-height:1.5;color:rgba(255,255,255,.72);}
+  .schedule-list{display:flex;flex-direction:column;gap:10px;}
+  .schedule-card{background:#fff;border:1px solid rgba(28,36,43,.08);border-radius:16px;padding:12px;box-shadow:0 10px 24px rgba(28,36,43,.045);display:grid;grid-template-columns:94px minmax(0,1fr);gap:12px;}
+  .schedule-card-photo{width:94px;aspect-ratio:1/1;border-radius:14px;background:var(--gray-50);border:1px solid var(--gray-100);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--gray-500);font-size:11px;font-weight:900;text-align:center;line-height:1.35;}
+  .schedule-card-photo img{width:100%;height:100%;object-fit:cover;display:block;}
+  .schedule-card-body{min-width:0;display:flex;flex-direction:column;}
+  .schedule-date{width:max-content;max-width:100%;height:26px;border-radius:999px;background:var(--coral-light);border:1px solid rgba(242,122,94,.18);color:var(--coral-dark);font-size:11px;font-weight:950;padding:0 9px;display:flex;align-items:center;margin-bottom:7px;white-space:nowrap;}
+  .schedule-name{font-size:15px;font-weight:950;color:var(--ink);line-height:1.32;margin-bottom:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .schedule-place{font-size:12px;font-weight:800;color:var(--gray-500);line-height:1.38;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:10px;}
+  .schedule-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:auto;}
+  .schedule-actions.single{grid-template-columns:1fr;}
+  .schedule-actions button{height:34px;border-radius:11px;font-size:12px;font-weight:950;font-family:inherit;cursor:pointer;}
+  .schedule-info-btn{border:1px solid rgba(242,122,94,.22);background:var(--coral-light);color:var(--ink);}
+  .schedule-map-btn{border:1px solid var(--ink);background:var(--ink);color:#fff;}
+  .schedule-empty{padding:34px 18px;text-align:center;color:var(--gray-500);background:#fff;border:1px solid var(--gray-100);border-radius:16px;}
+  .schedule-empty-title{font-size:15px;font-weight:950;color:var(--ink);margin-bottom:6px;}
+  .schedule-empty-desc{font-size:12px;font-weight:800;line-height:1.5;}
   .my-block-head{padding:16px 16px 8px;display:flex;justify-content:space-between;align-items:center;}
   .my-block-head .my-section{padding:0;}
   .my-head-action{border:none;background:var(--coral-light);border-radius:999px;color:var(--ink);height:28px;padding:0 10px;font-size:11px;font-weight:800;font-family:inherit;cursor:pointer;}
@@ -816,24 +837,21 @@ if ('serviceWorker' in navigator) {
       <div style="margin-top:10px;font-size:12px;color:var(--gray-500);border-top:1px solid var(--gray-100);padding-top:10px;" id="wSummary">날씨 불러오는 중…</div>
     </div>
 
-    <div class="home-action-stack">
-      <button class="home-action-card home-map-action" type="button" onclick="openCultureMapFromHome()">
-        <span class="home-action-icon" aria-hidden="true">◎</span>
-        <span class="home-action-copy">
-          <span class="home-action-title" id="homeMapActionTitle">주변 문화스팟 찾기</span>
-          <span class="home-action-desc" id="homeMapActionDesc">지도에서 현재 주변 장소를 보고 목적지를 정해보세요</span>
+    <button class="home-promo-card" type="button" onclick="openCultureSchedulePage()">
+      <span class="home-promo-copy">
+        <span class="home-promo-kicker" id="homeScheduleKicker">이번 주 문화생활</span>
+        <span class="home-promo-title" id="homeScheduleTitle">주변에서 열리는 일정을 찾아볼게요</span>
+        <span class="home-promo-desc" id="homeScheduleDesc">전시, 축제, 공연 정보를 모아 보여줘요</span>
+        <span class="home-promo-meta" id="homeScheduleMeta">현재 위치 기준</span>
+      </span>
+      <span class="home-promo-side">
+        <span class="home-promo-image-wrap" id="homeScheduleImageWrap">
+          <img class="home-promo-image" id="homeScheduleImage" alt="">
+          <span class="home-promo-fallback">문화<br>일정</span>
         </span>
-        <span class="home-action-cta" id="homeMapActionButton">지도 열기</span>
-      </button>
-      <div class="home-action-card home-recent-card" id="homeRecentSpotCard">
-        <div class="home-recent-main">
-          <div class="home-recent-label" id="homeRecentSpotLabel">최근 저장한 스팟</div>
-          <div class="home-recent-name" id="homeRecentSpotName">저장한 문화스팟</div>
-          <div class="home-recent-meta" id="homeRecentSpotMeta">바로 길 안내를 시작할 수 있어요</div>
-        </div>
-        <button class="home-recent-route" type="button" id="homeRecentSpotRoute" onclick="startRecentSavedSpotFromHome()">길 안내</button>
-      </div>
-    </div>
+        <span class="home-promo-cta" id="homeScheduleButton">일정 보기</span>
+      </span>
+    </button>
 
     <div style="height:8px;"></div>
   </div>
@@ -1091,6 +1109,22 @@ if ('serviceWorker' in navigator) {
         <span id="privacyLabel">개인정보처리방침</span><strong id="privacyViewLabel" style="color:var(--coral);">보기</strong>
       </a>
     </div>
+  </div>
+</div>
+
+<!-- 문화 일정 화면 -->
+<div id="screen-schedule" class="screen settings-screen">
+  <div class="settings-page schedule-page">
+    <div class="settings-page-header">
+      <button class="settings-back-btn" type="button" onclick="closeCultureSchedulePage()" aria-label="뒤로 가기">‹</button>
+      <div class="settings-title" id="cultureScheduleTitle">문화 일정</div>
+    </div>
+    <div class="schedule-hero">
+      <div class="schedule-hero-kicker" id="cultureScheduleKicker">이번 주 문화생활</div>
+      <div class="schedule-hero-title" id="cultureScheduleHeroTitle">주변에서 열리는 일정을 모아봤어요</div>
+      <div class="schedule-hero-desc" id="cultureScheduleHeroDesc">한국관광공사 행사 정보를 기준으로 가까운 일정과 진행 중인 문화생활을 보여줘요.</div>
+    </div>
+    <div class="schedule-list" id="cultureScheduleList"></div>
   </div>
 </div>
 
@@ -1370,6 +1404,7 @@ const TOUR_PHOTO_URL = runloopApiUrl('/api/tour-photo');
 const HERITAGE_PHOTO_URL = runloopApiUrl('/api/heritage-photo');
 const TOUR_DETAIL_URL = runloopApiUrl('/api/tour-detail');
 const TOUR_WEATHER_URL = runloopApiUrl('/api/tour-weather');
+const TOUR_EVENTS_URL = runloopApiUrl('/api/tour-events');
 const OPEN_WEATHER_MAP_KEY = 'c4e77c4cac686498d868b622be22e841';
 const APP_LANGUAGE_KEY = 'runloopAppLanguageV1';
 const DAILY_GOAL_KEY = 'runloopDailyGoalKmV1';
@@ -1403,11 +1438,21 @@ const APP_COPY = {
     my: 'MY',
     edit: '편집',
     nearCultureSpots: '근처 문화 스팟',
-    homeMapActionTitle: '주변 문화스팟 찾기',
-    homeMapActionDesc: '지도에서 현재 주변 장소를 보고 목적지를 정해보세요',
-    openMap: '지도 열기',
-    recentSavedSpot: '최근 저장한 스팟',
-    recentSavedSpotMeta: '바로 길 안내를 시작할 수 있어요',
+    schedule: '문화 일정',
+    scheduleBannerKicker: '이번 주 문화생활',
+    scheduleBannerTitle: '주변에서 열리는 일정을 찾아볼게요',
+    scheduleBannerDesc: '전시, 축제, 공연 정보를 모아 보여줘요',
+    scheduleBannerMeta: '현재 위치 기준',
+    scheduleBannerButton: '일정 보기',
+    scheduleBannerLoading: '주변 문화 일정을 찾는 중이에요',
+    scheduleHeroTitle: '주변에서 열리는 일정을 모아봤어요',
+    scheduleHeroDesc: '한국관광공사 행사 정보를 기준으로 가까운 일정과 진행 중인 문화생활을 보여줘요.',
+    scheduleLoading: '문화 일정을 불러오는 중이에요…',
+    scheduleEmptyTitle: '아직 표시할 일정이 없어요',
+    scheduleEmptyDesc: '주변 행사 정보가 없거나 잠시 후 다시 확인이 필요해요.',
+    scheduleDetail: '상세 보기',
+    scheduleMap: '지도에서 보기',
+    schedulePhotoFallback: '문화 일정',
     refresh: '새로고침',
     distanceSort: '거리순',
     starsSort: '별점순',
@@ -1454,11 +1499,21 @@ const APP_COPY = {
     my: 'MY',
     edit: 'Edit',
     nearCultureSpots: 'Nearby Culture Spots',
-    homeMapActionTitle: 'Find Nearby Culture Spots',
-    homeMapActionDesc: 'Open the map, choose a nearby place, and set your destination',
-    openMap: 'Open Map',
-    recentSavedSpot: 'Recently Saved Spot',
-    recentSavedSpotMeta: 'Start guide from here',
+    schedule: 'Culture Schedule',
+    scheduleBannerKicker: 'This Week',
+    scheduleBannerTitle: 'Find cultural events nearby',
+    scheduleBannerDesc: 'See festivals, exhibitions, and performances around you',
+    scheduleBannerMeta: 'Based on your current location',
+    scheduleBannerButton: 'View',
+    scheduleBannerLoading: 'Finding nearby cultural events',
+    scheduleHeroTitle: 'Cultural events around you',
+    scheduleHeroDesc: 'Nearby and ongoing events are shown from VisitKorea tourism data.',
+    scheduleLoading: 'Loading cultural events…',
+    scheduleEmptyTitle: 'No events to show yet',
+    scheduleEmptyDesc: 'There may be no nearby event data right now. Check again later.',
+    scheduleDetail: 'Details',
+    scheduleMap: 'View on map',
+    schedulePhotoFallback: 'Culture event',
     refresh: 'Refresh',
     recommend: 'Recommended',
     distanceSort: 'Distance',
@@ -1537,8 +1592,11 @@ function setAppLanguage(lang) {
   appLanguage = next;
   localStorage.setItem(APP_LANGUAGE_KEY, appLanguage);
   lastCultureSpotResults = [];
+  cultureScheduleItems = [];
+  cultureScheduleLoadedAt = 0;
   applyAppLanguage();
   loadNearCourses();
+  loadCultureSchedule({ force: true, silent: true });
   if (S.tab === 'mycourse') renderMyCourses();
   if (S.tab === 'mypage') renderMyPage();
   toast(t('langChanged'));
@@ -1557,11 +1615,15 @@ function applyAppLanguage() {
     const el = document.querySelector(`[data-tab="${tab}"] span:last-child`);
     if (el) el.textContent = label;
   });
-  setTextContent('homeMapActionTitle', t('homeMapActionTitle'));
-  setTextContent('homeMapActionDesc', t('homeMapActionDesc'));
-  setTextContent('homeMapActionButton', t('openMap'));
-  setTextContent('homeRecentSpotLabel', t('recentSavedSpot'));
-  setTextContent('homeRecentSpotRoute', t('routeView'));
+  setTextContent('homeScheduleKicker', t('scheduleBannerKicker'));
+  setTextContent('homeScheduleTitle', t('scheduleBannerTitle'));
+  setTextContent('homeScheduleDesc', t('scheduleBannerDesc'));
+  setTextContent('homeScheduleMeta', t('scheduleBannerMeta'));
+  setTextContent('homeScheduleButton', t('scheduleBannerButton'));
+  setTextContent('cultureScheduleTitle', t('schedule'));
+  setTextContent('cultureScheduleKicker', t('scheduleBannerKicker'));
+  setTextContent('cultureScheduleHeroTitle', t('scheduleHeroTitle'));
+  setTextContent('cultureScheduleHeroDesc', t('scheduleHeroDesc'));
   renderHomeActions();
   setTextContent('aiSearchSubmit', t('searchAction'));
   setTextContent('aiSearchStartBtn', t('startPoint'));
@@ -3618,13 +3680,16 @@ window.addEventListener('load', () => {
       updateMapSearchClearButton();
       fetchWeather();
       loadNearCourses();
+      loadCultureSchedule({ force: true, silent: true });
     }, () => {
       fetchWeather();
       loadNearCourses();
+      loadCultureSchedule({ silent: true });
     }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 });
   } else {
     fetchWeather();
     loadNearCourses();
+    loadCultureSchedule({ silent: true });
   }
 });
 
@@ -3674,6 +3739,7 @@ function switchTab(tab, el) {
     fetchWeather();
     renderRecords();
     renderHomeActions();
+    loadCultureSchedule({ silent: true });
   }
   if (tab === 'mycourse') renderMyCourses();
   if (tab === 'social') renderSocial();
@@ -3930,6 +3996,11 @@ const CULTURE_SPOT_EN_INFO_URL_MAP = {
 };
 let cultureSpotFilter = 'distance';
 let lastCultureSpotResults = [];
+let cultureScheduleItems = [];
+let cultureScheduleLoadedAt = 0;
+let cultureScheduleLoading = false;
+let scheduleReturnTab = 'home';
+const CULTURE_SCHEDULE_TTL_MS = 15 * 60 * 1000;
 let culturePhotoInflight = new Map();
 let cultureDetailInflight = new Map();
 let cultureOverviewInflight = new Map();
@@ -5529,37 +5600,166 @@ function saveRecord() {
 }
 
 function renderHomeActions() {
-  const card = document.getElementById('homeRecentSpotCard');
-  if (!card) return;
-  const spot = getFavoriteCultureSpotList()[0];
-  if (!spot) {
-    card.style.display = 'none';
-    card.dataset.key = '';
+  const titleEl = document.getElementById('homeScheduleTitle');
+  const descEl = document.getElementById('homeScheduleDesc');
+  const metaEl = document.getElementById('homeScheduleMeta');
+  const imageWrap = document.getElementById('homeScheduleImageWrap');
+  const imageEl = document.getElementById('homeScheduleImage');
+  const fallbackEl = imageWrap && imageWrap.querySelector('.home-promo-fallback');
+  const event = cultureScheduleItems[0];
+  if (event) {
+    if (titleEl) titleEl.textContent = event.title || t('scheduleBannerTitle');
+    if (descEl) descEl.textContent = formatScheduleEventMeta(event) || t('scheduleBannerDesc');
+    if (metaEl) metaEl.textContent = [formatScheduleDistance(event), event.source].filter(Boolean).join(' · ') || t('scheduleBannerMeta');
+    setScheduleImage(imageWrap, imageEl, event.image);
+    if (fallbackEl) fallbackEl.textContent = t('schedulePhotoFallback');
     return;
   }
-  const nameEl = document.getElementById('homeRecentSpotName');
-  const metaEl = document.getElementById('homeRecentSpotMeta');
-  const routeEl = document.getElementById('homeRecentSpotRoute');
-  card.style.display = 'flex';
-  card.dataset.key = spot.key || '';
-  if (nameEl) nameEl.textContent = getCultureSpotDisplayName(spot, t('cultureSpots'));
-  if (metaEl) {
-    const dist = formatCultureSpotDistanceLabel(spot.distFromMe);
-    metaEl.textContent = /정보 없음/.test(dist) ? t('recentSavedSpotMeta') : dist;
+  if (titleEl) titleEl.textContent = cultureScheduleLoading ? t('scheduleBannerLoading') : t('scheduleBannerTitle');
+  if (descEl) descEl.textContent = t('scheduleBannerDesc');
+  if (metaEl) metaEl.textContent = t('scheduleBannerMeta');
+  setScheduleImage(imageWrap, imageEl, '');
+  if (fallbackEl) fallbackEl.textContent = t('schedulePhotoFallback');
+}
+
+function setScheduleImage(wrap, image, src) {
+  const safeSrc = String(src || '').trim();
+  if (wrap) wrap.classList.toggle('has-image', !!safeSrc);
+  if (!image) return;
+  if (safeSrc) image.src = safeSrc;
+  else image.removeAttribute('src');
+}
+
+function openCultureSchedulePage() {
+  scheduleReturnTab = S.tab && S.tab !== 'schedule' ? S.tab : 'home';
+  if (routeGuide.active) stopRouteGuidance('', { silent: true });
+  setMainChromeVisible(false);
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const scheduleScreen = document.getElementById('screen-schedule');
+  if (scheduleScreen) scheduleScreen.classList.add('active');
+  S.tab = 'schedule';
+  renderCultureSchedulePage();
+  loadCultureSchedule({ force: !cultureScheduleItems.length });
+}
+
+function closeCultureSchedulePage() {
+  switchTab(scheduleReturnTab || 'home');
+}
+
+async function loadCultureSchedule(options = {}) {
+  const force = !!options.force;
+  const silent = !!options.silent;
+  const now = Date.now();
+  if (!force && cultureScheduleItems.length && now - cultureScheduleLoadedAt < CULTURE_SCHEDULE_TTL_MS) {
+    renderHomeActions();
+    if (S.tab === 'schedule') renderCultureSchedulePage();
+    return cultureScheduleItems;
   }
-  if (routeEl) routeEl.textContent = t('routeView');
+  if (cultureScheduleLoading) return cultureScheduleItems;
+  cultureScheduleLoading = true;
+  renderHomeActions();
+  if (S.tab === 'schedule') renderCultureSchedulePage();
+  try {
+    const url = new URL(TOUR_EVENTS_URL, window.location.href);
+    url.searchParams.set('lat', String(Number.isFinite(Number(S.lat)) ? S.lat : 37.5503));
+    url.searchParams.set('lng', String(Number.isFinite(Number(S.lng)) ? S.lng : 126.92));
+    url.searchParams.set('radius', '12000');
+    url.searchParams.set('rows', '60');
+    url.searchParams.set('days', '60');
+    url.searchParams.set('lang', appLanguage);
+    const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
+    if (!response.ok) throw new Error('Tour event API failed');
+    const data = await response.json();
+    cultureScheduleItems = Array.isArray(data && data.events) ? data.events.filter(event => event && event.title).slice(0, 20) : [];
+    cultureScheduleLoadedAt = Date.now();
+  } catch (error) {
+    console.warn('Tour event schedule unavailable', error);
+    if (!silent && S.tab === 'schedule') toast(t('scheduleEmptyTitle'));
+    cultureScheduleItems = [];
+    cultureScheduleLoadedAt = Date.now();
+  } finally {
+    cultureScheduleLoading = false;
+    renderHomeActions();
+    if (S.tab === 'schedule') renderCultureSchedulePage();
+  }
+  return cultureScheduleItems;
 }
 
-function openCultureMapFromHome() {
-  const createTab = document.querySelector('[data-tab="create"]');
-  switchTab('create', createTab);
+function renderCultureSchedulePage() {
+  const list = document.getElementById('cultureScheduleList');
+  if (!list) return;
+  if (cultureScheduleLoading && !cultureScheduleItems.length) {
+    list.innerHTML = `<div class="schedule-empty"><div class="ml-spin" style="margin:0 auto 10px;"></div><div class="schedule-empty-desc">${escapeHtml(t('scheduleLoading'))}</div></div>`;
+    return;
+  }
+  if (!cultureScheduleItems.length) {
+    list.innerHTML = `<div class="schedule-empty"><div class="schedule-empty-title">${escapeHtml(t('scheduleEmptyTitle'))}</div><div class="schedule-empty-desc">${escapeHtml(t('scheduleEmptyDesc'))}</div></div>`;
+    return;
+  }
+  list.innerHTML = cultureScheduleItems.map((event, index) => renderCultureScheduleCard(event, index)).join('');
 }
 
-function startRecentSavedSpotFromHome() {
-  const card = document.getElementById('homeRecentSpotCard');
-  const key = card && card.dataset ? card.dataset.key : '';
-  if (!key) return;
-  startSavedSpotRoute(key);
+function renderCultureScheduleCard(event, index) {
+  const hasPoint = Number.isFinite(Number(event.lat)) && Number.isFinite(Number(event.lng));
+  const image = String(event.image || '').trim();
+  const actionsClass = hasPoint ? 'schedule-actions' : 'schedule-actions single';
+  return `
+    <div class="schedule-card">
+      <div class="schedule-card-photo">${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(event.title || t('schedule'))}" loading="lazy">` : escapeHtml(t('schedulePhotoFallback'))}</div>
+      <div class="schedule-card-body">
+        <div class="schedule-date">${escapeHtml(formatScheduleDateRange(event))}</div>
+        <div class="schedule-name">${escapeHtml(event.title || t('schedule'))}</div>
+        <div class="schedule-place">${escapeHtml([event.place, formatScheduleDistance(event)].filter(Boolean).join(' · ') || t('scheduleBannerMeta'))}</div>
+        <div class="${actionsClass}">
+          <button class="schedule-info-btn" type="button" onclick="openCultureScheduleItem(${index})">${escapeHtml(t('scheduleDetail'))}</button>
+          ${hasPoint ? `<button class="schedule-map-btn" type="button" onclick="showCultureScheduleOnMap(${index})">${escapeHtml(t('scheduleMap'))}</button>` : ''}
+        </div>
+      </div>
+    </div>`;
+}
+
+function openCultureScheduleItem(index) {
+  const event = cultureScheduleItems[index];
+  if (!event) return;
+  const link = String(event.link || '').trim() || getSearchLinkForSchedule(event.title || '');
+  if (link) window.open(link, '_blank', 'noopener');
+}
+
+function showCultureScheduleOnMap(index) {
+  const event = cultureScheduleItems[index];
+  if (!event || !Number.isFinite(Number(event.lat)) || !Number.isFinite(Number(event.lng))) return;
+  goToAiWithLocation(event.title || t('schedule'), Number(event.lat), Number(event.lng));
+}
+
+function formatScheduleEventMeta(event) {
+  return [formatScheduleDateRange(event), event.place].filter(Boolean).join(' · ');
+}
+
+function formatScheduleDistance(event) {
+  const dist = Number(event && event.distFromMe);
+  if (!Number.isFinite(dist)) return '';
+  return dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`;
+}
+
+function formatScheduleDateRange(event) {
+  const start = formatScheduleDate(event && event.startDate);
+  const end = formatScheduleDate(event && event.endDate);
+  if (start && end && start !== end) return `${start} - ${end}`;
+  return start || end || t('scheduleBannerKicker');
+}
+
+function formatScheduleDate(value) {
+  const raw = String(value || '').replace(/[^\d]/g, '').slice(0, 8);
+  if (raw.length !== 8) return '';
+  const date = new Date(Number(raw.slice(0, 4)), Number(raw.slice(4, 6)) - 1, Number(raw.slice(6, 8)));
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toLocaleDateString(appLanguage === 'en' ? 'en-US' : 'ko-KR', { month: 'short', day: 'numeric' });
+}
+
+function getSearchLinkForSchedule(title) {
+  const query = appLanguage === 'en' ? `${title} Korea event` : `${title} 행사`;
+  return `https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`;
 }
 
 /* ── 근처 문화 스팟 (위치 기반) ── */
@@ -8993,9 +9193,11 @@ function obFinish() {
         S.lng = pos.coords.longitude;
         fetchWeather();
         loadNearCourses();
+        loadCultureSchedule({ force: true, silent: true });
       }, () => {
         fetchWeather();
         loadNearCourses();
+        loadCultureSchedule({ silent: true });
       }, { enableHighAccuracy: true, timeout: 10000 });
     }
   }, 800);
