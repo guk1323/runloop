@@ -360,10 +360,20 @@ if ('serviceWorker' in navigator) {
   .all-record-dist{font-size:15px;font-weight:700;color:var(--coral);}
 
   #weatherCard{background:linear-gradient(135deg,#FFFFFF 0%,#FFF6F1 100%)!important;border:1px solid rgba(28,36,43,.07)!important;box-shadow:0 12px 28px rgba(28,36,43,.06)!important;}
-  .home-promo-card{width:100%;min-height:132px;border-radius:var(--r);border:1px solid rgba(28,36,43,.08);background:linear-gradient(135deg,#FFFFFF 0%,#FFF5EF 100%);padding:15px;box-shadow:0 12px 28px rgba(28,36,43,.06);display:grid;grid-template-columns:minmax(0,1fr) 108px;gap:13px;text-align:left;font-family:inherit;color:inherit;cursor:pointer;appearance:none;overflow:hidden;position:relative;}
+  .home-promo-section{background:#fff;border:1px solid rgba(28,36,43,.08);border-radius:var(--r);padding:13px;box-shadow:0 12px 28px rgba(28,36,43,.055);overflow:hidden;}
+  .home-promo-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
+  .home-promo-head-copy{min-width:0;}
+  .home-promo-kicker{font-size:11px;font-weight:950;color:var(--coral);margin-bottom:4px;line-height:1;}
+  .home-promo-head-title{font-size:15px;font-weight:950;color:var(--ink);line-height:1.2;}
+  .home-promo-open{height:32px;border-radius:999px;background:var(--ink);border:none;color:#fff;padding:0 12px;font-size:12px;font-weight:950;font-family:inherit;cursor:pointer;white-space:nowrap;flex-shrink:0;}
+  .home-promo-track{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:2px;-webkit-overflow-scrolling:touch;}
+  .home-promo-track::-webkit-scrollbar{display:none;}
+  .home-promo-card{min-width:calc(100% - 18px);min-height:132px;border-radius:16px;border:1px solid rgba(28,36,43,.08);background:linear-gradient(135deg,#FFFFFF 0%,#FFF5EF 100%);padding:15px;box-shadow:0 8px 18px rgba(28,36,43,.035);display:grid;grid-template-columns:minmax(0,1fr) 104px;gap:13px;text-align:left;font-family:inherit;color:inherit;cursor:pointer;appearance:none;overflow:hidden;position:relative;scroll-snap-align:start;}
   .home-promo-card::after{content:'';position:absolute;right:-32px;bottom:-34px;width:112px;height:112px;border-radius:50%;background:rgba(242,122,94,.08);pointer-events:none;}
   .home-promo-copy{min-width:0;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1;}
-  .home-promo-kicker{font-size:11px;font-weight:950;color:var(--coral);margin-bottom:7px;line-height:1;}
+  .home-promo-tagrow{display:flex;align-items:center;gap:6px;margin-bottom:8px;min-width:0;}
+  .home-promo-tag{height:24px;border-radius:999px;background:var(--coral-light);border:1px solid rgba(242,122,94,.18);color:var(--coral-dark);font-size:11px;font-weight:950;padding:0 8px;display:flex;align-items:center;white-space:nowrap;}
+  .home-promo-distance{height:24px;border-radius:999px;background:#fff;border:1px solid var(--gray-100);color:var(--gray-700);font-size:11px;font-weight:950;padding:0 8px;display:flex;align-items:center;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;}
   .home-promo-title{font-size:18px;font-weight:950;color:var(--ink);line-height:1.28;margin-bottom:7px;word-break:keep-all;}
   .home-promo-desc{font-size:12px;font-weight:800;color:var(--gray-600);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   .home-promo-meta{margin-top:10px;font-size:11px;font-weight:900;color:var(--gray-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -375,6 +385,9 @@ if ('serviceWorker' in navigator) {
   .home-promo-fallback{padding:10px;text-align:center;line-height:1.25;}
   .home-promo-image-wrap.has-image .home-promo-fallback{display:none;}
   .home-promo-cta{height:33px;border-radius:999px;background:var(--ink);color:#fff;font-size:12px;font-weight:950;display:flex;align-items:center;justify-content:center;white-space:nowrap;}
+  .home-promo-dots{display:flex;justify-content:center;gap:5px;margin-top:8px;}
+  .home-promo-dots span{width:5px;height:5px;border-radius:999px;background:var(--gray-300);}
+  .home-promo-dots span:first-child{width:14px;background:var(--coral);}
   .near-course-card{background:rgba(255,255,255,.82);border-color:rgba(28,36,43,.07);box-shadow:0 8px 20px rgba(28,36,43,.045);}
   .save-course-btn{background:var(--ink);color:#fff;border:none;border-radius:var(--rp);padding:5px 11px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
   .save-course-btn:hover{background:#111820;}
@@ -442,7 +455,10 @@ if ('serviceWorker' in navigator) {
   .schedule-card-photo{width:94px;aspect-ratio:1/1;border-radius:14px;background:var(--gray-50);border:1px solid var(--gray-100);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--gray-500);font-size:11px;font-weight:900;text-align:center;line-height:1.35;}
   .schedule-card-photo img{width:100%;height:100%;object-fit:cover;display:block;}
   .schedule-card-body{min-width:0;display:flex;flex-direction:column;}
+  .schedule-topline{display:flex;align-items:center;gap:6px;margin-bottom:7px;min-width:0;}
+  .schedule-category{height:26px;border-radius:999px;background:#fff;border:1px solid var(--gray-100);color:var(--gray-700);font-size:11px;font-weight:950;padding:0 9px;display:flex;align-items:center;white-space:nowrap;}
   .schedule-date{width:max-content;max-width:100%;height:26px;border-radius:999px;background:var(--coral-light);border:1px solid rgba(242,122,94,.18);color:var(--coral-dark);font-size:11px;font-weight:950;padding:0 9px;display:flex;align-items:center;margin-bottom:7px;white-space:nowrap;}
+  .schedule-topline .schedule-date{margin-bottom:0;min-width:0;overflow:hidden;text-overflow:ellipsis;}
   .schedule-name{font-size:15px;font-weight:950;color:var(--ink);line-height:1.32;margin-bottom:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   .schedule-place{font-size:12px;font-weight:800;color:var(--gray-500);line-height:1.38;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:10px;}
   .schedule-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:auto;}
@@ -837,21 +853,35 @@ if ('serviceWorker' in navigator) {
       <div style="margin-top:10px;font-size:12px;color:var(--gray-500);border-top:1px solid var(--gray-100);padding-top:10px;" id="wSummary">날씨 불러오는 중…</div>
     </div>
 
-    <button class="home-promo-card" type="button" onclick="openCultureSchedulePage()">
-      <span class="home-promo-copy">
-        <span class="home-promo-kicker" id="homeScheduleKicker">이번 주 문화생활</span>
-        <span class="home-promo-title" id="homeScheduleTitle">주변에서 열리는 일정을 찾아볼게요</span>
-        <span class="home-promo-desc" id="homeScheduleDesc">전시, 축제, 공연 정보를 모아 보여줘요</span>
-        <span class="home-promo-meta" id="homeScheduleMeta">현재 위치 기준</span>
-      </span>
-      <span class="home-promo-side">
-        <span class="home-promo-image-wrap" id="homeScheduleImageWrap">
-          <img class="home-promo-image" id="homeScheduleImage" alt="">
-          <span class="home-promo-fallback">문화<br>일정</span>
-        </span>
-        <span class="home-promo-cta" id="homeScheduleButton">일정 보기</span>
-      </span>
-    </button>
+    <div class="home-promo-section">
+      <div class="home-promo-head">
+        <div class="home-promo-head-copy">
+          <div class="home-promo-kicker" id="homeScheduleKicker">이번 주 주변 일정</div>
+          <div class="home-promo-head-title" id="homeScheduleTitle">가까운 문화·체육 일정을 추천해요</div>
+        </div>
+        <button class="home-promo-open" id="homeScheduleButton" type="button" onclick="openCultureSchedulePage()">일정 보기</button>
+      </div>
+      <div class="home-promo-track" id="homeScheduleTrack">
+        <button class="home-promo-card" type="button" onclick="openCultureSchedulePage()">
+          <span class="home-promo-copy">
+            <span class="home-promo-tagrow">
+              <span class="home-promo-tag">일정</span>
+              <span class="home-promo-distance">현재 위치 기준</span>
+            </span>
+            <span class="home-promo-title">주변에서 열리는 일정을 찾아볼게요</span>
+            <span class="home-promo-desc">축제, 전시, 공연, 체육행사를 한곳에서 확인해요</span>
+            <span class="home-promo-meta">일정 보기에서 전체 목록을 볼 수 있어요</span>
+          </span>
+          <span class="home-promo-side">
+            <span class="home-promo-image-wrap">
+              <span class="home-promo-fallback">주변<br>일정</span>
+            </span>
+            <span class="home-promo-cta">열기</span>
+          </span>
+        </button>
+      </div>
+      <div class="home-promo-dots" id="homeScheduleDots"></div>
+    </div>
 
     <div style="height:8px;"></div>
   </div>
@@ -1117,12 +1147,12 @@ if ('serviceWorker' in navigator) {
   <div class="settings-page schedule-page">
     <div class="settings-page-header">
       <button class="settings-back-btn" type="button" onclick="closeCultureSchedulePage()" aria-label="뒤로 가기">‹</button>
-      <div class="settings-title" id="cultureScheduleTitle">문화 일정</div>
+      <div class="settings-title" id="cultureScheduleTitle">주변 일정</div>
     </div>
     <div class="schedule-hero">
-      <div class="schedule-hero-kicker" id="cultureScheduleKicker">이번 주 문화생활</div>
+      <div class="schedule-hero-kicker" id="cultureScheduleKicker">이번 주 주변 일정</div>
       <div class="schedule-hero-title" id="cultureScheduleHeroTitle">주변에서 열리는 일정을 모아봤어요</div>
-      <div class="schedule-hero-desc" id="cultureScheduleHeroDesc">한국관광공사 행사 정보를 기준으로 가까운 일정과 진행 중인 문화생활을 보여줘요.</div>
+      <div class="schedule-hero-desc" id="cultureScheduleHeroDesc">한국관광공사와 대한체육회 데이터를 기준으로 가까운 일정과 진행 중인 행사를 보여줘요.</div>
     </div>
     <div class="schedule-list" id="cultureScheduleList"></div>
   </div>
@@ -1438,21 +1468,21 @@ const APP_COPY = {
     my: 'MY',
     edit: '편집',
     nearCultureSpots: '근처 문화 스팟',
-    schedule: '문화 일정',
-    scheduleBannerKicker: '이번 주 문화생활',
-    scheduleBannerTitle: '주변에서 열리는 일정을 찾아볼게요',
-    scheduleBannerDesc: '전시, 축제, 공연 정보를 모아 보여줘요',
+    schedule: '주변 일정',
+    scheduleBannerKicker: '이번 주 주변 일정',
+    scheduleBannerTitle: '가까운 문화·체육 일정을 추천해요',
+    scheduleBannerDesc: '축제, 전시, 공연, 체육행사를 한곳에서 확인해요',
     scheduleBannerMeta: '현재 위치 기준',
     scheduleBannerButton: '일정 보기',
-    scheduleBannerLoading: '주변 문화 일정을 찾는 중이에요',
+    scheduleBannerLoading: '주변 일정을 찾는 중이에요',
     scheduleHeroTitle: '주변에서 열리는 일정을 모아봤어요',
-    scheduleHeroDesc: '한국관광공사 행사 정보를 기준으로 가까운 일정과 진행 중인 문화생활을 보여줘요.',
-    scheduleLoading: '문화 일정을 불러오는 중이에요…',
+    scheduleHeroDesc: '한국관광공사와 대한체육회 데이터를 기준으로 가까운 일정과 진행 중인 행사를 보여줘요.',
+    scheduleLoading: '주변 일정을 불러오는 중이에요…',
     scheduleEmptyTitle: '아직 표시할 일정이 없어요',
     scheduleEmptyDesc: '주변 행사 정보가 없거나 잠시 후 다시 확인이 필요해요.',
     scheduleDetail: '상세 보기',
     scheduleMap: '지도에서 보기',
-    schedulePhotoFallback: '문화 일정',
+    schedulePhotoFallback: '주변 일정',
     refresh: '새로고침',
     distanceSort: '거리순',
     starsSort: '별점순',
@@ -1499,21 +1529,21 @@ const APP_COPY = {
     my: 'MY',
     edit: 'Edit',
     nearCultureSpots: 'Nearby Culture Spots',
-    schedule: 'Culture Schedule',
+    schedule: 'Nearby Schedule',
     scheduleBannerKicker: 'This Week',
-    scheduleBannerTitle: 'Find cultural events nearby',
-    scheduleBannerDesc: 'See festivals, exhibitions, and performances around you',
+    scheduleBannerTitle: 'Nearby culture and sports events',
+    scheduleBannerDesc: 'Find festivals, exhibitions, shows, and sports events in one place',
     scheduleBannerMeta: 'Based on your current location',
     scheduleBannerButton: 'View',
-    scheduleBannerLoading: 'Finding nearby cultural events',
-    scheduleHeroTitle: 'Cultural events around you',
-    scheduleHeroDesc: 'Nearby and ongoing events are shown from VisitKorea tourism data.',
-    scheduleLoading: 'Loading cultural events…',
+    scheduleBannerLoading: 'Finding nearby events',
+    scheduleHeroTitle: 'Events around you',
+    scheduleHeroDesc: 'Nearby and ongoing events are shown from VisitKorea and Korean sports data.',
+    scheduleLoading: 'Loading nearby events…',
     scheduleEmptyTitle: 'No events to show yet',
     scheduleEmptyDesc: 'There may be no nearby event data right now. Check again later.',
     scheduleDetail: 'Details',
     scheduleMap: 'View on map',
-    schedulePhotoFallback: 'Culture event',
+    schedulePhotoFallback: 'Nearby event',
     refresh: 'Refresh',
     recommend: 'Recommended',
     distanceSort: 'Distance',
@@ -1617,8 +1647,6 @@ function applyAppLanguage() {
   });
   setTextContent('homeScheduleKicker', t('scheduleBannerKicker'));
   setTextContent('homeScheduleTitle', t('scheduleBannerTitle'));
-  setTextContent('homeScheduleDesc', t('scheduleBannerDesc'));
-  setTextContent('homeScheduleMeta', t('scheduleBannerMeta'));
   setTextContent('homeScheduleButton', t('scheduleBannerButton'));
   setTextContent('cultureScheduleTitle', t('schedule'));
   setTextContent('cultureScheduleKicker', t('scheduleBannerKicker'));
@@ -5600,34 +5628,96 @@ function saveRecord() {
 }
 
 function renderHomeActions() {
+  const track = document.getElementById('homeScheduleTrack');
+  const dots = document.getElementById('homeScheduleDots');
   const titleEl = document.getElementById('homeScheduleTitle');
-  const descEl = document.getElementById('homeScheduleDesc');
-  const metaEl = document.getElementById('homeScheduleMeta');
-  const imageWrap = document.getElementById('homeScheduleImageWrap');
-  const imageEl = document.getElementById('homeScheduleImage');
-  const fallbackEl = imageWrap && imageWrap.querySelector('.home-promo-fallback');
-  const event = cultureScheduleItems[0];
-  if (event) {
-    if (titleEl) titleEl.textContent = event.title || t('scheduleBannerTitle');
-    if (descEl) descEl.textContent = formatScheduleEventMeta(event) || t('scheduleBannerDesc');
-    if (metaEl) metaEl.textContent = [formatScheduleDistance(event), event.source].filter(Boolean).join(' · ') || t('scheduleBannerMeta');
-    setScheduleImage(imageWrap, imageEl, event.image);
-    if (fallbackEl) fallbackEl.textContent = t('schedulePhotoFallback');
+  if (!track) return;
+  const homeItems = getHomeScheduleItems();
+  if (titleEl) titleEl.textContent = cultureScheduleLoading && !homeItems.length ? t('scheduleBannerLoading') : t('scheduleBannerTitle');
+  if (!homeItems.length) {
+    track.innerHTML = renderHomeScheduleFallbackCard();
+    if (dots) dots.innerHTML = '';
     return;
   }
-  if (titleEl) titleEl.textContent = cultureScheduleLoading ? t('scheduleBannerLoading') : t('scheduleBannerTitle');
-  if (descEl) descEl.textContent = t('scheduleBannerDesc');
-  if (metaEl) metaEl.textContent = t('scheduleBannerMeta');
-  setScheduleImage(imageWrap, imageEl, '');
-  if (fallbackEl) fallbackEl.textContent = t('schedulePhotoFallback');
+  track.innerHTML = homeItems.map((event, index) => renderHomeScheduleCard(event, index)).join('');
+  if (dots) dots.innerHTML = homeItems.map(() => '<span></span>').join('');
 }
 
-function setScheduleImage(wrap, image, src) {
-  const safeSrc = String(src || '').trim();
-  if (wrap) wrap.classList.toggle('has-image', !!safeSrc);
-  if (!image) return;
-  if (safeSrc) image.src = safeSrc;
-  else image.removeAttribute('src');
+function getHomeScheduleItems() {
+  const todayKey = getScheduleTodayKey();
+  const limitKey = getScheduleLimitKey(30);
+  const categoryCount = new Map();
+  return (Array.isArray(cultureScheduleItems) ? cultureScheduleItems : [])
+    .filter(event => {
+      if (!event || !event.title) return false;
+      const dist = Number(event.distFromMe);
+      if (!Number.isFinite(dist) || dist > 10) return false;
+      const startKey = getScheduleDateKey(event.startDate) || todayKey;
+      const endKey = getScheduleDateKey(event.endDate) || startKey;
+      return endKey >= todayKey && startKey <= limitKey;
+    })
+    .sort((a, b) => getHomeScheduleScore(b) - getHomeScheduleScore(a))
+    .filter(event => {
+      const category = getScheduleCategory(event);
+      const count = categoryCount.get(category) || 0;
+      if (count >= 2) return false;
+      categoryCount.set(category, count + 1);
+      return true;
+    })
+    .slice(0, 3);
+}
+
+function renderHomeScheduleFallbackCard() {
+  const title = cultureScheduleLoading ? t('scheduleBannerLoading') : t('scheduleBannerTitle');
+  return `
+    <button class="home-promo-card" type="button" onclick="openCultureSchedulePage()">
+      <span class="home-promo-copy">
+        <span class="home-promo-tagrow">
+          <span class="home-promo-tag">${escapeHtml(t('schedule'))}</span>
+          <span class="home-promo-distance">${escapeHtml(t('scheduleBannerMeta'))}</span>
+        </span>
+        <span class="home-promo-title">${escapeHtml(title)}</span>
+        <span class="home-promo-desc">${escapeHtml(t('scheduleBannerDesc'))}</span>
+        <span class="home-promo-meta">${escapeHtml(t('scheduleEmptyDesc'))}</span>
+      </span>
+      <span class="home-promo-side">
+        <span class="home-promo-image-wrap"><span class="home-promo-fallback">${escapeHtml(t('schedulePhotoFallback'))}</span></span>
+        <span class="home-promo-cta">${escapeHtml(t('scheduleBannerButton'))}</span>
+      </span>
+    </button>`;
+}
+
+function renderHomeScheduleCard(event, index) {
+  const image = String(event.image || '').trim();
+  return `
+    <button class="home-promo-card" type="button" onclick="openCultureSchedulePage()" data-index="${index}">
+      <span class="home-promo-copy">
+        <span class="home-promo-tagrow">
+          <span class="home-promo-tag">${escapeHtml(getScheduleCategory(event))}</span>
+          <span class="home-promo-distance">${escapeHtml(formatScheduleDistance(event) || t('scheduleBannerMeta'))}</span>
+        </span>
+        <span class="home-promo-title">${escapeHtml(event.title || t('scheduleBannerTitle'))}</span>
+        <span class="home-promo-desc">${escapeHtml(formatScheduleEventMeta(event) || t('scheduleBannerDesc'))}</span>
+        <span class="home-promo-meta">${escapeHtml([formatScheduleDateRange(event), event.source].filter(Boolean).join(' · '))}</span>
+      </span>
+      <span class="home-promo-side">
+        <span class="home-promo-image-wrap${image ? ' has-image' : ''}">
+          ${image ? `<img class="home-promo-image" src="${escapeHtml(image)}" alt="${escapeHtml(event.title || t('schedule'))}" loading="lazy">` : `<span class="home-promo-fallback">${escapeHtml(getScheduleCategory(event))}</span>`}
+        </span>
+        <span class="home-promo-cta">${escapeHtml(t('scheduleBannerButton'))}</span>
+      </span>
+    </button>`;
+}
+
+function getHomeScheduleScore(event) {
+  const dist = Number(event && event.distFromMe);
+  const distanceScore = !Number.isFinite(dist) ? 0 : dist <= 1 ? 45 : dist <= 3 ? 38 : dist <= 5 ? 30 : dist <= 10 ? 15 : 0;
+  const days = getScheduleDaysUntilStart(event);
+  const dateScore = days <= 0 ? 25 : days <= 3 ? 22 : days <= 7 ? 18 : days <= 14 ? 12 : days <= 30 ? 6 : 0;
+  const category = getScheduleCategory(event);
+  const categoryScore = category === '축제' || category === 'Festival' ? 15 : category === '전시' || category === 'Exhibition' ? 14 : category === '공연' || category === 'Performance' ? 12 : category === '체육' || category === 'Sports' ? 10 : 8;
+  const qualityScore = (event && event.image ? 4 : 0) + (event && event.place ? 2 : 0) + (event && event.link ? 2 : 0) + (event && event.source ? 2 : 0);
+  return distanceScore + dateScore + categoryScore + qualityScore;
 }
 
 function openCultureSchedulePage() {
@@ -5664,14 +5754,14 @@ async function loadCultureSchedule(options = {}) {
     const url = new URL(TOUR_EVENTS_URL, window.location.href);
     url.searchParams.set('lat', String(Number.isFinite(Number(S.lat)) ? S.lat : 37.5503));
     url.searchParams.set('lng', String(Number.isFinite(Number(S.lng)) ? S.lng : 126.92));
-    url.searchParams.set('radius', '12000');
-    url.searchParams.set('rows', '60');
+    url.searchParams.set('radius', '50000');
+    url.searchParams.set('rows', '100');
     url.searchParams.set('days', '60');
     url.searchParams.set('lang', appLanguage);
     const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error('Tour event API failed');
     const data = await response.json();
-    cultureScheduleItems = Array.isArray(data && data.events) ? data.events.filter(event => event && event.title).slice(0, 20) : [];
+    cultureScheduleItems = Array.isArray(data && data.events) ? data.events.filter(event => event && event.title).slice(0, 60) : [];
     cultureScheduleLoadedAt = Date.now();
   } catch (error) {
     console.warn('Tour event schedule unavailable', error);
@@ -5708,7 +5798,10 @@ function renderCultureScheduleCard(event, index) {
     <div class="schedule-card">
       <div class="schedule-card-photo">${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(event.title || t('schedule'))}" loading="lazy">` : escapeHtml(t('schedulePhotoFallback'))}</div>
       <div class="schedule-card-body">
-        <div class="schedule-date">${escapeHtml(formatScheduleDateRange(event))}</div>
+        <div class="schedule-topline">
+          <div class="schedule-category">${escapeHtml(getScheduleCategory(event))}</div>
+          <div class="schedule-date">${escapeHtml(formatScheduleDateRange(event))}</div>
+        </div>
         <div class="schedule-name">${escapeHtml(event.title || t('schedule'))}</div>
         <div class="schedule-place">${escapeHtml([event.place, formatScheduleDistance(event)].filter(Boolean).join(' · ') || t('scheduleBannerMeta'))}</div>
         <div class="${actionsClass}">
@@ -5747,6 +5840,51 @@ function formatScheduleDateRange(event) {
   const end = formatScheduleDate(event && event.endDate);
   if (start && end && start !== end) return `${start} - ${end}`;
   return start || end || t('scheduleBannerKicker');
+}
+
+function getScheduleCategory(event) {
+  const category = String(event && event.category || '').trim();
+  if (category) return category;
+  const type = String(event && event.type || '').toLowerCase();
+  if (type === 'sports') return appLanguage === 'en' ? 'Sports' : '체육';
+  if (type === 'festival') return appLanguage === 'en' ? 'Festival' : '축제';
+  return t('schedule');
+}
+
+function getScheduleTodayKey() {
+  return Number(formatScheduleDateKey(new Date()));
+}
+
+function getScheduleLimitKey(days) {
+  return Number(formatScheduleDateKey(new Date(Date.now() + Math.max(0, Number(days) || 0) * 86400000)));
+}
+
+function getScheduleDateKey(value) {
+  const raw = String(value || '').replace(/[^\d]/g, '').slice(0, 8);
+  return raw.length === 8 ? Number(raw) : 0;
+}
+
+function getScheduleDaysUntilStart(event) {
+  const startKey = getScheduleDateKey(event && event.startDate);
+  if (!startKey) return 0;
+  const start = parseScheduleDateKey(startKey);
+  const today = parseScheduleDateKey(getScheduleTodayKey());
+  if (!start || !today) return 0;
+  return Math.round((start.getTime() - today.getTime()) / 86400000);
+}
+
+function parseScheduleDateKey(key) {
+  const raw = String(key || '').replace(/[^\d]/g, '').padStart(8, '0').slice(0, 8);
+  if (raw.length !== 8) return null;
+  const date = new Date(Number(raw.slice(0, 4)), Number(raw.slice(4, 6)) - 1, Number(raw.slice(6, 8)));
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatScheduleDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}${month}${day}`;
 }
 
 function formatScheduleDate(value) {
