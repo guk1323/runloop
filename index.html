@@ -103,6 +103,7 @@ if ('serviceWorker' in navigator) {
   .map-place-photo-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gray-600);font-size:12px;font-weight:900;text-align:center;}
   .map-place-visited-badge,.culture-spot-visited-badge,.spot-visited-badge{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:999px;background:rgba(28,36,43,.86);color:#fff;border:1px solid rgba(255,255,255,.8);box-shadow:0 6px 14px rgba(28,36,43,.18);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:900;line-height:1;}
   .map-place-visited-badge{display:none;}
+  .map-place-photo-frame .map-place-visited-badge,.culture-spot-photo .culture-spot-visited-badge{left:8px;right:auto;}
   .map-place-copy{min-width:0;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
   .map-place-desc{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;}
   .map-place-meta-chip{height:28px;display:inline-flex;align-items:center;max-width:100%;border-radius:999px;background:#fff;border:1px solid var(--gray-100);color:var(--gray-700);font-size:12px;font-weight:900;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;}
@@ -321,6 +322,24 @@ if ('serviceWorker' in navigator) {
   .mc-btn-edit{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
   .mc-fav{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;border:1px solid var(--gray-100);background:rgba(255,255,255,.9);color:var(--gray-300);font-size:18px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(39,49,58,.06);}
   .mc-fav.active{background:var(--amber-light);border-color:#E8D6B4;color:var(--amber);}
+  .map-place-heart{display:none;}
+  .map-place-heart.visible{display:flex;}
+  .interest-header{padding:14px 16px 10px;background:#fff;border-bottom:1px solid var(--gray-100);flex-shrink:0;}
+  .interest-header-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:10px;}
+  .interest-title{display:flex;align-items:center;gap:7px;font-size:16px;font-weight:900;color:var(--gray-900);}
+  .interest-title-icon{font-size:18px;color:var(--coral);}
+  .interest-count{font-size:12px;color:var(--gray-500);font-weight:800;white-space:nowrap;}
+  .interest-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;}
+  .interest-tab{height:34px;border-radius:999px;border:1px solid var(--gray-100);background:#fff;color:var(--gray-500);font-size:12px;font-weight:900;font-family:inherit;cursor:pointer;}
+  .interest-tab.active{background:var(--ink);border-color:var(--ink);color:#fff;}
+  .saved-schedule-card{cursor:pointer;}
+  .visited-spot-card{cursor:default;}
+  .saved-schedule-top{display:grid;grid-template-columns:minmax(0,1fr) 34px;gap:10px;align-items:start;}
+  .saved-schedule-heart{position:static;width:34px;height:34px;}
+  .saved-schedule-date{width:max-content;max-width:100%;height:26px;border-radius:999px;background:var(--coral-light);border:1px solid rgba(242,122,94,.18);color:var(--coral-dark);font-size:11px;font-weight:950;padding:0 9px;display:flex;align-items:center;margin-bottom:8px;white-space:nowrap;}
+  .saved-schedule-title{font-size:15px;font-weight:900;color:var(--ink);line-height:1.32;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .saved-schedule-meta{font-size:12px;font-weight:800;color:var(--gray-500);line-height:1.4;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .visited-spot-card .mc-card-top{padding-right:0;}
   .mc-btn-delete{background:#fff;color:var(--red);border-color:var(--red-light);}
   .course-filter{display:flex;gap:6px;padding:10px 12px 0;background:#fff;flex-shrink:0;}
   .course-filter button{height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--gray-100);background:#fff;color:var(--gray-500);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;}
@@ -372,13 +391,12 @@ if ('serviceWorker' in navigator) {
   .home-promo-card::after{content:'';position:absolute;right:-32px;bottom:-34px;width:112px;height:112px;border-radius:50%;background:rgba(242,122,94,.08);pointer-events:none;}
   .home-promo-copy{min-width:0;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1;}
   .home-promo-tagrow{display:flex;align-items:center;gap:6px;margin-bottom:8px;min-width:0;}
-  .home-promo-tag{height:24px;border-radius:999px;background:var(--coral-light);border:1px solid rgba(242,122,94,.18);color:var(--coral-dark);font-size:11px;font-weight:950;padding:0 8px;display:flex;align-items:center;white-space:nowrap;}
   .home-promo-distance{height:24px;border-radius:999px;background:#fff;border:1px solid var(--gray-100);color:var(--gray-700);font-size:11px;font-weight:950;padding:0 8px;display:flex;align-items:center;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis;}
   .home-promo-title{font-size:18px;font-weight:950;color:var(--ink);line-height:1.28;margin-bottom:7px;word-break:keep-all;}
   .home-promo-desc{font-size:12px;font-weight:800;color:var(--gray-600);line-height:1.45;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
   .home-promo-meta{margin-top:10px;font-size:11px;font-weight:900;color:var(--gray-500);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .home-promo-side{min-width:0;display:flex;flex-direction:column;gap:8px;position:relative;z-index:1;}
-  .home-promo-image-wrap{width:100%;aspect-ratio:1/1;border-radius:14px;background:linear-gradient(135deg,#1C242B 0%,#3A4650 64%,#F27A5E 150%);border:1px solid rgba(28,36,43,.08);overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:950;letter-spacing:0;}
+  .home-promo-image-wrap{position:relative;width:100%;aspect-ratio:1/1;border-radius:14px;background:linear-gradient(135deg,#1C242B 0%,#3A4650 64%,#F27A5E 150%);border:1px solid rgba(28,36,43,.08);overflow:hidden;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:950;letter-spacing:0;}
   .home-promo-image-wrap.has-image{background:var(--gray-50);}
   .home-promo-image{display:none;width:100%;height:100%;object-fit:cover;}
   .home-promo-image-wrap.has-image .home-promo-image{display:block;}
@@ -388,6 +406,18 @@ if ('serviceWorker' in navigator) {
   .home-promo-dots{display:flex;justify-content:center;gap:5px;margin-top:8px;}
   .home-promo-dots span{width:5px;height:5px;border-radius:999px;background:var(--gray-300);}
   .home-promo-dots span.active{width:14px;background:var(--coral);}
+  .home-sports-block{margin-top:14px;padding-top:13px;border-top:1px solid var(--gray-100);}
+  .home-sports-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
+  .home-sports-title{font-size:13px;font-weight:950;color:var(--ink);}
+  .home-sports-open{height:28px;border:none;background:transparent;color:var(--coral-dark);font-size:11px;font-weight:950;font-family:inherit;cursor:pointer;white-space:nowrap;}
+  .home-sports-list{display:flex;flex-direction:column;gap:7px;}
+  .home-sports-item{width:100%;border:1px solid var(--gray-100);background:#fff;border-radius:12px;padding:10px 11px;text-align:left;font-family:inherit;color:inherit;cursor:pointer;display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;}
+  .home-sports-name{display:block;font-size:13px;font-weight:950;color:var(--ink);line-height:1.28;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .home-sports-meta{margin-top:4px;font-size:11px;font-weight:800;color:var(--gray-500);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .home-sports-side{display:flex;align-items:center;justify-content:flex-end;gap:8px;min-width:0;}
+  .home-sports-date{font-size:11px;font-weight:950;color:var(--coral-dark);white-space:nowrap;}
+  .home-sports-heart{position:static;width:30px;height:30px;flex-shrink:0;}
+  .home-sports-empty{border:1px dashed var(--gray-200);border-radius:12px;padding:12px;color:var(--gray-500);font-size:12px;font-weight:800;text-align:center;background:var(--gray-50);}
   .near-course-card{background:rgba(255,255,255,.82);border-color:rgba(28,36,43,.07);box-shadow:0 8px 20px rgba(28,36,43,.045);}
   .save-course-btn{background:var(--ink);color:#fff;border:none;border-radius:var(--rp);padding:5px 11px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
   .save-course-btn:hover{background:#111820;}
@@ -451,16 +481,29 @@ if ('serviceWorker' in navigator) {
   .schedule-hero-title{font-size:20px;font-weight:950;line-height:1.28;margin-bottom:7px;word-break:keep-all;}
   .schedule-hero-desc{font-size:12px;font-weight:800;line-height:1.5;color:rgba(255,255,255,.72);}
   .schedule-list{display:flex;flex-direction:column;gap:10px;}
+  .schedule-section{display:flex;flex-direction:column;gap:10px;}
+  .schedule-section + .schedule-section{margin-top:6px;}
+  .schedule-section-head{display:flex;align-items:baseline;justify-content:space-between;gap:10px;padding:2px 2px 0;}
+  .schedule-section-title{font-size:14px;font-weight:950;color:var(--ink);}
+  .schedule-section-count{font-size:11px;font-weight:900;color:var(--gray-500);}
   .schedule-card{background:#fff;border:1px solid rgba(28,36,43,.08);border-radius:16px;padding:12px;box-shadow:0 10px 24px rgba(28,36,43,.045);display:grid;grid-template-columns:94px minmax(0,1fr);gap:12px;}
-  .schedule-card-photo{width:94px;aspect-ratio:1/1;border-radius:14px;background:var(--gray-50);border:1px solid var(--gray-100);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--gray-500);font-size:11px;font-weight:900;text-align:center;line-height:1.35;}
+  .schedule-card.text-only{display:block;padding:13px 14px;cursor:pointer;}
+  .schedule-card-photo{position:relative;width:94px;aspect-ratio:1/1;border-radius:14px;background:var(--gray-50);border:1px solid var(--gray-100);overflow:hidden;display:flex;align-items:center;justify-content:center;color:var(--gray-500);font-size:11px;font-weight:900;text-align:center;line-height:1.35;}
+  .schedule-card-photo.clickable{cursor:pointer;}
   .schedule-card-photo img{width:100%;height:100%;object-fit:cover;display:block;}
   .schedule-card-body{min-width:0;display:flex;flex-direction:column;}
   .schedule-topline{display:flex;align-items:center;gap:6px;margin-bottom:7px;min-width:0;}
-  .schedule-category{height:26px;border-radius:999px;background:#fff;border:1px solid var(--gray-100);color:var(--gray-700);font-size:11px;font-weight:950;padding:0 9px;display:flex;align-items:center;white-space:nowrap;}
   .schedule-date{width:max-content;max-width:100%;height:26px;border-radius:999px;background:var(--coral-light);border:1px solid rgba(242,122,94,.18);color:var(--coral-dark);font-size:11px;font-weight:950;padding:0 9px;display:flex;align-items:center;margin-bottom:7px;white-space:nowrap;}
   .schedule-topline .schedule-date{margin-bottom:0;min-width:0;overflow:hidden;text-overflow:ellipsis;}
   .schedule-name{font-size:15px;font-weight:950;color:var(--ink);line-height:1.32;margin-bottom:5px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .schedule-card.text-only .schedule-name{font-size:15px;margin-bottom:6px;-webkit-line-clamp:3;}
   .schedule-place{font-size:12px;font-weight:800;color:var(--gray-500);line-height:1.38;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:10px;}
+  .schedule-card.text-only .schedule-place{margin-bottom:0;}
+  .schedule-source{margin-top:8px;font-size:11px;font-weight:800;color:var(--gray-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .schedule-text-row{display:grid;grid-template-columns:minmax(0,1fr) 32px;gap:10px;align-items:start;}
+  .schedule-text-row-main{min-width:0;}
+  .schedule-heart{z-index:3;}
+  .text-schedule-heart{position:static;width:32px;height:32px;}
   .schedule-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:auto;}
   .schedule-actions.single{grid-template-columns:1fr;}
   .schedule-actions button{height:34px;border-radius:11px;font-size:12px;font-weight:950;font-family:inherit;cursor:pointer;}
@@ -550,7 +593,7 @@ if ('serviceWorker' in navigator) {
   .culture-spot-pill{height:24px;display:inline-flex;align-items:center;border-radius:999px;background:var(--gray-50);border:1px solid var(--gray-100);padding:0 8px;font-size:11px;font-weight:800;color:var(--gray-600);white-space:nowrap;}
   .culture-spot-pill.stars{color:var(--coral);background:var(--coral-light);border-color:rgba(242,122,94,.18);letter-spacing:0;}
   .culture-spot-pill.visited{color:var(--ink);background:#EEF8EA;border-color:#DDECCF;}
-  .culture-spot-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;padding-top:10px;border-top:1px solid var(--gray-100);}
+  .culture-spot-actions{display:grid;grid-template-columns:1fr;gap:8px;padding-top:10px;border-top:1px solid var(--gray-100);}
   .culture-spot-actions button{height:42px;border-radius:var(--rs);font-size:13px;font-weight:900;padding:0 8px;cursor:pointer;font-family:inherit;white-space:nowrap;}
   .culture-spot-save-btn{background:#fff;color:var(--coral);border:1px solid rgba(242,122,94,.28);}
   .culture-spot-save-btn.active{background:var(--coral-light);color:var(--ink);}
@@ -803,7 +846,7 @@ if ('serviceWorker' in navigator) {
 
 <div class="tabs">
   <button class="tab active" data-tab="home" onclick="switchTab('home',this)"><span class="tab-icon">⌂</span><span>홈</span></button>
-  <button class="tab" data-tab="mycourse" onclick="switchTab('mycourse',this)"><span class="tab-icon">⌁</span><span>스팟</span></button>
+  <button class="tab" data-tab="mycourse" onclick="switchTab('mycourse',this)"><span class="tab-icon">♥</span><span>관심</span></button>
   <button class="tab" data-tab="create" onclick="switchTab('create',this)"><span class="tab-icon">◎</span><span>지도</span></button>
   <button class="tab" data-tab="social" onclick="switchTab('social',this)"><span class="tab-icon">♡</span><span>소셜</span></button>
   <button class="tab" data-tab="mypage" onclick="switchTab('mypage',this)"><span class="tab-icon">●</span><span>MY</span></button>
@@ -857,18 +900,17 @@ if ('serviceWorker' in navigator) {
       <div class="home-promo-head">
         <div class="home-promo-head-copy">
           <div class="home-promo-kicker" id="homeScheduleKicker">이번 주 주변 일정</div>
-          <div class="home-promo-head-title" id="homeScheduleTitle">가까운 문화·체육 일정을 추천해요</div>
+          <div class="home-promo-head-title" id="homeScheduleTitle">가까운 축제 일정을 추천해요</div>
         </div>
       </div>
       <div class="home-promo-track" id="homeScheduleTrack">
         <button class="home-promo-card" type="button" onclick="openCultureSchedulePage()">
           <span class="home-promo-copy">
             <span class="home-promo-tagrow">
-              <span class="home-promo-tag">일정</span>
               <span class="home-promo-distance">현재 위치 기준</span>
             </span>
             <span class="home-promo-title">주변에서 열리는 일정을 찾아볼게요</span>
-            <span class="home-promo-desc">축제, 전시, 공연, 체육행사를 한곳에서 확인해요</span>
+            <span class="home-promo-desc">가까운 축제와 문화 일정을 확인해요</span>
             <span class="home-promo-meta">일정 보기에서 전체 목록을 볼 수 있어요</span>
           </span>
           <span class="home-promo-side">
@@ -880,6 +922,13 @@ if ('serviceWorker' in navigator) {
         </button>
       </div>
       <div class="home-promo-dots" id="homeScheduleDots"></div>
+      <div class="home-sports-block">
+        <div class="home-sports-head">
+          <div class="home-sports-title" id="homeSportsTitle">가까운 체육 일정</div>
+          <button class="home-sports-open" type="button" onclick="openCultureSchedulePage()" id="homeSportsOpen">전체 일정</button>
+        </div>
+        <div class="home-sports-list" id="homeSportsList"></div>
+      </div>
     </div>
 
     <div style="height:8px;"></div>
@@ -945,6 +994,7 @@ if ('serviceWorker' in navigator) {
           <img class="map-place-image" id="aiPlaceImage" alt="">
           <div class="map-place-photo-empty" id="aiPlaceImageFallback">사진 준비중</div>
           <div class="map-place-visited-badge" id="aiPlaceVisitedBadge" aria-label="방문함">✓</div>
+          <button class="mc-fav map-place-heart" id="aiPlaceSaveHeartBtn" type="button" onclick="savePendingCultureSpotFavorite(event)" aria-label="관심 장소 저장">♥</button>
         </div>
         <div class="map-place-copy">
           <div class="map-place-desc" id="aiPlaceDesc"></div>
@@ -1003,11 +1053,18 @@ if ('serviceWorker' in navigator) {
 </div>
 
 
-<!-- 저장 스팟 화면 -->
+<!-- 관심 화면 -->
 <div id="screen-mycourse" class="screen">
-  <div style="padding:14px 16px 10px;background:#fff;border-bottom:1px solid var(--gray-100);flex-shrink:0;display:flex;justify-content:space-between;align-items:center;">
-    <div id="mySavedSpotTitle" style="font-size:15px;font-weight:700;color:var(--gray-900);">가고 싶은 문화스팟</div>
-    <div style="font-size:12px;color:var(--gray-500);" id="myCourseCount">0개</div>
+  <div class="interest-header">
+    <div class="interest-header-top">
+      <div class="interest-title" id="mySavedSpotTitle"><span class="interest-title-icon">♥</span><span>관심</span></div>
+      <div class="interest-count" id="myCourseCount">0개</div>
+    </div>
+    <div class="interest-tabs" role="tablist" aria-label="관심 목록">
+      <button class="interest-tab active" id="interestPlacesTab" type="button" onclick="setInterestTab('places')">장소</button>
+      <button class="interest-tab" id="interestSchedulesTab" type="button" onclick="setInterestTab('schedules')">일정</button>
+      <button class="interest-tab" id="interestVisitedTab" type="button" onclick="setInterestTab('visited')">방문함</button>
+    </div>
   </div>
   <div style="flex:1;overflow-y:auto;padding:12px;" id="myCourseList">
     <div id="myCourseEmpty" style="text-align:center;padding:48px 0;color:var(--gray-500);">
@@ -1461,19 +1518,24 @@ let appLanguage = localStorage.getItem(APP_LANGUAGE_KEY) === 'en' ? 'en' : 'ko';
 const APP_COPY = {
   ko: {
     home: '홈',
-    spots: '스팟',
+    spots: '관심',
     map: '지도',
     social: '소셜',
     my: 'MY',
     edit: '편집',
     nearCultureSpots: '근처 문화 스팟',
     schedule: '주변 일정',
-    scheduleBannerKicker: '이번 주 주변 일정',
-    scheduleBannerTitle: '가까운 문화·체육 일정을 추천해요',
-    scheduleBannerDesc: '축제, 전시, 공연, 체육행사를 한곳에서 확인해요',
+    scheduleBannerKicker: '이번 주 주변 문화 일정',
+    scheduleBannerTitle: '가까운 축제 일정을 추천해요',
+    scheduleBannerDesc: '가까운 축제와 문화 일정을 확인해요',
     scheduleBannerMeta: '현재 위치 기준',
     scheduleBannerButton: '일정 보기',
     scheduleBannerLoading: '주변 일정을 찾는 중이에요',
+    homeSportsTitle: '가까운 체육 일정',
+    homeSportsOpen: '전체 일정',
+    homeSportsEmpty: '표시할 체육 일정이 아직 없어요',
+    scheduleCultureSection: '문화·축제 일정',
+    scheduleSportsSection: '체육 일정',
     scheduleHeroTitle: '주변에서 열리는 일정을 모아봤어요',
     scheduleHeroDesc: '한국관광공사와 대한체육회 데이터를 기준으로 가까운 일정과 진행 중인 행사를 보여줘요.',
     scheduleLoading: '주변 일정을 불러오는 중이에요…',
@@ -1496,9 +1558,20 @@ const APP_COPY = {
     route: '경로',
     save: '저장',
     saved: '저장됨',
+    favorite: '관심',
+    favoriteAdd: '관심 저장',
+    favoriteRemove: '관심 해제',
+    savedScheduleTitle: '저장한 일정',
+    savedScheduleEmptyTitle: '저장한 일정이 없어요',
+    savedScheduleEmptyDesc: '축제 사진이나 체육 일정의 하트를 눌러 저장해보세요',
+    visitedSpotEmptyTitle: '방문한 장소가 없어요',
+    visitedSpotEmptyDesc: '문화스팟 근처 100m 안에 도착하면 방문함에 기록돼요',
+    interestPlaces: '장소',
+    interestSchedules: '일정',
+    interestVisited: '방문함',
     visited: '방문 기록',
     visitedDone: '방문 기록됨',
-    savedSpotTitle: '가고 싶은 문화스팟',
+    savedSpotTitle: '관심',
     savedSpotEmptyTitle: '저장한 문화스팟이 없어요',
     savedSpotEmptyDesc: '홈이나 지도에서 가고 싶은 스팟을 저장해보세요',
     appSettings: '앱 설정',
@@ -1522,19 +1595,24 @@ const APP_COPY = {
   },
   en: {
     home: 'Home',
-    spots: 'Spots',
+    spots: 'Saved',
     map: 'Map',
     social: 'Social',
     my: 'MY',
     edit: 'Edit',
     nearCultureSpots: 'Nearby Culture Spots',
     schedule: 'Nearby Schedule',
-    scheduleBannerKicker: 'This Week',
-    scheduleBannerTitle: 'Nearby culture and sports events',
-    scheduleBannerDesc: 'Find festivals, exhibitions, shows, and sports events in one place',
+    scheduleBannerKicker: 'Nearby Culture This Week',
+    scheduleBannerTitle: 'Nearby festivals for you',
+    scheduleBannerDesc: 'Find nearby festivals and culture events',
     scheduleBannerMeta: 'Based on your current location',
     scheduleBannerButton: 'View',
     scheduleBannerLoading: 'Finding nearby events',
+    homeSportsTitle: 'Nearby sports events',
+    homeSportsOpen: 'All events',
+    homeSportsEmpty: 'No sports events to show yet',
+    scheduleCultureSection: 'Culture and Festivals',
+    scheduleSportsSection: 'Sports Events',
     scheduleHeroTitle: 'Events around you',
     scheduleHeroDesc: 'Nearby and ongoing events are shown from VisitKorea and Korean sports data.',
     scheduleLoading: 'Loading nearby events…',
@@ -1558,9 +1636,20 @@ const APP_COPY = {
     route: 'Route',
     save: 'Save',
     saved: 'Saved',
+    favorite: 'Saved',
+    favoriteAdd: 'Save',
+    favoriteRemove: 'Remove',
+    savedScheduleTitle: 'Saved Events',
+    savedScheduleEmptyTitle: 'No saved events',
+    savedScheduleEmptyDesc: 'Tap the heart on a festival photo or sports event to save it',
+    visitedSpotEmptyTitle: 'No visited places',
+    visitedSpotEmptyDesc: 'Places are marked visited when you arrive within 100 m',
+    interestPlaces: 'Places',
+    interestSchedules: 'Events',
+    interestVisited: 'Visited',
     visited: 'Visited',
     visitedDone: 'Visited',
-    savedSpotTitle: 'Saved Culture Spots',
+    savedSpotTitle: 'Saved',
     savedSpotEmptyTitle: 'No saved culture spots',
     savedSpotEmptyDesc: 'Save places you want to visit from Home or Map',
     appSettings: 'App Settings',
@@ -1612,6 +1701,14 @@ function t(key) {
   return (APP_COPY[appLanguage] && APP_COPY[appLanguage][key]) || APP_COPY.ko[key] || key;
 }
 
+function updateInterestStaticLabels() {
+  const title = document.getElementById('mySavedSpotTitle');
+  if (title) title.innerHTML = `<span class="interest-title-icon">♥</span><span>${escapeHtml(t('savedSpotTitle'))}</span>`;
+  setTextContent('interestPlacesTab', t('interestPlaces'));
+  setTextContent('interestSchedulesTab', t('interestSchedules'));
+  setTextContent('interestVisitedTab', t('interestVisited'));
+}
+
 function setAppLanguage(lang) {
   const next = lang === 'en' ? 'en' : 'ko';
   if (appLanguage === next) {
@@ -1647,6 +1744,8 @@ function applyAppLanguage() {
   });
   setTextContent('homeScheduleKicker', t('scheduleBannerKicker'));
   setTextContent('homeScheduleTitle', t('scheduleBannerTitle'));
+  setTextContent('homeSportsTitle', t('homeSportsTitle'));
+  setTextContent('homeSportsOpen', t('homeSportsOpen'));
   setTextContent('cultureScheduleTitle', t('schedule'));
   setTextContent('cultureScheduleKicker', t('scheduleBannerKicker'));
   setTextContent('cultureScheduleHeroTitle', t('scheduleHeroTitle'));
@@ -1656,7 +1755,7 @@ function applyAppLanguage() {
   setTextContent('aiSearchStartBtn', t('startPoint'));
   setTextContent('aiSearchDestBtn', t('destination'));
   setTextContent('aiSameDestBtn', t('roundTrip'));
-  setTextContent('mySavedSpotTitle', t('savedSpotTitle'));
+  updateInterestStaticLabels();
   setTextContent('appSettingsTitle', t('appSettings'));
   setTextContent('appLanguageLabel', t('language'));
   setTextContent('settingsGoalLabel', t('dailyGoal'));
@@ -3990,6 +4089,7 @@ const CULTURE_SPOT_SEARCH_RADIUS_METERS = 10000;
 const CULTURE_SPOT_VISIT_RADIUS_METERS = 100;
 const CULTURE_SPOT_VISITS_KEY = 'runloopCultureSpotVisitsV1';
 const CULTURE_SPOT_FAVORITES_KEY = 'runloopCultureSpotFavoritesV1';
+const SCHEDULE_FAVORITES_KEY = 'runloopScheduleFavoritesV1';
 const CULTURE_SPOT_PHOTO_CACHE_KEY = 'runloopCultureSpotPhotoCacheV3';
 const CULTURE_SPOT_PHOTO_CACHE_MS = 7 * 24 * 60 * 60 * 1000;
 const CULTURE_SPOT_MIN_VALUE_STARS = 2;
@@ -5641,19 +5741,21 @@ function renderHomeActions() {
     track.innerHTML = renderHomeScheduleFallbackCard();
     clearHomeScheduleCarousel();
     if (dots) dots.innerHTML = '';
+    renderHomeSportsList();
     return;
   }
   track.innerHTML = homeItems.map((event, index) => renderHomeScheduleCard(event, index)).join('');
   setupHomeScheduleCarousel(homeItems.length);
+  renderHomeSportsList();
 }
 
 function getHomeScheduleItems() {
   const todayKey = getScheduleTodayKey();
   const limitKey = getScheduleLimitKey(30);
-  const categoryCount = new Map();
   return (Array.isArray(cultureScheduleItems) ? cultureScheduleItems : [])
     .filter(event => {
       if (!event || !event.title) return false;
+      if (isSportsScheduleEvent(event)) return false;
       const dist = getScheduleDistanceValue(event);
       if (dist === null || dist > 10) return false;
       const startKey = getScheduleDateKey(event.startDate) || todayKey;
@@ -5661,23 +5763,67 @@ function getHomeScheduleItems() {
       return endKey >= todayKey && startKey <= limitKey;
     })
     .sort((a, b) => getHomeScheduleScore(b) - getHomeScheduleScore(a))
-    .filter(event => {
-      const category = getScheduleCategory(event);
-      const count = categoryCount.get(category) || 0;
-      if (count >= 2) return false;
-      categoryCount.set(category, count + 1);
-      return true;
-    })
     .slice(0, 3);
+}
+
+function renderHomeSportsList() {
+  const list = document.getElementById('homeSportsList');
+  if (!list) return;
+  const items = getHomeSportsScheduleItems();
+  if (!items.length) {
+    list.innerHTML = `<div class="home-sports-empty">${escapeHtml(cultureScheduleLoading ? t('scheduleBannerLoading') : t('homeSportsEmpty'))}</div>`;
+    return;
+  }
+  list.innerHTML = items.map(({ event, index }) => renderHomeSportsItem(event, index)).join('');
+}
+
+function getHomeSportsScheduleItems() {
+  const todayKey = getScheduleTodayKey();
+  const limitKey = getScheduleLimitKey(60);
+  return (Array.isArray(cultureScheduleItems) ? cultureScheduleItems : [])
+    .map((event, index) => ({ event, index }))
+    .filter(({ event }) => {
+      if (!event || !event.title || !isSportsScheduleEvent(event)) return false;
+      const startKey = getScheduleDateKey(event.startDate) || todayKey;
+      const endKey = getScheduleDateKey(event.endDate) || startKey;
+      return endKey >= todayKey && startKey <= limitKey;
+    })
+    .sort(sortHomeSportsScheduleEntries)
+    .slice(0, 3);
+}
+
+function sortHomeSportsScheduleEntries(a, b) {
+  const aDist = getScheduleDistanceValue(a.event);
+  const bDist = getScheduleDistanceValue(b.event);
+  if (aDist !== null && bDist !== null && Math.abs(aDist - bDist) > 0.05) return aDist - bDist;
+  if (aDist !== null && bDist === null) return -1;
+  if (aDist === null && bDist !== null) return 1;
+  return getScheduleSortDate(a.event).localeCompare(getScheduleSortDate(b.event));
+}
+
+function renderHomeSportsItem(event, index) {
+  const date = formatScheduleDateRange(event);
+  const distance = formatApproxScheduleDistance(event);
+  const meta = [event.place, distance].filter(Boolean).join(' · ') || t('scheduleBannerMeta');
+  return `
+    <div class="home-sports-item" role="button" tabindex="0" onclick="openCultureSchedulePage()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCultureSchedulePage();}" data-index="${index}">
+      <span style="min-width:0;">
+        <span class="home-sports-name">${escapeHtml(event.title || t('schedule'))}</span>
+        <span class="home-sports-meta">${escapeHtml(meta)}</span>
+      </span>
+      <span class="home-sports-side">
+        <span class="home-sports-date">${escapeHtml(date)}</span>
+        ${renderScheduleHeartButton(event, index, 'home-sports-heart')}
+      </span>
+    </div>`;
 }
 
 function renderHomeScheduleFallbackCard() {
   const title = cultureScheduleLoading ? t('scheduleBannerLoading') : t('scheduleBannerTitle');
   return `
-    <button class="home-promo-card" type="button" onclick="openCultureSchedulePage()">
+    <div class="home-promo-card" role="button" tabindex="0" onclick="openCultureSchedulePage()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCultureSchedulePage();}">
       <span class="home-promo-copy">
         <span class="home-promo-tagrow">
-          <span class="home-promo-tag">${escapeHtml(t('schedule'))}</span>
           <span class="home-promo-distance">${escapeHtml(t('scheduleBannerMeta'))}</span>
         </span>
         <span class="home-promo-title">${escapeHtml(title)}</span>
@@ -5688,29 +5834,33 @@ function renderHomeScheduleFallbackCard() {
         <span class="home-promo-image-wrap"><span class="home-promo-fallback">${escapeHtml(t('schedulePhotoFallback'))}</span></span>
         <span class="home-promo-cta">${escapeHtml(t('scheduleBannerButton'))}</span>
       </span>
-    </button>`;
+    </div>`;
 }
 
 function renderHomeScheduleCard(event, index) {
   const image = String(event.image || '').trim();
+  const date = formatHomeScheduleDateRange(event);
+  const distance = formatScheduleDistance(event);
+  const scheduleIndex = getScheduleItemIndex(event);
   return `
-    <button class="home-promo-card" type="button" onclick="openCultureSchedulePage()" data-index="${index}">
+    <div class="home-promo-card" role="button" tabindex="0" onclick="openCultureSchedulePage()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCultureSchedulePage();}" data-index="${index}">
       <span class="home-promo-copy">
         <span class="home-promo-tagrow">
-          <span class="home-promo-tag">${escapeHtml(getScheduleCategory(event))}</span>
-          <span class="home-promo-distance">${escapeHtml(formatScheduleDistance(event) || t('scheduleBannerMeta'))}</span>
+          ${date ? `<span class="home-promo-distance">${escapeHtml(date)}</span>` : ''}
+          ${distance ? `<span class="home-promo-distance">${escapeHtml(distance)}</span>` : ''}
         </span>
         <span class="home-promo-title">${escapeHtml(event.title || t('scheduleBannerTitle'))}</span>
-        <span class="home-promo-desc">${escapeHtml(formatHomeScheduleDescription(event) || t('scheduleBannerDesc'))}</span>
-        <span class="home-promo-meta">${escapeHtml([formatHomeScheduleDateRange(event), event.source].filter(Boolean).join(' · '))}</span>
+        <span class="home-promo-desc">${escapeHtml(event.place || t('scheduleBannerDesc'))}</span>
+        <span class="home-promo-meta">${escapeHtml(event.source || t('scheduleBannerMeta'))}</span>
       </span>
       <span class="home-promo-side">
         <span class="home-promo-image-wrap${image ? ' has-image' : ''}">
-          ${image ? `<img class="home-promo-image" src="${escapeHtml(image)}" alt="${escapeHtml(event.title || t('schedule'))}" loading="lazy">` : `<span class="home-promo-fallback">${escapeHtml(getScheduleCategory(event))}</span>`}
+          ${image ? `<img class="home-promo-image" src="${escapeHtml(image)}" alt="${escapeHtml(event.title || t('schedule'))}" loading="lazy">` : `<span class="home-promo-fallback">${escapeHtml(t('schedulePhotoFallback'))}</span>`}
+          ${renderScheduleHeartButton(event, scheduleIndex, 'home-schedule-heart')}
         </span>
         <span class="home-promo-cta">${escapeHtml(t('scheduleBannerButton'))}</span>
       </span>
-    </button>`;
+    </div>`;
 }
 
 function getHomeScheduleScore(event) {
@@ -5869,27 +6019,79 @@ function renderCultureSchedulePage() {
     list.innerHTML = `<div class="schedule-empty"><div class="schedule-empty-title">${escapeHtml(t('scheduleEmptyTitle'))}</div><div class="schedule-empty-desc">${escapeHtml(t('scheduleEmptyDesc'))}</div></div>`;
     return;
   }
-  list.innerHTML = cultureScheduleItems.map((event, index) => renderCultureScheduleCard(event, index)).join('');
+  const cultureEntries = getSchedulePageEntries('culture');
+  const sportsEntries = getSchedulePageEntries('sports');
+  const sections = [
+    renderScheduleSection(t('scheduleCultureSection'), cultureEntries, renderCultureScheduleCard),
+    renderScheduleSection(t('scheduleSportsSection'), sportsEntries, renderSportsScheduleCard)
+  ].filter(Boolean);
+  list.innerHTML = sections.length
+    ? sections.join('')
+    : `<div class="schedule-empty"><div class="schedule-empty-title">${escapeHtml(t('scheduleEmptyTitle'))}</div><div class="schedule-empty-desc">${escapeHtml(t('scheduleEmptyDesc'))}</div></div>`;
+}
+
+function getSchedulePageEntries(kind) {
+  return (Array.isArray(cultureScheduleItems) ? cultureScheduleItems : [])
+    .map((event, index) => ({ event, index }))
+    .filter(({ event }) => kind === 'sports' ? isSportsScheduleEvent(event) : !isSportsScheduleEvent(event))
+    .sort(sortSchedulePageEntries);
+}
+
+function sortSchedulePageEntries(a, b) {
+  const dateCompare = getScheduleSortDate(a.event).localeCompare(getScheduleSortDate(b.event));
+  if (dateCompare !== 0) return dateCompare;
+  const aDist = getScheduleDistanceValue(a.event) ?? 9999;
+  const bDist = getScheduleDistanceValue(b.event) ?? 9999;
+  return aDist - bDist;
+}
+
+function renderScheduleSection(title, entries, renderer) {
+  if (!entries.length) return '';
+  return `
+    <section class="schedule-section">
+      <div class="schedule-section-head">
+        <div class="schedule-section-title">${escapeHtml(title)}</div>
+        <div class="schedule-section-count">${entries.length.toLocaleString(appLanguage === 'en' ? 'en-US' : 'ko-KR')}</div>
+      </div>
+      ${entries.map(({ event, index }) => renderer(event, index)).join('')}
+    </section>`;
 }
 
 function renderCultureScheduleCard(event, index) {
   const hasPoint = Number.isFinite(Number(event.lat)) && Number.isFinite(Number(event.lng));
   const image = String(event.image || '').trim();
-  const actionsClass = hasPoint ? 'schedule-actions' : 'schedule-actions single';
   return `
     <div class="schedule-card">
-      <div class="schedule-card-photo">${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(event.title || t('schedule'))}" loading="lazy">` : escapeHtml(t('schedulePhotoFallback'))}</div>
+      <div class="schedule-card-photo clickable" onclick="openCultureScheduleItem(${index})">
+        ${image ? `<img src="${escapeHtml(image)}" alt="${escapeHtml(event.title || t('schedule'))}" loading="lazy">` : escapeHtml(t('schedulePhotoFallback'))}
+        ${renderScheduleHeartButton(event, index)}
+      </div>
       <div class="schedule-card-body">
         <div class="schedule-topline">
-          <div class="schedule-category">${escapeHtml(getScheduleCategory(event))}</div>
           <div class="schedule-date">${escapeHtml(formatScheduleDateRange(event))}</div>
         </div>
         <div class="schedule-name">${escapeHtml(event.title || t('schedule'))}</div>
         <div class="schedule-place">${escapeHtml([event.place, formatScheduleDistance(event)].filter(Boolean).join(' · ') || t('scheduleBannerMeta'))}</div>
-        <div class="${actionsClass}">
-          <button class="schedule-info-btn" type="button" onclick="openCultureScheduleItem(${index})">${escapeHtml(t('scheduleDetail'))}</button>
-          ${hasPoint ? `<button class="schedule-map-btn" type="button" onclick="showCultureScheduleOnMap(${index})">${escapeHtml(t('scheduleMap'))}</button>` : ''}
+        ${hasPoint ? `<div class="schedule-actions single"><button class="schedule-map-btn" type="button" onclick="showCultureScheduleOnMap(${index})">${escapeHtml(t('scheduleMap'))}</button></div>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderSportsScheduleCard(event, index) {
+  const distance = formatApproxScheduleDistance(event);
+  const placeMeta = [event.place, distance].filter(Boolean).join(' · ') || t('scheduleBannerMeta');
+  return `
+    <div class="schedule-card text-only" onclick="openCultureScheduleItem(${index})">
+      <div class="schedule-text-row">
+        <div class="schedule-text-row-main">
+          <div class="schedule-topline">
+            <div class="schedule-date">${escapeHtml(formatScheduleDateRange(event))}</div>
+          </div>
+          <div class="schedule-name">${escapeHtml(event.title || t('schedule'))}</div>
+          <div class="schedule-place">${escapeHtml(placeMeta)}</div>
+          <div class="schedule-source">${escapeHtml(event.source || '')}</div>
         </div>
+        ${renderScheduleHeartButton(event, index, 'text-schedule-heart')}
       </div>
     </div>`;
 }
@@ -5911,14 +6113,16 @@ function formatScheduleEventMeta(event) {
   return [formatScheduleDateRange(event), event.place].filter(Boolean).join(' · ');
 }
 
-function formatHomeScheduleDescription(event) {
-  return [formatHomeScheduleDateRange(event), event.place].filter(Boolean).join(' · ');
-}
-
 function formatScheduleDistance(event) {
   const dist = getScheduleDistanceValue(event);
   if (dist === null) return '';
   return dist < 1 ? `${Math.round(dist * 1000)}m` : `${dist.toFixed(1)}km`;
+}
+
+function formatApproxScheduleDistance(event) {
+  const distance = formatScheduleDistance(event);
+  if (!distance) return '';
+  return appLanguage === 'en' ? `about ${distance}` : `약 ${distance}`;
 }
 
 function getScheduleDistanceValue(event) {
@@ -5940,6 +6144,14 @@ function formatHomeScheduleDateRange(event) {
   const end = formatScheduleDate(event && event.endDate);
   if (start && end && start !== end) return `${start} - ${end}`;
   return start || end || '';
+}
+
+function getScheduleSortDate(event) {
+  return String(event && (event.startDate || event.endDate) || '').replace(/[^\d]/g, '').slice(0, 8) || '99999999';
+}
+
+function isSportsScheduleEvent(event) {
+  return String(event && event.type || '').toLowerCase() === 'sports';
 }
 
 function getScheduleCategory(event) {
@@ -5998,6 +6210,134 @@ function formatScheduleDate(value) {
 function getSearchLinkForSchedule(title) {
   const query = appLanguage === 'en' ? `${title} Korea event` : `${title} 행사`;
   return `https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`;
+}
+
+function getScheduleItemIndex(item) {
+  return (Array.isArray(cultureScheduleItems) ? cultureScheduleItems : []).findIndex(event => getScheduleFavoriteKey(event) === getScheduleFavoriteKey(item));
+}
+
+function getScheduleFavoriteKey(event) {
+  const id = String(event && (event.id || event.contentId || event.contentid) || '').trim();
+  if (id) return `id:${id}`;
+  const title = String(event && event.title || '').replace(/\s+/g, '').slice(0, 60);
+  const start = String(event && event.startDate || '').replace(/[^\d]/g, '').slice(0, 8);
+  const place = String(event && event.place || '').replace(/\s+/g, '').slice(0, 50);
+  return [event && event.type || 'event', title, start, place].filter(Boolean).join(':') || `event:${Date.now()}`;
+}
+
+function readScheduleFavorites() {
+  try {
+    const favorites = JSON.parse(localStorage.getItem(SCHEDULE_FAVORITES_KEY) || '{}');
+    return favorites && typeof favorites === 'object' && !Array.isArray(favorites) ? favorites : {};
+  } catch (_) {
+    return {};
+  }
+}
+
+function writeScheduleFavorites(favorites) {
+  try {
+    localStorage.setItem(SCHEDULE_FAVORITES_KEY, JSON.stringify(favorites && typeof favorites === 'object' ? favorites : {}));
+  } catch (_) {}
+}
+
+function normalizeScheduleFavorite(event, existing = null) {
+  const source = event || {};
+  const key = getScheduleFavoriteKey(source);
+  const lat = Number(source.lat);
+  const lng = Number(source.lng);
+  return {
+    key,
+    id: source.id || source.contentId || source.contentid || '',
+    title: String(source.title || t('schedule')).trim() || t('schedule'),
+    type: source.type || '',
+    category: source.category || getScheduleCategory(source),
+    startDate: source.startDate || '',
+    endDate: source.endDate || '',
+    place: source.place || '',
+    distFromMe: source.distFromMe === null || source.distFromMe === undefined ? null : Number(source.distFromMe),
+    lat: Number.isFinite(lat) ? lat : null,
+    lng: Number.isFinite(lng) ? lng : null,
+    image: String(source.image || '').trim(),
+    link: String(source.link || '').trim(),
+    source: source.source || '',
+    savedAt: existing && existing.savedAt ? existing.savedAt : new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  };
+}
+
+function getSavedScheduleList() {
+  return Object.values(readScheduleFavorites())
+    .filter(item => item && item.title)
+    .sort((a, b) => Date.parse(b.savedAt || '') - Date.parse(a.savedAt || ''));
+}
+
+function isScheduleFavorited(event) {
+  if (!event) return false;
+  return !!readScheduleFavorites()[getScheduleFavoriteKey(event)];
+}
+
+function toggleScheduleFavorite(event) {
+  if (!event || !event.title) return false;
+  const key = getScheduleFavoriteKey(event);
+  const favorites = readScheduleFavorites();
+  if (favorites[key]) {
+    delete favorites[key];
+    writeScheduleFavorites(favorites);
+    refreshScheduleFavoriteViews();
+    toast(appLanguage === 'en' ? 'Removed from saved events' : '저장한 일정에서 삭제했어요');
+    return false;
+  }
+  favorites[key] = normalizeScheduleFavorite(event, favorites[key]);
+  writeScheduleFavorites(favorites);
+  refreshScheduleFavoriteViews();
+  toast(appLanguage === 'en' ? 'Saved to events' : '관심 일정에 저장했어요');
+  return true;
+}
+
+function removeScheduleFavorite(key) {
+  const favorites = readScheduleFavorites();
+  if (!favorites[String(key)]) return false;
+  delete favorites[String(key)];
+  writeScheduleFavorites(favorites);
+  refreshScheduleFavoriteViews();
+  return true;
+}
+
+function toggleScheduleFavoriteFromButton(clickEvent, index) {
+  if (clickEvent) {
+    clickEvent.preventDefault();
+    clickEvent.stopPropagation();
+  }
+  const item = cultureScheduleItems[index];
+  if (!item) return;
+  toggleScheduleFavorite(item);
+}
+
+function removeSavedScheduleFavoriteFromButton(clickEvent, key) {
+  if (clickEvent) {
+    clickEvent.preventDefault();
+    clickEvent.stopPropagation();
+  }
+  if (removeScheduleFavorite(key)) toast(appLanguage === 'en' ? 'Removed from saved events' : '저장한 일정에서 삭제했어요');
+}
+
+function openSavedScheduleFavorite(key) {
+  const item = readScheduleFavorites()[String(key)];
+  if (!item) return;
+  const link = String(item.link || '').trim() || getSearchLinkForSchedule(item.title || '');
+  if (link) window.open(link, '_blank', 'noopener');
+}
+
+function refreshScheduleFavoriteViews() {
+  renderHomeActions();
+  if (S.tab === 'schedule') renderCultureSchedulePage();
+  if (S.tab === 'mycourse') renderMyCourses();
+}
+
+function renderScheduleHeartButton(event, index, className = '') {
+  const active = isScheduleFavorited(event);
+  const label = active ? t('favoriteRemove') : t('favoriteAdd');
+  return `<button class="mc-fav schedule-heart ${escapeHtml(className)} ${active ? 'active' : ''}" type="button" onclick="toggleScheduleFavoriteFromButton(event, ${Number(index)})" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">♥</button>`;
 }
 
 /* ── 근처 문화 스팟 (위치 기반) ── */
@@ -6171,6 +6511,7 @@ function setCultureSpotVisit(spot) {
   visits[key] = visit;
   try { localStorage.setItem(CULTURE_SPOT_VISITS_KEY, JSON.stringify(visits)); } catch (_) {}
   if (S.tab === 'mypage') renderMyCultureVisits();
+  if (S.tab === 'mycourse') renderMyCourses();
   return { visited: true, isNew: true, data: visit };
 }
 
@@ -6616,7 +6957,7 @@ function saveCultureSpotFavorite(spot) {
   favorites[item.key] = normalizeCultureSpotFavorite(spot, favorites[item.key]);
   writeCultureSpotFavorites(favorites);
   refreshCultureSpotFavoriteViews();
-  toast(existed ? '이미 저장한 스팟이에요' : '가고 싶은 스팟에 저장했어요');
+  toast(existed ? '이미 관심 장소에 있어요' : '관심 장소에 저장했어요');
   return { saved: true, existed, item: favorites[item.key] };
 }
 
@@ -6651,13 +6992,29 @@ function updateCultureSpotSaveButtonLabels() {
     button.classList.toggle('active', active);
     button.textContent = active ? t('saved') : t('save');
   });
+  document.querySelectorAll('.culture-spot-heart').forEach(button => {
+    const key = button.dataset ? button.dataset.key : '';
+    const active = !!favorites[key];
+    const label = active ? t('favoriteRemove') : t('favoriteAdd');
+    button.classList.toggle('active', active);
+    button.setAttribute('aria-label', label);
+    button.title = label;
+  });
 }
 
 function updateAiPlaceSaveButton() {
   const actions = document.querySelector('#aiPlaceCard .map-place-actions');
   const button = document.getElementById('aiPlaceSaveBtn');
+  const heart = document.getElementById('aiPlaceSaveHeartBtn');
   const spot = aiPendingPlace && aiPendingPlace.cultureSpot;
-  if (actions) actions.classList.toggle('has-save', !!spot);
+  if (actions) actions.classList.remove('has-save');
+  if (heart) {
+    heart.classList.toggle('visible', !!spot);
+    heart.classList.toggle('active', !!spot && isCultureSpotFavorited(spot));
+    const label = spot && isCultureSpotFavorited(spot) ? t('favoriteRemove') : t('favoriteAdd');
+    heart.setAttribute('aria-label', label);
+    heart.title = label;
+  }
   if (!button) return;
   if (!spot) {
     button.style.display = 'none';
@@ -6666,7 +7023,7 @@ function updateAiPlaceSaveButton() {
     return;
   }
   const active = isCultureSpotFavorited(spot);
-  button.style.display = 'block';
+  button.style.display = 'none';
   button.classList.toggle('active', active);
   button.textContent = active ? t('saved') : t('save');
 }
@@ -6703,10 +7060,14 @@ function getCultureSpotFromButton(button) {
 
 function saveCultureSpotFromHomeButton(button) {
   if (!button) return;
-  saveCultureSpotFavorite(getCultureSpotFromButton(button));
+  toggleCultureSpotFavorite(getCultureSpotFromButton(button));
 }
 
-function savePendingCultureSpotFavorite() {
+function savePendingCultureSpotFavorite(clickEvent) {
+  if (clickEvent) {
+    clickEvent.preventDefault();
+    clickEvent.stopPropagation();
+  }
   if (!aiPendingPlace || !aiPendingPlace.cultureSpot) {
     toast('문화스팟을 먼저 선택해주세요');
     return;
@@ -6726,7 +7087,7 @@ function savePendingCultureSpotFavorite() {
   }
   const favoriteKey = getCultureSpotFavoriteKey(spot);
   if (readCultureSpotFavorites()[favoriteKey]) {
-    if (removeCultureSpotFavorite(favoriteKey)) toast('저장한 스팟에서 삭제했어요');
+    if (removeCultureSpotFavorite(favoriteKey)) toast(appLanguage === 'en' ? 'Removed from saved places' : '관심 장소에서 삭제했어요');
     return;
   }
   const mediaPhoto = getCultureSpotPhoto(aiPendingPlace.mediaSpot);
@@ -6766,6 +7127,62 @@ function isCultureSpotMarkedVisited(spot) {
 
 function renderCultureSpotVisitedBadge(className) {
   return `<div class="${escapeHtml(className)}" title="${escapeHtml(t('visitedDone'))}" aria-label="${escapeHtml(t('visitedDone'))}">✓</div>`;
+}
+
+function getCultureSpotFavoriteDataAttrs(spot, key = '') {
+  const latlng = getCultureSpotLatLng(spot);
+  const rawName = getCultureSpotOriginalName(spot, '문화 스팟');
+  const displayName = getCultureSpotDisplayName(spot, rawName);
+  const nameEn = spot && spot.nameEn || (displayName !== rawName && !/[가-힣]/.test(displayName) ? displayName : '');
+  const type = spot && (spot.cultureType || spot.type) || getCultureSpotType(spot || {}, '');
+  const stars = Math.max(1, Math.min(5, Math.round(Number(spot && (spot.cultureValueStars || spot.stars)) || 1)));
+  const dist = Number(spot && spot.distFromMe);
+  const photo = getCultureSpotPhoto(spot);
+  const image = spot && (spot.firstImage || spot.firstimage || spot.imageUrl) || photo && photo.imageUrl || '';
+  const attrs = {
+    key: key || getCultureSpotFavoriteKey(spot),
+    id: String(spot && (spot.id || spot.contentId || spot.contentid) || ''),
+    place: rawName,
+    nameEn,
+    lat: latlng.lat === null ? '' : latlng.lat,
+    lng: latlng.lng === null ? '' : latlng.lng,
+    type,
+    stars,
+    dist: Number.isFinite(dist) ? dist : '',
+    address: spot && (spot.address_name || spot.addr1 || spot.address) || '',
+    url: getCultureSpotIntroUrl(spot, displayName),
+    image,
+    source: spot && spot.source || ''
+  };
+  return Object.entries(attrs)
+    .map(([name, value]) => `data-${name.replace(/[A-Z]/g, m => '-' + m.toLowerCase())}="${escapeHtml(String(value ?? ''))}"`)
+    .join(' ');
+}
+
+function renderCultureSpotHeartButton(spot, key = '', className = '') {
+  const active = isCultureSpotFavorited(spot);
+  const label = active ? t('favoriteRemove') : t('favoriteAdd');
+  return `<button class="mc-fav culture-spot-heart ${escapeHtml(className)} ${active ? 'active' : ''}" type="button" ${getCultureSpotFavoriteDataAttrs(spot, key)} onclick="toggleCultureSpotFavoriteFromHeart(event,this)" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">♥</button>`;
+}
+
+function toggleCultureSpotFavorite(spot) {
+  if (!spot) return false;
+  const key = getCultureSpotFavoriteKey(spot);
+  if (readCultureSpotFavorites()[key]) {
+    if (removeCultureSpotFavorite(key)) toast(appLanguage === 'en' ? 'Removed from saved places' : '관심 장소에서 삭제했어요');
+    return false;
+  }
+  const result = saveCultureSpotFavorite(spot);
+  return !!(result && result.saved);
+}
+
+function toggleCultureSpotFavoriteFromHeart(clickEvent, button) {
+  if (clickEvent) {
+    clickEvent.preventDefault();
+    clickEvent.stopPropagation();
+  }
+  if (!button) return;
+  toggleCultureSpotFavorite(getCultureSpotFromButton(button));
 }
 
 function openCultureSpotInfoFromPhoto(event, element) {
@@ -6816,11 +7233,13 @@ function renderHomeCultureSpotPhoto(spot, key, displayName, introUrl = '', visit
   const photo = getCultureSpotPhoto(spot);
   const visitedAttr = visited ? '1' : '0';
   const visitedBadge = visited ? renderCultureSpotVisitedBadge('culture-spot-visited-badge') : '';
+  const heart = renderCultureSpotHeartButton(spot, key);
   if (photo && photo.imageUrl) {
     return `
       <div class="culture-spot-photo clickable" id="${escapeHtml(domId)}" data-key="${escapeHtml(key)}" data-visited="${visitedAttr}" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromPhoto(event,this)" title="${escapeHtml(t('infoView'))}">
         <img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || displayName || '문화스팟 사진')}" loading="lazy">
         ${visitedBadge}
+        ${heart}
       </div>`;
   }
   return `
@@ -6829,6 +7248,7 @@ function renderHomeCultureSpotPhoto(spot, key, displayName, introUrl = '', visit
         <div>${escapeHtml(t('photoPreparing'))}</div>
       </div>
       ${visitedBadge}
+      ${heart}
     </div>`;
 }
 
@@ -6841,9 +7261,10 @@ function updateHomeCultureSpotPhoto(key, photo) {
     el.setAttribute('onclick', 'openCultureSpotInfoFromPhoto(event,this)');
     el.title = t('infoView');
     const visitedBadge = el.dataset && el.dataset.visited === '1' ? renderCultureSpotVisitedBadge('culture-spot-visited-badge') : '';
-    el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || '문화스팟 사진')}" loading="lazy">${visitedBadge}`;
+    const heart = el.querySelector('.culture-spot-heart') ? el.querySelector('.culture-spot-heart').outerHTML : '';
+    el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || '문화스팟 사진')}" loading="lazy">${visitedBadge}${heart}`;
   }
-  const saveButton = Array.from(document.querySelectorAll('.culture-spot-save-btn')).find(button => button.dataset && button.dataset.key === key);
+  const saveButton = Array.from(document.querySelectorAll('.culture-spot-save-btn,.culture-spot-heart')).find(button => button.dataset && button.dataset.key === key);
   if (saveButton) saveButton.dataset.image = photo.imageUrl;
 }
 
@@ -6929,7 +7350,6 @@ function renderNearCourses(results) {
             </div>
           </div>
           <div class="culture-spot-actions">
-            <button class="culture-spot-save-btn ${favorited ? 'active' : ''}" data-key="${escapeHtml(favoriteKey)}" data-id="${escapeHtml(String(p.id || p.contentId || p.contentid || ''))}" data-place="${escapeHtml(rawPlaceName)}" data-name-en="${escapeHtml(nameEn)}" data-lat="${lat}" data-lng="${lng}" data-type="${escapeHtml(type)}" data-stars="${valueStars}" data-dist="${Number.isFinite(distValue) ? distValue : ''}" data-address="${escapeHtml(p.address_name || p.addr1 || '')}" data-url="${escapeHtml(introUrl)}" data-image="${escapeHtml(p.firstImage || p.firstimage || '')}" data-source="${escapeHtml(p.source || '')}" onclick="saveCultureSpotFromHomeButton(this)">${favorited ? escapeHtml(t('saved')) : escapeHtml(t('save'))}</button>
             <button class="culture-spot-route-btn" data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" onclick="goToAiFromHomeButton(this)">${escapeHtml(t('route'))}</button>
           </div>
         </div>
@@ -8267,39 +8687,75 @@ function shareRecordPhotoToSocial(index) {
 /* ── 저장 스팟 관리 ── */
 let renameTargetId = null;
 let courseDetailTargetId = null;
+let interestTab = 'places';
+
+function setInterestTab(tab) {
+  interestTab = ['places', 'schedules', 'visited'].includes(tab) ? tab : 'places';
+  renderMyCourses();
+}
 
 function renderMyCourses() {
   const spots = getFavoriteCultureSpotList();
   const list = document.getElementById('myCourseList');
-  const empty = document.getElementById('myCourseEmpty');
   const count = document.getElementById('myCourseCount');
-  const visibleSpots = spots;
+  if (!list || !count) return;
+  updateInterestStaticLabels();
+  document.querySelectorAll('.interest-tab').forEach(button => button.classList.remove('active'));
+  const activeTab = document.getElementById(`interest${interestTab.charAt(0).toUpperCase()}${interestTab.slice(1)}Tab`);
+  if (activeTab) activeTab.classList.add('active');
 
-  count.textContent = spots.length + '곳';
-
-  if (!visibleSpots.length) {
-    list.classList.remove('mc-grid');
-    empty.style.display = 'block';
-    empty.innerHTML = `<div style="font-size:14px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">${escapeHtml(t('savedSpotEmptyTitle'))}</div><div style="font-size:13px;line-height:1.6;">${escapeHtml(t('savedSpotEmptyDesc'))}</div>`;
-    list.querySelectorAll('.mc-card').forEach(c => c.remove());
+  if (interestTab === 'schedules') {
+    const schedules = getSavedScheduleList();
+    count.textContent = schedules.length + (appLanguage === 'en' ? '' : '개');
+    if (!schedules.length) {
+      renderInterestEmpty(list, t('savedScheduleEmptyTitle'), t('savedScheduleEmptyDesc'));
+      return;
+    }
+    list.classList.add('mc-grid');
+    list.innerHTML = schedules.map(renderSavedScheduleCard).join('');
     return;
   }
-  empty.style.display = 'none';
+
+  if (interestTab === 'visited') {
+    const visits = getCultureSpotVisitList();
+    count.textContent = visits.length + (appLanguage === 'en' ? '' : '곳');
+    if (!visits.length) {
+      renderInterestEmpty(list, t('visitedSpotEmptyTitle'), t('visitedSpotEmptyDesc'));
+      return;
+    }
+    list.classList.add('mc-grid');
+    list.innerHTML = visits.map(renderVisitedSpotCard).join('');
+    return;
+  }
+
+  count.textContent = spots.length + (appLanguage === 'en' ? '' : '곳');
+  if (!spots.length) {
+    renderInterestEmpty(list, t('savedSpotEmptyTitle'), t('savedSpotEmptyDesc'));
+    return;
+  }
   list.classList.add('mc-grid');
+  list.innerHTML = spots.map(renderSavedSpotCard).join('');
+  hydrateSavedSpotPhotos(spots);
+}
 
-  list.querySelectorAll('.mc-card').forEach(c => c.remove());
+function renderInterestEmpty(list, title, desc) {
+  list.classList.remove('mc-grid');
+  list.innerHTML = `
+    <div id="myCourseEmpty" style="text-align:center;padding:48px 0;color:var(--gray-500);">
+      <div style="font-size:14px;font-weight:700;color:var(--gray-700);margin-bottom:6px;">${escapeHtml(title)}</div>
+      <div style="font-size:13px;line-height:1.6;">${escapeHtml(desc)}</div>
+    </div>`;
+}
 
-  visibleSpots.forEach(spot => {
+function renderSavedSpotCard(spot) {
     const keyJson = escapeHtml(JSON.stringify(spot.key));
     const displayName = getCultureSpotDisplayName(spot);
     const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
     const meta = [
       formatCultureSpotSavedAt(spot) ? '저장 ' + formatCultureSpotSavedAt(spot) : ''
     ].filter(Boolean).join(' · ');
-    const card = document.createElement('div');
-    card.className = 'mc-card saved-spot';
-    card.id = 'mc-' + String(spot.key).replace(/[^a-z0-9_-]/gi, '_');
-    card.innerHTML = `
+    return `
+      <div class="mc-card saved-spot" id="mc-${escapeHtml(String(spot.key).replace(/[^a-z0-9_-]/gi, '_'))}">
       ${renderSpotPhotoBox(spot, 'spotPhoto')}
       <div class="mc-card-top">
         <div class="mc-title">
@@ -8316,10 +8772,48 @@ function renderMyCourses() {
         <button class="mc-btn mc-btn-map" onclick="event.stopPropagation(); viewCourseOnMap(${keyJson})">${escapeHtml(t('mapView'))}</button>
         <button class="mc-btn mc-btn-delete mc-btn-full" onclick="event.stopPropagation(); deleteCourseFromCard(${keyJson})">${escapeHtml(t('deleteSaved'))}</button>
       </div>
-    `;
-    list.appendChild(card);
-  });
-  hydrateSavedSpotPhotos(visibleSpots);
+    </div>`;
+}
+
+function renderSavedScheduleCard(item) {
+  const keyJson = escapeHtml(JSON.stringify(item.key));
+  const image = String(item.image || '').trim();
+  const link = String(item.link || '').trim() || getSearchLinkForSchedule(item.title || '');
+  const meta = [item.place, formatScheduleDistance(item), item.source].filter(Boolean).join(' · ');
+  return `
+    <div class="mc-card saved-schedule-card" role="button" tabindex="0" onclick="openSavedScheduleFavorite(${keyJson})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openSavedScheduleFavorite(${keyJson});}">
+      ${image ? `
+        <div class="spot-photo clickable" data-url="${escapeHtml(link)}" onclick="openCultureSpotInfoFromPhoto(event,this)" title="${escapeHtml(t('infoView'))}">
+          <img src="${escapeHtml(image)}" alt="${escapeHtml(item.title || t('schedule'))}" loading="lazy">
+        </div>` : ''}
+      <div class="saved-schedule-top">
+        <div style="min-width:0;">
+          <div class="saved-schedule-date">${escapeHtml(formatScheduleDateRange(item))}</div>
+          <div class="saved-schedule-title">${escapeHtml(item.title || t('schedule'))}</div>
+          <div class="saved-schedule-meta">${escapeHtml(meta || t('scheduleBannerMeta'))}</div>
+        </div>
+        <button class="mc-fav saved-schedule-heart active" type="button" onclick="removeSavedScheduleFavoriteFromButton(event, ${keyJson})" aria-label="${escapeHtml(t('favoriteRemove'))}" title="${escapeHtml(t('favoriteRemove'))}">♥</button>
+      </div>
+    </div>`;
+}
+
+function renderVisitedSpotCard(visit) {
+  const stars = getCultureVisitStars(visit);
+  const displayName = getCultureSpotDisplayName({ place_name: visit.name, nameEn: visit.nameEn }, visit.name || '문화 스팟');
+  const meta = [getCultureVisitDateLabel(visit), visit.type].filter(Boolean).join(' · ');
+  return `
+    <div class="mc-card visited-spot-card">
+      <div class="mc-card-top">
+        <div class="mc-title">
+          <div class="mc-name">${escapeHtml(displayName)}</div>
+          <div class="mc-meta">${escapeHtml(meta)}</div>
+        </div>
+        <div class="mc-distance">
+          <div class="mc-distance-value">★${stars}</div>
+          <div class="mc-distance-unit">${escapeHtml(t('visitedDone'))}</div>
+        </div>
+      </div>
+    </div>`;
 }
 
 function getCourseSavedTime(course) {
