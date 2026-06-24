@@ -6,6 +6,7 @@ const KTO_KEY_ENV = {
   ko: 'KTO_SERVICE_KEY',
   en: 'KTO_EN_SERVICE_KEY'
 };
+const CHA_HERITAGE_URL = 'https://api.kcisa.kr/openapi/service/rest/meta/CHAheri';
 const ALLOWED_ORIGINS = new Set([
   'https://runloop-jet.vercel.app',
   'http://127.0.0.1:5500',
@@ -13,6 +14,23 @@ const ALLOWED_ORIGINS = new Set([
   'capacitor://localhost',
   'ionic://localhost'
 ]);
+const RARE_HERITAGE_SEEDS = [
+  { id: 'gyeongbokgung', name: '경복궁', nameEn: 'Gyeongbokgung Palace', lat: 37.579617, lng: 126.977041, region: '서울 종로구' },
+  { id: 'changdeokgung', name: '창덕궁', nameEn: 'Changdeokgung Palace', lat: 37.579367, lng: 126.991057, region: '서울 종로구' },
+  { id: 'jongmyo', name: '종묘', nameEn: 'Jongmyo Shrine', lat: 37.574641, lng: 126.994085, region: '서울 종로구' },
+  { id: 'suwon-hwaseong', name: '수원화성', nameEn: 'Suwon Hwaseong Fortress', lat: 37.287889, lng: 127.011778, region: '경기 수원시' },
+  { id: 'namhansanseong', name: '남한산성', nameEn: 'Namhansanseong Fortress', lat: 37.478566, lng: 127.181466, region: '경기 광주시' },
+  { id: 'bulguksa', name: '불국사', nameEn: 'Bulguksa Temple', lat: 35.790014, lng: 129.331961, region: '경북 경주시' },
+  { id: 'seokguram', name: '석굴암', nameEn: 'Seokguram Grotto', lat: 35.794951, lng: 129.349157, region: '경북 경주시' },
+  { id: 'haeinsa', name: '해인사', nameEn: 'Haeinsa Temple', lat: 35.801479, lng: 128.098118, region: '경남 합천군' },
+  { id: 'hahoe', name: '하회마을', nameEn: 'Hahoe Folk Village', lat: 36.539325, lng: 128.518318, region: '경북 안동시' },
+  { id: 'yangdong', name: '양동마을', nameEn: 'Yangdong Folk Village', lat: 35.996636, lng: 129.253826, region: '경북 경주시' },
+  { id: 'gongsanseong', name: '공산성', nameEn: 'Gongsanseong Fortress', lat: 36.462172, lng: 127.124834, region: '충남 공주시' },
+  { id: 'busosanseong', name: '부소산성', nameEn: 'Busosanseong Fortress', lat: 36.28195, lng: 126.912244, region: '충남 부여군' },
+  { id: 'mireuksa', name: '미륵사지', nameEn: 'Mireuksa Temple Site', lat: 36.012515, lng: 127.031354, region: '전북 익산시' },
+  { id: 'wanggungri', name: '왕궁리유적', nameEn: 'Wanggung-ri Historic Site', lat: 35.972847, lng: 127.053673, region: '전북 익산시' }
+];
+const HERITAGE_SUBPLACE_PATTERN = /관리소|사무소|매표소|주차장|화장실|안내소|관광안내소|입구|출구|고객센터|센터$|분소|관리센터|office|ticket|parking|restroom|toilet|information|entrance|exit|management center/i;
 
 export default async function handler(req, res) {
   applyCors(req, res);
@@ -49,7 +67,7 @@ export default async function handler(req, res) {
       fetchKtoItems('locationBasedList2', { ...listParams, contentTypeId: 14 }, serviceKey, lang)
     ]);
 
-    const spots = mergeKtoItems(tourItems.concat(cultureItems), lat, lng)
+    let spots = mergeKtoItems(tourItems.concat(cultureItems), lat, lng)
       .map(item => normalizeKtoSpot(item, lat, lng, lang))
       .filter(Boolean)
       .sort((a, b) => {
@@ -58,11 +76,253 @@ export default async function handler(req, res) {
         return Number(b.cultureValueStars) - Number(a.cultureValueStars);
       });
 
+    spots = await enrichWithChaHeritage(spots, lat, lng, radius, lang);
+
     return res.status(200).json({ spots, lang });
   } catch (error) {
     console.error('KTO tour spot proxy failed', error);
     return res.status(400).json({ error: 'Invalid KTO tour spot request' });
   }
+}
+
+async function enrichWithChaHeritage(spots, userLat, userLng, radiusMeters, lang) {
+  const serviceKey = getOptionalServiceKey([
+    'CHA_HERITAGE_SERVICE_KEY',
+    'CHA_SERVICE_KEY',
+    'KCISA_CHA_HERITAGE_SERVICE_KEY'
+  ]);
+  if (!serviceKey) return spots;
+
+  try {
+    const verified = await verifyExistingHeritageSpots(spots, serviceKey, lang);
+    const withSeeds = await appendVerifiedHeritageSeeds(verified, userLat, userLng, radiusMeters, serviceKey, lang);
+    return withSeeds.sort((a, b) => {
+      const distDiff = Number(a.distFromMe) - Number(b.distFromMe);
+      if (distDiff) return distDiff;
+      return Number(b.cultureValueStars) - Number(a.cultureValueStars);
+    });
+  } catch (error) {
+    console.warn('CHA heritage enrichment skipped', error);
+    return spots;
+  }
+}
+
+async function verifyExistingHeritageSpots(spots, serviceKey, lang) {
+  const candidates = spots
+    .filter(isHeritageVerificationCandidate)
+    .slice(0, 10);
+  if (!candidates.length) return spots;
+
+  const results = await Promise.all(candidates.map(async spot => {
+    const keyword = getHeritageKeyword(spot);
+    if (!keyword) return [getSpotStableKey(spot), null];
+    const items = await fetchChaHeritageItems(keyword, serviceKey, 5).catch(() => []);
+    return [getSpotStableKey(spot), findChaHeritageMatch(keyword, items)];
+  }));
+  const matches = new Map(results.filter(([, match]) => match));
+  if (!matches.size) return spots;
+
+  return spots.map(spot => {
+    const match = matches.get(getSpotStableKey(spot));
+    if (!match) return spot;
+    return applyChaHeritageMatch(spot, match, lang);
+  });
+}
+
+async function appendVerifiedHeritageSeeds(spots, userLat, userLng, radiusMeters, serviceKey, lang) {
+  const existingNames = new Set(spots.map(spot => normalizeHeritageName(spot.place_name || spot.name)));
+  const nearbySeeds = RARE_HERITAGE_SEEDS
+    .map(seed => ({ ...seed, distFromMe: getDistKm(userLat, userLng, seed.lat, seed.lng) }))
+    .filter(seed => seed.distFromMe * 1000 <= radiusMeters)
+    .filter(seed => !existingNames.has(normalizeHeritageName(seed.name)))
+    .slice(0, 6);
+  if (!nearbySeeds.length) return spots;
+
+  const additions = await Promise.all(nearbySeeds.map(async seed => {
+    const items = await fetchChaHeritageItems(seed.name, serviceKey, 5).catch(() => []);
+    const match = findChaHeritageMatch(seed.name, items);
+    return match ? normalizeChaHeritageSeed(seed, match, lang) : null;
+  }));
+
+  return spots.concat(additions.filter(Boolean));
+}
+
+function isHeritageVerificationCandidate(spot) {
+  const text = [spot.place_name, spot.name, spot.cultureType, spot.category_name].filter(Boolean).join(' ');
+  if (HERITAGE_SUBPLACE_PATTERN.test(text)) return false;
+  return Number(spot.cultureValueStars) >= 4 || /문화재|유산|역사|궁|왕릉|서원|향교|사찰|성곽|유적|Heritage|Historic|Palace|Fortress|Temple|Shrine/i.test(text);
+}
+
+function applyChaHeritageMatch(spot, match, lang) {
+  const title = cleanText(match.title || match.alternativeTitle || '', 80);
+  const stars = isRareHeritageMatch(spot, match)
+    ? 5
+    : Math.max(4, Math.round(Number(spot.cultureValueStars) || 4));
+  const type = lang === 'en' ? 'Heritage' : '문화재';
+  return {
+    ...spot,
+    source: spot.source === 'kto' ? 'kto+cha' : spot.source || 'cha',
+    cultureType: type,
+    cultureValueStars: stars,
+    cultureValueLabel: lang === 'en'
+      ? (stars >= 5 ? 'Verified rare heritage' : 'Verified heritage')
+      : (stars >= 5 ? '공식 희귀 유산' : '공식 문화재'),
+    category_name: [type, '문화재청'].filter(Boolean).join(' · '),
+    heritage: {
+      title,
+      description: cleanText(match.description, 260),
+      spatial: cleanText(match.spatial || match.spatialCoverage, 140),
+      sourceTitle: cleanText(match.sourceTitle, 100),
+      uci: cleanText(match.uci, 160)
+    }
+  };
+}
+
+function normalizeChaHeritageSeed(seed, match, lang) {
+  const type = lang === 'en' ? 'Heritage' : '문화재';
+  const title = cleanText(match.title || seed.name, 80);
+  return {
+    id: `cha:${seed.id}`,
+    contentId: '',
+    source: 'cha',
+    place_name: seed.name,
+    name: seed.name,
+    nameEn: seed.nameEn,
+    y: seed.lat,
+    x: seed.lng,
+    distFromMe: seed.distFromMe,
+    cultureType: type,
+    cultureValueStars: 5,
+    cultureValueLabel: lang === 'en' ? 'Verified rare heritage' : '공식 희귀 유산',
+    category_name: [type, '문화재청'].join(' · '),
+    address_name: seed.region || cleanText(match.spatial || match.spatialCoverage, 140),
+    firstImage: '',
+    place_url: getVisitKoreaSearchUrl(lang === 'en' ? seed.nameEn : seed.name, lang),
+    lang,
+    heritage: {
+      title,
+      description: cleanText(match.description, 260),
+      spatial: cleanText(match.spatial || match.spatialCoverage, 140),
+      sourceTitle: cleanText(match.sourceTitle, 100),
+      uci: cleanText(match.uci, 160)
+    }
+  };
+}
+
+async function fetchChaHeritageItems(keyword, serviceKey, rows) {
+  const url = new URL(CHA_HERITAGE_URL);
+  url.search = new URLSearchParams({
+    serviceKey,
+    keyword,
+    numOfRows: String(rows),
+    pageNo: '1'
+  }).toString();
+
+  const response = await fetch(url, { headers: { Accept: 'application/json, application/xml;q=0.9, */*;q=0.8' } });
+  const text = await response.text();
+  if (!response.ok) throw new Error(`CHA heritage failed with ${response.status}: ${text.slice(0, 120)}`);
+  const header = parseChaHeader(text);
+  if (header.resultCode && !['0000', '00', '0'].includes(String(header.resultCode))) {
+    throw new Error(`CHA heritage returned ${header.resultCode}: ${header.resultMsg || ''}`);
+  }
+  return parseChaItems(text);
+}
+
+function findChaHeritageMatch(keyword, items) {
+  const key = normalizeHeritageName(keyword);
+  if (!key || HERITAGE_SUBPLACE_PATTERN.test(String(keyword || ''))) return null;
+  return (Array.isArray(items) ? items : []).find(item => {
+    const title = normalizeHeritageName([item.title, item.alternativeTitle].filter(Boolean).join(' '));
+    const keywords = normalizeHeritageName([item.subjectKeyword, item.subjectCategory, item.description].filter(Boolean).join(' '));
+    if (!title && !keywords) return false;
+    if (title === key || title.includes(key) || key.includes(title) && title.length >= 3) return true;
+    return keywords.includes(key);
+  }) || null;
+}
+
+function isRareHeritageMatch(spot, match) {
+  const text = [spot.place_name, spot.name, match && match.title, match && match.subjectKeyword, match && match.description].filter(Boolean).join(' ');
+  return isFiveStarCultureTitle(text) || /세계문화유산|세계유산|유네스코|unesco|worldheritage/i.test(text.replace(/\s+/g, ''));
+}
+
+function getHeritageKeyword(spot) {
+  const raw = String(spot && (spot.place_name || spot.name) || '');
+  if (!raw || HERITAGE_SUBPLACE_PATTERN.test(raw)) return '';
+  const compact = raw.replace(/\s+/g, '');
+  const seed = RARE_HERITAGE_SEEDS.find(item => compact.includes(item.name));
+  return seed ? seed.name : raw.replace(/\([^)]*\)|\[[^\]]*\]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40);
+}
+
+function getSpotStableKey(spot) {
+  return String(spot && (spot.id || spot.contentId || `${spot.place_name}:${spot.y}:${spot.x}`) || '');
+}
+
+function normalizeHeritageName(value) {
+  return String(value || '')
+    .toLowerCase()
+    .replace(/\s+/g, '')
+    .replace(/[()［\]\[\]{}·ㆍ,._\-]/g, '')
+    .replace(/palace|fortress|temple|shrine|grotto|historicsite|folkvillage/g, '');
+}
+
+function parseChaItems(text) {
+  const trimmed = String(text || '').trim();
+  if (!trimmed) return [];
+  if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+    try {
+      return toArray(extractChaJsonItems(JSON.parse(trimmed)));
+    } catch (_) {}
+  }
+  const matches = [...trimmed.matchAll(/<item>([\s\S]*?)<\/item>/gi)];
+  return matches.map(match => {
+    const item = {};
+    [...match[1].matchAll(/<([A-Za-z0-9_:-]+)>([\s\S]*?)<\/\1>/g)].forEach(([, key, value]) => {
+      item[key.replace(/^[^:]+:/, '')] = decodeXml(value);
+    });
+    return item;
+  });
+}
+
+function extractChaJsonItems(parsed) {
+  return parsed && parsed.response && parsed.response.body && parsed.response.body.items && parsed.response.body.items.item
+    || parsed && parsed.body && parsed.body.items && parsed.body.items.item
+    || parsed && parsed.items && parsed.items.item
+    || parsed && parsed.items
+    || parsed && parsed.item
+    || [];
+}
+
+function parseChaHeader(text) {
+  const trimmed = String(text || '').trim();
+  if (trimmed.startsWith('{')) {
+    try {
+      const parsed = JSON.parse(trimmed);
+      return parsed && parsed.response && parsed.response.header || parsed && parsed.header || {};
+    } catch (_) {
+      return {};
+    }
+  }
+  return {
+    resultCode: getXmlTagValue(trimmed, 'resultCode'),
+    resultMsg: getXmlTagValue(trimmed, 'resultMsg')
+  };
+}
+
+function getXmlTagValue(text, tag) {
+  const match = String(text || '').match(new RegExp(`<${tag}>([\\s\\S]*?)<\\/${tag}>`, 'i'));
+  return match ? decodeXml(match[1]) : '';
+}
+
+function decodeXml(value) {
+  return String(value || '')
+    .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&amp;/g, '&')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 async function fetchKtoItems(operation, params, serviceKey, lang) {
@@ -246,6 +506,16 @@ function getKtoLanguage(value) {
 
 function getKtoServiceKey(lang) {
   const key = String(process.env[KTO_KEY_ENV[lang] || KTO_KEY_ENV.ko] || '').trim();
+  if (!key) return '';
+  try {
+    return key.includes('%') ? decodeURIComponent(key) : key;
+  } catch (_) {
+    return key;
+  }
+}
+
+function getOptionalServiceKey(names) {
+  const key = names.map(name => String(process.env[name] || '').trim()).find(Boolean) || '';
   if (!key) return '';
   try {
     return key.includes('%') ? decodeURIComponent(key) : key;

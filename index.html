@@ -1327,6 +1327,7 @@ const TMAP_PEDESTRIAN_URL = runloopApiUrl('/api/tmap-pedestrian');
 const TMAP_POI_URL = runloopApiUrl('/api/tmap-pois');
 const TOUR_SPOTS_URL = runloopApiUrl('/api/tour-spots');
 const TOUR_PHOTO_URL = runloopApiUrl('/api/tour-photo');
+const HERITAGE_PHOTO_URL = runloopApiUrl('/api/heritage-photo');
 const TOUR_DETAIL_URL = runloopApiUrl('/api/tour-detail');
 const TOUR_WEATHER_URL = runloopApiUrl('/api/tour-weather');
 const OPEN_WEATHER_MAP_KEY = 'c4e77c4cac686498d868b622be22e841';
@@ -3826,7 +3827,7 @@ const CULTURE_SPOT_SEARCH_RADIUS_METERS = 10000;
 const CULTURE_SPOT_VISIT_RADIUS_METERS = 100;
 const CULTURE_SPOT_VISITS_KEY = 'runloopCultureSpotVisitsV1';
 const CULTURE_SPOT_FAVORITES_KEY = 'runloopCultureSpotFavoritesV1';
-const CULTURE_SPOT_PHOTO_CACHE_KEY = 'runloopCultureSpotPhotoCacheV2';
+const CULTURE_SPOT_PHOTO_CACHE_KEY = 'runloopCultureSpotPhotoCacheV3';
 const CULTURE_SPOT_PHOTO_CACHE_MS = 7 * 24 * 60 * 60 * 1000;
 const CULTURE_SPOT_MIN_VALUE_STARS = 2;
 const CULTURE_MAP_MARKER_LIMIT = 80;
@@ -5743,6 +5744,7 @@ async function fetchCultureSpotPhoto(spot) {
 
   const request = fetchCultureSpotDetailPhoto(spot)
     .then(photo => photo || fetchCultureSpotPhotoFromApi(keyword))
+    .then(photo => photo || fetchCultureSpotHeritagePhotoFromApi(keyword))
     .then(photo => {
       const nextCache = readCultureSpotPhotoCache();
       nextCache[cacheKey] = photo
@@ -5782,6 +5784,21 @@ async function fetchCultureSpotPhotoFromApi(keyword) {
     return photo || null;
   } catch (error) {
     console.warn('KTO photo unavailable', error);
+    return null;
+  }
+}
+
+async function fetchCultureSpotHeritagePhotoFromApi(keyword) {
+  try {
+    const url = new URL(HERITAGE_PHOTO_URL, window.location.href);
+    url.searchParams.set('keyword', keyword);
+    const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
+    if (!response.ok) return null;
+    const data = await response.json();
+    const photo = Array.isArray(data && data.photos) ? data.photos.find(item => item && item.imageUrl) : null;
+    return photo || null;
+  } catch (error) {
+    console.warn('CHA heritage photo unavailable', error);
     return null;
   }
 }
