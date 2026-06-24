@@ -319,12 +319,13 @@ if ('serviceWorker' in navigator) {
   .mc-btn-run{grid-column:span 3;background:var(--ink);color:#fff;}
   .mc-btn-map{grid-column:span 3;}
   .mc-card.saved-spot .mc-btn-run,.mc-card.saved-spot .mc-btn-map{grid-column:span 3;}
-  .visited-spot-card .mc-btn-map{grid-column:1/-1;}
+  .visited-spot-card .mc-btn-run,.visited-spot-card .mc-btn-map{grid-column:span 3;}
   .mc-btn-share,.mc-btn-edit,.mc-btn-delete{grid-column:span 2;}
   .mc-btn-full{grid-column:1/-1;}
   .mc-btn-edit{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
   .mc-fav{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;border:1px solid var(--gray-100);background:rgba(255,255,255,.9);color:var(--gray-300);font-size:18px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(39,49,58,.06);}
   .mc-fav.active{background:#FDEAF3;border-color:rgba(232,93,158,.28);color:var(--spot-favorite);}
+  .mc-card.saved-spot .saved-spot-heart{top:21px;right:21px;}
   .map-place-heart{display:none;}
   .map-place-heart.visible{display:flex;}
   .interest-header{padding:12px 16px 10px;background:#fff;border-bottom:1px solid var(--gray-100);flex-shrink:0;}
@@ -6450,6 +6451,7 @@ function setCultureSpotVisit(spot) {
   if (visits[key]) return { visited: true, isNew: false, data: visits[key] };
   const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
   const spotNameEn = String(spot.nameEn || '').trim();
+  const photo = getCultureSpotPhoto(spot);
   const visit = {
     name: String(spot.place_name || '문화 스팟'),
     nameEn: spotNameEn && !/[가-힣]/.test(spotNameEn) ? spotNameEn : getEnglishCultureSpotName(spot.place_name || spot.name || ''),
@@ -6458,6 +6460,12 @@ function setCultureSpotVisit(spot) {
     medalTier: getCultureMedalLabel(stars),
     lat: Number(spot.y) || S.lat,
     lng: Number(spot.x) || S.lng,
+    contentId: String(spot.contentId || spot.contentid || spot.id || ''),
+    firstImage: String(spot.firstImage || spot.firstimage || spot.imageUrl || photo && photo.imageUrl || ''),
+    photo: photo && photo.imageUrl ? photo : null,
+    address: spot.address_name || spot.addr1 || spot.address || '',
+    placeUrl: spot.place_url || spot.url || '',
+    source: spot.source || '',
     visitedAt: new Date().toISOString()
   };
   visits[key] = visit;
@@ -6583,6 +6591,7 @@ async function fetchCultureSpotPhoto(spot) {
         : { cachedAt: Date.now(), missing: true, version: CULTURE_SPOT_PHOTO_CACHE_VERSION };
       writeCultureSpotPhotoCache(nextCache);
       if (photo && spot.key) saveCultureSpotPhotoToFavorite(spot.key, photo);
+      if (photo && spot.key) saveCultureSpotPhotoToVisit(spot.key, photo);
       return photo;
     })
     .finally(() => culturePhotoInflight.delete(cacheKey));
@@ -6716,6 +6725,17 @@ function saveCultureSpotPhotoToFavorite(key, photo) {
   item.firstImage = item.firstImage || photo.imageUrl;
   favorites[String(key)] = item;
   writeCultureSpotFavorites(favorites);
+}
+
+function saveCultureSpotPhotoToVisit(key, photo) {
+  if (!key || !photo || !photo.imageUrl) return;
+  const visits = readCultureSpotVisits();
+  const item = visits[String(key)];
+  if (!item) return;
+  item.photo = photo;
+  item.firstImage = item.firstImage || photo.imageUrl;
+  visits[String(key)] = item;
+  try { localStorage.setItem(CULTURE_SPOT_VISITS_KEY, JSON.stringify(visits)); } catch (_) {}
 }
 
 function getCultureSpotWeatherCacheKey(spot) {
@@ -6853,6 +6873,13 @@ function getFavoriteCultureSpotByKey(key) {
   return favorites[String(key)] || null;
 }
 
+function getFavoriteCultureSpotByVisitKey(key) {
+  const targetKey = String(key || '');
+  if (!targetKey) return null;
+  return Object.values(readCultureSpotFavorites())
+    .find(spot => spot && getCultureSpotVisitKey(spot) === targetKey) || null;
+}
+
 function getCultureSpotSavedTime(spot) {
   const saved = Date.parse(spot && (spot.savedAt || spot.updatedAt) || '');
   return Number.isFinite(saved) ? saved : 0;
@@ -6928,7 +6955,7 @@ function isCultureSpotFavorited(spot) {
 }
 
 function getCultureSpotStatus(spot) {
-  const favorite = isCultureSpotFavorited(spot);
+  const favorite = isCultureSpotFavorited(spot) || !!getFavoriteCultureSpotByVisitKey(getCultureSpotVisitKey(spot));
   const visited = isCultureSpotMarkedVisited(spot);
   if (favorite && visited) return 'both';
   if (favorite) return 'favorite';
@@ -7078,6 +7105,35 @@ function formatCultureSpotSavedAt(spot) {
   const saved = Date.parse(spot && spot.savedAt || '');
   if (!Number.isFinite(saved)) return '';
   return new Date(saved).toLocaleDateString(appLanguage === 'en' ? 'en-US' : 'ko-KR', { month:'long', day:'numeric' });
+}
+
+function formatCultureSpotVisitedAt(visit) {
+  const visited = Date.parse(visit && visit.visitedAt || '');
+  if (!Number.isFinite(visited)) return '';
+  return new Date(visited).toLocaleDateString(appLanguage === 'en' ? 'en-US' : 'ko-KR', { month:'long', day:'numeric' });
+}
+
+function getCultureSpotVisitRecord(spot) {
+  if (!spot) return null;
+  return readCultureSpotVisits()[getCultureSpotVisitKey(spot)] || null;
+}
+
+function getSavedSpotMetaText(spot) {
+  const savedAt = formatCultureSpotSavedAt(spot);
+  const visit = getCultureSpotVisitRecord(spot);
+  const visitedAt = formatCultureSpotVisitedAt(visit);
+  const savedLabel = appLanguage === 'en' ? 'Saved' : '저장 날짜';
+  const visitedLabel = appLanguage === 'en' ? 'Visited' : '방문 날짜';
+  return [
+    savedAt ? `${savedLabel} ${savedAt}` : '',
+    visitedAt ? `${visitedLabel} ${visitedAt}` : ''
+  ].filter(Boolean).join(' · ');
+}
+
+function getVisitedSpotMetaText(spot) {
+  const visitedAt = formatCultureSpotVisitedAt(spot);
+  if (!visitedAt) return appLanguage === 'en' ? 'Visited' : '방문 기록';
+  return `${appLanguage === 'en' ? 'Visited' : '방문 날짜'} ${visitedAt}`;
 }
 
 function formatCultureSpotDistanceLabel(distKm) {
@@ -8711,9 +8767,7 @@ function renderSavedSpotCard(spot) {
     const keyJson = escapeHtml(JSON.stringify(spot.key));
     const displayName = getCultureSpotDisplayName(spot);
     const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
-    const meta = [
-      formatCultureSpotSavedAt(spot) ? '저장 ' + formatCultureSpotSavedAt(spot) : ''
-    ].filter(Boolean).join(' · ');
+    const meta = getSavedSpotMetaText(spot);
     const statusClass = getCultureSpotStatusClass(spot);
     return `
       <div class="mc-card saved-spot ${escapeHtml(statusClass)}" id="mc-${escapeHtml(String(spot.key).replace(/[^a-z0-9_-]/gi, '_'))}">
@@ -8762,21 +8816,30 @@ function getVisitedSpotAsCultureSpot(visit) {
   const name = String(visit && visit.name || '문화 스팟').trim() || '문화 스팟';
   const lat = Number(visit && visit.lat);
   const lng = Number(visit && visit.lng);
+  const key = getCultureSpotVisitKey({ place_name: name, y: lat, x: lng });
+  const favorite = getFavoriteCultureSpotByVisitKey(key);
   const hasDistance = Number.isFinite(lat) && Number.isFinite(lng) && Number.isFinite(Number(S.lat)) && Number.isFinite(Number(S.lng));
   return {
-    key: getCultureSpotVisitKey({ place_name: name, y: lat, x: lng }),
+    key,
+    id: visit && visit.contentId || favorite && (favorite.id || favorite.contentId) || '',
+    contentId: visit && visit.contentId || favorite && favorite.contentId || '',
     place_name: name,
     name,
-    nameEn: visit && visit.nameEn || '',
-    cultureType: visit && visit.type || '문화 스팟',
+    nameEn: visit && visit.nameEn || favorite && favorite.nameEn || '',
+    cultureType: visit && visit.type || favorite && favorite.cultureType || '문화 스팟',
     cultureValueStars: getCultureVisitStars(visit),
     y: lat,
     x: lng,
     lat,
     lng,
     distFromMe: hasDistance ? haversineMeters(Number(S.lat), Number(S.lng), lat, lng) / 1000 : null,
+    address_name: visit && visit.address || favorite && favorite.address_name || '',
+    place_url: visit && visit.placeUrl || favorite && favorite.place_url || '',
+    firstImage: visit && visit.firstImage || favorite && favorite.firstImage || '',
+    photo: visit && visit.photo && visit.photo.imageUrl ? visit.photo : favorite && favorite.photo && favorite.photo.imageUrl ? favorite.photo : null,
+    overview: favorite && favorite.overview || '',
     visitedAt: visit && visit.visitedAt || '',
-    source: 'visit'
+    source: visit && visit.source || favorite && favorite.source || 'visit'
   };
 }
 
@@ -8800,6 +8863,7 @@ function renderVisitedSpotCard(spot) {
         </div>
       </div>
       <div class="mc-actions">
+        <button class="mc-btn mc-btn-run" onclick="event.stopPropagation(); startVisitedSpotRoute(${keyJson})">${escapeHtml(t('routeView'))}</button>
         <button class="mc-btn mc-btn-map" onclick="event.stopPropagation(); viewVisitedSpotOnMap(${keyJson})">${escapeHtml(t('mapView'))}</button>
       </div>
     </div>`;
@@ -9071,8 +9135,7 @@ function showSavedCourseOnCreateMap(course, attempt) {
   }, attempt ? 250 : 120);
 }
 
-function startSavedSpotRoute(id) {
-  const spot = getFavoriteCultureSpotByKey(id);
+function startCultureSpotRoute(spot) {
   if (!spot) return;
   const latlng = getCultureSpotLatLng(spot);
   if (latlng.lat === null || latlng.lng === null || !Number.isFinite(Number(latlng.lat)) || !Number.isFinite(Number(latlng.lng))) {
@@ -9080,6 +9143,16 @@ function startSavedSpotRoute(id) {
     return;
   }
   goToAiWithLocation(getCultureSpotDisplayName(spot), latlng.lat, latlng.lng);
+}
+
+function startSavedSpotRoute(id) {
+  startCultureSpotRoute(getFavoriteCultureSpotByKey(id));
+}
+
+function startVisitedSpotRoute(key) {
+  const visit = getVisitedSpotByKey(key);
+  if (!visit) return;
+  startCultureSpotRoute(getVisitedSpotAsCultureSpot(visit));
 }
 
 function openRename(id) {
@@ -10124,9 +10197,7 @@ function getCultureVisitStars(visit) {
 }
 
 function getCultureVisitDateLabel(visit) {
-  const time = Date.parse(visit && visit.visitedAt || '');
-  if (!Number.isFinite(time)) return '방문 기록';
-  return new Date(time).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' });
+  return getVisitedSpotMetaText(visit);
 }
 
 function renderMyPage() {
