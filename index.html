@@ -317,6 +317,7 @@ if ('serviceWorker' in navigator) {
   .mc-btn-run{grid-column:span 3;background:var(--ink);color:#fff;}
   .mc-btn-map{grid-column:span 3;}
   .mc-card.saved-spot .mc-btn-run,.mc-card.saved-spot .mc-btn-map{grid-column:span 3;}
+  .visited-spot-card .mc-btn-map{grid-column:1/-1;}
   .mc-btn-share,.mc-btn-edit,.mc-btn-delete{grid-column:span 2;}
   .mc-btn-full{grid-column:1/-1;}
   .mc-btn-edit{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
@@ -593,18 +594,6 @@ if ('serviceWorker' in navigator) {
   .culture-spot-save-btn{background:#fff;color:var(--coral);border:1px solid rgba(242,122,94,.28);}
   .culture-spot-save-btn.active{background:var(--coral-light);color:var(--ink);}
   .culture-spot-route-btn{background:var(--ink);color:#fff;border:none;}
-  .culture-collection-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:12px;}
-  .culture-collection-card{background:var(--gray-50);border-radius:var(--rs);padding:10px 8px;min-height:58px;}
-  .culture-collection-label{font-size:10px;color:var(--gray-500);font-weight:800;margin-bottom:6px;}
-  .culture-collection-value{font-size:16px;font-weight:900;color:var(--gray-900);line-height:1.2;white-space:nowrap;}
-  .culture-collection-value.g{color:var(--coral);}
-  .culture-visit-list{display:flex;flex-direction:column;gap:8px;}
-  .culture-visit-item{display:flex;align-items:center;gap:10px;background:#fff;border:1px solid var(--gray-100);border-radius:var(--rs);padding:10px 11px;}
-  .culture-visit-icon{width:34px;height:34px;border-radius:10px;background:var(--coral-light);display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
-  .culture-visit-info{flex:1;min-width:0;}
-  .culture-visit-name{font-size:13px;font-weight:800;color:var(--gray-900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .culture-visit-meta{font-size:11px;color:var(--gray-500);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .culture-visit-stars{font-size:12px;font-weight:900;color:var(--coral);white-space:nowrap;}
   .social-header{padding:14px 16px 10px;background:#fff;border-bottom:1px solid var(--gray-100);flex-shrink:0;display:flex;justify-content:space-between;align-items:center;gap:12px;}
   .social-title{font-size:16px;font-weight:800;color:var(--gray-900);}
   .social-sub{font-size:12px;color:var(--gray-500);margin-top:3px;}
@@ -1142,27 +1131,6 @@ if ('serviceWorker' in navigator) {
       <div class="week-activity-labels" id="weekBarLabels"></div>
     </div>
 
-    <div class="my-block-head">
-      <div class="my-section">문화 탐방</div>
-    </div>
-    <div class="my-info-panel">
-      <div class="culture-collection-summary">
-        <div class="culture-collection-card">
-          <div class="culture-collection-label">방문한 곳</div>
-          <div class="culture-collection-value g" id="myCultureVisitCount">0곳</div>
-        </div>
-        <div class="culture-collection-card">
-          <div class="culture-collection-label">5성 스팟</div>
-          <div class="culture-collection-value" id="myCultureRareCount">0곳</div>
-        </div>
-        <div class="culture-collection-card">
-          <div class="culture-collection-label">최근 방문</div>
-          <div class="culture-collection-value" id="myCultureLatest">—</div>
-        </div>
-      </div>
-      <div class="culture-visit-list" id="myCultureVisitList"></div>
-    </div>
-
     <div style="height:20px;"></div>
   </div>
 </div>
@@ -1531,7 +1499,7 @@ const APP_COPY = {
     scheduleEmptyTitle: '아직 표시할 일정이 없어요',
     scheduleEmptyDesc: '주변 행사 정보가 없거나 잠시 후 다시 확인이 필요해요.',
     scheduleDetail: '상세 보기',
-    scheduleMap: '지도에서 보기',
+    scheduleMap: '지도 보기',
     schedulePhotoFallback: '주변 일정',
     refresh: '새로고침',
     distanceSort: '거리순',
@@ -1575,8 +1543,7 @@ const APP_COPY = {
     guideWaiting: '안내 대기',
     guideStarted: '경로 안내를 시작했어요',
     routeView: '길 안내',
-    mapView: '지도에서 보기',
-    deleteSaved: '저장 삭제',
+    mapView: '지도 보기',
     infoView: '소개 보기',
     photoPreparing: '사진 준비중',
     cultureValue: '문화 가치',
@@ -1608,7 +1575,7 @@ const APP_COPY = {
     scheduleEmptyTitle: 'No events to show yet',
     scheduleEmptyDesc: 'There may be no nearby event data right now. Check again later.',
     scheduleDetail: 'Details',
-    scheduleMap: 'View on map',
+    scheduleMap: 'Map',
     schedulePhotoFallback: 'Nearby event',
     refresh: 'Refresh',
     recommend: 'Recommended',
@@ -1653,8 +1620,7 @@ const APP_COPY = {
     guideWaiting: 'Guide ready',
     guideStarted: 'Route guide started',
     routeView: 'Guide',
-    mapView: 'View on map',
-    deleteSaved: 'Remove',
+    mapView: 'Map',
     infoView: 'Info',
     photoPreparing: 'Photo coming soon',
     cultureValue: 'Cultural value',
@@ -6500,7 +6466,6 @@ function setCultureSpotVisit(spot) {
   };
   visits[key] = visit;
   try { localStorage.setItem(CULTURE_SPOT_VISITS_KEY, JSON.stringify(visits)); } catch (_) {}
-  if (S.tab === 'mypage') renderMyCultureVisits();
   if (S.tab === 'mycourse') renderMyCourses();
   return { visited: true, isNew: true, data: visit };
 }
@@ -8320,7 +8285,7 @@ function renderSocialCourseMedia(post, postId) {
         <div class="social-course-name">${escapeHtml(courseName)}</div>
         <div class="social-course-dist">${escapeHtml(distLabel)}</div>
       </div>
-      <button class="social-course-map-btn" onclick="viewSocialCourseOnMap(${postId}, event)">지도에서 보기</button>
+      <button class="social-course-map-btn" onclick="viewSocialCourseOnMap(${postId}, event)">지도 보기</button>
     </div>`;
 }
 
@@ -8708,13 +8673,15 @@ function renderMyCourses() {
 
   if (interestTab === 'visited') {
     const visits = getCultureSpotVisitList();
+    const visitedSpots = visits.map(getVisitedSpotAsCultureSpot);
     count.textContent = visits.length + (appLanguage === 'en' ? '' : '곳');
     if (!visits.length) {
       renderInterestEmpty(list, t('visitedSpotEmptyTitle'), t('visitedSpotEmptyDesc'));
       return;
     }
     list.classList.add('mc-grid');
-    list.innerHTML = visits.map(renderVisitedSpotCard).join('');
+    list.innerHTML = visitedSpots.map(renderVisitedSpotCard).join('');
+    hydrateSavedSpotPhotos(visitedSpots);
     return;
   }
 
@@ -8747,6 +8714,7 @@ function renderSavedSpotCard(spot) {
     return `
       <div class="mc-card saved-spot" id="mc-${escapeHtml(String(spot.key).replace(/[^a-z0-9_-]/gi, '_'))}">
       ${renderSpotPhotoBox(spot, 'spotPhoto')}
+      ${renderCultureSpotHeartButton(spot, spot.key, 'saved-spot-heart')}
       <div class="mc-card-top">
         <div class="mc-title">
           <div class="mc-name">${escapeHtml(displayName)}</div>
@@ -8760,7 +8728,6 @@ function renderSavedSpotCard(spot) {
       <div class="mc-actions">
         <button class="mc-btn mc-btn-run" onclick="event.stopPropagation(); startSavedSpotRoute(${keyJson})">${escapeHtml(t('routeView'))}</button>
         <button class="mc-btn mc-btn-map" onclick="event.stopPropagation(); viewCourseOnMap(${keyJson})">${escapeHtml(t('mapView'))}</button>
-        <button class="mc-btn mc-btn-delete mc-btn-full" onclick="event.stopPropagation(); deleteCourseFromCard(${keyJson})">${escapeHtml(t('deleteSaved'))}</button>
       </div>
     </div>`;
 }
@@ -8787,12 +8754,36 @@ function renderSavedScheduleCard(item) {
     </div>`;
 }
 
-function renderVisitedSpotCard(visit) {
-  const stars = getCultureVisitStars(visit);
-  const displayName = getCultureSpotDisplayName({ place_name: visit.name, nameEn: visit.nameEn }, visit.name || '문화 스팟');
-  const meta = [getCultureVisitDateLabel(visit), visit.type].filter(Boolean).join(' · ');
+function getVisitedSpotAsCultureSpot(visit) {
+  const name = String(visit && visit.name || '문화 스팟').trim() || '문화 스팟';
+  const lat = Number(visit && visit.lat);
+  const lng = Number(visit && visit.lng);
+  const hasDistance = Number.isFinite(lat) && Number.isFinite(lng) && Number.isFinite(Number(S.lat)) && Number.isFinite(Number(S.lng));
+  return {
+    key: getCultureSpotVisitKey({ place_name: name, y: lat, x: lng }),
+    place_name: name,
+    name,
+    nameEn: visit && visit.nameEn || '',
+    cultureType: visit && visit.type || '문화 스팟',
+    cultureValueStars: getCultureVisitStars(visit),
+    y: lat,
+    x: lng,
+    lat,
+    lng,
+    distFromMe: hasDistance ? haversineMeters(Number(S.lat), Number(S.lng), lat, lng) / 1000 : null,
+    visitedAt: visit && visit.visitedAt || '',
+    source: 'visit'
+  };
+}
+
+function renderVisitedSpotCard(spot) {
+  const keyJson = escapeHtml(JSON.stringify(spot.key));
+  const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
+  const displayName = getCultureSpotDisplayName(spot, spot.name || '문화 스팟');
+  const meta = [getCultureVisitDateLabel(spot)].filter(Boolean).join(' · ');
   return `
-    <div class="mc-card visited-spot-card">
+    <div class="mc-card visited-spot-card" id="visited-${escapeHtml(String(spot.key).replace(/[^a-z0-9_-]/gi, '_'))}">
+      ${renderSpotPhotoBox(spot, 'visitedSpotPhoto')}
       <div class="mc-card-top">
         <div class="mc-title">
           <div class="mc-name">${escapeHtml(displayName)}</div>
@@ -8802,6 +8793,9 @@ function renderVisitedSpotCard(visit) {
           <div class="mc-distance-value">★${stars}</div>
           <div class="mc-distance-unit">${escapeHtml(t('visitedDone'))}</div>
         </div>
+      </div>
+      <div class="mc-actions">
+        <button class="mc-btn mc-btn-map" onclick="event.stopPropagation(); viewVisitedSpotOnMap(${keyJson})">${escapeHtml(t('mapView'))}</button>
       </div>
     </div>`;
 }
@@ -8857,7 +8851,6 @@ function openCourseDetail(id) {
     <div class="course-detail-secondary-actions single">
       <button class="course-secondary" onclick="viewCourseFromDetail()">${escapeHtml(t('mapView'))}</button>
     </div>
-    <button class="course-detail-delete" onclick="deleteCourseFromDetail()">${escapeHtml(t('deleteSaved'))}</button>
   `;
   document.getElementById('courseDetailModal').style.display = 'flex';
   hydrateSavedSpotPhotos([course]);
@@ -9012,6 +9005,20 @@ function viewCourseOnMap(id) {
   showSavedSpotOnCreateMap(course, 0);
 }
 
+function getVisitedSpotByKey(key) {
+  const visits = readCultureSpotVisits();
+  return visits[String(key)] || null;
+}
+
+function viewVisitedSpotOnMap(key) {
+  const visit = getVisitedSpotByKey(key);
+  if (!visit) return;
+  const spot = getVisitedSpotAsCultureSpot(visit);
+  const createTab = document.querySelector('[data-tab="create"]');
+  switchTab('create', createTab);
+  showSavedSpotOnCreateMap(spot, 0);
+}
+
 function showSavedSpotOnCreateMap(spot, attempt) {
   setTimeout(() => {
     if (!S.kakaoReady || !createMap) {
@@ -9057,19 +9064,6 @@ function showSavedCourseOnCreateMap(course, attempt) {
     showAiRoutePreview(course);
     toast((course.name || '저장 코스') + '를 지도에 표시했어요');
   }, attempt ? 250 : 120);
-}
-
-function deleteCourseFromDetail() {
-  if (!courseDetailTargetId) return;
-  const id = courseDetailTargetId;
-  if (!confirm('이 스팟 저장을 삭제할까요?')) return;
-  closeCourseDetail();
-  if (removeCultureSpotFavorite(id)) toast('저장한 스팟을 삭제했어요');
-}
-
-function deleteCourseFromCard(id) {
-  if (!confirm('이 스팟 저장을 삭제할까요?')) return;
-  if (removeCultureSpotFavorite(id)) toast('저장한 스팟을 삭제했어요');
 }
 
 function startSavedSpotRoute(id) {
@@ -10121,48 +10115,13 @@ function getCultureSpotVisitList() {
 }
 
 function getCultureVisitStars(visit) {
-  return Math.max(1, Math.min(5, Math.round(Number(visit && visit.valueStars) || 1)));
+  return Math.max(1, Math.min(5, Math.round(Number(visit && (visit.valueStars ?? visit.cultureValueStars)) || 1)));
 }
 
 function getCultureVisitDateLabel(visit) {
   const time = Date.parse(visit && visit.visitedAt || '');
   if (!Number.isFinite(time)) return '방문 기록';
   return new Date(time).toLocaleDateString('ko-KR', { month: 'numeric', day: 'numeric' });
-}
-
-function renderMyCultureVisits() {
-  const countEl = document.getElementById('myCultureVisitCount');
-  const rareEl = document.getElementById('myCultureRareCount');
-  const latestEl = document.getElementById('myCultureLatest');
-  const listEl = document.getElementById('myCultureVisitList');
-  if (!countEl || !rareEl || !latestEl || !listEl) return;
-
-  const visits = getCultureSpotVisitList();
-  const rareCount = visits.filter(visit => getCultureVisitStars(visit) >= 5).length;
-  countEl.textContent = visits.length + '곳';
-  rareEl.textContent = rareCount + '곳';
-  latestEl.textContent = visits[0] ? getCultureVisitDateLabel(visits[0]) : '—';
-
-  if (!visits.length) {
-    listEl.innerHTML = '<div style="text-align:center;padding:14px 0;color:var(--gray-500);font-size:12px;">아직 방문 기록이 없어요</div>';
-    return;
-  }
-
-  listEl.innerHTML = visits.slice(0, 3).map(visit => {
-    const type = visit.type || '문화 스팟';
-    const stars = getCultureVisitStars(visit);
-    const displayName = getCultureSpotDisplayName({ place_name: visit.name, nameEn: visit.nameEn }, visit.name || '문화 스팟');
-    const meta = [getCultureVisitDateLabel(visit)].filter(Boolean).join(' · ');
-    return `
-      <div class="culture-visit-item">
-        <div class="culture-visit-icon">${getCultureSpotIcon(type)}</div>
-        <div class="culture-visit-info">
-          <div class="culture-visit-name">${escapeHtml(displayName)}</div>
-          <div class="culture-visit-meta">${escapeHtml(meta)}</div>
-        </div>
-        <div class="culture-visit-stars">${escapeHtml(getCultureValueStarsText(stars))}</div>
-      </div>`;
-  }).join('');
 }
 
 function renderMyPage() {
@@ -10186,7 +10145,6 @@ function renderMyPage() {
   if (sourceInfo) sourceInfo.textContent = getMySourceSummary(records);
   updateMySettingsValues();
   renderMyLevel(records, goal);
-  renderMyCultureVisits();
 
   // 목표 바
   updateGoalBar();
