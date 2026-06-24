@@ -461,6 +461,11 @@ if ('serviceWorker' in navigator) {
   .ob-avatar-item.selected{background:var(--coral-light);border-color:var(--coral);}
   .ob-goal-item{display:flex;align-items:center;gap:14px;padding:14px 16px;background:var(--gray-50);border:2px solid var(--gray-100);border-radius:var(--r);cursor:pointer;transition:all .15s;}
   .ob-goal-item.selected{background:var(--coral-light);border-color:var(--coral);}
+  .goal-custom-row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--gray-50);border:2px solid var(--gray-100);border-radius:var(--r);transition:all .15s;}
+  .goal-custom-row.selected{background:var(--coral-light);border-color:var(--coral);}
+  .goal-custom-input{width:86px;height:36px;border:1px solid var(--gray-300);border-radius:var(--rs);background:#fff;padding:0 10px;font-size:15px;font-weight:800;color:var(--ink);font-family:inherit;text-align:right;outline:none;}
+  .goal-custom-input:focus{border-color:var(--coral);box-shadow:0 0 0 3px rgba(242,122,94,.14);}
+  .goal-custom-unit{font-size:13px;font-weight:900;color:var(--gray-700);margin-left:-6px;}
 
   .near-course-card{background:rgba(255,255,255,.82);border-radius:12px;border:1px solid rgba(28,36,43,.07);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s;box-shadow:0 8px 20px rgba(28,36,43,.045);}
   .near-course-card:hover{border-color:var(--coral);transform:translateY(-1px);}
@@ -709,6 +714,15 @@ if ('serviceWorker' in navigator) {
         </div>
         <div style="margin-left:auto;font-size:18px;opacity:0;" id="ob-check-7">✓</div>
       </div>
+      <div class="goal-custom-row" id="obCustomGoalRow" onclick="focusObCustomGoal()">
+        <div style="font-size:22px;">✎</div>
+        <div style="min-width:0;flex:1;">
+          <div style="font-size:14px;font-weight:700;">직접 설정</div>
+          <div style="font-size:12px;color:var(--gray-500);">0.5~50km 사이로 입력</div>
+        </div>
+        <input class="goal-custom-input" id="obCustomGoalInput" type="number" min="0.5" max="50" step="0.1" inputmode="decimal" placeholder="4.5" onclick="event.stopPropagation()" onfocus="selectObCustomGoal()" oninput="selectObCustomGoal()">
+        <span class="goal-custom-unit">km</span>
+      </div>
     </div>
 
     <div style="margin-top:auto;display:flex;gap:10px;">
@@ -774,7 +788,7 @@ if ('serviceWorker' in navigator) {
           </div>
         </div>
       </div>
-      <!-- 3행: 런닝 코멘트 -->
+      <!-- 3행: 날씨 요약 -->
       <div style="margin-top:10px;font-size:12px;color:var(--gray-500);border-top:1px solid var(--gray-100);padding-top:10px;" id="wSummary">날씨 불러오는 중…</div>
     </div>
 
@@ -815,7 +829,7 @@ if ('serviceWorker' in navigator) {
         </div>
         <div class="ai-search-row">
           <div style="position:relative;flex:1;">
-            <input type="text" class="addr-input" id="addrInput" placeholder="장소·가게 검색" autocomplete="off"
+            <input type="text" class="addr-input" id="addrInput" placeholder="위치 검색" autocomplete="off"
               onfocus="prepareAddressSearchInput(this)" onclick="prepareAddressSearchInput(this)" oninput="searchAddress(this.value)"
               onkeydown="if(event.key==='Enter'){event.preventDefault();submitMapSearch();}"
               style="border-color:var(--gray-100);background:#fff;">
@@ -1095,6 +1109,12 @@ if ('serviceWorker' in navigator) {
       <div class="ob-goal-item" onclick="selectGoalOption(this,3)"><div style="font-size:20px;">🏃</div><div><div style="font-size:14px;font-weight:700;">꾸준하게</div><div style="font-size:12px;color:var(--gray-500);">하루 3km</div></div><div style="margin-left:auto;color:var(--coral);font-weight:700;opacity:0;" id="gc-3">✓</div></div>
       <div class="ob-goal-item" onclick="selectGoalOption(this,5)"><div style="font-size:20px;">💪</div><div><div style="font-size:14px;font-weight:700;">열심히</div><div style="font-size:12px;color:var(--gray-500);">하루 5km</div></div><div style="margin-left:auto;color:var(--coral);font-weight:700;opacity:0;" id="gc-5">✓</div></div>
       <div class="ob-goal-item" onclick="selectGoalOption(this,7)"><div style="font-size:20px;">🔥</div><div><div style="font-size:14px;font-weight:700;">진지하게</div><div style="font-size:12px;color:var(--gray-500);">하루 7km</div></div><div style="margin-left:auto;color:var(--coral);font-weight:700;opacity:0;" id="gc-7">✓</div></div>
+      <div class="goal-custom-row" id="editCustomGoalRow" onclick="focusEditCustomGoal()">
+        <div style="font-size:20px;">✎</div>
+        <div style="min-width:0;flex:1;"><div style="font-size:14px;font-weight:700;">직접 설정</div><div style="font-size:12px;color:var(--gray-500);">0.5~50km 사이로 입력</div></div>
+        <input class="goal-custom-input" id="editCustomGoalInput" type="number" min="0.5" max="50" step="0.1" inputmode="decimal" placeholder="4.5" onclick="event.stopPropagation()" onfocus="selectEditCustomGoal()" oninput="selectEditCustomGoal()">
+        <span class="goal-custom-unit">km</span>
+      </div>
     </div>
     <button onclick="saveGoalEdit()" style="width:100%;height:48px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;">저장</button>
   </div>
@@ -1337,6 +1357,8 @@ const ACTIVITY_DAILY_ACTIVE_XP = 35;
 const ACTIVITY_DAILY_GOAL_XP = 90;
 const ACTIVITY_DAILY_STRETCH_XP = 35;
 const DAILY_GOAL_OPTIONS = [2, 3, 5, 7];
+const DAILY_GOAL_MIN_KM = 0.5;
+const DAILY_GOAL_MAX_KM = 50;
 let appLanguage = localStorage.getItem(APP_LANGUAGE_KEY) === 'en' ? 'en' : 'ko';
 const APP_COPY = {
   ko: {
@@ -1350,7 +1372,7 @@ const APP_COPY = {
     refresh: '새로고침',
     distanceSort: '거리순',
     starsSort: '별점순',
-    searchPlaceholder: '장소·가게 검색',
+    searchPlaceholder: '위치 검색',
     searchAction: '검색',
     startPoint: '출발지',
     destination: '목적지',
@@ -1397,7 +1419,7 @@ const APP_COPY = {
     recommend: 'Recommended',
     distanceSort: 'Distance',
     starsSort: 'Rating',
-    searchPlaceholder: 'Search places',
+    searchPlaceholder: 'Search location',
     searchAction: 'Search',
     startPoint: 'Start',
     destination: 'Destination',
@@ -2904,7 +2926,7 @@ function setAiSearchTarget(target) {
   if (startBtn) startBtn.classList.toggle('active', aiSearchTarget === 'start');
   if (destBtn) destBtn.classList.toggle('active', aiSearchTarget === 'dest');
   if (input) {
-    input.placeholder = '장소·가게 검색';
+    input.placeholder = t('searchPlaceholder');
     input.value = getAiSearchInputValue();
   }
   updateMapSearchClearButton();
@@ -6594,20 +6616,44 @@ function getWeeklyActivitySummary(records) {
 
 function getDailyGoal() {
   const saved = parseFloat(localStorage.getItem(DAILY_GOAL_KEY) || '');
-  if (Number.isFinite(saved) && saved > 0) return saved;
+  const normalized = normalizeDailyGoal(saved, null);
+  if (normalized) return normalized;
 
   const legacy = parseFloat(localStorage.getItem(LEGACY_WEEKLY_GOAL_KEY) || '');
   const converted = Number.isFinite(legacy) && legacy > 0
     ? (legacy <= 10 ? 2 : legacy <= 20 ? 3 : legacy <= 35 ? 5 : 7)
     : 3;
-  localStorage.setItem(DAILY_GOAL_KEY, converted);
-  return converted;
+  return setDailyGoal(converted);
 }
 
 function setDailyGoal(value) {
-  const goal = DAILY_GOAL_OPTIONS.includes(Number(value)) ? Number(value) : 3;
-  localStorage.setItem(DAILY_GOAL_KEY, goal);
+  const goal = normalizeDailyGoal(value, 3);
+  localStorage.setItem(DAILY_GOAL_KEY, String(goal));
+  const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
+  profile.goal = goal;
+  localStorage.setItem('runProfile', JSON.stringify(profile));
   return goal;
+}
+
+function normalizeDailyGoal(value, fallback = 3) {
+  const number = parseFloat(value);
+  if (!Number.isFinite(number)) return fallback;
+  const clamped = Math.min(DAILY_GOAL_MAX_KM, Math.max(DAILY_GOAL_MIN_KM, number));
+  return Math.round(clamped * 10) / 10;
+}
+
+function parseDailyGoalInput(inputId) {
+  const input = document.getElementById(inputId);
+  const raw = input ? input.value : '';
+  const number = parseFloat(raw);
+  if (!Number.isFinite(number)) return null;
+  return normalizeDailyGoal(number, null);
+}
+
+function formatDailyGoal(goal) {
+  const number = normalizeDailyGoal(goal, null);
+  if (!number) return '—';
+  return Number.isInteger(number) ? String(number) : number.toFixed(1).replace(/\.0$/, '');
 }
 
 let healthActivitySyncing = false;
@@ -6893,7 +6939,7 @@ function renderRecords() {
   const fillEl = document.getElementById('homeGoalFill');
   const textEl = document.getElementById('homeGoalText');
   if (fillEl) fillEl.style.width = pct + '%';
-  if (textEl) textEl.textContent = todayTotal.toFixed(1) + ' / ' + goal + 'km';
+  if (textEl) textEl.textContent = todayTotal.toFixed(1) + ' / ' + formatDailyGoal(goal) + 'km';
 
   if (!wrap) return;
   if (!records.length) {
@@ -8056,89 +8102,88 @@ function startMyCoursRun(id) {
 
 function makeWeatherSummary(temp, humid, wind, weatherId) {
   if (weatherId >= 200 && weatherId < 300) return pickWeatherLine('thunder', weatherId, temp, [
-    '⛈ 천둥번개 중. 오늘은 러닝화도 휴가입니다',
-    '⛈ 번개가 페이스메이커인 날은 실내 운동으로',
-    '⛈ 하늘이 너무 열심히 뛰고 있어요. 우리는 스트레칭만',
-    '⛈ 오늘은 기록보다 안전이 압도적 1등'
+    '⛈ 천둥번개가 있어요. 외출 전 하늘을 한 번 더 확인하세요',
+    '⛈ 번개 가능성이 있어요. 실내 일정이 더 편한 날',
+    '⛈ 하늘 상태가 불안정해요. 이동은 짧고 안전하게',
+    '⛈ 오늘은 안전 확인이 가장 중요한 날씨예요'
   ]);
   if (weatherId >= 300 && weatherId < 600) return pickWeatherLine('rain', weatherId, temp, [
-    '🌧 비 와요. 오늘의 코스는 현관까지 왕복',
-    '🌧 우비 런닝도 낭만이지만 양말은 반대할 수 있어요',
-    '🌧 빗길은 미끄러워요. 오늘은 천천히가 이기는 날',
-    '🌧 비 냄새는 좋고, 젖은 운동화는 덜 좋아요'
+    '🌧 비가 내려요. 우산과 방수 신발이 필요해요',
+    '🌧 빗길이 미끄러울 수 있어요. 이동은 천천히',
+    '🌧 습한 공기와 비 냄새가 진한 날이에요',
+    '🌧 외출 전 강수 상황을 한 번 더 확인하세요'
   ]);
   if (weatherId >= 600 && weatherId < 700) return pickWeatherLine('snow', weatherId, temp, [
-    '❄️ 눈길이에요. 기록보다 무릎이 먼저입니다',
-    '❄️ 미끄러지면 코어 운동이긴 한데 추천하진 않아요',
-    '❄️ 오늘은 보폭을 줄이고 폼은 귀엽게',
-    '❄️ 눈 오는 날 러닝은 풍경 반, 조심 반'
+    '❄️ 눈길이에요. 미끄럼에 조심하세요',
+    '❄️ 눈이 쌓일 수 있어요. 이동 시간 여유가 필요해요',
+    '❄️ 바닥이 얼 수 있어요. 따뜻한 신발이 좋아요',
+    '❄️ 풍경은 좋지만 길 상태는 조심할 날'
   ]);
   if (weatherId >= 700 && weatherId < 800) return pickWeatherLine('fog', weatherId, temp, [
-    '🌫 앞이 흐려요. 페이스보다 시야 확보 먼저',
-    '🌫 안개가 분위기는 잡았고, 우리는 안전을 잡아요',
-    '🌫 오늘은 멀리보다 바로 앞 한 걸음',
-    '🌫 길이 흐릿해도 무리하지 않으면 충분해요'
+    '🌫 안개가 있어요. 시야 확보가 중요해요',
+    '🌫 공기가 뿌옇게 느껴질 수 있어요',
+    '🌫 가까운 거리도 천천히 살펴보면 좋아요',
+    '🌫 길이 흐릿해질 수 있어요. 이동은 여유 있게'
   ]);
   if (temp >= 33) return pickWeatherLine('very-hot', weatherId, temp, [
-    '🥵 진짜 더워요. 새벽 런닝 아니면 내일로 미루는 것도 용기',
-    '🥵 러닝보다 물병이 주인공인 날',
-    '🥵 오늘 낮 러닝은 햇빛과의 면담입니다',
-    '🥵 더위가 진심이에요. 짧게, 천천히, 물 많이'
+    '🥵 진짜 더워요. 햇빛과 탈수에 주의하세요',
+    '🥵 물병이 꼭 필요한 날씨예요',
+    '🥵 낮 시간대엔 그늘과 냉방을 우선하세요',
+    '🥵 더위가 강해요. 외출은 짧고 가볍게'
   ]);
   if (temp >= 28) return pickWeatherLine('hot', weatherId, temp, [
-    '☀️ 더운 날씨. 물 챙기고 그늘 코스로 가요',
-    '☀️ 오늘은 페이스보다 수분 보충이 먼저',
-    '☀️ 해가 의욕적이에요. 우리는 조금 덜 의욕적으로',
-    '☀️ 짧은 코스로도 충분히 땀나는 날'
+    '☀️ 더운 날씨예요. 물과 그늘을 챙기세요',
+    '☀️ 햇빛이 강할 수 있어요. 자외선 차단이 좋아요',
+    '☀️ 오후엔 체감온도가 더 높게 느껴질 수 있어요',
+    '☀️ 짧은 외출도 땀이 잘 나는 날'
   ]);
   if (temp >= 20) {
     if (humid > 75) return pickWeatherLine('humid', weatherId, temp, [
-      '💧 습해요. 땀인지 날씨인지 구분이 안 될 수 있음',
-      '💧 공기가 촉촉해요. 페이스 욕심은 살짝 접기',
-      '💧 습도 높은 날. 오늘의 목표는 뽀송함 포기',
-      '💧 땀이 빨리 와도 당황하지 않는 날'
+      '💧 습해요. 공기가 무겁게 느껴질 수 있어요',
+      '💧 습도가 높아 끈적한 날씨예요',
+      '💧 뽀송함을 기대하긴 어려운 날',
+      '💧 바람이 약하면 더 답답하게 느껴질 수 있어요'
     ]);
     if (wind > 6)  return pickWeatherLine('warm-windy', weatherId, temp, [
-      '💨 바람 있어요. 맞바람 구간엔 마음이 강해집니다',
-      '💨 오늘 바람은 무료 저항 훈련',
-      '💨 순풍이면 기분 좋고, 맞바람이면 이야기거리',
-      '💨 머리는 헝클어져도 리듬은 챙겨요'
+      '💨 바람이 있어요. 얇은 겉옷이 도움돼요',
+      '💨 바람 방향에 따라 체감이 달라질 수 있어요',
+      '💨 모자나 가벼운 물건은 잘 챙기세요',
+      '💨 머리가 쉽게 헝클어질 수 있는 날'
     ]);
     return pickWeatherLine('good-run', weatherId, temp, [
-      '🏃 이런 날은 10분만 뛰어도 기분이 바뀌어요',
       '🌿 오늘 공기는 꽤 협조적이에요',
-      '🌤 무리하지 말고, 기분 좋게 나가기 좋은 날',
-      '🏃 지금 나가면 돌아오는 길이 더 좋아질 날씨',
-      '🌿 오늘은 기록보다 리듬을 챙기기 좋은 날',
-      '👟 러닝화가 밖을 보고 있을 날씨',
-      '🌤 가볍게 한 바퀴 돌기 좋은 날이에요'
+      '🌤 하늘과 기온이 무난한 날씨예요',
+      '🌿 밖에 머물기 부담이 적은 날이에요',
+      '🌤 맑고 안정적인 날씨가 이어지고 있어요',
+      '🌿 공기가 편안하게 느껴지는 날이에요',
+      '🌤 가볍게 외출하기 좋은 날씨예요'
     ]);
   }
   if (temp >= 10) return wind > 8
     ? pickWeatherLine('cool-windy', weatherId, temp, [
       '🌬 쌀쌀하고 바람 있어요. 바람막이 필수',
-      '🌬 바람이 코스를 같이 뛰겠다고 하네요',
-      '🌬 첫 5분만 버티면 몸이 설득됩니다',
-      '🌬 오늘은 얇게 껴입는 사람이 승자'
+      '🌬 바람 때문에 체감온도가 낮을 수 있어요',
+      '🌬 목 주변을 따뜻하게 챙기면 좋아요',
+      '🌬 얇게 여러 겹 입기 좋은 날씨예요'
     ])
     : pickWeatherLine('cool-good', weatherId, temp, [
-      '🌿 런닝하기 딱 좋아요. 너무 오래 고민하면 날씨가 삐질 수 있어요',
-      '🌿 몸 풀기 좋은 온도예요',
-      '🏃 집 앞 한 바퀴만 돌아도 충분한 날',
-      '🌿 오늘은 페이스보다 기분으로 뛰어도 좋아요',
-      '👟 가볍게 나가기 좋은 온도예요'
+      '🌿 선선한 날씨예요. 가벼운 겉옷이 좋아요',
+      '🌿 부담스럽지 않은 온도예요',
+      '🌿 공기가 차분하고 선선해요',
+      '🌿 햇빛이 약하면 조금 쌀쌀할 수 있어요',
+      '🌿 야외에 머물기 좋은 온도예요'
     ]);
   if (temp >= 0)  return pickWeatherLine('cold', weatherId, temp, [
     '🧤 꽤 추워요. 귀마개까지 챙기면 100점',
-    '🧤 나가기 전엔 춥고, 7분 뒤엔 괜찮아질 가능성 있음',
+    '🧤 밖에 오래 있으면 손끝이 먼저 차가워질 수 있어요',
     '🧤 손끝이 먼저 항의할 수 있어요. 장갑 추천',
-    '🧤 짧게 뛰고 따뜻하게 돌아오기 좋은 날'
+    '🧤 짧은 외출도 보온을 챙기면 좋아요'
   ]);
   return pickWeatherLine('freezing', weatherId, temp, [
-    '🥶 진짜 춥네요. 나가는 것 자체가 오늘의 운동',
+    '🥶 진짜 추워요. 보온이 가장 중요해요',
     '🥶 오늘은 의지보다 보온이 먼저',
-    '🥶 바깥 공기가 꽤 단호해요. 무리 금지',
-    '🥶 실내 운동도 충분히 훌륭한 선택'
+    '🥶 바깥 공기가 꽤 매서워요. 무리한 외출은 피하세요',
+    '🥶 실내 일정이 더 편한 날씨예요'
   ]);
 }
 
@@ -8201,9 +8246,9 @@ function makeForecastWeatherSummary(currentTemp, currentWeatherId, forecastData)
   if (snow) {
     const when = formatForecastGap(snow.dt);
     return pickForecastLine('snow-soon', snow.dt, [
-      `${when} 눈 예보가 있어요. 오늘은 안전한 코스로 짧게 가요`,
-      `${when} 눈이 올 수 있어요. 기록보다 미끄럼 방지가 먼저예요`,
-      `${when} 길이 미끄러워질 수 있어요. 나간다면 보폭을 줄여요`
+      `${when} 눈 예보가 있어요. 길이 미끄러워질 수 있어요`,
+      `${when} 눈이 올 수 있어요. 이동 시간에 여유를 두세요`,
+      `${when} 바닥이 얼 수 있어요. 신발과 보온을 챙기세요`
     ]);
   }
 
@@ -8211,9 +8256,9 @@ function makeForecastWeatherSummary(currentTemp, currentWeatherId, forecastData)
   if (rain) {
     const when = formatForecastGap(rain.dt);
     return pickForecastLine('rain-soon', rain.dt, [
-      `${when} 비 예보가 있어요. 짧게 뛸 거면 지금이 낫습니다`,
-      `${when} 비가 올 수 있어요. 지금 다녀오면 덜 젖어요`,
-      `${when} 하늘이 젖을 준비 중이에요. 오늘은 짧은 코스 추천`
+      `${when} 비 예보가 있어요. 우산을 챙기세요`,
+      `${when} 비가 올 수 있어요. 외출 전 하늘을 확인하세요`,
+      `${when} 하늘이 젖을 준비 중이에요. 이동은 여유 있게`
     ]);
   }
 
@@ -8221,9 +8266,9 @@ function makeForecastWeatherSummary(currentTemp, currentWeatherId, forecastData)
   if (windy) {
     const when = formatForecastGap(windy.dt);
     return pickForecastLine('wind-soon', windy.dt, [
-      `${when} 바람이 세져요. 지금 짧게 뛰거나 바람막이를 챙겨요`,
-      `${when} 맞바람 난이도가 올라가요. 가볍게 다녀오는 쪽 추천`,
-      `${when} 바람이 꽤 붙어요. 코스는 짧고 익숙한 길이 좋아요`
+      `${when} 바람이 세져요. 바람막이가 도움돼요`,
+      `${when} 바람 때문에 체감온도가 낮아질 수 있어요`,
+      `${when} 바람이 꽤 붙어요. 가벼운 물건은 잘 챙기세요`
     ]);
   }
 
@@ -8236,14 +8281,14 @@ function makeForecastWeatherSummary(currentTemp, currentWeatherId, forecastData)
     return pickForecastLine('temp-drop', minTemp, [
       `이따 ${minTemp}도까지 내려가요. 추위 싫으면 지금이 더 편해요`,
       `조금 뒤 기온이 내려가요. 나간다면 얇은 겉옷을 챙겨요`,
-      `오늘은 뒤로 갈수록 쌀쌀해져요. 짧게 먼저 뛰는 것도 좋아요`
+      `오늘은 뒤로 갈수록 쌀쌀해져요. 겉옷을 준비하세요`
     ]);
   }
   if (maxTemp - currentTemp >= 5 && maxTemp >= 28) {
     return pickForecastLine('temp-rise', maxTemp, [
-      `이따 ${maxTemp}도까지 올라가요. 더워지기 전에 짧게 다녀와요`,
-      `조금 뒤 더워져요. 물 챙기고 지금 가볍게 가는 쪽 추천`,
-      `기온이 더 오를 예정이에요. 오늘은 늦기 전에 짧은 코스`
+      `이따 ${maxTemp}도까지 올라가요. 더워지기 전 필요한 외출을 챙기세요`,
+      `조금 뒤 더워져요. 물과 그늘을 기억하세요`,
+      `기온이 더 오를 예정이에요. 늦은 시간엔 더 덥게 느껴질 수 있어요`
     ]);
   }
 
@@ -8738,14 +8783,42 @@ function selectObAvatar(el, avatar) {
 
 function selectObGoal(el, km) {
   obSelectedGoal = km;
-  document.querySelectorAll('.ob-goal-item').forEach(i => {
+  document.querySelectorAll('#ob-step-4 .ob-goal-item').forEach(i => {
     i.classList.remove('selected');
     const check = i.querySelector('[id^="ob-check"]');
     if (check) check.style.opacity = '0';
   });
+  const customRow = document.getElementById('obCustomGoalRow');
+  if (customRow) customRow.classList.remove('selected');
   el.classList.add('selected');
   const check = document.getElementById('ob-check-' + km);
   if (check) check.style.opacity = '1';
+}
+
+function selectObCustomGoal() {
+  document.querySelectorAll('#ob-step-4 .ob-goal-item').forEach(i => {
+    i.classList.remove('selected');
+    const check = i.querySelector('[id^="ob-check"]');
+    if (check) check.style.opacity = '0';
+  });
+  const customRow = document.getElementById('obCustomGoalRow');
+  if (customRow) customRow.classList.add('selected');
+  const customGoal = parseDailyGoalInput('obCustomGoalInput');
+  if (customGoal) obSelectedGoal = customGoal;
+}
+
+function focusObCustomGoal() {
+  selectObCustomGoal();
+  const input = document.getElementById('obCustomGoalInput');
+  if (input) input.focus();
+}
+
+function getOnboardingGoal() {
+  const customRow = document.getElementById('obCustomGoalRow');
+  if (customRow && customRow.classList.contains('selected')) {
+    return parseDailyGoalInput('obCustomGoalInput');
+  }
+  return normalizeDailyGoal(obSelectedGoal, 2);
 }
 
 function obFinish() {
@@ -8753,16 +8826,22 @@ function obFinish() {
   const age = document.getElementById('ob-age').value;
   const height = document.getElementById('ob-height').value;
   const weight = document.getElementById('ob-weight').value;
+  const goal = getOnboardingGoal();
+  if (!goal) {
+    toast('하루 목표를 입력해주세요');
+    focusObCustomGoal();
+    return;
+  }
   const profile = {
     name, avatar: obSelectedAvatar,
-    goal: obSelectedGoal, onboarded: true,
+    goal, onboarded: true,
     age: age ? parseInt(age) : null,
     height: height ? parseInt(height) : null,
     weight: weight ? parseInt(weight) : null,
     gender: obSelectedGender || null
   };
   localStorage.setItem('runProfile', JSON.stringify(profile));
-  setDailyGoal(obSelectedGoal);
+  setDailyGoal(goal);
   const ob = document.getElementById('onboarding');
   ob.classList.remove('active');
   ob.style.display = 'none';
@@ -8801,7 +8880,7 @@ function updateMySettingsValues() {
   const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
   const goal = getDailyGoal();
   const valueEl = document.getElementById('settingsGoalValue');
-  if (valueEl) valueEl.textContent = Number.isFinite(goal) ? goal + 'km' : '—';
+  if (valueEl) valueEl.textContent = formatDailyGoal(goal) + 'km';
 }
 
 function openProfileEdit() {
@@ -8844,12 +8923,17 @@ let editSelectedGoal = 3;
 
 function openGoalEdit() {
   editSelectedGoal = getDailyGoal();
+  const isPreset = DAILY_GOAL_OPTIONS.includes(editSelectedGoal);
   DAILY_GOAL_OPTIONS.forEach(v => {
     const el = document.getElementById('gc-' + v);
     const row = el ? el.closest('.ob-goal-item') : null;
-    if (el) el.style.opacity = v === editSelectedGoal ? '1' : '0';
-    if (row) row.classList.toggle('selected', v === editSelectedGoal);
+    if (el) el.style.opacity = isPreset && v === editSelectedGoal ? '1' : '0';
+    if (row) row.classList.toggle('selected', isPreset && v === editSelectedGoal);
   });
+  const customRow = document.getElementById('editCustomGoalRow');
+  const customInput = document.getElementById('editCustomGoalInput');
+  if (customRow) customRow.classList.toggle('selected', !isPreset);
+  if (customInput) customInput.value = isPreset ? '' : formatDailyGoal(editSelectedGoal);
   document.getElementById('goalEditModal').style.display = 'flex';
 }
 
@@ -8861,14 +8945,50 @@ function selectGoalOption(el, km) {
   editSelectedGoal = km;
   document.querySelectorAll('#goalEditOptions .ob-goal-item').forEach(i => i.classList.remove('selected'));
   el.classList.add('selected');
+  const customRow = document.getElementById('editCustomGoalRow');
+  const customInput = document.getElementById('editCustomGoalInput');
+  if (customRow) customRow.classList.remove('selected');
+  if (customInput) customInput.value = '';
   DAILY_GOAL_OPTIONS.forEach(v => {
     const c = document.getElementById('gc-' + v);
     if (c) c.style.opacity = v === km ? '1' : '0';
   });
 }
 
+function selectEditCustomGoal() {
+  document.querySelectorAll('#goalEditOptions .ob-goal-item').forEach(i => i.classList.remove('selected'));
+  DAILY_GOAL_OPTIONS.forEach(v => {
+    const c = document.getElementById('gc-' + v);
+    if (c) c.style.opacity = '0';
+  });
+  const customRow = document.getElementById('editCustomGoalRow');
+  if (customRow) customRow.classList.add('selected');
+  const customGoal = parseDailyGoalInput('editCustomGoalInput');
+  if (customGoal) editSelectedGoal = customGoal;
+}
+
+function focusEditCustomGoal() {
+  selectEditCustomGoal();
+  const input = document.getElementById('editCustomGoalInput');
+  if (input) input.focus();
+}
+
+function getEditedDailyGoal() {
+  const customRow = document.getElementById('editCustomGoalRow');
+  if (customRow && customRow.classList.contains('selected')) {
+    return parseDailyGoalInput('editCustomGoalInput');
+  }
+  return normalizeDailyGoal(editSelectedGoal, null);
+}
+
 function saveGoalEdit() {
-  setDailyGoal(editSelectedGoal);
+  const goal = getEditedDailyGoal();
+  if (!goal) {
+    toast('하루 목표를 입력해주세요');
+    focusEditCustomGoal();
+    return;
+  }
+  editSelectedGoal = setDailyGoal(goal);
   closeGoalEdit();
   updateMySettingsValues();
   renderMyPage();
@@ -8918,7 +9038,7 @@ function updateGoalBar() {
   const textEl = document.getElementById('homeGoalText');
   if (fill) fill.style.width = pct + '%';
   if (pctEl) pctEl.textContent = pct + '%';
-  if (textEl) textEl.textContent = todayDist.toFixed(1) + ' / ' + goal + 'km';
+  if (textEl) textEl.textContent = todayDist.toFixed(1) + ' / ' + formatDailyGoal(goal) + 'km';
 }
 
 function getCultureSpotVisitList() {
@@ -8995,7 +9115,7 @@ function renderMyPage() {
   const bodyInfo = document.getElementById('myBodyInfo');
   const sourceInfo = document.getElementById('mySourceInfo');
   const goal = getDailyGoal();
-  if (goalInfo) goalInfo.textContent = Number.isFinite(goal) ? goal + 'km' : '—';
+  if (goalInfo) goalInfo.textContent = formatDailyGoal(goal) + 'km';
   if (bodyInfo) {
     const height = profile.height ? profile.height + 'cm' : '';
     const weight = profile.weight ? profile.weight + 'kg' : '';
