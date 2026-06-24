@@ -88,15 +88,6 @@ if ('serviceWorker' in navigator) {
   .ai-search-submit{min-width:50px;height:40px;padding:0 10px;border:none;border-radius:var(--rs);background:var(--ink);color:#fff;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer;flex-shrink:0;}
   .ai-location-btn{position:absolute;right:14px;bottom:96px;z-index:23;width:46px;height:46px;background:rgba(255,255,255,.96);border:1px solid rgba(28,36,43,.08);border-radius:999px;cursor:pointer;font-size:22px;font-weight:800;line-height:1;color:var(--coral-dark);font-family:inherit;box-shadow:0 8px 22px rgba(28,36,43,.18);backdrop-filter:blur(12px);}
   .ai-selected-hidden{display:none!important;}
-  .culture-map-filter{display:flex;flex-direction:column;gap:6px;background:transparent;border-radius:0;padding:0;box-shadow:none;}
-  .culture-map-filter-toggle{height:40px;border-radius:var(--rs);border:1px solid var(--gray-100);background:#fff;color:var(--gray-700);font-size:12px;font-weight:900;font-family:inherit;padding:0 12px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
-  .culture-map-filter-body{display:none;flex-direction:column;gap:6px;}
-  .culture-map-filter.open .culture-map-filter-body{display:flex;}
-  .culture-map-filter-row{display:flex;align-items:center;gap:5px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
-  .culture-map-filter-row::-webkit-scrollbar{display:none;}
-  .culture-map-chip{height:28px;padding:0 10px;border-radius:999px;border:1px solid var(--gray-100);background:#fff;color:var(--gray-600);font-size:11px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap;flex-shrink:0;}
-  .culture-map-chip.active{background:var(--ink);border-color:var(--ink);color:#fff;}
-  .culture-map-chip.sub.active{background:var(--coral-light);border-color:rgba(242,122,94,.22);color:var(--ink);}
   .create-map-shell{position:relative;flex:1;min-height:220px;}
   .map-place-card{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:24;background:rgba(255,255,255,.96);border:1px solid rgba(28,36,43,.08);border-radius:16px;padding:12px;box-shadow:0 10px 28px rgba(28,36,43,.18);backdrop-filter:blur(14px);}
   .map-place-title{font-size:15px;font-weight:900;color:var(--ink);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:34px;}
@@ -822,26 +813,6 @@ if ('serviceWorker' in navigator) {
             <div id="addrDropdown" style="display:none;position:absolute;top:44px;left:0;right:0;background:#fff;border:1px solid var(--gray-300);border-radius:var(--rs);z-index:200;box-shadow:0 4px 12px rgba(0,0,0,.12);max-height:200px;overflow-y:auto;"></div>
           </div>
           <button id="aiSearchSubmit" class="ai-search-submit" onclick="submitMapSearch()">검색</button>
-          <button id="cultureMapFilterToggle" class="culture-map-filter-toggle" onclick="toggleCultureMapFilters()">필터</button>
-        </div>
-        <div id="cultureMapFilterPanel" class="culture-map-filter">
-          <div id="cultureMapFilterBody" class="culture-map-filter-body">
-          <div class="culture-map-filter-row">
-            <button id="cultureMapCatAll" class="culture-map-chip active" onclick="setCultureMapCategory('all')">전체</button>
-            <button id="cultureMapCatCulture" class="culture-map-chip" onclick="setCultureMapCategory('heritage')">유산</button>
-            <button id="cultureMapCatMuseum" class="culture-map-chip" onclick="setCultureMapCategory('museum')">박물관</button>
-            <button id="cultureMapCatExhibit" class="culture-map-chip" onclick="setCultureMapCategory('exhibit')">전시</button>
-            <button id="cultureMapCatPerformance" class="culture-map-chip" onclick="setCultureMapCategory('performance')">공연</button>
-          </div>
-          <div class="culture-map-filter-row">
-            <button id="cultureMapStarsAll" class="culture-map-chip sub active" onclick="setCultureMapMinStars(0)">별점 전체</button>
-            <button id="cultureMapStars1" class="culture-map-chip sub" onclick="setCultureMapMinStars(1)">1점</button>
-            <button id="cultureMapStars2" class="culture-map-chip sub" onclick="setCultureMapMinStars(2)">2점</button>
-            <button id="cultureMapStars3" class="culture-map-chip sub" onclick="setCultureMapMinStars(3)">3점</button>
-            <button id="cultureMapStars4" class="culture-map-chip sub" onclick="setCultureMapMinStars(4)">4점</button>
-            <button id="cultureMapStars5" class="culture-map-chip sub" onclick="setCultureMapMinStars(5)">5점</button>
-          </div>
-          </div>
         </div>
       </div>
     </div>
@@ -1332,6 +1303,11 @@ const TOUR_DETAIL_URL = runloopApiUrl('/api/tour-detail');
 const TOUR_WEATHER_URL = runloopApiUrl('/api/tour-weather');
 const OPEN_WEATHER_MAP_KEY = 'c4e77c4cac686498d868b622be22e841';
 const APP_LANGUAGE_KEY = 'runloopAppLanguageV1';
+const HEALTH_ACTIVITY_PERMISSION_KEY = 'runloopHealthActivityPermissionV1';
+const HEALTH_ACTIVITY_LAST_SYNC_KEY = 'runloopHealthActivityLastSyncV1';
+const HEALTH_ACTIVITY_SYNC_INTERVAL_MS = 10 * 60 * 1000;
+const HEALTH_ACTIVITY_MIN_DISTANCE_METERS = 20;
+const HEALTH_ACTIVITY_MIN_STEPS = 20;
 let appLanguage = localStorage.getItem(APP_LANGUAGE_KEY) === 'en' ? 'en' : 'ko';
 const APP_COPY = {
   ko: {
@@ -1351,14 +1327,7 @@ const APP_COPY = {
     destination: '목적지',
     roundTrip: '왕복',
     cultureSpots: '문화스팟',
-    filter: '필터',
-    collapse: '접기',
     all: '전체',
-    heritage: '유산',
-    museum: '박물관',
-    exhibit: '전시',
-    performance: '공연',
-    allStars: '별점 전체',
     loadingCulture: '10km 이내 문화 스팟을 찾는 중이에요…',
     intro: '소개',
     route: '경로',
@@ -1404,14 +1373,7 @@ const APP_COPY = {
     destination: 'Destination',
     roundTrip: 'Round trip',
     cultureSpots: 'Culture spots',
-    filter: 'Filter',
-    collapse: 'Close',
     all: 'All',
-    heritage: 'Heritage',
-    museum: 'Museum',
-    exhibit: 'Exhibition',
-    performance: 'Performance',
-    allStars: 'All ratings',
     loadingCulture: 'Finding culture spots within 10 km…',
     intro: 'Info',
     route: 'Route',
@@ -1507,12 +1469,6 @@ function applyAppLanguage() {
   setTextContent('aiSearchDestBtn', t('destination'));
   setTextContent('aiSameDestBtn', t('roundTrip'));
   setTextContent('aiPlaceInfoBtn', t('intro'));
-  setTextContent('cultureMapCatAll', t('all'));
-  setTextContent('cultureMapCatCulture', t('heritage'));
-  setTextContent('cultureMapCatMuseum', t('museum'));
-  setTextContent('cultureMapCatExhibit', t('exhibit'));
-  setTextContent('cultureMapCatPerformance', t('performance'));
-  setTextContent('cultureMapStarsAll', t('allStars'));
   setTextContent('mySavedSpotTitle', t('savedSpotTitle'));
   setTextContent('appSettingsTitle', t('appSettings'));
   setTextContent('appLanguageLabel', t('language'));
@@ -1521,8 +1477,6 @@ function applyAppLanguage() {
   setTextContent('privacyViewLabel', t('view'));
   const input = document.getElementById('addrInput');
   if (input) input.placeholder = t('searchPlaceholder');
-  const filterToggle = document.getElementById('cultureMapFilterToggle');
-  if (filterToggle) filterToggle.textContent = cultureMapFiltersOpen ? t('collapse') : t('filter');
   const koBtn = document.getElementById('langKoBtn');
   const enBtn = document.getElementById('langEnBtn');
   if (koBtn) koBtn.classList.toggle('active', appLanguage === 'ko');
@@ -2013,7 +1967,6 @@ function setCreateMode(mode) {
   const drawContent = document.getElementById('drawBottomContent');
   const sheet = document.getElementById('createBottomSheet');
   const searchBar = document.getElementById('aiSearchBar');
-  const cultureFilterPanel = document.getElementById('cultureMapFilterPanel');
   const guide = document.getElementById('aiMapGuide');
 
   if (mode === 'ai') {
@@ -2026,7 +1979,6 @@ function setCreateMode(mode) {
       sheet.style.boxShadow = '0 -4px 20px rgba(0,0,0,.1)';
     }
     // searchBar 항상 표시
-    if (cultureFilterPanel) cultureFilterPanel.style.display = 'flex';
     if (guide) guide.style.display = 'none';
     // 그리기 경로 숨기기 (지도에서만 제거, 데이터는 유지)
     if (S.polyline) S.polyline.setMap(null);
@@ -2046,7 +1998,6 @@ function setCreateMode(mode) {
       sheet.style.boxShadow = '0 -2px 14px rgba(39,49,58,.08)';
     }
     updateSnapToggle();
-    if (cultureFilterPanel) cultureFilterPanel.style.display = 'none';
     if (guide) guide.style.display = 'none';
     if (createAiMarker) createAiMarker.setMap(null);
     clearCultureSpotMapMarkers();
@@ -3218,14 +3169,6 @@ async function submitMapSearch() {
   }
 }
 
-function submitCultureMapSearch() {
-  clearTimeout(addrSearchTimer);
-  addrSearchSeq++;
-  setCultureMapSearch(getCultureMapSearchInputQuery());
-  clearAiPlaceCard();
-  refreshCultureSpotsOnMapCenter();
-}
-
 async function searchTmapPois(query) {
   const center = getSearchCenter();
 
@@ -3556,6 +3499,7 @@ window.addEventListener('load', () => {
   document.getElementById('screen-home').classList.add('active');
   S.tab = 'home';
   renderRecords();
+  syncHealthActivity({ requestPermission: true, silent: true });
   // 위치 먼저 잡고 → 날씨 + 추천코스 불러오기
   if (navigator.geolocation) {
     navigator.geolocation.getCurrentPosition(pos => {
@@ -3573,6 +3517,14 @@ window.addEventListener('load', () => {
     fetchWeather();
     loadNearCourses();
   }
+});
+
+window.addEventListener('focus', () => {
+  syncHealthActivity({ silent: true });
+});
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) syncHealthActivity({ silent: true });
 });
 
 // 모달 바깥 클릭 시 닫기
@@ -3616,6 +3568,7 @@ function switchTab(tab, el) {
   if (tab === 'mycourse') renderMyCourses();
   if (tab === 'social') renderSocial();
   if (tab === 'mypage') {
+    syncHealthActivity({ silent: true });
     renderRecords();
     renderMyPage();
   }
@@ -3859,10 +3812,6 @@ const CULTURE_SPOT_EN_INFO_URL_MAP = {
   '경복궁': 'https://english.visitkorea.or.kr/svc/contents/contentsView.do?vcontsId=87740'
 };
 let cultureSpotFilter = 'distance';
-let cultureMapCategories = [];
-let cultureMapStars = [];
-let cultureMapSearchQuery = '';
-let cultureMapFiltersOpen = false;
 let lastCultureSpotResults = [];
 let culturePhotoInflight = new Map();
 let cultureDetailInflight = new Map();
@@ -6373,7 +6322,6 @@ function getCurrentCultureSpotMapItems() {
 
 function selectMapCultureSpots(results) {
   const seen = new Set();
-  const query = normalizeCultureMapFilterText(cultureMapSearchQuery);
   return (Array.isArray(results) ? results : [])
     .filter(spot => {
       if (!spot || spot.fallback) return false;
@@ -6382,21 +6330,6 @@ function selectMapCultureSpots(results) {
       seen.add(key);
       return true;
     })
-    .filter(spot => matchCultureMapCategory(spot))
-    .filter(spot => {
-      const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
-      return !cultureMapStars.length || cultureMapStars.includes(stars);
-    })
-    .filter(spot => !query || normalizeCultureMapFilterText([
-      getCultureSpotDisplayName(spot, ''),
-      spot.place_name,
-      spot.name,
-      spot.nameEn,
-      spot.cultureType,
-      spot.cultureValueLabel,
-      spot.category_name,
-      spot.address_name
-    ].filter(Boolean).join(' ')).includes(query))
     .sort((a, b) => {
       const distDiff = Number(a.distFromMe) - Number(b.distFromMe);
       if (Number.isFinite(distDiff) && distDiff) return distDiff;
@@ -6405,90 +6338,8 @@ function selectMapCultureSpots(results) {
     .slice(0, CULTURE_MAP_MARKER_LIMIT);
 }
 
-function matchCultureMapCategory(spot) {
-  if (!cultureMapCategories.length) return true;
-  const type = String(spot && spot.cultureType || '');
-  return cultureMapCategories.some(category => {
-    if (category === 'heritage') return /문화재|유산|역사|Heritage|Historic/i.test(type);
-    if (category === 'museum') return /박물관|Museum/i.test(type);
-    if (category === 'exhibit') return /전시|미술|Exhibition|Gallery|Art/i.test(type);
-    if (category === 'performance') return /공연|Performance|Theater|Theatre/i.test(type);
-    return false;
-  });
-}
-
-function normalizeCultureMapFilterText(value) {
-  return String(value || '').replace(/\s+/g, '').toLowerCase();
-}
-
-function setCultureMapCategory(category) {
-  const value = String(category || '');
-  const allowed = ['heritage', 'museum', 'exhibit', 'performance'];
-  if (value === 'all') {
-    cultureMapCategories = [];
-  } else if (allowed.includes(value)) {
-    cultureMapCategories = cultureMapCategories.includes(value)
-      ? cultureMapCategories.filter(item => item !== value)
-      : [...cultureMapCategories, value];
-  }
+function setCultureMapSearch() {
   renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
-}
-
-function setCultureMapMinStars(stars) {
-  const value = Number(stars);
-  if (value === 0) {
-    cultureMapStars = [];
-  } else if ([1, 2, 3, 4, 5].includes(value)) {
-    cultureMapStars = cultureMapStars.includes(value)
-      ? cultureMapStars.filter(item => item !== value)
-      : [...cultureMapStars, value];
-  }
-  renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
-}
-
-function setCultureMapSearch(value) {
-  cultureMapSearchQuery = String(value || '').trim();
-  renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
-}
-
-function toggleCultureMapFilters() {
-  cultureMapFiltersOpen = !cultureMapFiltersOpen;
-  updateCultureMapFilterControls(getCurrentCultureSpotMapItems().length);
-}
-
-function updateCultureMapFilterControls(count) {
-  const categoryMap = {
-    all: 'cultureMapCatAll',
-    heritage: 'cultureMapCatCulture',
-    museum: 'cultureMapCatMuseum',
-    exhibit: 'cultureMapCatExhibit',
-    performance: 'cultureMapCatPerformance'
-  };
-  Object.keys(categoryMap).forEach(key => {
-    const el = document.getElementById(categoryMap[key]);
-    if (!el) return;
-    el.classList.toggle('active', key === 'all' ? !cultureMapCategories.length : cultureMapCategories.includes(key));
-  });
-
-  const starsMap = {
-    0: 'cultureMapStarsAll',
-    1: 'cultureMapStars1',
-    2: 'cultureMapStars2',
-    3: 'cultureMapStars3',
-    4: 'cultureMapStars4',
-    5: 'cultureMapStars5'
-  };
-  Object.keys(starsMap).forEach(key => {
-    const el = document.getElementById(starsMap[key]);
-    if (!el) return;
-    const value = Number(key);
-    el.classList.toggle('active', value === 0 ? !cultureMapStars.length : cultureMapStars.includes(value));
-  });
-
-  const panel = document.getElementById('cultureMapFilterPanel');
-  if (panel) panel.classList.toggle('open', cultureMapFiltersOpen);
-  const toggle = document.getElementById('cultureMapFilterToggle');
-  if (toggle) toggle.textContent = cultureMapFiltersOpen ? t('collapse') : t('filter');
 }
 
 function clearCultureSpotMapMarkers() {
@@ -6517,7 +6368,6 @@ function renderCultureSpotMapMarkers(spots) {
   clearCultureSpotMapMarkers();
   const sourceSpots = Array.isArray(spots) ? spots : [];
   const visibleSpots = createMap ? sourceSpots.filter(spot => isCultureSpotInsideMapBounds(spot, createMap)) : sourceSpots;
-  updateCultureMapFilterControls(visibleSpots.length);
   if (!createMap || createMode !== 'ai' || !visibleSpots.length) return;
 
   visibleSpots.forEach(spot => {
@@ -6676,20 +6526,160 @@ function getWeeklyActivitySummary(records) {
   const weekStart = getWeekStartDate();
   const weekEnd = new Date(weekStart);
   weekEnd.setDate(weekStart.getDate() + 7);
+  const healthKitByDate = new Map();
+  const manualByDate = new Map();
 
   (Array.isArray(records) ? records : []).forEach(record => {
     const activityDate = getActivityRecordDate(record);
     if (!activityDate) return;
     const date = new Date(activityDate.getFullYear(), activityDate.getMonth(), activityDate.getDate());
     if (date < weekStart || date >= weekEnd) return;
-    const index = (date.getDay() + 6) % 7;
-    dayDist[index] += Number(record.dist) || 0;
+    const key = getLocalDateKey(date);
+    const distance = Number(record.dist) || 0;
+    if (record.source === 'healthkit') {
+      healthKitByDate.set(key, Math.max(healthKitByDate.get(key) || 0, distance));
+    } else {
+      manualByDate.set(key, (manualByDate.get(key) || 0) + distance);
+    }
   });
+
+  for (let i = 0; i < 7; i += 1) {
+    const date = new Date(weekStart);
+    date.setDate(weekStart.getDate() + i);
+    const key = getLocalDateKey(date);
+    dayDist[i] = healthKitByDate.has(key) ? healthKitByDate.get(key) : (manualByDate.get(key) || 0);
+  }
 
   return {
     dayDist,
     total: dayDist.reduce((sum, dist) => sum + dist, 0)
   };
+}
+
+let healthActivitySyncing = false;
+
+function getHealthActivityPlugin() {
+  const capacitor = window.Capacitor;
+  if (!capacitor || !capacitor.Plugins) return null;
+  return capacitor.Plugins.HealthActivity || null;
+}
+
+function isHealthActivityProfileReady() {
+  try {
+    return !!JSON.parse(localStorage.getItem('runProfile') || '{}').onboarded;
+  } catch(e) {
+    return false;
+  }
+}
+
+function isHealthActivityAvailable() {
+  if (!RUNLOOP_IS_NATIVE_APP || !isHealthActivityProfileReady()) return false;
+  const capacitor = window.Capacitor;
+  const plugin = getHealthActivityPlugin();
+  if (!plugin) return false;
+  if (capacitor && typeof capacitor.isPluginAvailable === 'function') {
+    return capacitor.isPluginAvailable('HealthActivity');
+  }
+  return true;
+}
+
+function getLocalDateKey(date = new Date()) {
+  const safeDate = date instanceof Date && !Number.isNaN(date.getTime()) ? date : new Date();
+  const year = safeDate.getFullYear();
+  const month = String(safeDate.getMonth() + 1).padStart(2, '0');
+  const day = String(safeDate.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function getHealthActivityDate(activity) {
+  const parsed = activity && activity.startDate ? new Date(activity.startDate) : null;
+  return parsed && !Number.isNaN(parsed.getTime()) ? parsed : new Date();
+}
+
+function formatHealthActivityMemo(steps, distanceMeters) {
+  const parts = [];
+  if (steps > 0) parts.push(steps.toLocaleString('ko-KR') + '걸음');
+  if (distanceMeters > 0) parts.push((distanceMeters / 1000).toFixed(2) + 'km');
+  return parts.length ? parts.join(' · ') : 'HealthKit 활동량';
+}
+
+function upsertHealthActivityRecord(activity) {
+  const steps = Math.max(0, Math.round(Number(activity && activity.steps) || 0));
+  const distanceMeters = Math.max(0, Number(activity && activity.distanceMeters) || 0);
+  if (distanceMeters < HEALTH_ACTIVITY_MIN_DISTANCE_METERS && steps < HEALTH_ACTIVITY_MIN_STEPS) return false;
+
+  const activityDate = getHealthActivityDate(activity);
+  const dateKey = getLocalDateKey(activityDate);
+  const now = new Date();
+  const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
+  const existingIndex = records.findIndex(record => record && record.source === 'healthkit' && record.healthDateKey === dateKey);
+  const existing = existingIndex >= 0 ? records[existingIndex] : {};
+  const distanceKm = distanceMeters / 1000;
+  const record = {
+    ...existing,
+    id: existing.id || `healthkit-${dateKey}`,
+    name: appLanguage === 'en' ? 'Today activity' : '오늘 활동량',
+    dist: distanceKm >= 10 ? distanceKm.toFixed(1) : distanceKm.toFixed(2),
+    time: 'HealthKit',
+    cal: null,
+    date: activityDate.toLocaleDateString(appLanguage === 'en' ? 'en-US' : 'ko-KR', { month: 'long', day: 'numeric', weekday: 'short' }),
+    createdAt: existing.createdAt || now.toISOString(),
+    updatedAt: now.toISOString(),
+    pace: '',
+    memo: formatHealthActivityMemo(steps, distanceMeters),
+    source: 'healthkit',
+    gpsAccuracy: null,
+    path: Array.isArray(existing.path) ? existing.path : [],
+    healthDateKey: dateKey,
+    healthSteps: steps,
+    healthDistanceMeters: Math.round(distanceMeters),
+    healthStartDate: activity && activity.startDate ? activity.startDate : null,
+    healthEndDate: activity && activity.endDate ? activity.endDate : null
+  };
+
+  if (existingIndex >= 0) records[existingIndex] = record;
+  else records.unshift(record);
+  localStorage.setItem('runRecords', JSON.stringify(records));
+  return true;
+}
+
+async function syncHealthActivity(options = {}) {
+  const force = !!options.force;
+  const requestPermission = !!options.requestPermission;
+  const silent = options.silent !== false;
+  if (!isHealthActivityAvailable() || healthActivitySyncing) return false;
+
+  const lastSync = Number(localStorage.getItem(HEALTH_ACTIVITY_LAST_SYNC_KEY)) || 0;
+  if (!force && Date.now() - lastSync < HEALTH_ACTIVITY_SYNC_INTERVAL_MS) return false;
+
+  const plugin = getHealthActivityPlugin();
+  healthActivitySyncing = true;
+  try {
+    if (typeof plugin.isAvailable === 'function') {
+      const availability = await plugin.isAvailable();
+      if (availability && availability.available === false) return false;
+    }
+
+    const permissionKnown = localStorage.getItem(HEALTH_ACTIVITY_PERMISSION_KEY) === 'granted';
+    if (requestPermission || !permissionKnown) {
+      await plugin.requestPermissions();
+      localStorage.setItem(HEALTH_ACTIVITY_PERMISSION_KEY, 'granted');
+    }
+
+    const activity = await plugin.getTodayActivity();
+    const changed = upsertHealthActivityRecord(activity);
+    localStorage.setItem(HEALTH_ACTIVITY_LAST_SYNC_KEY, String(Date.now()));
+    if (changed) {
+      renderRecords();
+      if (S.tab === 'mypage') renderMyPage();
+    }
+    return changed;
+  } catch(e) {
+    if (!silent) toast('HealthKit 활동량을 불러오지 못했어요');
+    return false;
+  } finally {
+    healthActivitySyncing = false;
+  }
 }
 
 /* 기록 렌더링 */
@@ -6743,7 +6733,7 @@ function renderRecords() {
       <div class="record-icon">${emojis[i % emojis.length]}</div>
       <div class="record-info">
         <div class="record-name">${r.name}</div>
-        <div class="record-meta">${r.date} · ${r.time} · 페이스 ${r.pace}/km</div>
+        <div class="record-meta">${getAllRecordMeta(r)}</div>
       </div>
       <div class="record-dist">${r.dist}km</div>
     </div>`).join('');
@@ -6882,6 +6872,7 @@ function openRecordDetail(index) {
   const date = document.getElementById('recordDetailDate');
   const body = document.getElementById('recordDetailBody');
   const pathCount = Array.isArray(r.path) ? r.path.length : 0;
+  const caloriesText = Number.isFinite(Number(r.cal)) ? r.cal + 'kcal' : '-';
   title.textContent = r.name || '활동 기록';
   const conditionValue = getRecordConditionValue(r);
   date.textContent = [r.date, getRecordConditionLabel(r)].filter(Boolean).join(' · ') || '-';
@@ -6891,7 +6882,7 @@ function openRecordDetail(index) {
       <div class="record-detail-stat"><div class="record-detail-label">거리</div><div class="record-detail-value">${escapeHtml(r.dist || '-')}km</div></div>
       <div class="record-detail-stat"><div class="record-detail-label">시간</div><div class="record-detail-value">${escapeHtml(r.time || '-')}</div></div>
       <div class="record-detail-stat"><div class="record-detail-label">페이스</div><div class="record-detail-value">${escapeHtml(r.pace || '-')}</div></div>
-      <div class="record-detail-stat"><div class="record-detail-label">칼로리</div><div class="record-detail-value">${escapeHtml(String(r.cal || '-'))}kcal</div></div>
+      <div class="record-detail-stat"><div class="record-detail-label">칼로리</div><div class="record-detail-value">${escapeHtml(caloriesText)}</div></div>
     </div>
     ${conditionValue ? recordDetailRow('컨디션', conditionValue) : ''}
     ${recordDetailRow('기록 출처', getRecordSourceLabel(r.source))}
@@ -6918,7 +6909,7 @@ function getAllRecordMeta(record) {
   const parts = [
     record.date,
     record.time,
-    record.pace ? '페이스 ' + record.pace + '/km' : '',
+    record.pace && record.pace !== '—' ? '페이스 ' + record.pace + '/km' : '',
     Number.isFinite(Number(record.cal)) ? record.cal + 'kcal' : '',
     getRecordConditionLabel(record),
     hasSafeRecordPhoto(record.photo) ? '사진' : ''
@@ -8603,6 +8594,7 @@ function obFinish() {
   ob.classList.remove('active');
   ob.style.display = 'none';
   renderMyPage();
+  syncHealthActivity({ requestPermission: true, force: true, silent: true });
   toast(`환영해요, ${name}님! 🎉`);
   // 온보딩 완료 후 위치 권한 요청
   setTimeout(() => {

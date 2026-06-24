@@ -26,6 +26,8 @@
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Runloop uses your location to show nearby routes, weather, and running progress.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>Runloop uses your step count and walking or running distance to calculate daily activity, goals, and level progress.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
