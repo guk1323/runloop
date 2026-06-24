@@ -48,6 +48,7 @@ if ('serviceWorker' in navigator) {
   .logo-mark::before{content:'';position:absolute;left:7px;top:9px;width:16px;height:10px;border:2.5px solid #FFF7F1;border-top-color:transparent;border-radius:999px;transform:rotate(-17deg);}
   .logo-mark::after{content:'';position:absolute;left:7px;bottom:8px;width:7px;height:7px;background:var(--coral);border:2px solid var(--ink);border-radius:50%;}
   .logo span:last-child{line-height:1;}
+  .header-settings-btn{width:38px;height:38px;border-radius:999px;border:1px solid rgba(28,36,43,.08);background:#fff;color:var(--ink);font-size:19px;font-weight:900;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(28,36,43,.08);}
   .loc-btn{display:flex;align-items:center;gap:5px;background:var(--coral-light);color:var(--ink);padding:6px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;cursor:pointer;border:1px solid rgba(242,122,94,.18);font-family:inherit;}
 
   .tabs{position:fixed;left:50%;bottom:10px;transform:translateX(-50%);width:calc(100% - 24px);max-width:406px;height:64px;padding:7px;display:flex;gap:5px;background:rgba(28,36,43,.92);border:1px solid rgba(255,255,255,.16);border-radius:22px;box-shadow:0 16px 34px rgba(28,36,43,.24);backdrop-filter:blur(18px);z-index:140;flex-shrink:0;}
@@ -96,7 +97,10 @@ if ('serviceWorker' in navigator) {
   .map-place-sub{display:none;}
   .map-place-media{display:none;margin-top:10px;grid-template-columns:minmax(132px,42%) minmax(0,1fr);gap:10px;align-items:stretch;}
   .map-place-media.active{display:grid;}
-  .map-place-image{width:100%;height:auto;min-height:104px;aspect-ratio:4/3;border-radius:12px;object-fit:cover;background:linear-gradient(135deg,#F4EFE8,#FFF6F1);border:1px solid var(--gray-100);display:block;}
+  .map-place-photo-frame{position:relative;width:100%;min-height:104px;aspect-ratio:4/3;border-radius:12px;overflow:hidden;background:linear-gradient(135deg,#FFF7F1 0%,#F4EFE8 52%,#EEF8EA 100%);border:1px solid var(--gray-100);display:flex;align-items:center;justify-content:center;}
+  .map-place-image{width:100%;height:100%;object-fit:cover;display:none;}
+  .map-place-image.active{display:block;}
+  .map-place-photo-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gray-600);font-size:12px;font-weight:900;text-align:center;}
   .map-place-copy{min-width:0;display:flex;flex-direction:column;justify-content:center;gap:7px;background:var(--gray-50);border:1px solid var(--gray-100);border-radius:12px;padding:9px;}
   .map-place-desc{display:flex;align-items:center;gap:5px;min-width:0;overflow:hidden;}
   .map-place-meta-chip{height:22px;display:inline-flex;align-items:center;max-width:100%;border-radius:999px;background:#fff;border:1px solid var(--gray-100);color:var(--gray-700);font-size:10px;font-weight:900;padding:0 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;}
@@ -106,9 +110,8 @@ if ('serviceWorker' in navigator) {
   .map-place-weather span{min-width:0;overflow:hidden;text-overflow:ellipsis;}
   .map-place-credit{display:none;}
   .map-place-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
-  .map-place-actions.has-save{grid-template-columns:repeat(4,minmax(0,1fr));}
+  .map-place-actions.has-save{grid-template-columns:repeat(3,minmax(0,1fr));}
   .map-place-actions button{height:38px;border-radius:var(--rs);font-size:13px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap;}
-  .map-place-info{display:none;background:#fff;border:1px solid var(--gray-300);color:var(--gray-900);}
   .map-place-start{background:#fff;border:1px solid var(--gray-300);color:var(--gray-900);}
   .map-place-dest{background:var(--ink);border:1px solid var(--ink);color:#fff;}
   .map-place-save{display:none;background:var(--coral-light);border:1px solid rgba(242,122,94,.22);color:var(--ink);}
@@ -285,14 +288,13 @@ if ('serviceWorker' in navigator) {
   .mc-grid{display:flex;flex-direction:column;gap:10px;padding-bottom:108px!important;}
   .mc-card{position:relative;background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:13px;overflow:hidden;display:flex;flex-direction:column;gap:11px;flex-shrink:0;box-shadow:0 8px 18px rgba(39,49,58,.035);}
   .spot-photo{width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#F4EFE8,#FFF6F1);border:1px solid var(--gray-100);position:relative;}
+  .spot-photo.clickable,.culture-spot-photo.clickable,.map-place-image.clickable{cursor:pointer;}
   .spot-photo img{width:100%;height:100%;object-fit:cover;display:block;}
   .spot-photo.empty{display:flex;align-items:center;justify-content:center;color:var(--gray-700);font-size:12px;font-weight:800;isolation:isolate;}
   .spot-photo.empty::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 18% 20%,rgba(242,122,94,.22),transparent 31%),radial-gradient(circle at 82% 28%,rgba(183,240,106,.26),transparent 30%),linear-gradient(135deg,#FFF7F1 0%,#F4EFE8 48%,#EEF8EA 100%);z-index:-2;}
   .spot-photo.empty::after{content:"";position:absolute;inset:12px;border:1px solid rgba(28,36,43,.08);border-radius:9px;z-index:-1;}
   .spot-photo-fallback{display:flex;flex-direction:column;align-items:center;gap:5px;text-align:center;padding:12px;}
-  .spot-photo-fallback-icon{width:42px;height:42px;border-radius:999px;background:rgba(255,255,255,.72);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 8px 18px rgba(28,36,43,.08);}
   .spot-photo-fallback-title{max-width:220px;color:var(--ink);font-size:12px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .spot-photo-fallback-meta{color:var(--gray-500);font-size:10px;font-weight:900;}
   .spot-photo-credit{position:absolute;left:8px;right:8px;bottom:7px;color:#fff;font-size:10px;font-weight:800;text-shadow:0 1px 4px rgba(0,0,0,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .course-detail-photo{width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:var(--gray-50);border:1px solid var(--gray-100);margin-bottom:12px;position:relative;}
   .course-detail-photo img{width:100%;height:100%;object-fit:cover;display:block;}
@@ -311,11 +313,10 @@ if ('serviceWorker' in navigator) {
   .mc-btn{height:34px;padding:0 10px;border-radius:var(--rs);font-size:12px;font-weight:800;border:1px solid transparent;cursor:pointer;font-family:inherit;white-space:nowrap;}
   .mc-btn-run{grid-column:span 3;background:var(--ink);color:#fff;}
   .mc-btn-map{grid-column:span 3;}
-  .mc-card.saved-spot .mc-btn-run,.mc-card.saved-spot .mc-btn-map,.mc-card.saved-spot .mc-btn-info{grid-column:span 2;}
-  .mc-btn-share,.mc-btn-edit,.mc-btn-delete,.mc-btn-info{grid-column:span 2;}
+  .mc-card.saved-spot .mc-btn-run,.mc-card.saved-spot .mc-btn-map{grid-column:span 3;}
+  .mc-btn-share,.mc-btn-edit,.mc-btn-delete{grid-column:span 2;}
   .mc-btn-full{grid-column:1/-1;}
   .mc-btn-edit{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
-  .mc-btn-info{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
   .mc-fav{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;border:1px solid var(--gray-100);background:rgba(255,255,255,.9);color:var(--gray-300);font-size:18px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;box-shadow:0 3px 10px rgba(39,49,58,.06);}
   .mc-fav.active{background:var(--amber-light);border-color:#E8D6B4;color:var(--amber);}
   .mc-btn-delete{background:#fff;color:var(--red);border-color:var(--red-light);}
@@ -331,6 +332,7 @@ if ('serviceWorker' in navigator) {
   .course-detail-chip{font-size:11px;font-weight:700;color:var(--gray-700);background:var(--gray-50);border:1px solid var(--gray-100);border-radius:999px;padding:5px 9px;}
   .course-detail-primary-action{width:100%;height:46px;border-radius:var(--r);background:var(--ink);color:#fff;border:none;font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;margin-top:12px;}
   .course-detail-secondary-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
+  .course-detail-secondary-actions.single{grid-template-columns:1fr;}
   .course-detail-secondary-actions button{height:42px;border-radius:var(--rs);font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;border:1px solid transparent;}
   .course-detail-secondary-actions button.active{background:var(--amber-light);border-color:#E8D6B4!important;color:var(--amber);}
   .course-detail-delete{width:100%;height:40px;margin-top:8px;border-radius:var(--rs);background:#fff;color:var(--red);border:1px solid var(--red-light);font-size:13px;font-weight:800;font-family:inherit;cursor:pointer;}
@@ -388,8 +390,6 @@ if ('serviceWorker' in navigator) {
 
   /* 마이페이지 */
   .my-profile-card{margin:14px;background:linear-gradient(135deg,#1C242B 0%,#2B343B 58%,#F27A5E 150%);border-radius:16px;padding:20px;color:#fff;flex-shrink:0;box-shadow:0 16px 34px rgba(28,36,43,.14);}
-  .my-profile-top{display:flex;justify-content:flex-end;margin-bottom:8px;}
-  .my-settings-btn{width:34px;height:34px;border-radius:999px;border:1px solid rgba(255,255,255,.28);background:rgba(255,255,255,.15);color:#fff;font-size:18px;font-weight:900;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;}
   .my-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:10px;cursor:pointer;border:2px solid rgba(255,255,255,.4);}
   .my-name{font-size:20px;font-weight:700;margin-bottom:2px;}
   .my-sub{font-size:13px;opacity:.8;}
@@ -410,6 +410,11 @@ if ('serviceWorker' in navigator) {
   .language-toggle{display:flex;gap:6px;flex-shrink:0;}
   .language-toggle button{height:30px;border-radius:999px;border:1px solid var(--gray-100);background:#fff;color:var(--gray-600);font-size:12px;font-weight:800;font-family:inherit;padding:0 10px;cursor:pointer;}
   .language-toggle button.active{background:var(--ink);border-color:var(--ink);color:#fff;}
+  .settings-screen{padding-bottom:0;background:var(--paper);overflow-y:auto;}
+  .settings-page{min-height:100%;padding:16px 16px 28px;background:linear-gradient(180deg,#FFFDF8 0%,#F7F3EC 100%);}
+  .settings-page-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .settings-back-btn{width:38px;height:38px;border-radius:999px;border:1px solid var(--gray-100);background:#fff;color:var(--ink);font-size:24px;font-weight:900;line-height:1;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(28,36,43,.06);}
+  .settings-title{font-size:19px;font-weight:900;color:var(--ink);}
   .my-block-head{padding:16px 16px 8px;display:flex;justify-content:space-between;align-items:center;}
   .my-block-head .my-section{padding:0;}
   .my-head-action{border:none;background:var(--coral-light);border-radius:999px;color:var(--ink);height:28px;padding:0 10px;font-size:11px;font-weight:800;font-family:inherit;cursor:pointer;}
@@ -479,8 +484,7 @@ if ('serviceWorker' in navigator) {
   .culture-spot-main{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px;padding:12px;}
   .culture-spot-photo{position:relative;width:92px;height:92px;border-radius:14px;overflow:hidden;background:var(--coral-light);border:1px solid rgba(242,122,94,.16);flex-shrink:0;}
   .culture-spot-photo img{width:100%;height:100%;object-fit:cover;display:block;}
-  .culture-spot-photo-fallback{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;color:var(--coral-dark);font-size:11px;font-weight:900;text-align:center;padding:8px;}
-  .culture-spot-photo-icon{font-size:26px;line-height:1;}
+  .culture-spot-photo-fallback{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--coral-dark);font-size:11px;font-weight:900;text-align:center;padding:10px;line-height:1.35;}
   .culture-spot-rank{position:absolute;right:6px;bottom:6px;background:rgba(28,36,43,.9);color:#fff;font-size:10px;font-weight:900;padding:3px 6px;border-radius:999px;box-shadow:0 3px 8px rgba(28,36,43,.18);}
   .culture-spot-info{min-width:0;display:flex;flex-direction:column;gap:8px;}
   .culture-spot-name{font-size:14px;font-weight:800;color:var(--gray-900);line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
@@ -488,9 +492,8 @@ if ('serviceWorker' in navigator) {
   .culture-spot-pill{height:24px;display:inline-flex;align-items:center;border-radius:999px;background:var(--gray-50);border:1px solid var(--gray-100);padding:0 8px;font-size:11px;font-weight:800;color:var(--gray-600);white-space:nowrap;}
   .culture-spot-pill.stars{color:var(--coral);background:var(--coral-light);border-color:rgba(242,122,94,.18);letter-spacing:0;}
   .culture-spot-pill.visited{color:var(--ink);background:#EEF8EA;border-color:#DDECCF;}
-  .culture-spot-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:auto;}
+  .culture-spot-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-top:auto;}
   .culture-spot-actions button{height:32px;border-radius:999px;font-size:12px;font-weight:800;padding:0 8px;cursor:pointer;font-family:inherit;white-space:nowrap;}
-  .culture-spot-info-btn{background:#fff;color:var(--gray-700);border:1px solid var(--gray-300);}
   .culture-spot-save-btn{background:#fff;color:var(--coral);border:1px solid rgba(242,122,94,.28);}
   .culture-spot-save-btn.active{background:var(--coral-light);color:var(--ink);}
   .culture-spot-route-btn{background:var(--ink);color:#fff;border:none;}
@@ -736,7 +739,7 @@ if ('serviceWorker' in navigator) {
 <div class="header">
   <div class="header-top">
     <div class="logo"><span class="logo-mark" aria-hidden="true"></span><span>Runloop</span></div>
-    <div id="headerDate" style="font-size:13px;font-weight:500;color:var(--gray-500);"></div>
+    <button class="header-settings-btn" type="button" onclick="openSettingsPage()" aria-label="설정" title="설정">⚙</button>
   </div>
 </div>
 
@@ -867,7 +870,10 @@ if ('serviceWorker' in navigator) {
       <div class="map-place-title" id="aiPlaceTitle">선택한 장소</div>
       <div class="map-place-sub" id="aiPlaceSub">출발 또는 도착으로 설정하세요</div>
       <div class="map-place-media" id="aiPlaceMedia">
-        <img class="map-place-image" id="aiPlaceImage" alt="">
+        <div class="map-place-photo-frame">
+          <img class="map-place-image" id="aiPlaceImage" alt="">
+          <div class="map-place-photo-empty" id="aiPlaceImageFallback">사진 준비중</div>
+        </div>
         <div class="map-place-copy">
           <div class="map-place-desc" id="aiPlaceDesc"></div>
           <div class="map-place-weather" id="aiPlaceWeather"></div>
@@ -875,7 +881,6 @@ if ('serviceWorker' in navigator) {
         </div>
       </div>
       <div class="map-place-actions">
-        <button class="map-place-info" id="aiPlaceInfoBtn" onclick="openPendingCultureSpotInfo()">소개</button>
         <button class="map-place-start" onclick="applyPendingPlaceAsStart()">출발</button>
         <button class="map-place-dest" onclick="applyPendingPlaceAsDestination()">도착</button>
         <button class="map-place-save" id="aiPlaceSaveBtn" onclick="savePendingCultureSpotFavorite()">저장</button>
@@ -971,14 +976,11 @@ if ('serviceWorker' in navigator) {
 
     <!-- 프로필 카드 -->
     <div class="my-profile-card">
-      <div class="my-profile-top">
-        <button class="my-settings-btn" onclick="openMySettings()" aria-label="설정" title="설정">⚙</button>
-      </div>
       <!-- 중앙: 아바타 + 이름 -->
       <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:16px;">
         <div class="my-avatar" id="myAvatar" onclick="openAvatarEdit()" title="탭해서 변경" style="width:72px;height:72px;font-size:36px;margin-bottom:10px;">🏃</div>
         <div class="my-name" id="myNameDisplay" style="text-align:center;">런너</div>
-        <div class="my-sub" id="myJoinDays" style="text-align:center;margin-top:3px;">Running with Runloop</div>
+        <div class="my-sub" id="myJoinDays" style="display:none;"></div>
         <div class="my-profile-level">
           <div class="my-profile-level-head">
             <strong id="myLevelNumber">LV 1</strong>
@@ -1027,7 +1029,7 @@ if ('serviceWorker' in navigator) {
           <div class="culture-collection-value g" id="myCultureVisitCount">0곳</div>
         </div>
         <div class="culture-collection-card">
-          <div class="culture-collection-label">희귀 유산</div>
+          <div class="culture-collection-label">5성 스팟</div>
           <div class="culture-collection-value" id="myCultureRareCount">0곳</div>
         </div>
         <div class="culture-collection-card">
@@ -1042,12 +1044,12 @@ if ('serviceWorker' in navigator) {
   </div>
 </div>
 
-<!-- MY 설정 모달 -->
-<div id="mySettingsModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1002;align-items:flex-end;justify-content:center;">
-  <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:20px 18px 28px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-      <div style="font-size:16px;font-weight:800;" id="appSettingsTitle">앱 설정</div>
-      <button onclick="closeMySettings()" style="background:none;border:none;font-size:22px;cursor:pointer;color:var(--gray-500);">×</button>
+<!-- 설정 화면 -->
+<div id="screen-settings" class="screen settings-screen">
+  <div class="settings-page">
+    <div class="settings-page-header">
+      <button class="settings-back-btn" type="button" onclick="closeSettingsPage()" aria-label="뒤로 가기">‹</button>
+      <div class="settings-title" id="appSettingsTitle">앱 설정</div>
     </div>
     <div class="my-info-panel" style="border:1px solid var(--gray-100);border-radius:14px;padding:0;overflow:hidden;">
       <div class="my-info-row" style="padding:14px 14px;">
@@ -1057,7 +1059,7 @@ if ('serviceWorker' in navigator) {
           <button id="langEnBtn" type="button" onclick="setAppLanguage('en')">English</button>
         </div>
       </div>
-      <button class="my-info-row" onclick="closeMySettings();openGoalEdit();" style="width:100%;padding:14px;border:none;background:#fff;font-family:inherit;cursor:pointer;text-align:left;">
+      <button class="my-info-row" onclick="openGoalEdit()" style="width:100%;padding:14px;border:none;background:#fff;font-family:inherit;cursor:pointer;text-align:left;">
         <span id="settingsGoalLabel">일일 목표</span><strong id="settingsGoalValue" style="color:var(--coral);">3km</strong>
       </button>
       <a class="my-info-row" href="/privacy.html" target="_blank" rel="noopener" style="text-decoration:none;color:inherit;padding:14px;">
@@ -1356,6 +1358,13 @@ const ACTIVITY_XP_PER_KM = 55;
 const ACTIVITY_DAILY_ACTIVE_XP = 35;
 const ACTIVITY_DAILY_GOAL_XP = 90;
 const ACTIVITY_DAILY_STRETCH_XP = 35;
+const ACTIVITY_STREAK_BONUS_TIERS = [
+  { days: 30, xp: 150 },
+  { days: 14, xp: 120 },
+  { days: 7, xp: 80 },
+  { days: 3, xp: 40 },
+  { days: 2, xp: 20 }
+];
 const DAILY_GOAL_OPTIONS = [2, 3, 5, 7];
 const DAILY_GOAL_MIN_KM = 0.5;
 const DAILY_GOAL_MAX_KM = 50;
@@ -1380,7 +1389,6 @@ const APP_COPY = {
     cultureSpots: '문화스팟',
     all: '전체',
     loadingCulture: '10km 이내 문화 스팟을 찾는 중이에요…',
-    intro: '소개',
     route: '경로',
     save: '저장',
     saved: '저장됨',
@@ -1400,10 +1408,11 @@ const APP_COPY = {
     startGuide: '안내 시작',
     guideWaiting: '안내 대기',
     guideStarted: '경로 안내를 시작했어요',
-    routeView: '경로 보기',
+    routeView: '길 안내',
     mapView: '지도에서 보기',
     deleteSaved: '저장 삭제',
     infoView: '소개 보기',
+    photoPreparing: '사진 준비중',
     cultureValue: '문화 가치',
     langChanged: '언어 설정을 변경했어요'
   },
@@ -1427,7 +1436,6 @@ const APP_COPY = {
     cultureSpots: 'Culture spots',
     all: 'All',
     loadingCulture: 'Finding culture spots within 10 km…',
-    intro: 'Info',
     route: 'Route',
     save: 'Save',
     saved: 'Saved',
@@ -1447,10 +1455,11 @@ const APP_COPY = {
     startGuide: 'Start guide',
     guideWaiting: 'Guide ready',
     guideStarted: 'Route guide started',
-    routeView: 'Route',
+    routeView: 'Guide',
     mapView: 'View on map',
     deleteSaved: 'Remove',
     infoView: 'Info',
+    photoPreparing: 'Photo coming soon',
     cultureValue: 'Cultural value',
     langChanged: 'Language updated'
   }
@@ -1521,7 +1530,6 @@ function applyAppLanguage() {
   setTextContent('aiSearchStartBtn', t('startPoint'));
   setTextContent('aiSearchDestBtn', t('destination'));
   setTextContent('aiSameDestBtn', t('roundTrip'));
-  setTextContent('aiPlaceInfoBtn', t('intro'));
   setTextContent('mySavedSpotTitle', t('savedSpotTitle'));
   setTextContent('appSettingsTitle', t('appSettings'));
   setTextContent('appLanguageLabel', t('language'));
@@ -2703,14 +2711,19 @@ function clearAiPlaceCard() {
 function updateAiPlaceMedia(spot) {
   const media = document.getElementById('aiPlaceMedia');
   const img = document.getElementById('aiPlaceImage');
+  const fallback = document.getElementById('aiPlaceImageFallback');
   const desc = document.getElementById('aiPlaceDesc');
   const weatherEl = document.getElementById('aiPlaceWeather');
   const credit = document.getElementById('aiPlaceCredit');
-  if (!media || !img || !desc || !weatherEl || !credit) return;
+  if (!media || !img || !fallback || !desc || !weatherEl || !credit) return;
   if (!spot) {
     media.classList.remove('active');
     img.removeAttribute('src');
     img.alt = '';
+    img.classList.remove('active', 'clickable');
+    img.onclick = null;
+    img.removeAttribute('title');
+    fallback.style.display = 'none';
     desc.innerHTML = '';
     weatherEl.classList.remove('active');
     weatherEl.textContent = '';
@@ -2726,12 +2739,21 @@ function updateAiPlaceMedia(spot) {
     media.classList.add('active');
     img.src = photo.imageUrl;
     img.alt = photo.title || displayName || '문화스팟 사진';
+    img.classList.add('active', 'clickable');
+    img.onclick = openPendingCultureSpotInfo;
+    img.title = t('infoView');
+    fallback.style.display = 'none';
     credit.textContent = '';
     return;
   }
   media.classList.add('active');
   img.removeAttribute('src');
   img.alt = '';
+  img.classList.remove('active', 'clickable');
+  img.onclick = null;
+  img.removeAttribute('title');
+  fallback.textContent = t('photoPreparing');
+  fallback.style.display = 'flex';
   credit.textContent = '';
   fetchCultureSpotPhoto({ ...spot, key: getCultureSpotFavoriteKey(spot) }).then(nextPhoto => {
     if (!nextPhoto || !aiPendingPlace || !aiPendingPlace.mediaSpot) return;
@@ -2763,11 +2785,9 @@ function syncAiPendingPlacePhoto(spot, photo) {
 
 function getMapPlaceMetaHtml(spot) {
   if (!spot) return '';
-  const type = spot.cultureType || (!spot.transient ? getCultureSpotType(spot, '') : '');
   const stars = Math.round(Number(spot.cultureValueStars) || 0);
   const dist = Number(spot.distFromMe);
   const parts = [];
-  if (type) parts.push(`<span class="map-place-meta-chip">${escapeHtml(type)}</span>`);
   if (stars > 0 && !spot.transient) parts.push(`<span class="map-place-meta-chip star">★${Math.max(1, Math.min(5, stars))}</span>`);
   if (Number.isFinite(dist)) {
     const distText = dist < 1 ? Math.round(dist * 1000) + 'm' : dist.toFixed(1) + 'km';
@@ -3540,11 +3560,6 @@ function detectLocation() {
 window.addEventListener('load', () => {
   checkOnboarding();
   applyAppLanguage();
-  // 날짜 표시
-  const now = new Date();
-  const days = ['일요일','월요일','화요일','수요일','목요일','금요일','토요일'];
-  const dateStr = days[now.getDay()] + ', ' + (now.getMonth()+1) + '월 ' + now.getDate() + '일';
-  document.getElementById('headerDate').textContent = dateStr;
   const homTab = document.querySelector('[data-tab="home"]');
   switchTab('home', homTab);
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
@@ -3598,12 +3613,9 @@ document.getElementById('socialComposerModal').addEventListener('click', functio
   if (e.target === this) closeSocialComposer();
 });
 
-document.getElementById('mySettingsModal').addEventListener('click', function(e) {
-  if (e.target === this) closeMySettings();
-});
-
 /* 탭 전환 */
 function switchTab(tab, el) {
+  setMainChromeVisible(true);
   if (tab !== 'create' && routeGuide.active) {
     stopRouteGuidance('', { silent: true });
   }
@@ -3630,6 +3642,13 @@ function switchTab(tab, el) {
     renderRecords();
     renderMyPage();
   }
+}
+
+function setMainChromeVisible(visible) {
+  const header = document.querySelector('.header');
+  const tabs = document.querySelector('.tabs');
+  if (header) header.style.display = visible ? 'block' : 'none';
+  if (tabs) tabs.style.display = visible ? 'flex' : 'none';
 }
 
 /* 지도 초기화 */
@@ -6123,13 +6142,8 @@ function updateCultureSpotSaveButtonLabels() {
 function updateAiPlaceSaveButton() {
   const actions = document.querySelector('#aiPlaceCard .map-place-actions');
   const button = document.getElementById('aiPlaceSaveBtn');
-  const infoButton = document.getElementById('aiPlaceInfoBtn');
   const spot = aiPendingPlace && aiPendingPlace.cultureSpot;
   if (actions) actions.classList.toggle('has-save', !!spot);
-  if (infoButton) {
-    infoButton.style.display = spot ? 'block' : 'none';
-    infoButton.textContent = t('intro');
-  }
   if (!button) return;
   if (!spot) {
     button.style.display = 'none';
@@ -6196,6 +6210,11 @@ function savePendingCultureSpotFavorite() {
     spot.place_name = aiPendingPlace.name;
     spot.name = aiPendingPlace.name;
   }
+  const favoriteKey = getCultureSpotFavoriteKey(spot);
+  if (readCultureSpotFavorites()[favoriteKey]) {
+    if (removeCultureSpotFavorite(favoriteKey)) toast('저장한 스팟에서 삭제했어요');
+    return;
+  }
   const mediaPhoto = getCultureSpotPhoto(aiPendingPlace.mediaSpot);
   if (mediaPhoto && mediaPhoto.imageUrl) {
     spot.photo = spot.photo && spot.photo.imageUrl ? spot.photo : mediaPhoto;
@@ -6221,23 +6240,33 @@ function getSpotPhotoDomId(key, prefix = 'spotPhoto') {
   return prefix + '-' + String(key || '').replace(/[^a-z0-9_-]/gi, '_');
 }
 
+function getCultureSpotIntroUrl(spot, fallbackName = '') {
+  if (!spot) return '';
+  return getCultureSpotInfoUrl(getCultureSpotDisplayName(spot, fallbackName || t('cultureSpots')), spot.place_url);
+}
+
+function openCultureSpotInfoFromPhoto(event, element) {
+  if (event) event.stopPropagation();
+  const url = element && element.dataset ? element.dataset.url : '';
+  if (!url) return;
+  window.open(url, '_blank', 'noopener');
+}
+
 function renderSpotPhotoBox(spot, prefix = 'spotPhoto') {
   const photo = getCultureSpotPhoto(spot);
   const domId = getSpotPhotoDomId(spot && spot.key, prefix);
   const displayName = getCultureSpotDisplayName(spot, '문화스팟');
+  const introUrl = getCultureSpotIntroUrl(spot, displayName);
   if (!photo || !photo.imageUrl) {
-    const type = spot && (spot.cultureType || getCultureSpotType(spot, '')) || t('cultureSpots');
     return `
-      <div class="spot-photo empty" id="${escapeHtml(domId)}">
+      <div class="spot-photo empty" id="${escapeHtml(domId)}" data-url="${escapeHtml(introUrl)}">
         <div class="spot-photo-fallback">
-          <div class="spot-photo-fallback-icon">${getCultureSpotIcon(type)}</div>
-          <div class="spot-photo-fallback-title">${escapeHtml(displayName)}</div>
-          <div class="spot-photo-fallback-meta">${escapeHtml(type || t('cultureSpots'))}</div>
+          <div class="spot-photo-fallback-title">${escapeHtml(t('photoPreparing'))}</div>
         </div>
       </div>`;
   }
   return `
-    <div class="spot-photo" id="${escapeHtml(domId)}">
+    <div class="spot-photo clickable" id="${escapeHtml(domId)}" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromPhoto(event,this)" title="${escapeHtml(t('infoView'))}">
       <img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || displayName || '문화스팟 사진')}" loading="lazy">
       <div class="spot-photo-credit">${escapeHtml(getCulturePhotoCredit(photo))}</div>
     </div>`;
@@ -6247,25 +6276,27 @@ function updateSpotPhotoBox(key, photo, prefix = 'spotPhoto') {
   const el = document.getElementById(getSpotPhotoDomId(key, prefix));
   if (!el || !photo || !photo.imageUrl) return;
   el.classList.remove('empty');
+  el.classList.add('clickable');
+  el.setAttribute('onclick', 'openCultureSpotInfoFromPhoto(event,this)');
+  el.title = t('infoView');
   el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || '문화스팟 사진')}" loading="lazy"><div class="spot-photo-credit">${escapeHtml(getCulturePhotoCredit(photo))}</div>`;
 }
 
-function renderHomeCultureSpotPhoto(spot, key, type, displayName, stars) {
+function renderHomeCultureSpotPhoto(spot, key, displayName, stars, introUrl = '') {
   const domId = getSpotPhotoDomId(key, 'homeSpotPhoto');
   const photo = getCultureSpotPhoto(spot);
   const rank = `<div class="culture-spot-rank">★${stars}</div>`;
   if (photo && photo.imageUrl) {
     return `
-      <div class="culture-spot-photo" id="${escapeHtml(domId)}" data-key="${escapeHtml(key)}" data-stars="★${stars}">
+      <div class="culture-spot-photo clickable" id="${escapeHtml(domId)}" data-key="${escapeHtml(key)}" data-stars="★${stars}" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromPhoto(event,this)" title="${escapeHtml(t('infoView'))}">
         <img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || displayName || '문화스팟 사진')}" loading="lazy">
         ${rank}
       </div>`;
   }
   return `
-    <div class="culture-spot-photo empty" id="${escapeHtml(domId)}" data-key="${escapeHtml(key)}" data-stars="★${stars}">
+    <div class="culture-spot-photo empty" id="${escapeHtml(domId)}" data-key="${escapeHtml(key)}" data-stars="★${stars}" data-url="${escapeHtml(introUrl)}">
       <div class="culture-spot-photo-fallback">
-        <div class="culture-spot-photo-icon">${getCultureSpotIcon(type)}</div>
-        <div>${escapeHtml(type || t('cultureSpots'))}</div>
+        <div>${escapeHtml(t('photoPreparing'))}</div>
       </div>
       ${rank}
     </div>`;
@@ -6277,6 +6308,9 @@ function updateHomeCultureSpotPhoto(key, photo) {
   if (el) {
     const stars = el.dataset.stars || '';
     el.classList.remove('empty');
+    el.classList.add('clickable');
+    el.setAttribute('onclick', 'openCultureSpotInfoFromPhoto(event,this)');
+    el.title = t('infoView');
     el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || '문화스팟 사진')}" loading="lazy"><div class="culture-spot-rank">${escapeHtml(stars)}</div>`;
   }
   const saveButton = Array.from(document.querySelectorAll('.culture-spot-save-btn')).find(button => button.dataset && button.dataset.key === key);
@@ -6352,17 +6386,15 @@ function renderNearCourses(results) {
     return `
       <div class="${cardClass}">
         <div class="culture-spot-main">
-          ${renderHomeCultureSpotPhoto(p, favoriteKey, type, placeName, valueStars)}
+          ${renderHomeCultureSpotPhoto(p, favoriteKey, placeName, valueStars, introUrl)}
           <div class="culture-spot-info">
             <div class="culture-spot-name">${escapeHtml(placeName)}</div>
             <div class="culture-spot-pill-row">
               <span class="culture-spot-pill">${escapeHtml(dist)}</span>
-              <span class="culture-spot-pill">${escapeHtml(type)}</span>
               <span class="culture-spot-pill stars">${escapeHtml(getCultureValueStarsText(valueStars))}</span>
               ${visitedPill}
             </div>
             <div class="culture-spot-actions">
-              <button class="culture-spot-info-btn" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromHomeButton(this)">${escapeHtml(t('intro'))}</button>
               <button class="culture-spot-save-btn ${favorited ? 'active' : ''}" data-key="${escapeHtml(favoriteKey)}" data-id="${escapeHtml(String(p.id || p.contentId || p.contentid || ''))}" data-place="${escapeHtml(rawPlaceName)}" data-name-en="${escapeHtml(nameEn)}" data-lat="${lat}" data-lng="${lng}" data-type="${escapeHtml(type)}" data-stars="${valueStars}" data-dist="${Number.isFinite(distValue) ? distValue : ''}" data-address="${escapeHtml(p.address_name || p.addr1 || '')}" data-url="${escapeHtml(introUrl)}" data-image="${escapeHtml(p.firstImage || p.firstimage || '')}" data-source="${escapeHtml(p.source || '')}" onclick="saveCultureSpotFromHomeButton(this)">${favorited ? escapeHtml(t('saved')) : escapeHtml(t('save'))}</button>
               <button class="culture-spot-route-btn" data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" onclick="goToAiFromHomeButton(this)">${escapeHtml(t('route'))}</button>
             </div>
@@ -6467,7 +6499,7 @@ function renderCultureSpotMapMarkers(spots) {
     markerEl.onclick = event => {
       stopMarkerEvent(event);
       const nameEn = appLanguage === 'en' && !/[가-힣]/.test(placeName) ? placeName : '';
-      showAiPlaceCard(position, placeName, `${distText} · ${type} · ★${stars}`, { spot: { ...spot, nameEn: spot.nameEn || nameEn } });
+      showAiPlaceCard(position, placeName, `${distText} · ★${stars}`, { spot: { ...spot, nameEn: spot.nameEn || nameEn } });
     };
 
     const overlay = new kakao.maps.CustomOverlay({
@@ -6529,12 +6561,6 @@ function selectHomeCultureSpots(results) {
   return deduped
     .sort((a, b) => Number(a.distFromMe) - Number(b.distFromMe))
     .slice(0, HOME_RECOMMENDATION_COUNT);
-}
-
-function openCultureSpotInfoFromHomeButton(button) {
-  const url = button && button.dataset ? button.dataset.url : '';
-  if (!url) return;
-  window.open(url, '_blank', 'noopener');
 }
 
 function goToAiFromHomeButton(button) {
@@ -6832,6 +6858,25 @@ function getDailyActivityXp(distanceKm, dailyGoal) {
   return Math.max(0, distanceXp + activeXp + goalXp + stretchXp);
 }
 
+function isDailyGoalAchieved(distanceKm, dailyGoal) {
+  const safeDistance = Math.max(0, Number(distanceKm) || 0);
+  const safeGoal = Math.max(1, Number(dailyGoal) || 3);
+  return safeDistance + 0.001 >= safeGoal;
+}
+
+function getActivityStreakBonus(streakDays) {
+  const safeDays = Math.max(0, Math.floor(Number(streakDays) || 0));
+  const tier = ACTIVITY_STREAK_BONUS_TIERS.find(item => safeDays >= item.days);
+  return tier ? tier.xp : 0;
+}
+
+function getDateGapDays(fromDate, toDate) {
+  if (!fromDate || !toDate) return Infinity;
+  const from = new Date(fromDate.getFullYear(), fromDate.getMonth(), fromDate.getDate()).getTime();
+  const to = new Date(toDate.getFullYear(), toDate.getMonth(), toDate.getDate()).getTime();
+  return Math.round((to - from) / 86400000);
+}
+
 function getXpNeededForLevel(level) {
   const safeLevel = Math.max(1, Number(level) || 1);
   return Math.round(650 + Math.pow(safeLevel, 1.35) * 260);
@@ -6857,13 +6902,30 @@ function getLevelProgress(totalXp) {
 function getActivityLevelSummary(records, dailyGoal) {
   const dailyTotals = getActivityDailyTotals(records);
   const currentWeekKey = getLocalDateKey(getWeekStartDate());
+  const today = new Date();
+  const todayDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
   let totalXp = 0;
   let currentWeekXp = 0;
   let currentWeekActiveDays = 0;
   let totalDistance = 0;
+  let goalStreak = 0;
+  let lastGoalDate = null;
+  let lastGoalStreak = 0;
 
   dailyTotals.forEach(day => {
-    const dayXp = getDailyActivityXp(day.distKm, dailyGoal);
+    const baseXp = getDailyActivityXp(day.distKm, dailyGoal);
+    const goalAchieved = isDailyGoalAchieved(day.distKm, dailyGoal);
+    let streakBonus = 0;
+    if (goalAchieved) {
+      goalStreak = getDateGapDays(lastGoalDate, day.date) === 1 ? goalStreak + 1 : 1;
+      lastGoalDate = day.date;
+      lastGoalStreak = goalStreak;
+      streakBonus = getActivityStreakBonus(goalStreak);
+    } else if (getDateGapDays(day.date, todayDate) > 0) {
+      goalStreak = 0;
+      lastGoalDate = null;
+    }
+    const dayXp = baseXp + streakBonus;
     const weekKey = getLocalDateKey(getWeekStartDate(day.date));
     totalXp += dayXp;
     totalDistance += day.distKm;
@@ -6878,6 +6940,7 @@ function getActivityLevelSummary(records, dailyGoal) {
     totalXp: Math.round(totalXp),
     currentWeekXp: Math.round(currentWeekXp),
     currentWeekActiveDays,
+    currentGoalStreak: lastGoalDate && getDateGapDays(lastGoalDate, todayDate) <= 1 ? lastGoalStreak : 0,
     totalDistance
   };
 }
@@ -6888,13 +6951,15 @@ function renderMyLevel(records, dailyGoal) {
   const labels = appLanguage === 'en'
     ? {
         next: `Next level in ${nextRemaining.toLocaleString('en-US')} XP`,
+        streak: `${summary.currentGoalStreak.toLocaleString('en-US')}-day streak`,
       }
     : {
         next: `다음 레벨까지 ${nextRemaining.toLocaleString('ko-KR')} XP`,
+        streak: `${summary.currentGoalStreak.toLocaleString('ko-KR')}일 연속`,
       };
 
   setTextContent('myLevelNumber', `LV ${summary.level}`);
-  setTextContent('myLevelTotalXp', `${summary.totalXp.toLocaleString(appLanguage === 'en' ? 'en-US' : 'ko-KR')} XP`);
+  setTextContent('myLevelTotalXp', labels.streak);
   setTextContent('myLevelNextText', labels.next);
   setTextContent('myLevelPercent', `${summary.percent}%`);
   const fill = document.getElementById('myLevelFill');
@@ -7694,12 +7759,10 @@ function renderMyCourses() {
 
   visibleSpots.forEach(spot => {
     const keyJson = escapeHtml(JSON.stringify(spot.key));
-    const type = spot.cultureType || getCultureSpotType(spot, '');
     const displayName = getCultureSpotDisplayName(spot);
     const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
     const visited = !!visits[getCultureSpotVisitKey(spot)];
     const meta = [
-      type,
       formatCultureSpotSavedAt(spot) ? '저장 ' + formatCultureSpotSavedAt(spot) : '',
       visited ? '방문 기록' : ''
     ].filter(Boolean).join(' · ');
@@ -7721,7 +7784,6 @@ function renderMyCourses() {
       <div class="mc-actions">
         <button class="mc-btn mc-btn-run" onclick="event.stopPropagation(); startSavedSpotRoute(${keyJson})">${escapeHtml(t('routeView'))}</button>
         <button class="mc-btn mc-btn-map" onclick="event.stopPropagation(); viewCourseOnMap(${keyJson})">${escapeHtml(t('mapView'))}</button>
-        <button class="mc-btn mc-btn-info" onclick="event.stopPropagation(); openCultureSpotInfoFromDetail(${keyJson})">${escapeHtml(t('infoView'))}</button>
         <button class="mc-btn mc-btn-delete mc-btn-full" onclick="event.stopPropagation(); deleteCourseFromCard(${keyJson})">${escapeHtml(t('deleteSaved'))}</button>
       </div>
     `;
@@ -7754,7 +7816,6 @@ function openCourseDetail(id) {
   if (!course) return;
   courseDetailTargetId = id;
   const spotId = escapeHtml(JSON.stringify(id));
-  const type = course.cultureType || getCultureSpotType(course, '');
   const stars = Math.max(1, Math.min(5, Math.round(Number(course.cultureValueStars) || 1)));
   const dist = formatCultureSpotDistanceLabel(course.distFromMe);
   const visitState = readCultureSpotVisits()[getCultureSpotVisitKey(course)];
@@ -7762,12 +7823,11 @@ function openCourseDetail(id) {
   const displayName = getCultureSpotDisplayName(course);
 
   document.getElementById('courseDetailTitle').textContent = displayName;
-  document.getElementById('courseDetailMeta').textContent = [type, `★${stars}`, dist].filter(Boolean).join(' · ');
+  document.getElementById('courseDetailMeta').textContent = [`★${stars}`, dist].filter(Boolean).join(' · ');
   document.getElementById('courseDetailBody').innerHTML = `
     ${renderSpotPhotoBox(course, 'detailPhoto')}
     ${renderSpotWeatherBox(course, 'detailWeather')}
     <div class="course-detail-chiprow">
-      <span class="course-detail-chip">${escapeHtml(type)}</span>
       <span class="course-detail-chip">${escapeHtml(getCultureValueStarsText(stars))}</span>
       <span class="course-detail-chip">${visitState ? '방문 기록' : '방문 전'}</span>
     </div>
@@ -7783,9 +7843,8 @@ function openCourseDetail(id) {
     </div>
     ${savedAt ? `<div class="course-detail-chiprow"><span class="course-detail-chip">${escapeHtml(t('saved'))} ${escapeHtml(savedAt)}</span></div>` : ''}
     <button class="course-detail-primary-action" onclick="startCourseFromDetail()">${escapeHtml(t('routeView'))}</button>
-    <div class="course-detail-secondary-actions">
+    <div class="course-detail-secondary-actions single">
       <button class="course-secondary" onclick="viewCourseFromDetail()">${escapeHtml(t('mapView'))}</button>
-      <button class="course-secondary" onclick="openCultureSpotInfoFromDetail(${spotId})">${escapeHtml(t('infoView'))}</button>
     </div>
     <button class="course-detail-delete" onclick="deleteCourseFromDetail()">${escapeHtml(t('deleteSaved'))}</button>
   `;
@@ -7960,10 +8019,9 @@ function showSavedSpotOnCreateMap(spot, attempt) {
       return;
     }
     const position = new kakao.maps.LatLng(latlng.lat, latlng.lng);
-    const type = spot.cultureType || getCultureSpotType(spot, '');
     const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
     const displayName = getCultureSpotDisplayName(spot);
-    showAiPlaceCard(position, displayName, `${formatCultureSpotDistanceLabel(spot.distFromMe)} · ${type} · ★${stars}`, { spot });
+    showAiPlaceCard(position, displayName, `${formatCultureSpotDistanceLabel(spot.distFromMe)} · ★${stars}`, { spot });
     createMap.setCenter(position);
     toast(displayName + '을 지도에 표시했어요');
   }, attempt ? 250 : 120);
@@ -7990,10 +8048,6 @@ function showSavedCourseOnCreateMap(course, attempt) {
   }, attempt ? 250 : 120);
 }
 
-function editCourseFromDetail() {
-  openCultureSpotInfoFromDetail(courseDetailTargetId);
-}
-
 function deleteCourseFromDetail() {
   if (!courseDetailTargetId) return;
   const id = courseDetailTargetId;
@@ -8016,12 +8070,6 @@ function startSavedSpotRoute(id) {
     return;
   }
   goToAiWithLocation(getCultureSpotDisplayName(spot), latlng.lat, latlng.lng);
-}
-
-function openCultureSpotInfoFromDetail(id) {
-  const spot = getFavoriteCultureSpotByKey(id);
-  if (!spot) return;
-  window.open(getCultureSpotInfoUrl(getCultureSpotDisplayName(spot), spot.place_url), '_blank', 'noopener');
 }
 
 function openRename(id) {
@@ -8866,15 +8914,27 @@ function obFinish() {
 
 /* ── 프로필 편집 모달 ── */
 let editSelectedAvatar = '🏃';
+let settingsReturnTab = 'home';
 
-function openMySettings() {
+function openSettingsPage() {
+  settingsReturnTab = S.tab && S.tab !== 'settings' ? S.tab : 'home';
+  if (routeGuide.active) stopRouteGuidance('', { silent: true });
   updateMySettingsValues();
-  document.getElementById('mySettingsModal').style.display = 'flex';
+  setMainChromeVisible(false);
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const settingsScreen = document.getElementById('screen-settings');
+  if (settingsScreen) settingsScreen.classList.add('active');
+  S.tab = 'settings';
 }
 
-function closeMySettings() {
-  document.getElementById('mySettingsModal').style.display = 'none';
+function closeSettingsPage() {
+  switchTab(settingsReturnTab || 'home');
 }
+
+function openMySettings() { openSettingsPage(); }
+
+function closeMySettings() { closeSettingsPage(); }
 
 function updateMySettingsValues() {
   const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
@@ -9079,7 +9139,7 @@ function renderMyCultureVisits() {
     const type = visit.type || '문화 스팟';
     const stars = getCultureVisitStars(visit);
     const displayName = getCultureSpotDisplayName({ place_name: visit.name, nameEn: visit.nameEn }, visit.name || '문화 스팟');
-    const meta = [type, getCultureMedalLabel(stars), getCultureVisitDateLabel(visit)].filter(Boolean).join(' · ');
+    const meta = [getCultureVisitDateLabel(visit)].filter(Boolean).join(' · ');
     return `
       <div class="culture-visit-item">
         <div class="culture-visit-icon">${getCultureSpotIcon(type)}</div>
@@ -9099,17 +9159,6 @@ function renderMyPage() {
   // 프로필
   if (profile.name) document.getElementById('myNameDisplay').textContent = profile.name;
   if (profile.avatar) document.getElementById('myAvatar').textContent = profile.avatar;
-
-  // 가입일 기반 "Runloop와 함께 N일째"
-  const joinDaysEl = document.getElementById('myJoinDays');
-  if (joinDaysEl) {
-    if (!profile.joinDate) {
-      profile.joinDate = new Date().toISOString();
-      localStorage.setItem('runProfile', JSON.stringify(profile));
-    }
-    const days = Math.max(1, Math.floor((Date.now() - new Date(profile.joinDate)) / (1000 * 60 * 60 * 24)));
-    joinDaysEl.textContent = appLanguage === 'en' ? `${days} days with Runloop` : `Runloop와 함께한 지 ${days}일째`;
-  }
 
   const goalInfo = document.getElementById('myGoalInfo');
   const bodyInfo = document.getElementById('myBodyInfo');
