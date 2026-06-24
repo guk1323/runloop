@@ -1656,6 +1656,355 @@ function t(key) {
   return (APP_COPY[appLanguage] && APP_COPY[appLanguage][key]) || APP_COPY.ko[key] || key;
 }
 
+const UI_TRANSLATIONS_EN = {
+  'Runloop에 오신 걸': 'Welcome to',
+  '환영해요!': 'Runloop!',
+  '함께 달리며 더 건강한 일상을': 'Build a healthier daily rhythm',
+  '만들어봐요.': 'through walking and movement.',
+  '닉네임을 입력해주세요': 'Enter your nickname',
+  '예: 달리기 좋아하는 훈': 'e.g. Alex',
+  '최대 12자 · 언제든 변경 가능해요': 'Up to 12 characters · You can change it anytime',
+  '다음 →': 'Next →',
+  '기본 정보를': 'Tell us your',
+  '알려주세요': 'basic info',
+  '더 정확한 칼로리 계산에 사용돼요 🔥': 'Used for more accurate activity estimates',
+  '나이': 'Age',
+  '세': 'years',
+  '키': 'Height',
+  '몸무게': 'Weight',
+  '성별': 'Gender',
+  '남성': 'Male',
+  '여성': 'Female',
+  '입력하지 않아도 괜찮아요 — 나중에 MY탭에서 수정 가능해요': 'Optional · You can edit this later in MY',
+  '나를 표현할': 'Choose an avatar',
+  '아바타를 골라요': 'that represents you',
+  '언제든 바꿀 수 있어요!': 'You can change it anytime',
+  '하루 활동 목표를': 'Set your daily',
+  '설정해요': 'activity goal',
+  '나중에 MY 탭에서 바꿀 수 있어요': 'You can change this later in MY',
+  '가볍게 시작': 'Light start',
+  '꾸준하게': 'Steady',
+  '열심히': 'Active',
+  '진지하게': 'Committed',
+  '직접 설정': 'Custom',
+  '하루 2km': '2 km per day',
+  '하루 3km': '3 km per day',
+  '하루 5km': '5 km per day',
+  '하루 7km': '7 km per day',
+  '0.5~50km 사이로 입력': 'Enter 0.5 to 50 km',
+  '시작하기': 'Get started',
+  '설정': 'Settings',
+  '홈': 'Home',
+  '관심': 'Saved',
+  '지도': 'Map',
+  '소셜': 'Social',
+  '위치 불러오는 중…': 'Loading location…',
+  '오늘 최고/최저': 'Today high/low',
+  '미세 · 초미세': 'PM10 · PM2.5',
+  '체감': 'Feels like',
+  '날씨 불러오는 중…': 'Loading weather…',
+  '가까운 축제 일정': 'Nearby festivals',
+  '가까운 체육 일정': 'Nearby sports events',
+  '전체 일정': 'All events',
+  '현재 위치 기준': 'Based on current location',
+  '주변에서 열리는 일정을 찾아볼게요': 'Finding events near you',
+  '가까운 축제와 문화 일정을 확인해요': 'Check nearby festivals and cultural events',
+  '일정 보기에서 전체 목록을 볼 수 있어요': 'Open all events to see the full list',
+  '주변': 'Nearby',
+  '일정': 'Events',
+  '출발지': 'Start',
+  '목적지': 'Destination',
+  '왕복': 'Round trip',
+  '위치 검색': 'Search location',
+  '검색어 지우기': 'Clear search',
+  '검색': 'Search',
+  '현재 위치로 이동': 'Move to current location',
+  '현재 위치': 'Current location',
+  '지도 불러오는 중…': 'Loading map…',
+  '지도나 검색으로 장소를 선택하세요': 'Select a place on the map or by search',
+  '닫기': 'Close',
+  '선택한 장소': 'Selected place',
+  '출발 또는 도착으로 설정하세요': 'Set as start or destination',
+  '사진 준비중': 'Photo coming soon',
+  '관심 장소 저장': 'Save place',
+  '출발': 'Start',
+  '도착': 'Destination',
+  '저장': 'Save',
+  '지도에서 시작점과 다음 지점을 차례로 눌러요': 'Tap the start point, then the next point on the map',
+  '길 따라가기': 'Follow roads',
+  '보행자 길에 맞춰 정리': 'Snap to walking paths',
+  '총 거리': 'Distance',
+  '예상 시간': 'Estimated time',
+  '이전': 'Undo',
+  '전체 지우기': 'Clear all',
+  '경로 확인 완료': 'Route checked',
+  '관심 목록': 'Saved list',
+  '장소': 'Places',
+  '방문함': 'Visited',
+  '저장한 문화스팟이 없어요': 'No saved culture spots',
+  '홈이나 지도에서 가고 싶은 스팟을': 'Save places you want to visit',
+  '저장해보세요': 'from Home or Map',
+  '공유하기': 'Share',
+  '전체': 'All',
+  '코스': 'Route',
+  '사진': 'Photo',
+  '인기': 'Popular',
+  '공유': 'Shares',
+  '좋아요': 'Likes',
+  '후보': 'Candidates',
+  '탭해서 변경': 'Tap to change',
+  '런너': 'Runner',
+  '다음 레벨까지 0 XP': '0 XP to next level',
+  '활동 기록': 'Activity records',
+  '전체 기록 →': 'All records →',
+  '오늘 목표 달성률': 'Today goal progress',
+  '달성': 'done',
+  '앱 설정': 'App Settings',
+  '뒤로 가기': 'Back',
+  '언어': 'Language',
+  '앱 언어 선택': 'App language',
+  '한국어': 'Korean',
+  '일일 목표': 'Daily goal',
+  '개인정보처리방침': 'Privacy Policy',
+  '보기': 'View',
+  '주변 일정': 'Nearby Events',
+  '프로필 편집': 'Edit Profile',
+  '아바타': 'Avatar',
+  '닉네임': 'Nickname',
+  '하루 활동 목표 변경': 'Change Daily Activity Goal',
+  '코스 편집': 'Edit Route',
+  '코스 이름 입력': 'Route name',
+  '취소': 'Cancel',
+  '삭제': 'Delete',
+  '전체 활동 기록': 'All Activity Records',
+  '전체 기록 삭제': 'Delete All Records',
+  '스팟': 'Spot',
+  '소셜에 공유': 'Share to Social',
+  '공유할 코스': 'Route to share',
+  '기록 인증샷': 'Activity photo',
+  '사진 선택': 'Choose photo',
+  '사진 삭제': 'Remove photo',
+  '공유할 사진 미리보기': 'Photo preview',
+  '제목': 'Title',
+  '공유 제목': 'Share title',
+  '메모': 'Memo',
+  '코스 느낌이나 풍경을 짧게 남겨보세요': 'Leave a short note about the route or view',
+  '라이브': 'Live',
+  'GPS 대기': 'Waiting for GPS',
+  '진행': 'Progress',
+  '현재 위치 중심': 'Center on current location',
+  '달린 거리': 'Distance',
+  '경과 시간': 'Elapsed time',
+  '현재 페이스': 'Current pace',
+  '소모 칼로리': 'Calories',
+  '목표 페이스 6\'30"/km': 'Target pace 6\'30"/km',
+  '대기 중': 'Waiting',
+  '종료': 'End',
+  '일시정지': 'Pause',
+  '인증샷을 남길까요?': 'Add a photo?',
+  '오늘 코스 기록에 사진 한 장을 함께 저장할 수 있어요.': 'You can save one photo with today’s activity.',
+  '아니오': 'No',
+  '예': 'Yes',
+  '런닝 완료!': 'Activity Complete!',
+  '오늘 · Han River Line': 'Today · Han River Line',
+  '총 시간': 'Total time',
+  '평균 페이스': 'Average pace',
+  '칼로리': 'Calories',
+  '기록 제목': 'Record title',
+  '오늘 런닝 제목을 입력해보세요': 'Enter a title for today’s activity',
+  '인증샷': 'Photo',
+  '런닝 인증샷 미리보기': 'Activity photo preview',
+  '다시 찍기': 'Retake',
+  '오늘의 한 줄 메모': 'Today’s note',
+  '오늘 컨디션은 어땠나요? 자유롭게 기록해보세요': 'How did you feel today? Leave a short note',
+  '오늘 컨디션': 'Condition',
+  '낮음': 'Low',
+  '최상': 'Best',
+  '기록 저장 →': 'Save record →',
+  '저장 안 함': 'Discard',
+  '문화재청': 'Korea Heritage Service',
+  '한국관광공사': 'VisitKorea',
+  '한국관광공사 관광정보': 'VisitKorea',
+  '한국관광공사 포토코리아': 'VisitKorea Photo Korea',
+  '대한체육회': 'Korean Sport & Olympic Committee',
+  '시연 기록': 'Demo record',
+  '기록 없음': 'No records',
+  '미입력': 'Not entered',
+  '거리 정보 없음': 'No distance',
+  '저장한 문화스팟': 'Saved culture spot',
+  '방문 기록': 'Visited',
+  '방문 날짜': 'Visited',
+  '저장 날짜': 'Saved',
+  '방문 기록됨': 'Visited',
+  '길 안내': 'Guide',
+  '지도 보기': 'Map',
+  '소개 보기': 'Info',
+  '문화 가치': 'Cultural value',
+  '거리순': 'Distance',
+  '별점순': 'Rating',
+  '지도를 불러오지 못했어요': 'Could not load the map',
+  '현재 위치로 이동했어요!': 'Moved to your current location',
+  '위치 권한을 허용해주세요': 'Please allow location permission',
+  '위치 감지 불가': 'Location is unavailable',
+  '위치 감지 중…': 'Detecting location…',
+  '내 위치로 이동했어요!': 'Moved to my location',
+  '현재 위치로 설정됐어요!': 'Current location set',
+  '현재 위치 확인 중…': 'Checking current location…',
+  '현재 위치를 다시 확인하지 못해 마지막 위치를 사용해요': 'Could not refresh location, using the last known location',
+  '도보 경로 찾는 중…': 'Finding walking route…',
+  '보행자 경로를 찾지 못해 직선으로 표시했어요': 'Could not find a walking route, showing a straight line',
+  '출발지로 설정했어요. 도착지를 선택하세요': 'Start set. Select a destination',
+  '검색 중…': 'Searching…',
+  '검색 결과를 불러오지 못했어요. 다시 입력해주세요.': 'Could not load search results. Try again',
+  '검색 결과가 없어요. 건물명, 역 이름, 동 이름을 조금 다르게 입력해보세요.': 'No search results. Try a different building, station, or area name',
+  '지도를 불러오는 중이에요. 잠시 후 다시 검색해주세요.': 'Map is loading. Try again shortly',
+  '위치 선택': 'Select location',
+  '지도에서 선택한 위치': 'Selected on map',
+  '검색한 장소': 'Search result',
+  '문화스팟을 먼저 선택해주세요': 'Select a culture spot first',
+  '관심 장소에서 삭제했어요': 'Removed from saved places',
+  '관심 장소에 저장했어요': 'Saved to places',
+  '이미 관심 장소에 있어요': 'Already saved',
+  '저장할 위치 정보가 없어요': 'No location data to save',
+  '저장한 일정에서 삭제했어요': 'Removed from saved events',
+  '관심 일정에 저장했어요': 'Saved to events',
+  '목표가 변경됐어요! 💪': 'Goal updated',
+  '하루 목표를 입력해주세요': 'Enter a daily goal',
+  '프로필이 저장됐어요!': 'Profile saved',
+  '닉네임을 입력해주세요': 'Enter your nickname',
+  '전체 기록이 삭제됐어요': 'All records deleted',
+  '사진을 불러오지 못했어요': 'Could not load the photo',
+  '소셜에 공유했어요': 'Shared to Social',
+  '공유글이 삭제됐어요': 'Post deleted',
+  '지도에 표시할 경로가 없어요': 'No route to show on the map',
+  '안내를 종료했어요': 'Guide ended',
+  '안내할 지도 경로가 없어요': 'No map route to guide',
+  'GPS를 사용할 수 없어 안내를 시작할 수 없어요': 'GPS is unavailable, so guidance cannot start',
+  '위치 권한을 허용하면 안내를 시작할 수 있어요': 'Allow location permission to start guidance',
+  '경로에서 벗어났어요. 가까운 경로로 돌아가주세요': 'You are off route. Return to the nearest route',
+  '도착했어요': 'Arrived',
+  '지도를 불러온 뒤 다시 시도해주세요': 'Try again after the map loads',
+  '지도에 표시할 위치 정보가 없어요': 'No location data to show on the map',
+  '경로를 찾을 위치 정보가 없어요': 'No location data for routing',
+  '지도에서 점을 찍어 경로를 확인해보세요': 'Tap points on the map to check a route',
+  '현재 위치를 중심으로 맞췄어요': 'Centered on current location',
+  'GPS 찾는 중': 'Finding GPS',
+  'GPS 수신': 'GPS received',
+  'GPS 없음': 'No GPS',
+  'GPS 대기': 'Waiting for GPS',
+  'GPS 대기 중': 'Waiting for GPS',
+  'GPS 연결됐어요! 실제 거리로 측정해요': 'GPS connected. Measuring real distance',
+  'GPS 정확도가 낮아요. 실내에서는 거리 누적을 보수적으로 봐요': 'GPS accuracy is low. Distance will be counted conservatively indoors',
+  'GPS 오차가 커서 이 위치 변화는 거리에서 제외했어요': 'GPS drift was too large, so this movement was excluded',
+  'GPS를 찾는 중이에요… 시뮬레이션으로 진행해요': 'Finding GPS… continuing in simulation mode',
+  '목표 달성 중 🎯': 'On target 🎯',
+  '페이스 올리기 💪': 'Pick up the pace 💪',
+  '계속': 'Resume',
+  'T맵 보행자 경로 계산 중…': 'Calculating walking route…',
+  'T맵 보행자 경로를 찾는 중…': 'Finding a walking route…',
+  '시작점이 잡혔어요. 다음 지점을 눌러 구간을 추가해요': 'Start point set. Tap the next point to add a segment',
+  '조금 더 떨어진 지점을 눌러주세요': 'Tap a point a little farther away',
+  '내가 누른 지점대로 이어졌어요. 다음 점을 계속 찍어요': 'Connected along your tapped points. Keep adding points',
+  '마지막 구간을 지웠어요. 다음 점을 계속 찍어요': 'Removed the last segment. Keep adding points',
+  '가까운 보행자 길에 맞춰졌어요. 다음 점을 계속 찍어요': 'Snapped to a nearby walking path. Keep adding points',
+  '보행자 길로 보정됐어요. 다음 점을 계속 찍어요': 'Snapped to a walking path. Keep adding points',
+  '내가 찍은 길로 유지했어요. 다음 점을 계속 찍어요': 'Keeping your drawn line. Keep adding points',
+  '지도에 없는 길로 판단해 직접 그린 선을 살렸어요': 'This path was not found on the map, so your drawn line was kept',
+  'TMAP 키를 넣으면 보행자 길로 자동 보정돼요': 'Add a TMAP key to snap routes to walking paths',
+  'TMAP 키 또는 상품 권한을 확인해주세요': 'Check your TMAP key or product permission',
+  'T맵 보정이 애매해서 직접 그린 선을 살렸어요': 'TMAP snapping was uncertain, so your drawn line was kept',
+  '코스 저장 기능은 현재 사용하지 않아요': 'Route saving is currently disabled',
+  '보행자 길을 찾지 못했어요. 다시 눌러주세요': 'Could not find a walking route. Try again',
+  '최근 AI 추천을 다시 보여줘요': 'Showing the recent AI recommendation again',
+  '주변 코스를 기준으로 추천했어요': 'Recommended based on nearby routes',
+  'AI 추천은 잠시 후 다시 눌러주세요': 'Try AI recommendation again shortly',
+  '다시 생성': 'Generate again',
+  '모든 활동 기록을 삭제할까요?': 'Delete all activity records?',
+  '이 공유글을 삭제할까요?': 'Delete this post?',
+  '이 코스를 삭제할까요?': 'Delete this route?',
+  '이름을 입력해주세요': 'Enter a name',
+  '이름이 변경됐어요!': 'Name updated',
+  '코스가 삭제됐어요': 'Route deleted',
+  '즐겨찾기에 추가했어요': 'Added to favorites',
+  '즐겨찾기에서 뺐어요': 'Removed from favorites',
+  '목표가 설정됐어요! 💪': 'Goal set',
+  '공유할 코스를 선택해주세요': 'Select a route to share',
+  '공유할 사진을 선택해주세요': 'Select a photo to share',
+  '저장 코스': 'Saved route',
+  '오늘의 문화 스팟': 'Today’s culture spot',
+  '문화 스팟': 'Culture spot',
+  '홈에서 선택한 문화 스팟': 'Culture spot selected from Home',
+  '현재 지도 위치에서 문화스팟을 찾는 중이에요': 'Searching culture spots in this map area',
+  'HealthKit 활동량을 불러오지 못했어요': 'Could not load HealthKit activity',
+  '위치 권한을 허용해주세요 (크롬 주소창 자물쇠 클릭)': 'Please allow location permission from the browser address bar'
+};
+const UI_TRANSLATIONS_KO = Object.fromEntries(
+  Object.entries(UI_TRANSLATIONS_EN).map(([ko, en]) => [en, ko]).filter(([, ko]) => ko)
+);
+
+function translateUiLiteral(value) {
+  const text = String(value || '');
+  if (!text.trim()) return text;
+  const leading = text.match(/^\s*/)[0];
+  const trailing = text.match(/\s*$/)[0];
+  const trimmed = text.trim();
+  const translated = appLanguage === 'en'
+    ? UI_TRANSLATIONS_EN[trimmed]
+    : UI_TRANSLATIONS_KO[trimmed];
+  return translated === undefined ? text : leading + translated + trailing;
+}
+
+function localizeStaticDom(root = document.body) {
+  if (!root) return;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      const parent = node.parentElement;
+      if (!parent || ['SCRIPT', 'STYLE', 'TEXTAREA'].includes(parent.tagName)) return NodeFilter.FILTER_REJECT;
+      if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  nodes.forEach(node => {
+    const next = translateUiLiteral(node.nodeValue);
+    if (next !== node.nodeValue) node.nodeValue = next;
+  });
+  const attrs = ['placeholder', 'aria-label', 'title', 'alt'];
+  root.querySelectorAll(attrs.map(attr => `[${attr}]`).join(',')).forEach(el => {
+    attrs.forEach(attr => {
+      if (!el.hasAttribute(attr)) return;
+      const current = el.getAttribute(attr);
+      const next = translateUiLiteral(current);
+      if (next !== current) el.setAttribute(attr, next);
+    });
+  });
+}
+
+function localizeRuntimeText(value) {
+  const text = translateUiLiteral(value);
+  if (appLanguage !== 'en') return text;
+  return String(text)
+    .replace(/^환영해요,\s*(.+)님! 🎉$/, 'Welcome, $1!')
+    .replace(/^(.+)을 지도에 표시했어요$/, 'Showing $1 on the map')
+    .replace(/^(.+)를 지도에 표시했어요$/, 'Showing $1 on the map')
+    .replace(/(\d+)\s*개/g, '$1')
+    .replace(/약\s*([0-9.]+km)/g, 'about $1')
+    .replace(/페이스\s*([^·]+)/g, 'Pace $1')
+    .replace(/컨디션\s*([0-9]+\/10)/g, 'Condition $1')
+    .replace(/사진/g, 'Photo');
+}
+
+function localizeProviderName(value) {
+  if (appLanguage !== 'en') return String(value || '');
+  return String(value || '')
+    .replace(/한국관광공사 관광정보/g, 'VisitKorea')
+    .replace(/한국관광공사 포토코리아/g, 'VisitKorea Photo Korea')
+    .replace(/한국관광공사/g, 'VisitKorea')
+    .replace(/대한체육회/g, 'Korean Sport & Olympic Committee')
+    .replace(/문화재청/g, 'Korea Heritage Service');
+}
+
 function updateInterestStaticLabels() {
   setTextContent('interestPlacesTab', t('interestPlaces'));
   setTextContent('interestSchedulesTab', t('interestSchedules'));
@@ -1718,11 +2067,22 @@ function applyAppLanguage() {
   const enBtn = document.getElementById('langEnBtn');
   if (koBtn) koBtn.classList.toggle('active', appLanguage === 'ko');
   if (enBtn) enBtn.classList.toggle('active', appLanguage === 'en');
+  localizeStaticDom();
+  hydrateVisibleCultureSpotEnglishDetails();
 }
 
 function setTextContent(id, value) {
   const el = document.getElementById(id);
   if (el) el.textContent = value;
+}
+
+function getCurrentLocationLabel() {
+  return appLanguage === 'en' ? 'Current location' : '현재 위치';
+}
+
+function isCurrentLocationLabel(value) {
+  const text = String(value || '').trim();
+  return text === '현재 위치' || text === 'Current location';
 }
 
 function loadExternalScript(src) {
@@ -2022,7 +2382,7 @@ async function installLeafletKakaoAdapter() {
 function showMapProviderError() {
   ['createMapLoading', 'mapLoading'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.innerHTML = '<span>지도를 불러오지 못했어요</span>';
+    if (el) el.innerHTML = `<span>${escapeHtml(appLanguage === 'en' ? 'Could not load the map' : '지도를 불러오지 못했어요')}</span>`;
   });
 }
 
@@ -2322,7 +2682,7 @@ function ensureDrawStartDot(latlng) {
 
 function setDrawGuide(text) {
   const guide = document.getElementById('drawGuideText');
-  if (guide) guide.textContent = text;
+  if (guide) guide.textContent = localizeRuntimeText(text);
 }
 
 function setDrawBusy(busy) {
@@ -2330,7 +2690,7 @@ function setDrawBusy(busy) {
   const sb = document.getElementById('saveBtn');
   if (busy && sb) {
     sb.disabled = true;
-    sb.textContent = 'T맵 보행자 경로 계산 중…';
+    sb.textContent = localizeRuntimeText('T맵 보행자 경로 계산 중…');
   }
 }
 
@@ -2757,7 +3117,7 @@ function moveToMyLocation() {
         content: '<div style="width:14px;height:14px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(242,122,94,.22)"></div>',
         zIndex: 3
       });
-      if (createMode === 'ai' && map === createMap) setAiMarker(latlng, '현재 위치');
+      if (createMode === 'ai' && map === createMap) setAiMarker(latlng, getCurrentLocationLabel());
       setCultureMapSearch('');
       loadNearCourses();
       toast('현재 위치로 이동했어요!');
@@ -2777,7 +3137,7 @@ function initAiMap() {
   document.getElementById('aiMapLoading').style.display = 'none';
 
   // 현재 위치 표시
-  setAiMarker(center, '현재 위치');
+  setAiMarker(center, getCurrentLocationLabel());
 
   // 클릭으로 출발지 선택
   kakao.maps.event.addListener(aiMap, 'click', function(e) {
@@ -2805,7 +3165,7 @@ function resolveAiPlaceFromLatLng(latlng) {
   return new Promise(resolve => {
     const fallback = {
       name: `${latlng.getLat().toFixed(4)}, ${latlng.getLng().toFixed(4)}`,
-      sub: '지도에서 선택한 위치'
+      sub: appLanguage === 'en' ? 'Selected on map' : '지도에서 선택한 위치'
     };
     if (!kakao.maps.services || !kakao.maps.services.Geocoder) {
       resolve(fallback);
@@ -2821,7 +3181,7 @@ function resolveAiPlaceFromLatLng(latlng) {
       const address = result[0].address && result[0].address.address_name;
       resolve({
         name: road || address || fallback.name,
-        sub: road && address ? address : '지도에서 선택한 위치'
+        sub: road && address ? address : (appLanguage === 'en' ? 'Selected on map' : '지도에서 선택한 위치')
       });
     });
   });
@@ -2831,7 +3191,7 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
   const lat = latlng.getLat ? latlng.getLat() : parseFloat(latlng.lat);
   const lng = latlng.getLng ? latlng.getLng() : parseFloat(latlng.lng);
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
-  const displayName = name || (options && options.spot ? getCultureSpotDisplayName(options.spot, '선택한 장소') : '선택한 장소');
+  const displayName = name || (options && options.spot ? getCultureSpotDisplayName(options.spot, t('destination')) : (appLanguage === 'en' ? 'Selected place' : '선택한 장소'));
   const displayNameEn = appLanguage === 'en' && !/[가-힣]/.test(displayName) ? displayName : '';
   const cultureSpot = options && options.spot
     ? { ...options.spot, nameEn: options.spot.nameEn || displayNameEn, y: lat, x: lng }
@@ -2847,7 +3207,7 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
     cultureValueStars: 1,
     transient: true
   };
-  aiPendingPlace = { lat, lng, name: displayName, sub: sub || '출발 또는 도착으로 설정하세요', cultureSpot, mediaSpot };
+  aiPendingPlace = { lat, lng, name: displayName, sub: sub || (appLanguage === 'en' ? 'Set as start or destination' : '출발 또는 도착으로 설정하세요'), cultureSpot, mediaSpot };
   if (aiPendingPlaceOverlay) aiPendingPlaceOverlay.setMap(null);
   aiPendingPlaceOverlay = new kakao.maps.CustomOverlay({
     map: createMap,
@@ -2913,7 +3273,7 @@ function updateAiPlaceMedia(spot) {
     syncAiPendingPlacePhoto(spot, photo);
     media.classList.add('active');
     img.src = photo.imageUrl;
-    img.alt = photo.title || displayName || '문화스팟 사진';
+    img.alt = photo.title || displayName || (appLanguage === 'en' ? 'Culture spot photo' : '문화스팟 사진');
     img.classList.add('active', 'clickable');
     img.onclick = openPendingCultureSpotInfo;
     img.title = t('infoView');
@@ -3034,7 +3394,7 @@ async function applyPendingPlaceAsDestination() {
 function setCurrentLocationAsAiStart(options = {}) {
   const useFallback = () => {
     const latlng = new kakao.maps.LatLng(S.lat, S.lng);
-    setAiMarker(latlng, '현재 위치');
+    setAiMarker(latlng, getCurrentLocationLabel());
   };
   if (!navigator.geolocation) {
     useFallback();
@@ -3046,7 +3406,7 @@ function setCurrentLocationAsAiStart(options = {}) {
       S.lat = pos.coords.latitude;
       S.lng = pos.coords.longitude;
       const latlng = new kakao.maps.LatLng(S.lat, S.lng);
-      setAiMarker(latlng, '현재 위치');
+      setAiMarker(latlng, getCurrentLocationLabel());
       if (!options.recenter && createMap) createMap.setCenter(new kakao.maps.LatLng(aiPendingPlace?.lat || S.lat, aiPendingPlace?.lng || S.lng));
       resolve();
     }, () => {
@@ -3062,7 +3422,7 @@ async function previewDirectPedestrianRoute(destination) {
   const guide = document.getElementById('aiMapGuide');
   if (guide) {
     guide.style.display = 'block';
-    guide.textContent = '도보 경로 찾는 중…';
+    guide.textContent = localizeRuntimeText('도보 경로 찾는 중…');
   }
 
   const start = makeRouteLatLng(S.lat, S.lng);
@@ -3222,7 +3582,7 @@ function useMyLocation() {
     const latlng = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
     S.lat = pos.coords.latitude; S.lng = pos.coords.longitude;
     if (aiMap) {
-      setAiMarker(latlng, '현재 위치');
+      setAiMarker(latlng, getCurrentLocationLabel());
     }
     toast('현재 위치로 설정됐어요!');
   }, () => toast('위치 권한을 허용해주세요'));
@@ -3261,7 +3621,7 @@ function clearMapSearchInput(event) {
 
 function prepareAddressSearchInput(input) {
   if (!input) return;
-  if (input.value.trim() === '현재 위치' || input.value.trim() === getAiSearchInputValue()) {
+  if (isCurrentLocationLabel(input.value) || input.value.trim() === getAiSearchInputValue()) {
     input.value = '';
     addrSearchResults = [];
     const dropdown = document.getElementById('addrDropdown');
@@ -3326,7 +3686,7 @@ function selectAddress(name, lat, lng) {
   document.getElementById('addrDropdown').style.display = 'none';
   setCultureMapSearch('');
   if (createMode === 'ai') {
-    showAiPlaceCard(latlng, name, '검색한 장소');
+    showAiPlaceCard(latlng, name, appLanguage === 'en' ? 'Search result' : '검색한 장소');
   }
 }
 
@@ -3365,7 +3725,7 @@ function getMapVisibleRadiusMeters(map) {
 function getCultureMapSearchInputQuery() {
   const input = document.getElementById('addrInput');
   const value = input ? input.value.trim() : '';
-  if (!value || value === '현재 위치' || value === getAiSearchInputValue()) return '';
+  if (!value || isCurrentLocationLabel(value) || value === getAiSearchInputValue()) return '';
   return value;
 }
 
@@ -3487,10 +3847,10 @@ function buildTmapAddress(poi) {
 
 function getTmapPoiType(poi) {
   const biz = [poi.upperBizName, poi.middleBizName, poi.lowerBizName].filter(Boolean).join(' ');
-  if (/지하철|전철|역|출구/.test(biz) || normalizeSearchText(poi.name).endsWith('역')) return '역';
-  if (/버스|정류장/.test(biz)) return '정류장';
-  if (/공원|산책|체육/.test(biz)) return '러닝';
-  return '장소';
+  if (/지하철|전철|역|출구/.test(biz) || normalizeSearchText(poi.name).endsWith('역')) return appLanguage === 'en' ? 'Station' : '역';
+  if (/버스|정류장/.test(biz)) return appLanguage === 'en' ? 'Bus stop' : '정류장';
+  if (/공원|산책|체육/.test(biz)) return appLanguage === 'en' ? 'Activity' : '러닝';
+  return appLanguage === 'en' ? 'Place' : '장소';
 }
 
 function getSearchCenter() {
@@ -3516,7 +3876,7 @@ function searchKakaoAddresses(query) {
         const name = road || r.address_name || jibun;
         const sub = road && jibun && road !== jibun ? jibun : getAddressTypeLabel(r.address_type);
         return {
-          type: '주소',
+          type: appLanguage === 'en' ? 'Address' : '주소',
           name,
           sub,
           lat: parseFloat(r.y),
@@ -3543,7 +3903,7 @@ function searchKakaoPlaces(query, config = {}) {
         return;
       }
       resolve(data.slice(0, options.size).map(p => ({
-        type: isSubwayPlace(p) ? '역' : '장소',
+        type: isSubwayPlace(p) ? (appLanguage === 'en' ? 'Station' : '역') : (appLanguage === 'en' ? 'Place' : '장소'),
         name: p.place_name,
         sub: p.road_address_name || p.address_name || p.category_name || '',
         category: p.category_name || '',
@@ -3586,15 +3946,16 @@ function renderAddressDropdown(results) {
         <span>${escapeHtml(item.name)}</span>
         <span class="addr-dropdown-type">${escapeHtml(item.type)}</span>
       </div>
-      <div class="addr-dropdown-addr">${escapeHtml(item.sub || '위치 선택')}</div>
+      <div class="addr-dropdown-addr">${escapeHtml(localizeRuntimeText(item.sub || '위치 선택'))}</div>
     </div>`).join('');
+  localizeStaticDom(dropdown);
   dropdown.style.display = 'block';
 }
 
 function renderAddressDropdownMessage(message) {
   const dropdown = document.getElementById('addrDropdown');
   addrSearchResults = [];
-  dropdown.innerHTML = `<div class="addr-dropdown-empty">${escapeHtml(message)}</div>`;
+  dropdown.innerHTML = `<div class="addr-dropdown-empty">${escapeHtml(localizeRuntimeText(message))}</div>`;
   dropdown.style.display = 'block';
 }
 
@@ -3619,12 +3980,12 @@ function scoreSearchResult(query, item) {
 
   if (stationLike) {
     if (isStationResult(item)) score += 900;
-    if (item.type === '역') score += 550;
+    if (item.type === '역' || item.type === 'Station') score += 550;
     if (name === q) score += 500;
     if (isBranchLikeStationResult(query, item)) score -= 850;
   } else if (addressLike) {
-    if (item.type === '주소') score += 650;
-  } else if (item.type !== '주소') {
+    if (item.type === '주소' || item.type === 'Address') score += 650;
+  } else if (item.type !== '주소' && item.type !== 'Address') {
     score += 120;
   }
 
@@ -3656,7 +4017,7 @@ function isSubwayPlace(place) {
 }
 
 function isStationResult(item) {
-  return item.type === '역' || isStationLikeQuery(item.name) || /지하철|전철|역/.test(item.category || '');
+  return item.type === '역' || item.type === 'Station' || isStationLikeQuery(item.name) || /지하철|전철|역/.test(item.category || '');
 }
 
 function isBranchLikeStationResult(query, item) {
@@ -3692,8 +4053,10 @@ function formatDistanceLabel(meters) {
 }
 
 function getAddressTypeLabel(type) {
-  const labels = { REGION: '행정동/지역', ROAD: '도로명 주소', REGION_ADDR: '지번 주소', ROAD_ADDR: '도로명 주소' };
-  return labels[type] || '주소';
+  const labels = appLanguage === 'en'
+    ? { REGION: 'Area', ROAD: 'Road address', REGION_ADDR: 'Lot address', ROAD_ADDR: 'Road address' }
+    : { REGION: '행정동/지역', ROAD: '도로명 주소', REGION_ADDR: '지번 주소', ROAD_ADDR: '도로명 주소' };
+  return labels[type] || (appLanguage === 'en' ? 'Address' : '주소');
 }
 
 document.addEventListener('click', e => {
@@ -3711,7 +4074,7 @@ function detectLocation() {
     S.lat = pos.coords.latitude;
     S.lng = pos.coords.longitude;
     // 위치 감지 완료
-    document.getElementById('addrInput').value = '현재 위치';
+    document.getElementById('addrInput').value = getCurrentLocationLabel();
     updateMapSearchClearButton();
     if (S.map) {
       const latlng = new kakao.maps.LatLng(S.lat, S.lng);
@@ -3749,7 +4112,7 @@ window.addEventListener('load', () => {
     navigator.geolocation.getCurrentPosition(pos => {
       S.lat = pos.coords.latitude;
       S.lng = pos.coords.longitude;
-      document.getElementById('addrInput').value = '현재 위치';
+      document.getElementById('addrInput').value = getCurrentLocationLabel();
       updateMapSearchClearButton();
       fetchWeather();
       loadNearCourses();
@@ -3922,7 +4285,7 @@ function clearDraw() {
   S.distKm = 0;
   refreshStats(0);
   const guide = document.getElementById('drawGuideText');
-  if (guide) guide.textContent = '지도에서 시작점과 다음 지점을 차례로 눌러요';
+  if (guide) guide.textContent = localizeRuntimeText('지도에서 시작점과 다음 지점을 차례로 눌러요');
 }
 
 /* 통계 업데이트 */
@@ -3961,14 +4324,14 @@ function calcCalories(km) {
 function refreshStats(km) {
   // hudDist 제거됨
   document.getElementById('dDist').innerHTML = km.toFixed(2) + '<small style="font-size:11px;font-weight:400;color:var(--gray-500)">km</small>';
-  document.getElementById('dTime').textContent = km > 0 ? Math.round(km * 7) + '분' : '—';
+  document.getElementById('dTime').textContent = km > 0 ? Math.round(km * 7) + (appLanguage === 'en' ? ' min' : '분') : '—';
   // dCal 요소 없어도 오류 안 남
   const crossEl = document.getElementById('dCal');
   if (crossEl) crossEl.textContent = '—';
   const sb = document.getElementById('saveBtn');
   if (sb) {
     sb.disabled = true;
-    sb.textContent = km > 0.05 ? '경로 확인 완료' : '지도에서 점을 찍어 경로를 확인해보세요';
+    sb.textContent = localizeRuntimeText(km > 0.05 ? '경로 확인 완료' : '지도에서 점을 찍어 경로를 확인해보세요');
   }
 }
 
@@ -4154,7 +4517,7 @@ async function generateCourses() {
   } finally {
     S.sel = -1;
     renderCourses();
-    btn.disabled = false; txt.textContent = '다시 생성'; sp.style.display = 'none';
+    btn.disabled = false; txt.textContent = localizeRuntimeText('다시 생성'); sp.style.display = 'none';
   }
 }
 
@@ -4565,12 +4928,14 @@ function getRunningSeedType(name, category = '') {
 }
 
 function makeNearbyCourseName(name, type = '') {
-  const cleaned = String(name || '주변 코스')
+  const cleaned = String(name || (appLanguage === 'en' ? 'Nearby route' : '주변 코스'))
     .replace(/\s+/g, ' ')
     .replace(/입구|주차장|관리사무소/g, '')
     .trim();
-  const base = cleaned || '주변';
-  const suffix = type === 'track' ? '반복 코스' : type === 'river' ? '러닝길' : '코스';
+  const base = cleaned || (appLanguage === 'en' ? 'Nearby' : '주변');
+  const suffix = appLanguage === 'en'
+    ? (type === 'track' ? 'loop' : type === 'river' ? 'walkway' : 'route')
+    : (type === 'track' ? '반복 코스' : type === 'river' ? '러닝길' : '코스');
   return `${base} ${suffix}`.slice(0, 18);
 }
 
@@ -4597,7 +4962,7 @@ function getAiCoursePlaceLabel() {
   if (selected && selected !== '—') return selected;
   const weatherLoc = document.getElementById('wLocation')?.textContent;
   if (weatherLoc && !weatherLoc.includes('불러오는')) return weatherLoc;
-  return '현재 위치 주변';
+  return appLanguage === 'en' ? 'near current location' : '현재 위치 주변';
 }
 
 function getAiDestinationForRouting() {
@@ -4787,13 +5152,15 @@ function normalizeAiCourse(course, index, targetKm) {
   const tags = Array.isArray(course.tags)
     ? course.tags.map(normalizeAiTag).filter(Boolean).slice(0, 3)
     : [];
-  while (tags.length < 2) tags.push(index === 2 ? { l:'공원', c:'tg' } : { l:'안전', c:'tg' });
+  while (tags.length < 2) tags.push(index === 2
+    ? { l: appLanguage === 'en' ? 'Park' : '공원', c:'tg' }
+    : { l: appLanguage === 'en' ? 'Safe' : '안전', c:'tg' });
   return {
-    name: String(course.name || `추천 코스 ${index + 1}`).slice(0, 18),
+    name: String(course.name || (appLanguage === 'en' ? `Route ${index + 1}` : `추천 코스 ${index + 1}`)).slice(0, 18),
     km: Math.min(Math.max(km, getMinRecommendedKm(targetKm)), getMaxRecommendedKm(targetKm)).toFixed(1),
     pace: Math.min(Math.max(pace, 5.5), 8.5),
     tags,
-    meta: String(course.meta || course.concept || '현재 조건에 맞춘 추천 코스').slice(0, 70),
+    meta: String(course.meta || course.concept || (appLanguage === 'en' ? 'Recommended for current conditions' : '현재 조건에 맞춘 추천 코스')).slice(0, 70),
     pt: styles.includes(course.pt) ? course.pt : styles.includes(course.mapStyle) ? course.mapStyle : styles[index],
     color: colors.includes(course.color) ? course.color : colors[index],
     routeLabel: String(course.routeLabel || '').slice(0, 34),
@@ -4860,18 +5227,19 @@ function enrichAiCourseRoute(course, index, targetKm) {
 }
 
 function qualifyAiCourseName(name, startLabel, index) {
-  const cleaned = String(name || `추천 코스 ${index + 1}`).trim().replace(/\uB8E8\uD504/g, 'Loop');
-  if (!/^(강변|공원|골목|동네|Loop|Line|코스|추천 코스 \d+)$/.test(cleaned)) return cleaned.slice(0, 18);
+  const fallback = appLanguage === 'en' ? `Route ${index + 1}` : `추천 코스 ${index + 1}`;
+  const cleaned = String(name || fallback).trim().replace(/\uB8E8\uD504/g, 'Loop');
+  if (!/^(강변|공원|골목|동네|Loop|Line|코스|추천 코스 \d+|Route \d+)$/.test(cleaned)) return cleaned.slice(0, 18);
   const area = getShortAreaName(startLabel);
   const suffix = /(?:Loop|Line)$/.test(cleaned) ? cleaned : cleaned + ' Loop';
   return `${area} ${suffix}`.slice(0, 18);
 }
 
 function getShortAreaName(label) {
-  const text = String(label || '').replace(/현재 위치|주변/g, '').trim();
+  const text = String(label || '').replace(/현재 위치|Current location|near current location|주변/g, '').trim();
   const matches = text.match(/[가-힣0-9]+(?:동|가|구|시|로|길|공원|캠퍼스|역)/g);
   if (matches && matches.length) return matches[matches.length - 1].slice(0, 8);
-  return '출발지';
+  return appLanguage === 'en' ? 'Start' : '출발지';
 }
 
 function buildAiLoopPath(course, index, targetKm) {
@@ -5007,22 +5375,51 @@ function roundCoord(value) {
 }
 
 function getAiRouteLabel(course, index) {
-  const labels = {
-    river: ['강변 방향 왕복길', '물길 옆 완만한 왕복', '뷰 좋은 왕복길'],
-    urban: ['Local Block Loop', 'Quiet Street Loop', 'Low Traffic Loop'],
-    park: ['Park Line Loop', 'Green Path Loop', 'Easy Park Loop']
-  };
+  const labels = appLanguage === 'en'
+    ? {
+        river: ['Riverside Out-and-back', 'Gentle Waterside Route', 'Scenic Out-and-back'],
+        urban: ['Local Block Loop', 'Quiet Street Loop', 'Low Traffic Loop'],
+        park: ['Park Line Loop', 'Green Path Loop', 'Easy Park Loop']
+      }
+    : {
+        river: ['강변 방향 왕복길', '물길 옆 완만한 왕복', '뷰 좋은 왕복길'],
+        urban: ['동네 블록 왕복', '조용한 골목 왕복', '차량 적은 왕복'],
+        park: ['공원 라인 왕복', '녹지 산책 왕복', '쉬운 공원 왕복']
+      };
   const group = labels[course.pt] || labels.urban;
   return group[index] || group[0];
 }
 
 function normalizeAiTag(tag) {
-  if (typeof tag === 'string') return { l: tag.slice(0, 8), c: getAiTagClass(tag) };
+  if (typeof tag === 'string') {
+    const label = getAiTagDisplayLabel(tag);
+    return { l: label.slice(0, 8), c: getAiTagClass(tag) };
+  }
   if (!tag || typeof tag !== 'object') return null;
-  const label = String(tag.l || tag.label || tag.name || '').slice(0, 8);
+  const rawLabel = String(tag.l || tag.label || tag.name || '');
+  const label = getAiTagDisplayLabel(rawLabel).slice(0, 8);
   if (!label) return null;
-  const klass = ['tg', 'tb', 'ta'].includes(tag.c) ? tag.c : getAiTagClass(label);
+  const klass = ['tg', 'tb', 'ta'].includes(tag.c) ? tag.c : getAiTagClass(rawLabel || label);
   return { l: label, c: klass };
+}
+
+function getAiTagDisplayLabel(label) {
+  if (appLanguage !== 'en') return String(label || '');
+  const map = {
+    '안전': 'Safe',
+    '평지': 'Flat',
+    '공원': 'Park',
+    '야간 가능': 'Night',
+    '혼잡': 'Busy',
+    '경사 포함': 'Slope',
+    '왕복': 'Out-back',
+    '강변': 'River',
+    '한강': 'River',
+    '뷰': 'View',
+    '조용': 'Quiet',
+    '산책': 'Walk'
+  };
+  return map[String(label || '').trim()] || String(label || '');
 }
 
 function getAiTagClass(label) {
@@ -5073,7 +5470,8 @@ function renderCourses() {
     clearAiRoutePreview();
     list.style.display = 'none';
     em.style.display = 'block';
-    em.innerHTML = '<div class="empty-icon">⌁</div><div class="empty-title">보행자 길을 찾지 못했어요</div><div class="empty-desc">출발지나 도착지를 조금 옮겨 다시 선택해보세요</div>';
+    em.innerHTML = `<div class="empty-icon">⌁</div><div class="empty-title">${escapeHtml(appLanguage === 'en' ? 'Could not find a walking route' : '보행자 길을 찾지 못했어요')}</div><div class="empty-desc">${escapeHtml(appLanguage === 'en' ? 'Move the start or destination slightly and try again' : '출발지나 도착지를 조금 옮겨 다시 선택해보세요')}</div>`;
+    localizeStaticDom(em);
     openBottomSheet();
     return;
   }
@@ -5090,7 +5488,7 @@ function renderCourses() {
         <div class="cinfo-head">
           ${getRouteCardTitleHtml(c)}
           <div class="ckm-badge">${escapeHtml(c.km)}<span>km</span></div>
-          <button class="route-card-close" aria-label="경로 닫기" onclick="event.stopPropagation();closeRouteCard(${i})">×</button>
+          <button class="route-card-close" aria-label="${escapeHtml(appLanguage === 'en' ? 'Close route' : '경로 닫기')}" onclick="event.stopPropagation();closeRouteCard(${i})">×</button>
         </div>
         <div class="route-guide-status" id="routeGuideStatus-${i}">
           <div class="route-guide-copy"><span class="route-guide-label">${escapeHtml(t('guideWaiting'))}</span><span class="route-guide-sub">${escapeHtml(t('guideWaiting'))}</span></div><strong class="route-guide-distance">—</strong>
@@ -5102,6 +5500,7 @@ function renderCourses() {
     card.onclick = () => selCourse(i);
     list.appendChild(card);
   });
+  localizeStaticDom(list);
   openBottomSheet();
 }
 
@@ -5237,7 +5636,9 @@ function startRouteGuidance(index) {
     const nearest = getNearestRouteProgress(current, path);
     if (!nearest || nearest.distanceMeters > ROUTE_GUIDE_START_MAX_DISTANCE_METERS) {
       const meters = nearest && Number.isFinite(nearest.distanceMeters) ? Math.round(nearest.distanceMeters) : '';
-      toast(meters ? `경로에서 ${meters}m 떨어져 있어요. 경로 근처에서 시작해주세요` : '경로 근처에서 안내를 시작해주세요');
+      toast(meters
+        ? (appLanguage === 'en' ? `You are ${meters}m away from the route. Start near the route` : `경로에서 ${meters}m 떨어져 있어요. 경로 근처에서 시작해주세요`)
+        : (appLanguage === 'en' ? 'Start guidance near the route' : '경로 근처에서 안내를 시작해주세요'));
       return;
     }
     beginRouteGuidance(index, course, path, current, nearest);
@@ -5266,7 +5667,7 @@ function beginRouteGuidance(index, course, path, current, nearest) {
     const latlng = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
     updateRouteGuidancePosition(latlng);
   }, () => {
-    updateRouteGuideStatus('GPS 대기 중', null, '위치를 다시 확인하고 있어요');
+    updateRouteGuideStatus(appLanguage === 'en' ? 'Waiting for GPS' : 'GPS 대기 중', null, appLanguage === 'en' ? 'Checking your location again' : '위치를 다시 확인하고 있어요');
   }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 });
   toast(t('guideStarted'));
 }
@@ -5308,8 +5709,8 @@ function updateRouteGuidancePosition(current, nearest = null) {
     toast('경로에서 벗어났어요. 가까운 경로로 돌아가주세요');
   }
   if (!offRoute) routeGuide.offRouteWarned = false;
-  const status = offRoute ? '경로 이탈' : '안내 중';
-  updateRouteGuideStatus(status, remainingMeters, offRoute ? '경로와 떨어져 있어요' : '');
+  const status = offRoute ? (appLanguage === 'en' ? 'Off route' : '경로 이탈') : (appLanguage === 'en' ? 'Guiding' : '안내 중');
+  updateRouteGuideStatus(status, remainingMeters, offRoute ? (appLanguage === 'en' ? 'You are away from the route' : '경로와 떨어져 있어요') : '');
   renderRouteGuideOverlays(current, progress);
   if (createMap) createMap.setCenter(current);
   if (remainingMeters <= ROUTE_GUIDE_ARRIVAL_METERS) {
@@ -5322,11 +5723,13 @@ function updateRouteGuideStatus(status, remainingMeters, subText = '') {
   const el = document.getElementById(`routeGuideStatus-${index}`);
   if (!el) return;
   el.style.display = routeGuide.active ? 'flex' : 'none';
-  const isOffRoute = /이탈/.test(status || '');
+  const isOffRoute = /이탈|Off route/i.test(status || '');
   el.classList.toggle('off-route', isOffRoute);
   const remainingText = Number.isFinite(remainingMeters)
-    ? (remainingMeters < 1000 ? `${Math.round(remainingMeters)}m 남음` : `${(remainingMeters / 1000).toFixed(1)}km 남음`)
-    : '위치 확인 중';
+    ? (remainingMeters < 1000
+        ? `${Math.round(remainingMeters)}m ${appLanguage === 'en' ? 'left' : '남음'}`
+        : `${(remainingMeters / 1000).toFixed(1)}km ${appLanguage === 'en' ? 'left' : '남음'}`)
+    : (appLanguage === 'en' ? 'Checking location' : '위치 확인 중');
   const progressPct = Number.isFinite(remainingMeters) && routeGuide.totalMeters > 0
     ? Math.max(0, Math.min(100, Math.round((1 - remainingMeters / routeGuide.totalMeters) * 100)))
     : 0;
@@ -5334,7 +5737,7 @@ function updateRouteGuideStatus(status, remainingMeters, subText = '') {
   el.innerHTML = `
     <div class="route-guide-copy">
       <span class="route-guide-label">${escapeHtml(status || t('guideWaiting'))}</span>
-      <span class="route-guide-sub">${escapeHtml(subText || (isOffRoute ? '가까운 경로로 돌아가주세요' : '목적지까지 안내 중'))}</span>
+      <span class="route-guide-sub">${escapeHtml(subText || (isOffRoute ? (appLanguage === 'en' ? 'Return to the nearest route' : '가까운 경로로 돌아가주세요') : (appLanguage === 'en' ? 'Guiding to destination' : '목적지까지 안내 중')))}</span>
     </div>
     <strong class="route-guide-distance">${escapeHtml(remainingText)}</strong>`;
 }
@@ -5490,7 +5893,7 @@ function updateRunStats() {
     document.getElementById('rPaceU').textContent = '"/km';
     const pct = Math.min((390 / pace) * 100, 100);
     document.getElementById('paceFill').style.width = pct + '%';
-    document.getElementById('paceStatus').textContent = pace <= 390 ? '목표 달성 중 🎯' : '페이스 올리기 💪';
+    document.getElementById('paceStatus').textContent = localizeRuntimeText(pace <= 390 ? '목표 달성 중 🎯' : '페이스 올리기 💪');
     document.getElementById('paceStatus').style.color = pace <= 390 ? 'var(--coral)' : 'var(--amber)';
   }
   for (let i = 1; i <= Math.ceil(R.totalKm); i++) {
@@ -5510,14 +5913,14 @@ function updateRunMapProgress() {
 function updateGpsChip(text, status = 'warn') {
   const chip = document.getElementById('gpsChip');
   if (!chip) return;
-  chip.textContent = text;
+  chip.textContent = localizeRuntimeText(text);
   chip.className = 'gps-chip ' + status;
 }
 
 function togglePause() {
   R.running = !R.running;
   const btn = document.getElementById('pauseBtn');
-  btn.textContent = R.running ? '일시정지' : '계속';
+  btn.textContent = localizeRuntimeText(R.running ? '일시정지' : '계속');
   btn.className = 'ctrl-pause' + (R.running ? '' : ' paused');
 }
 
@@ -5539,7 +5942,7 @@ function showFinish() {
   document.getElementById('fDist').textContent = R.dist.toFixed(2) + 'km';
   document.getElementById('fTime').textContent = fmtTime(R.elapsed);
   document.getElementById('fCal').textContent = calcCalories(R.dist) + 'kcal';
-  document.getElementById('finishSub').textContent = '오늘 · ' + R.courseName;
+  document.getElementById('finishSub').textContent = (appLanguage === 'en' ? 'Today · ' : '오늘 · ') + R.courseName;
   if (R.dist > 0.05) {
     const pace = R.elapsed / R.dist;
     document.getElementById('fPace').textContent = Math.floor(pace/60) + "'" + String(Math.round(pace%60)).padStart(2,'0') + '"';
@@ -5662,7 +6065,7 @@ function saveRecord() {
     dist: R.dist.toFixed(2),
     time: fmtTime(R.elapsed),
     cal: calcCalories(R.dist),
-    date: now.toLocaleDateString('ko-KR', {month:'long', day:'numeric', weekday:'short'}),
+    date: now.toLocaleDateString(appLanguage === 'en' ? 'en-US' : 'ko-KR', {month:'long', day:'numeric', weekday:'short'}),
     createdAt: now.toISOString(),
     pace: R.dist > 0.05 ? (()=>{ const p=R.elapsed/R.dist; return Math.floor(p/60)+"'"+String(Math.round(p%60)).padStart(2,'0')+'"'; })() : '—',
     memo: memo,
@@ -5677,7 +6080,7 @@ function saveRecord() {
   document.getElementById('finishOverlay').classList.remove('active');
   document.getElementById('runScreen').classList.remove('active');
   resetFinishPhoto();
-  toast(`기록 저장 완료! +${earnedPts}포인트 🏆`);
+  toast(appLanguage === 'en' ? `Record saved! +${earnedPts} points` : `기록 저장 완료! +${earnedPts}포인트 🏆`);
 }
 
 function renderHomeActions() {
@@ -5692,11 +6095,13 @@ function renderHomeActions() {
     clearHomeScheduleCarousel();
     if (dots) dots.innerHTML = '';
     renderHomeSportsList();
+    localizeStaticDom(document.getElementById('screen-home'));
     return;
   }
   track.innerHTML = homeItems.map((event, index) => renderHomeScheduleCard(event, index)).join('');
   setupHomeScheduleCarousel(homeItems.length);
   renderHomeSportsList();
+  localizeStaticDom(document.getElementById('screen-home'));
 }
 
 function getHomeScheduleItems() {
@@ -5800,7 +6205,7 @@ function renderHomeScheduleCard(event, index) {
         </span>
         <span class="home-promo-title">${escapeHtml(event.title || t('scheduleBannerTitle'))}</span>
         <span class="home-promo-desc">${escapeHtml(event.place || t('scheduleBannerDesc'))}</span>
-        <span class="home-promo-meta">${escapeHtml(event.source || t('scheduleBannerMeta'))}</span>
+        <span class="home-promo-meta">${escapeHtml(localizeProviderName(event.source) || t('scheduleBannerMeta'))}</span>
       </span>
       <span class="home-promo-side">
         <span class="home-promo-image-wrap${image ? ' has-image' : ''}">
@@ -5981,6 +6386,7 @@ function renderCultureSchedulePage() {
   list.innerHTML = visibleSections.length
     ? visibleSections.join('')
     : `<div class="schedule-empty"><div class="schedule-empty-title">${escapeHtml(t('scheduleEmptyTitle'))}</div><div class="schedule-empty-desc">${escapeHtml(t('scheduleEmptyDesc'))}</div></div>`;
+  localizeStaticDom(list);
 }
 
 function getSchedulePageEntries(kind) {
@@ -6042,7 +6448,7 @@ function renderSportsScheduleCard(event, index) {
           </div>
           <div class="schedule-name">${escapeHtml(event.title || t('schedule'))}</div>
           <div class="schedule-place">${escapeHtml(placeMeta)}</div>
-          <div class="schedule-source">${escapeHtml(event.source || '')}</div>
+          <div class="schedule-source">${escapeHtml(localizeProviderName(event.source) || '')}</div>
         </div>
       </div>
       ${renderScheduleHeartButton(event, index, 'text-schedule-heart')}
@@ -6351,7 +6757,7 @@ function getCultureSpotType(place, keyword) {
 function getCultureSpotDisplayName(spot, fallback = '문화 스팟') {
   const raw = String(spot && (spot.place_name || spot.name) || fallback).trim() || fallback;
   if (appLanguage !== 'en') return raw;
-  const storedEnglishName = String(spot && spot.nameEn || '').trim();
+  const storedEnglishName = String(spot && (spot.nameEn || spot.titleEn || spot.englishName) || '').trim();
   if (storedEnglishName && !/[가-힣]/.test(storedEnglishName)) return storedEnglishName;
   if (!/[가-힣]/.test(raw)) return raw;
   return getEnglishCultureSpotName(raw) || raw;
@@ -6465,6 +6871,7 @@ function setCultureSpotVisit(spot) {
     photo: photo && photo.imageUrl ? photo : null,
     address: spot.address_name || spot.addr1 || spot.address || '',
     placeUrl: spot.place_url || spot.url || '',
+    overviewEn: isUsableEnglishText(spot.overviewEn) ? cleanCultureOverview(spot.overviewEn) : '',
     source: spot.source || '',
     visitedAt: new Date().toISOString()
   };
@@ -6651,7 +7058,9 @@ function getCultureSpotOverviewCacheKey(spot) {
 
 async function fetchCultureSpotOverview(spot) {
   if (!spot) return '';
-  const existing = cleanCultureOverview(spot.overview || spot.detailOverview || '');
+  const existing = appLanguage === 'en'
+    ? cleanCultureOverview(spot.overviewEn || spot.englishOverview || '')
+    : cleanCultureOverview(spot.overview || spot.detailOverview || '');
   if (existing) return existing;
   const contentId = String(spot.contentId || spot.contentid || spot.id || '').trim();
   if (!contentId || contentId.startsWith('fallback')) return '';
@@ -6696,6 +7105,93 @@ async function fetchCultureSpotDetailFromApiRaw(contentId) {
     console.warn('KTO detail unavailable', error);
     return {};
   }
+}
+
+function hasKoreanText(value) {
+  return /[가-힣]/.test(String(value || ''));
+}
+
+function isUsableEnglishText(value) {
+  const text = String(value || '').trim();
+  return !!text && !hasKoreanText(text);
+}
+
+function applyEnglishDetailToSpotRecord(record, detail) {
+  if (!record || !detail) return false;
+  let changed = false;
+  const title = cleanCultureOverview(detail.title || '');
+  const overview = cleanCultureOverview(detail.overview || '');
+  const firstImage = String(detail.firstImage || '').trim();
+  if (isUsableEnglishText(title) && record.nameEn !== title) {
+    record.nameEn = title;
+    changed = true;
+  }
+  if (isUsableEnglishText(overview) && record.overviewEn !== overview) {
+    record.overviewEn = overview;
+    changed = true;
+  }
+  if (/^https?:\/\//.test(firstImage) && !record.firstImage) {
+    record.firstImage = firstImage;
+    changed = true;
+  }
+  if (/^https?:\/\//.test(firstImage) && !(record.photo && record.photo.imageUrl)) {
+    record.photo = {
+      imageUrl: firstImage,
+      title: title || record.nameEn || record.name || record.place_name || '',
+      source: 'VisitKorea'
+    };
+    changed = true;
+  }
+  return changed;
+}
+
+async function hydrateCultureSpotEnglishDetails(spots, target = 'favorites') {
+  if (appLanguage !== 'en') return false;
+  const list = (Array.isArray(spots) ? spots : [])
+    .filter(spot => spot && String(spot.contentId || spot.contentid || spot.id || '').trim())
+    .filter(spot => !isUsableEnglishText(spot.nameEn) || !isUsableEnglishText(spot.overviewEn) || !getCultureSpotPhoto(spot))
+    .slice(0, 8);
+  if (!list.length) return false;
+
+  const favorites = target === 'favorites' ? readCultureSpotFavorites() : null;
+  const visits = target === 'visits' ? readCultureSpotVisits() : null;
+  let changed = false;
+
+  await Promise.all(list.map(async spot => {
+    const contentId = String(spot.contentId || spot.contentid || spot.id || '').trim();
+    const detail = await fetchCultureSpotDetailFromApi(contentId);
+    if (!detail || (!detail.title && !detail.overview && !detail.firstImage)) return;
+    if (target === 'visits') {
+      const visitKey = spot.key || getCultureSpotVisitKey(spot);
+      const record = visits && visits[visitKey];
+      if (record && applyEnglishDetailToSpotRecord(record, detail)) changed = true;
+      return;
+    }
+    const favKey = spot.key || getCultureSpotFavoriteKey(spot);
+    const record = favorites && favorites[favKey];
+    if (record && applyEnglishDetailToSpotRecord(record, detail)) changed = true;
+  }));
+
+  if (changed && target === 'favorites') writeCultureSpotFavorites(favorites);
+  if (changed && target === 'visits') {
+    try { localStorage.setItem(CULTURE_SPOT_VISITS_KEY, JSON.stringify(visits)); } catch (_) {}
+  }
+  return changed;
+}
+
+function hydrateVisibleCultureSpotEnglishDetails() {
+  if (appLanguage !== 'en') return;
+  if (S.tab !== 'mycourse' && S.tab !== 'create' && S.tab !== 'home') return;
+  const favoriteSpots = getFavoriteCultureSpotList();
+  const visitedSpots = getCultureSpotVisitList().map(getVisitedSpotAsCultureSpot);
+  Promise.all([
+    hydrateCultureSpotEnglishDetails(favoriteSpots, 'favorites'),
+    hydrateCultureSpotEnglishDetails(visitedSpots, 'visits')
+  ]).then(([favoritesChanged, visitsChanged]) => {
+    if (!favoritesChanged && !visitsChanged) return;
+    if (S.tab === 'mycourse') renderMyCourses();
+    if (S.tab === 'create') renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
+  });
 }
 
 function cleanCultureOverview(value) {
@@ -6859,7 +7355,7 @@ function getWeatherDescEn(id) {
 
 function getCulturePhotoCredit(photo) {
   if (!photo) return '';
-  return [photo.source || '한국관광공사 포토코리아', photo.title].filter(Boolean).join(' · ');
+  return [localizeProviderName(photo.source || '한국관광공사 포토코리아'), photo.title].filter(Boolean).join(' · ');
 }
 
 function getFavoriteCultureSpotList() {
@@ -6891,6 +7387,8 @@ function normalizeCultureSpotFavorite(spot, existing = null) {
   const name = String(source.place_name || source.name || '문화 스팟').trim() || '문화 스팟';
   const rawNameEn = String(source.nameEn || source.englishName || source.titleEn || existing && existing.nameEn || '').trim();
   const nameEn = rawNameEn && !/[가-힣]/.test(rawNameEn) ? rawNameEn : getEnglishCultureSpotName(name);
+  const rawOverviewEn = cleanCultureOverview(source.overviewEn || source.englishOverview || existing && existing.overviewEn || (appLanguage === 'en' ? source.overview || source.detailOverview || '' : ''));
+  const overviewEn = isUsableEnglishText(rawOverviewEn) ? rawOverviewEn : '';
   const type = source.cultureType || source.type || getCultureSpotType(source, '');
   const stars = Math.max(1, Math.min(5, Math.round(Number(source.cultureValueStars || source.stars) || 1)));
   const dist = Number(source.distFromMe);
@@ -6918,6 +7416,7 @@ function normalizeCultureSpotFavorite(spot, existing = null) {
     firstImage,
     photo: sourcePhoto || existingPhoto,
     overview: cleanCultureOverview(source.overview || source.detailOverview || existing && (existing.overview || existing.detailOverview) || ''),
+    overviewEn,
     source: source.source || existing && existing.source || '',
     savedAt: existing && existing.savedAt ? existing.savedAt : new Date().toISOString(),
     updatedAt: new Date().toISOString()
@@ -7137,9 +7636,9 @@ function getVisitedSpotMetaText(spot) {
 }
 
 function formatCultureSpotDistanceLabel(distKm) {
-  if (distKm === null || distKm === undefined || distKm === '') return '거리 정보 없음';
+  if (distKm === null || distKm === undefined || distKm === '') return appLanguage === 'en' ? 'No distance' : '거리 정보 없음';
   const value = Number(distKm);
-  if (!Number.isFinite(value)) return '거리 정보 없음';
+  if (!Number.isFinite(value)) return appLanguage === 'en' ? 'No distance' : '거리 정보 없음';
   return value < 1 ? Math.round(value * 1000) + 'm' : value.toFixed(1) + 'km';
 }
 
@@ -7235,7 +7734,7 @@ function renderSpotPhotoBox(spot, prefix = 'spotPhoto') {
   }
   return `
     <div class="spot-photo clickable" id="${escapeHtml(domId)}" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromPhoto(event,this)" title="${escapeHtml(t('infoView'))}">
-      <img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || displayName || '문화스팟 사진')}" loading="lazy">
+      <img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || displayName || (appLanguage === 'en' ? 'Culture spot photo' : '문화스팟 사진'))}" loading="lazy">
       <div class="spot-photo-credit">${escapeHtml(getCulturePhotoCredit(photo))}</div>
     </div>`;
 }
@@ -7247,7 +7746,7 @@ function updateSpotPhotoBox(key, photo, prefix = 'spotPhoto') {
   el.classList.add('clickable');
   el.setAttribute('onclick', 'openCultureSpotInfoFromPhoto(event,this)');
   el.title = t('infoView');
-  el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || '문화스팟 사진')}" loading="lazy"><div class="spot-photo-credit">${escapeHtml(getCulturePhotoCredit(photo))}</div>`;
+  el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || (appLanguage === 'en' ? 'Culture spot photo' : '문화스팟 사진'))}" loading="lazy"><div class="spot-photo-credit">${escapeHtml(getCulturePhotoCredit(photo))}</div>`;
 }
 
 function renderHomeCultureSpotPhoto(spot, key, displayName, introUrl = '') {
@@ -7257,7 +7756,7 @@ function renderHomeCultureSpotPhoto(spot, key, displayName, introUrl = '') {
   if (photo && photo.imageUrl) {
     return `
       <div class="culture-spot-photo clickable" id="${escapeHtml(domId)}" data-key="${escapeHtml(key)}" data-url="${escapeHtml(introUrl)}" onclick="openCultureSpotInfoFromPhoto(event,this)" title="${escapeHtml(t('infoView'))}">
-        <img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || displayName || '문화스팟 사진')}" loading="lazy">
+        <img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || displayName || (appLanguage === 'en' ? 'Culture spot photo' : '문화스팟 사진'))}" loading="lazy">
         ${heart}
       </div>`;
   }
@@ -7279,7 +7778,7 @@ function updateHomeCultureSpotPhoto(key, photo) {
     el.setAttribute('onclick', 'openCultureSpotInfoFromPhoto(event,this)');
     el.title = t('infoView');
     const heart = el.querySelector('.culture-spot-heart') ? el.querySelector('.culture-spot-heart').outerHTML : '';
-    el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || '문화스팟 사진')}" loading="lazy">${heart}`;
+    el.innerHTML = `<img src="${escapeHtml(photo.imageUrl)}" alt="${escapeHtml(photo.title || (appLanguage === 'en' ? 'Culture spot photo' : '문화스팟 사진'))}" loading="lazy">${heart}`;
   }
   const saveButton = Array.from(document.querySelectorAll('.culture-spot-save-btn,.culture-spot-heart')).find(button => button.dataset && button.dataset.key === key);
   if (saveButton) saveButton.dataset.image = photo.imageUrl;
@@ -7536,7 +8035,7 @@ function selectHomeCultureSpots(results) {
 
 function goToAiFromHomeButton(button) {
   const data = button && button.dataset ? button.dataset : {};
-  goToAiWithLocation(data.place || '오늘의 문화 스팟', data.lat, data.lng);
+  goToAiWithLocation(data.place || t('nearCultureSpots'), data.lat, data.lng);
 }
 
 function goToAiWithLocation(name, lat, lng) {
@@ -7556,7 +8055,12 @@ function applyHomeRecommendationToCreate(name, lat, lng, attempt) {
     const safeLat = parseFloat(lat);
     const safeLng = parseFloat(lng);
     if (!Number.isFinite(safeLat) || !Number.isFinite(safeLng)) return;
-    aiPendingPlace = { lat: safeLat, lng: safeLng, name: name || '문화 스팟', sub: '홈에서 선택한 문화 스팟' };
+    aiPendingPlace = {
+      lat: safeLat,
+      lng: safeLng,
+      name: name || (appLanguage === 'en' ? 'Culture spot' : '문화 스팟'),
+      sub: appLanguage === 'en' ? 'Culture spot selected from Home' : '홈에서 선택한 문화 스팟'
+    };
     applyPendingPlaceAsDestination();
   }, attempt ? 250 : 350);
 }
@@ -7947,7 +8451,7 @@ function renderRecords() {
   const chartEl  = document.getElementById('weekBarChart');
   const labelEl  = document.getElementById('weekBarLabels');
   if (chartEl && labelEl) {
-    const dayNames = ['월','화','수','목','금','토','일'];
+    const dayNames = appLanguage === 'en' ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['월','화','수','목','금','토','일'];
     const todayIndex = (new Date().getDay() + 6) % 7;
     const ordered = dayNames.map((day, index) => ({ day, dist: weekly.dayDist[index], isToday: index === todayIndex }));
     const maxDist = Math.max(...ordered.map(o => o.dist), 1);
@@ -7979,7 +8483,8 @@ function renderRecords() {
 
   if (!wrap) return;
   if (!records.length) {
-    wrap.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--gray-500);"><div style="font-size:32px;margin-bottom:8px;">👟</div><div style="font-size:14px;font-weight:500;color:var(--gray-700);">아직 기록이 없어요</div><div style="font-size:13px;margin-top:4px;">지도에서 첫 활동을 시작해보세요!</div></div>';
+    wrap.innerHTML = `<div style="text-align:center;padding:32px 0;color:var(--gray-500);"><div style="font-size:32px;margin-bottom:8px;">👟</div><div style="font-size:14px;font-weight:500;color:var(--gray-700);">${escapeHtml(appLanguage === 'en' ? 'No activity records yet' : '아직 기록이 없어요')}</div><div style="font-size:13px;margin-top:4px;">${escapeHtml(appLanguage === 'en' ? 'Start your first activity from the map' : '지도에서 첫 활동을 시작해보세요!')}</div></div>`;
+    localizeStaticDom(wrap);
     return;
   }
   const emojis = ['🏃','🌟','💪','🔥','⚡'];
@@ -7992,6 +8497,7 @@ function renderRecords() {
       </div>
       <div class="record-dist">${r.dist}km</div>
     </div>`).join('');
+  localizeStaticDom(wrap);
 }
 
 /* 날씨 불러오기 */
@@ -8000,23 +8506,23 @@ async function fetchWeather() {
   // 실제 키: https://openweathermap.org 에서 무료 발급
 
   if (!OPEN_WEATHER_MAP_KEY) {
-    document.getElementById('wLocation').textContent = '현재 위치';
+    document.getElementById('wLocation').textContent = appLanguage === 'en' ? 'Current location' : '현재 위치';
     document.getElementById('wTemp').textContent = '22°';
-    document.getElementById('wDesc').textContent = '맑음';
+    document.getElementById('wDesc').textContent = appLanguage === 'en' ? 'Clear' : '맑음';
     document.getElementById('wIcon').textContent = '☀️';
     document.getElementById('wSummary').textContent = makeWeatherSummary(22, 45, 2, 800);
     return;
   }
 
   try {
-    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${S.lat}&lon=${S.lng}&appid=${OPEN_WEATHER_MAP_KEY}&units=metric&lang=kr`);
+    const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${S.lat}&lon=${S.lng}&appid=${OPEN_WEATHER_MAP_KEY}&units=metric&lang=${appLanguage === 'en' ? 'en' : 'kr'}`);
     const d = await res.json();
     const temp = Math.round(d.main.temp);
     const feel = Math.round(d.main.feels_like);
     const humid = d.main.humidity;
     const wind = d.wind.speed.toFixed(1);
     const weatherId = d.weather[0].id;
-    const desc = getWeatherDesc(weatherId);
+    const desc = appLanguage === 'en' ? getWeatherDescEn(weatherId) : getWeatherDesc(weatherId);
     const icon = getWeatherEmoji(weatherId);
 
     // 카카오 역지오코딩으로 구 단위 한국어 주소
@@ -8048,7 +8554,7 @@ async function fetchWeather() {
     let todayHiLo = getWeatherFallbackHighLow(d, temp);
 
     try {
-      const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${S.lat}&lon=${S.lng}&appid=${OPEN_WEATHER_MAP_KEY}&units=metric&lang=kr`);
+      const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${S.lat}&lon=${S.lng}&appid=${OPEN_WEATHER_MAP_KEY}&units=metric&lang=${appLanguage === 'en' ? 'en' : 'kr'}`);
       const forecastData = await forecastRes.json();
       const forecastSummary = makeForecastWeatherSummary(temp, weatherId, forecastData);
       todayHiLo = getTodayForecastHighLow(d, forecastData) || todayHiLo;
@@ -8090,7 +8596,7 @@ async function fetchWeather() {
       if (b25) b25.textContent = '—';
     }
   } catch(e) {
-    document.getElementById('wDesc').textContent = '날씨 정보를 불러오지 못했어요';
+    document.getElementById('wDesc').textContent = appLanguage === 'en' ? 'Weather unavailable' : '날씨 정보를 불러오지 못했어요';
   }
 }
 
@@ -8100,19 +8606,20 @@ function openAllRecords() {
   const emojis = ['🏃','🌟','💪','🔥','⚡','🎯','🏅','✨'];
   const list = document.getElementById('allRecordsList');
   if (!records.length) {
-    list.innerHTML = '<div style="text-align:center;padding:32px 0;color:var(--gray-500);"><div style="font-size:32px;margin-bottom:8px;">👟</div><div style="font-size:14px;">아직 기록이 없어요</div></div>';
+    list.innerHTML = `<div style="text-align:center;padding:32px 0;color:var(--gray-500);"><div style="font-size:32px;margin-bottom:8px;">👟</div><div style="font-size:14px;">${escapeHtml(appLanguage === 'en' ? 'No activity records yet' : '아직 기록이 없어요')}</div></div>`;
   } else {
     list.innerHTML = records.map((r, i) => `
       <div class="all-record-card" onclick="openRecordDetail(${i})">
         <div class="all-record-icon">${emojis[i % emojis.length]}</div>
         <div class="all-record-info">
-          <div class="all-record-name">${escapeHtml(r.name || '활동 기록')}</div>
+          <div class="all-record-name">${escapeHtml(r.name || (appLanguage === 'en' ? 'Activity record' : '활동 기록'))}</div>
           <div class="all-record-meta">${getAllRecordMeta(r)}</div>
         </div>
         <div class="all-record-dist">${escapeHtml(r.dist || '-')}km</div>
       </div>`).join('');
   }
   document.getElementById('allRecordsModal').style.display = 'flex';
+  localizeStaticDom(document.getElementById('allRecordsModal'));
 }
 
 function closeAllRecords() {
@@ -8128,28 +8635,29 @@ function openRecordDetail(index) {
   const body = document.getElementById('recordDetailBody');
   const pathCount = Array.isArray(r.path) ? r.path.length : 0;
   const caloriesText = Number.isFinite(Number(r.cal)) ? r.cal + 'kcal' : '-';
-  title.textContent = r.name || '활동 기록';
+  title.textContent = r.name || (appLanguage === 'en' ? 'Activity record' : '활동 기록');
   const conditionValue = getRecordConditionValue(r);
-  date.textContent = [r.date, getRecordConditionLabel(r)].filter(Boolean).join(' · ') || '-';
+  date.textContent = [formatRecordDate(r), getRecordConditionLabel(r)].filter(Boolean).join(' · ') || '-';
   body.innerHTML = `
     ${getRecordPhotoHtml(r)}
     <div class="record-detail-grid">
-      <div class="record-detail-stat"><div class="record-detail-label">거리</div><div class="record-detail-value">${escapeHtml(r.dist || '-')}km</div></div>
-      <div class="record-detail-stat"><div class="record-detail-label">시간</div><div class="record-detail-value">${escapeHtml(r.time || '-')}</div></div>
-      <div class="record-detail-stat"><div class="record-detail-label">페이스</div><div class="record-detail-value">${escapeHtml(r.pace || '-')}</div></div>
-      <div class="record-detail-stat"><div class="record-detail-label">칼로리</div><div class="record-detail-value">${escapeHtml(caloriesText)}</div></div>
+      <div class="record-detail-stat"><div class="record-detail-label">${escapeHtml(appLanguage === 'en' ? 'Distance' : '거리')}</div><div class="record-detail-value">${escapeHtml(r.dist || '-')}km</div></div>
+      <div class="record-detail-stat"><div class="record-detail-label">${escapeHtml(appLanguage === 'en' ? 'Time' : '시간')}</div><div class="record-detail-value">${escapeHtml(r.time || '-')}</div></div>
+      <div class="record-detail-stat"><div class="record-detail-label">${escapeHtml(appLanguage === 'en' ? 'Pace' : '페이스')}</div><div class="record-detail-value">${escapeHtml(r.pace || '-')}</div></div>
+      <div class="record-detail-stat"><div class="record-detail-label">${escapeHtml(appLanguage === 'en' ? 'Calories' : '칼로리')}</div><div class="record-detail-value">${escapeHtml(caloriesText)}</div></div>
     </div>
-    ${conditionValue ? recordDetailRow('컨디션', conditionValue) : ''}
-    ${recordDetailRow('기록 출처', getRecordSourceLabel(r.source))}
-    ${recordDetailRow('GPS 정확도', r.gpsAccuracy ? '약 ' + r.gpsAccuracy + 'm' : '-')}
-    ${recordDetailRow('저장 시각', r.createdAt ? new Date(r.createdAt).toLocaleString('ko-KR') : '-')}
+    ${conditionValue ? recordDetailRow(appLanguage === 'en' ? 'Condition' : '컨디션', conditionValue) : ''}
+    ${recordDetailRow(appLanguage === 'en' ? 'Source' : '기록 출처', getRecordSourceLabel(r.source))}
+    ${recordDetailRow(appLanguage === 'en' ? 'GPS accuracy' : 'GPS 정확도', r.gpsAccuracy ? (appLanguage === 'en' ? 'about ' : '약 ') + r.gpsAccuracy + 'm' : '-')}
+    ${recordDetailRow(appLanguage === 'en' ? 'Saved time' : '저장 시각', r.createdAt ? new Date(r.createdAt).toLocaleString(appLanguage === 'en' ? 'en-US' : 'ko-KR') : '-')}
     <div style="margin-top:12px;background:var(--gray-50);border-radius:var(--rs);padding:12px;">
-      <div style="font-size:11px;color:var(--gray-500);margin-bottom:6px;">메모</div>
-      <div style="font-size:13px;line-height:1.55;color:var(--gray-900);">${escapeHtml(r.memo || '남긴 메모가 없어요')}</div>
+      <div style="font-size:11px;color:var(--gray-500);margin-bottom:6px;">${escapeHtml(appLanguage === 'en' ? 'Memo' : '메모')}</div>
+      <div style="font-size:13px;line-height:1.55;color:var(--gray-900);">${escapeHtml(r.memo || (appLanguage === 'en' ? 'No memo' : '남긴 메모가 없어요'))}</div>
     </div>
-    ${hasSafeRecordPhoto(r.photo) ? `<button class="record-detail-share" onclick="shareRecordPhotoToSocial(${index})">인증샷 소셜 공유</button>` : ''}
+    ${hasSafeRecordPhoto(r.photo) ? `<button class="record-detail-share" onclick="shareRecordPhotoToSocial(${index})">${escapeHtml(appLanguage === 'en' ? 'Share Photo to Social' : '인증샷 소셜 공유')}</button>` : ''}
   `;
   document.getElementById('recordDetailModal').style.display = 'flex';
+  localizeStaticDom(document.getElementById('recordDetailModal'));
 }
 
 function closeRecordDetail() {
@@ -8162,20 +8670,29 @@ function recordDetailRow(label, value) {
 
 function getAllRecordMeta(record) {
   const parts = [
-    record.date,
+    formatRecordDate(record),
     record.time,
-    record.pace && record.pace !== '—' ? '페이스 ' + record.pace + '/km' : '',
+    record.pace && record.pace !== '—' ? (appLanguage === 'en' ? 'Pace ' : '페이스 ') + record.pace + '/km' : '',
     Number.isFinite(Number(record.cal)) ? record.cal + 'kcal' : '',
     getRecordConditionLabel(record),
-    hasSafeRecordPhoto(record.photo) ? '사진' : ''
+    hasSafeRecordPhoto(record.photo) ? (appLanguage === 'en' ? 'Photo' : '사진') : ''
   ].filter(Boolean);
   return escapeHtml(parts.join(' · ') || '-');
+}
+
+function formatRecordDate(record) {
+  const createdAt = record && record.createdAt;
+  const parsed = Date.parse(createdAt || '');
+  if (Number.isFinite(parsed)) {
+    return new Date(parsed).toLocaleDateString(appLanguage === 'en' ? 'en-US' : 'ko-KR', { month:'long', day:'numeric', weekday:'short' });
+  }
+  return record && record.date || '';
 }
 
 function getRecordConditionLabel(record) {
   const value = getRecordConditionValue(record);
   if (!value) return '';
-  if (String(value).includes('/10')) return '컨디션 ' + value;
+  if (String(value).includes('/10')) return (appLanguage === 'en' ? 'Condition ' : '컨디션 ') + value;
   return value;
 }
 
@@ -8187,7 +8704,7 @@ function getRecordConditionValue(record) {
 
 function getRecordPhotoHtml(record) {
   if (!hasSafeRecordPhoto(record && record.photo)) return '';
-  return `<img class="record-detail-photo" src="${escapeHtml(record.photo)}" alt="런닝 인증샷">`;
+  return `<img class="record-detail-photo" src="${escapeHtml(record.photo)}" alt="${escapeHtml(appLanguage === 'en' ? 'Activity photo' : '런닝 인증샷')}">`;
 }
 
 function hasSafeRecordPhoto(value) {
@@ -8197,11 +8714,11 @@ function hasSafeRecordPhoto(value) {
 function getRecordSourceLabel(source) {
   const map = {
     web_gps: 'iPhone GPS',
-    web_sim: '시연 기록',
+    web_sim: appLanguage === 'en' ? 'Demo record' : '시연 기록',
     healthkit: 'HealthKit',
     apple_watch: 'Apple Watch'
   };
-  return map[source] || 'Runloop 기록';
+  return map[source] || (appLanguage === 'en' ? 'Runloop record' : 'Runloop 기록');
 }
 
 function escapeHtml(value) {
@@ -8214,7 +8731,7 @@ function escapeHtml(value) {
 }
 
 function clearAllRecords() {
-  if (!confirm('모든 활동 기록을 삭제할까요?')) return;
+  if (!confirm(localizeRuntimeText('모든 활동 기록을 삭제할까요?'))) return;
   localStorage.removeItem('runRecords');
   closeAllRecords();
   renderRecords();
@@ -8253,13 +8770,15 @@ function renderSocial() {
     feed.innerHTML = `
       <div class="social-empty">
         <div class="social-empty-icon">♡</div>
-        <div class="social-empty-title">${socialFilter === 'popular' ? '좋아요 받은 공유글이 없어요' : '아직 공유글이 없어요'}</div>
-        <div class="social-empty-desc">저장한 코스나 런닝 인증샷을 올려 피드를 채워보세요.</div>
+        <div class="social-empty-title">${escapeHtml(appLanguage === 'en' ? (socialFilter === 'popular' ? 'No liked posts yet' : 'No shared posts yet') : (socialFilter === 'popular' ? '좋아요 받은 공유글이 없어요' : '아직 공유글이 없어요'))}</div>
+        <div class="social-empty-desc">${escapeHtml(appLanguage === 'en' ? 'Share a saved route or activity photo to fill the feed.' : '저장한 코스나 런닝 인증샷을 올려 피드를 채워보세요.')}</div>
       </div>`;
+    localizeStaticDom(document.getElementById('screen-social'));
     return;
   }
 
   feed.innerHTML = filtered.map(renderSocialPost).join('');
+  localizeStaticDom(document.getElementById('screen-social'));
 }
 
 function getFilteredSocialPosts(posts) {
@@ -8276,8 +8795,8 @@ function getFilteredSocialPosts(posts) {
 function updateSocialStats(posts) {
   const courseCandidates = getPopularSocialCourseCandidates(posts);
   const likeTotal = posts.reduce((sum, post) => sum + (Number(post.likes) || 0), 0);
-  setText('socialPostCount', posts.length + '개');
-  setText('socialAiCandidateCount', courseCandidates.length + '개');
+  setText('socialPostCount', appLanguage === 'en' ? String(posts.length) : posts.length + '개');
+  setText('socialAiCandidateCount', appLanguage === 'en' ? String(courseCandidates.length) : courseCandidates.length + '개');
   setText('socialShareStat', posts.length);
   setText('socialLikeStat', likeTotal);
   setText('socialCandidateStat', courseCandidates.length);
@@ -8306,7 +8825,7 @@ function renderSocialPost(post) {
   const domId = getSocialPostDomId(post.id);
   const isCourse = post.type === 'course';
   const isHotCourse = isPopularSocialCourse(post);
-  const typeLabel = isCourse ? '코스' : '사진';
+  const typeLabel = isCourse ? (appLanguage === 'en' ? 'Route' : '코스') : (appLanguage === 'en' ? 'Photo' : '사진');
   const media = isCourse
     ? renderSocialCourseMedia(post, postId)
     : renderSocialPhotoMedia(post);
@@ -8319,19 +8838,19 @@ function renderSocialPost(post) {
           <div class="social-time">${escapeHtml(formatSocialTime(post.createdAt))}</div>
         </div>
         <div class="social-badges">
-          ${isHotCourse ? '<span class="social-badge hot">AI 추천 후보</span>' : ''}
+          ${isHotCourse ? `<span class="social-badge hot">${escapeHtml(appLanguage === 'en' ? 'AI candidate' : 'AI 추천 후보')}</span>` : ''}
           <span class="social-badge">${typeLabel}</span>
         </div>
       </div>
       ${media}
       <div class="social-body">
-        <div class="social-post-title">${escapeHtml(post.title || (isCourse ? '공유 코스' : '공유 사진'))}</div>
+        <div class="social-post-title">${escapeHtml(post.title || (isCourse ? (appLanguage === 'en' ? 'Shared route' : '공유 코스') : (appLanguage === 'en' ? 'Shared photo' : '공유 사진')))}</div>
         ${post.text ? `<div class="social-text">${escapeHtml(post.text)}</div>` : ''}
         <div class="social-meta">${escapeHtml(getSocialPostMeta(post))}</div>
       </div>
       <div class="social-actions">
         <button class="social-like ${post.likedByMe ? 'active' : ''}" onclick="toggleSocialLike(${postId}, event)">♥ ${Math.max(0, Number(post.likes) || 0)}</button>
-        <button class="social-delete" onclick="deleteSocialPost(${postId}, event)">삭제</button>
+        <button class="social-delete" onclick="deleteSocialPost(${postId}, event)">${escapeHtml(appLanguage === 'en' ? 'Delete' : '삭제')}</button>
       </div>
     </div>`;
 }
@@ -8339,22 +8858,22 @@ function renderSocialPost(post) {
 function renderSocialCourseMedia(post, postId) {
   const course = post.course || {};
   const dist = Number.parseFloat(course.dist);
-  const distLabel = Number.isFinite(dist) ? dist.toFixed(2) + 'km' : '코스';
-  const courseName = course.name || post.title || '공유 코스';
+  const distLabel = Number.isFinite(dist) ? dist.toFixed(2) + 'km' : (appLanguage === 'en' ? 'Route' : '코스');
+  const courseName = course.name || post.title || (appLanguage === 'en' ? 'Shared route' : '공유 코스');
   return `
     <div class="social-course-map">
       <div class="social-course-info">
-        <div class="social-course-label">공유 코스</div>
+        <div class="social-course-label">${escapeHtml(appLanguage === 'en' ? 'Shared route' : '공유 코스')}</div>
         <div class="social-course-name">${escapeHtml(courseName)}</div>
         <div class="social-course-dist">${escapeHtml(distLabel)}</div>
       </div>
-      <button class="social-course-map-btn" onclick="viewSocialCourseOnMap(${postId}, event)">지도 보기</button>
+      <button class="social-course-map-btn" onclick="viewSocialCourseOnMap(${postId}, event)">${escapeHtml(t('mapView'))}</button>
     </div>`;
 }
 
 function renderSocialPhotoMedia(post) {
   if (!hasSafeRecordPhoto(post.photo)) return '';
-  return `<img class="social-photo" src="${escapeHtml(post.photo)}" alt="공유 사진">`;
+  return `<img class="social-photo" src="${escapeHtml(post.photo)}" alt="${escapeHtml(appLanguage === 'en' ? 'Shared photo' : '공유 사진')}">`;
 }
 
 function getSocialPostMeta(post) {
@@ -8364,15 +8883,15 @@ function getSocialPostMeta(post) {
     return [
       course.name || '',
       Number.isFinite(dist) ? dist.toFixed(2) + 'km' : '',
-      isPopularSocialCourse(post) ? 'AI 추천 반영 후보' : ''
-    ].filter(Boolean).join(' · ') || '공유 코스';
+      isPopularSocialCourse(post) ? (appLanguage === 'en' ? 'AI recommendation candidate' : 'AI 추천 반영 후보') : ''
+    ].filter(Boolean).join(' · ') || (appLanguage === 'en' ? 'Shared route' : '공유 코스');
   }
   const record = post.record || {};
   return [
-    record.date || '',
+    record.createdAt ? formatRecordDate(record) : record.date || '',
     record.dist ? record.dist + 'km' : '',
-    record.conditionScore !== undefined && record.conditionScore !== null ? '컨디션 ' + record.conditionScore + '/10' : ''
-  ].filter(Boolean).join(' · ') || '공유 사진';
+    record.conditionScore !== undefined && record.conditionScore !== null ? (appLanguage === 'en' ? 'Condition ' : '컨디션 ') + record.conditionScore + '/10' : ''
+  ].filter(Boolean).join(' · ') || (appLanguage === 'en' ? 'Shared photo' : '공유 사진');
 }
 
 function getSocialPostDomId(id) {
@@ -8388,12 +8907,12 @@ function getSocialPostTime(post) {
 
 function formatSocialTime(value) {
   const time = Date.parse(value || '');
-  if (!Number.isFinite(time)) return '방금';
+  if (!Number.isFinite(time)) return appLanguage === 'en' ? 'just now' : '방금';
   const diff = Date.now() - time;
-  if (diff < 60000) return '방금';
-  if (diff < 3600000) return Math.floor(diff / 60000) + '분 전';
-  if (diff < 86400000) return Math.floor(diff / 3600000) + '시간 전';
-  return new Date(time).toLocaleDateString('ko-KR', { month:'long', day:'numeric' });
+  if (diff < 60000) return appLanguage === 'en' ? 'just now' : '방금';
+  if (diff < 3600000) return appLanguage === 'en' ? Math.floor(diff / 60000) + ' min ago' : Math.floor(diff / 60000) + '분 전';
+  if (diff < 86400000) return appLanguage === 'en' ? Math.floor(diff / 3600000) + ' hr ago' : Math.floor(diff / 3600000) + '시간 전';
+  return new Date(time).toLocaleDateString(appLanguage === 'en' ? 'en-US' : 'ko-KR', { month:'long', day:'numeric' });
 }
 
 function isPopularSocialCourse(post) {
@@ -8425,7 +8944,7 @@ function toggleSocialLike(id, event) {
 
 function deleteSocialPost(id, event) {
   if (event) event.stopPropagation();
-  if (!confirm('이 공유글을 삭제할까요?')) return;
+  if (!confirm(localizeRuntimeText('이 공유글을 삭제할까요?'))) return;
   const posts = getSocialPosts().filter(post => String(post.id) !== String(id));
   saveSocialPosts(posts);
   renderSocial();
@@ -8451,7 +8970,7 @@ function viewSocialCourseOnMap(id, event) {
   const sourceCourse = mapPoints === points ? post.course : savedCourse;
   showSavedCourseOnCreateMap({
     ...(sourceCourse || {}),
-    name: (sourceCourse && sourceCourse.name) || post.title || '공유 코스',
+    name: (sourceCourse && sourceCourse.name) || post.title || (appLanguage === 'en' ? 'Shared route' : '공유 코스'),
     points: mapPoints,
     routeSource: (sourceCourse && sourceCourse.routeSource) || 'social'
   }, 0);
@@ -8476,7 +8995,9 @@ function openSocialComposer(type = 'course', options = {}) {
     if (select) select.value = String(options.recordIndex);
     selectSocialRecordPhoto();
   }
-  document.getElementById('socialComposerModal').style.display = 'flex';
+  const modal = document.getElementById('socialComposerModal');
+  modal.style.display = 'flex';
+  localizeStaticDom(modal);
 }
 
 function closeSocialComposer() {
@@ -8497,7 +9018,7 @@ function switchSocialShareType(type) {
   if (photoFields) photoFields.style.display = socialComposerType === 'photo' ? 'block' : 'none';
   if (socialComposerType === 'course') updateSocialCourseDraft();
   if (socialComposerType === 'photo' && shouldReplaceSocialDraftTitle()) {
-    document.getElementById('socialTitleInput').value = '오늘의 풍경';
+    document.getElementById('socialTitleInput').value = appLanguage === 'en' ? 'Today’s view' : '오늘의 풍경';
   }
 }
 
@@ -8506,14 +9027,14 @@ function populateSocialCourseSelect(selectedId) {
   if (!select) return;
   const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
   if (!Array.isArray(courses) || !courses.length) {
-    select.innerHTML = '<option value="">저장한 코스 없음</option>';
+    select.innerHTML = `<option value="">${escapeHtml(appLanguage === 'en' ? 'No saved routes' : '저장한 코스 없음')}</option>`;
     select.disabled = true;
     return;
   }
   select.disabled = false;
   select.innerHTML = courses
     .sort((a, b) => getCourseSavedTime(b) - getCourseSavedTime(a))
-    .map(course => `<option value="${escapeHtml(String(course.id))}">${escapeHtml(course.name || '코스')} · ${escapeHtml(getMyCourseCardMeta(course).distance)}km</option>`)
+    .map(course => `<option value="${escapeHtml(String(course.id))}">${escapeHtml(course.name || (appLanguage === 'en' ? 'Route' : '코스'))} · ${escapeHtml(getMyCourseCardMeta(course).distance)}km</option>`)
     .join('');
   if (selectedId !== undefined && selectedId !== null) select.value = String(selectedId);
 }
@@ -8527,8 +9048,8 @@ function populateSocialRecordPhotoSelect(selectedIndex) {
         .map((record, index) => ({ record, index }))
         .filter(item => hasSafeRecordPhoto(item.record && item.record.photo))
     : [];
-  select.innerHTML = '<option value="">기록 인증샷 선택 안 함</option>' + options.map(item => {
-    const label = [item.record.name || '런닝 인증샷', item.record.date || ''].filter(Boolean).join(' · ');
+  select.innerHTML = `<option value="">${escapeHtml(appLanguage === 'en' ? 'No activity photo selected' : '기록 인증샷 선택 안 함')}</option>` + options.map(item => {
+    const label = [item.record.name || (appLanguage === 'en' ? 'Activity photo' : '런닝 인증샷'), formatRecordDate(item.record)].filter(Boolean).join(' · ');
     return `<option value="${item.index}">${escapeHtml(label)}</option>`;
   }).join('');
   if (selectedIndex !== undefined && selectedIndex !== null) select.value = String(selectedIndex);
@@ -8538,7 +9059,7 @@ function updateSocialCourseDraft() {
   if (socialComposerType !== 'course') return;
   const course = getSelectedSocialCourse();
   const title = document.getElementById('socialTitleInput');
-  if (title && course && shouldReplaceSocialDraftTitle()) title.value = course.name || '공유 코스';
+  if (title && course && shouldReplaceSocialDraftTitle()) title.value = course.name || (appLanguage === 'en' ? 'Shared route' : '공유 코스');
 }
 
 function shouldReplaceSocialDraftTitle() {
@@ -8547,7 +9068,7 @@ function shouldReplaceSocialDraftTitle() {
   const course = getSelectedSocialCourse();
   const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
   const isKnownCourseTitle = Array.isArray(courses) && courses.some(item => current === (item.name || '공유 코스'));
-  return !current || current === '오늘의 풍경' || isKnownCourseTitle || (course && current === (course.name || '공유 코스'));
+  return !current || current === '오늘의 풍경' || current === 'Today’s view' || isKnownCourseTitle || (course && current === (course.name || '공유 코스'));
 }
 
 function getSelectedSocialCourse() {
@@ -8570,7 +9091,7 @@ function selectSocialRecordPhoto() {
   socialPhotoDataUrl = record.photo;
   const title = document.getElementById('socialTitleInput');
   const text = document.getElementById('socialTextInput');
-  if (title && shouldReplaceSocialDraftTitle()) title.value = record.name || '런닝 인증샷';
+  if (title && shouldReplaceSocialDraftTitle()) title.value = record.name || (appLanguage === 'en' ? 'Activity photo' : '런닝 인증샷');
   if (text && !text.value.trim() && record.memo) text.value = record.memo;
   updateSocialPhotoPreview();
 }
@@ -8583,7 +9104,7 @@ async function handleSocialPhotoSelected(event) {
     const select = document.getElementById('socialRecordPhotoSelect');
     if (select) select.value = '';
     const title = document.getElementById('socialTitleInput');
-    if (title && shouldReplaceSocialDraftTitle()) title.value = '오늘의 풍경';
+    if (title && shouldReplaceSocialDraftTitle()) title.value = appLanguage === 'en' ? 'Today’s view' : '오늘의 풍경';
     updateSocialPhotoPreview();
   } catch(e) {
     console.warn('Social photo processing failed', e);
@@ -8618,7 +9139,7 @@ function publishSocialPost() {
     type: socialComposerType,
     title: titleInput.value.trim(),
     text: textInput.value.trim(),
-    authorName: profile.name || '런너',
+    authorName: profile.name || (appLanguage === 'en' ? 'Runner' : '런너'),
     authorAvatar: profile.avatar || '🏃',
     createdAt: now.toISOString(),
     likes: 0,
@@ -8627,12 +9148,12 @@ function publishSocialPost() {
 
   if (socialComposerType === 'course') {
     const course = getSelectedSocialCourse();
-    if (!course) { toast('공유할 코스를 선택해주세요'); return; }
-    post.title = post.title || course.name || '공유 코스';
+    if (!course) { toast(appLanguage === 'en' ? 'Select a route to share' : '공유할 코스를 선택해주세요'); return; }
+    post.title = post.title || course.name || (appLanguage === 'en' ? 'Shared route' : '공유 코스');
     post.course = createSocialCourseSnapshot(course);
   } else {
-    if (!hasSafeRecordPhoto(socialPhotoDataUrl)) { toast('공유할 사진을 선택해주세요'); return; }
-    post.title = post.title || '오늘의 풍경';
+    if (!hasSafeRecordPhoto(socialPhotoDataUrl)) { toast(appLanguage === 'en' ? 'Select a photo to share' : '공유할 사진을 선택해주세요'); return; }
+    post.title = post.title || (appLanguage === 'en' ? 'Today’s view' : '오늘의 풍경');
     post.photo = socialPhotoDataUrl;
     post.record = createSocialRecordSnapshot();
   }
@@ -8660,7 +9181,7 @@ function createSocialCourseSnapshot(course) {
     : [];
   return {
     id: course.id,
-    name: course.name || '코스',
+    name: course.name || (appLanguage === 'en' ? 'Route' : '코스'),
     dist: course.dist || getMyCourseCardMeta(course).distance,
     date: course.date || '',
     savedAt: course.savedAt || '',
@@ -8686,6 +9207,7 @@ function createSocialRecordSnapshot() {
     name: record.name || '',
     dist: record.dist || '',
     date: record.date || '',
+    createdAt: record.createdAt || '',
     conditionScore: Number.isFinite(Number(record.conditionScore)) ? Math.max(0, Math.min(10, Math.round(Number(record.conditionScore)))) : null
   };
 }
@@ -8729,6 +9251,7 @@ function renderMyCourses() {
     }
     list.classList.add('mc-grid');
     list.innerHTML = schedules.map(renderSavedScheduleCard).join('');
+    localizeStaticDom(list);
     return;
   }
 
@@ -8742,6 +9265,10 @@ function renderMyCourses() {
     list.classList.add('mc-grid');
     list.innerHTML = visitedSpots.map(renderVisitedSpotCard).join('');
     hydrateSavedSpotPhotos(visitedSpots);
+    hydrateCultureSpotEnglishDetails(visitedSpots, 'visits').then(changed => {
+      if (changed && S.tab === 'mycourse' && interestTab === 'visited') renderMyCourses();
+    });
+    localizeStaticDom(list);
     return;
   }
 
@@ -8752,6 +9279,10 @@ function renderMyCourses() {
   list.classList.add('mc-grid');
   list.innerHTML = spots.map(renderSavedSpotCard).join('');
   hydrateSavedSpotPhotos(spots);
+  hydrateCultureSpotEnglishDetails(spots, 'favorites').then(changed => {
+    if (changed && S.tab === 'mycourse' && interestTab === 'places') renderMyCourses();
+  });
+  localizeStaticDom(list);
 }
 
 function renderInterestEmpty(list, title, desc) {
@@ -8761,6 +9292,7 @@ function renderInterestEmpty(list, title, desc) {
       <div style="font-size:14px;font-weight:700;color:var(--gray-700);margin-bottom:6px;">${escapeHtml(title)}</div>
       <div style="font-size:13px;line-height:1.6;">${escapeHtml(desc)}</div>
     </div>`;
+  localizeStaticDom(list);
 }
 
 function renderSavedSpotCard(spot) {
@@ -8776,7 +9308,7 @@ function renderSavedSpotCard(spot) {
       <div class="mc-card-top">
         <div class="mc-title">
           <div class="mc-name">${escapeHtml(displayName)}</div>
-          <div class="mc-meta">${escapeHtml(meta || '저장한 문화스팟')}</div>
+          <div class="mc-meta">${escapeHtml(meta || (appLanguage === 'en' ? 'Saved culture spot' : '저장한 문화스팟'))}</div>
         </div>
         <div class="mc-distance">
           <div class="mc-distance-value">★${stars}</div>
@@ -8794,7 +9326,7 @@ function renderSavedScheduleCard(item) {
   const keyJson = escapeHtml(JSON.stringify(item.key));
   const image = String(item.image || '').trim();
   const link = String(item.link || '').trim() || getSearchLinkForSchedule(item.title || '');
-  const meta = [item.place, formatScheduleDistance(item), item.source].filter(Boolean).join(' · ');
+  const meta = [item.place, formatScheduleDistance(item), localizeProviderName(item.source)].filter(Boolean).join(' · ');
   return `
     <div class="mc-card saved-schedule-card" role="button" tabindex="0" onclick="openSavedScheduleFavorite(${keyJson})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openSavedScheduleFavorite(${keyJson});}">
       ${image ? `
@@ -8838,6 +9370,7 @@ function getVisitedSpotAsCultureSpot(visit) {
     firstImage: visit && visit.firstImage || favorite && favorite.firstImage || '',
     photo: visit && visit.photo && visit.photo.imageUrl ? visit.photo : favorite && favorite.photo && favorite.photo.imageUrl ? favorite.photo : null,
     overview: favorite && favorite.overview || '',
+    overviewEn: visit && visit.overviewEn || favorite && favorite.overviewEn || '',
     visitedAt: visit && visit.visitedAt || '',
     source: visit && visit.source || favorite && favorite.source || 'visit'
   };
@@ -9041,15 +9574,15 @@ function drawPreviewLine(ctx, points) {
 function formatCourseSavedAt(course) {
   const saved = Date.parse(course.savedAt || course.createdAt || '');
   if (Number.isFinite(saved)) {
-    return new Date(saved).toLocaleDateString('ko-KR', { month:'long', day:'numeric' });
+    return new Date(saved).toLocaleDateString(appLanguage === 'en' ? 'en-US' : 'ko-KR', { month:'long', day:'numeric' });
   }
   return course.date || '';
 }
 
 function getCourseSourceLabel(course) {
-  if (course.fromAi) return '추천에서 저장';
-  if (Array.isArray(course.segments) && course.segments.length) return '직접 만든 코스';
-  return '저장한 코스';
+  if (course.fromAi) return appLanguage === 'en' ? 'Saved from recommendation' : '추천에서 저장';
+  if (Array.isArray(course.segments) && course.segments.length) return appLanguage === 'en' ? 'Custom route' : '직접 만든 코스';
+  return appLanguage === 'en' ? 'Saved route' : '저장한 코스';
 }
 
 function startCourseFromDetail() {
@@ -9110,7 +9643,7 @@ function showSavedSpotOnCreateMap(spot, attempt) {
     const displayName = getCultureSpotDisplayName(spot);
     showAiPlaceCard(position, displayName, `${formatCultureSpotDistanceLabel(spot.distFromMe)} · ★${stars}`, { spot });
     createMap.setCenter(position);
-    toast(displayName + '을 지도에 표시했어요');
+    toast(appLanguage === 'en' ? `Showing ${displayName} on the map` : displayName + '을 지도에 표시했어요');
   }, attempt ? 250 : 120);
 }
 
@@ -9131,7 +9664,8 @@ function showSavedCourseOnCreateMap(course, attempt) {
     if (createAiMarker) createAiMarker.setMap(null);
     setBottomSheetOpen(false);
     showAiRoutePreview(course);
-    toast((course.name || '저장 코스') + '를 지도에 표시했어요');
+    const courseName = course.name || (appLanguage === 'en' ? 'Saved route' : '저장 코스');
+    toast(appLanguage === 'en' ? `Showing ${courseName} on the map` : courseName + '를 지도에 표시했어요');
   }, attempt ? 250 : 120);
 }
 
@@ -9208,7 +9742,7 @@ function toggleCourseFavorite(id, event) {
 function deleteEditingCourse() {
   if (!renameTargetId) return;
   const id = renameTargetId;
-  if (!confirm('이 코스를 삭제할까요?')) return;
+  if (!confirm(localizeRuntimeText('이 코스를 삭제할까요?'))) return;
   closeRename();
   removeMyCourse(id);
 }
@@ -9232,6 +9766,7 @@ function startMyCoursRun(id) {
 }
 
 function makeWeatherSummary(temp, humid, wind, weatherId) {
+  if (appLanguage === 'en') return makeWeatherSummaryEn(temp, humid, wind, weatherId);
   if (weatherId >= 200 && weatherId < 300) return pickWeatherLine('thunder', weatherId, temp, [
     '⛈ 천둥번개가 있어요. 외출 전 하늘을 한 번 더 확인하세요',
     '⛈ 번개 가능성이 있어요. 실내 일정이 더 편한 날',
@@ -9318,6 +9853,77 @@ function makeWeatherSummary(temp, humid, wind, weatherId) {
   ]);
 }
 
+function makeWeatherSummaryEn(temp, humid, wind, weatherId) {
+  if (weatherId >= 200 && weatherId < 300) return pickWeatherLine('thunder-en', weatherId, temp, [
+    'Thunderstorms are nearby. Check the sky before heading out',
+    'Lightning is possible. Indoor plans may feel easier today',
+    'The weather is unstable. Keep trips short and safe'
+  ]);
+  if (weatherId >= 300 && weatherId < 600) return pickWeatherLine('rain-en', weatherId, temp, [
+    'Rain is falling. Bring an umbrella and shoes with grip',
+    'Wet roads can be slippery. Move a little slower',
+    'Check the rain before you head out'
+  ]);
+  if (weatherId >= 600 && weatherId < 700) return pickWeatherLine('snow-en', weatherId, temp, [
+    'Snow is possible. Watch for slippery ground',
+    'Leave extra time if you need to move around',
+    'Warm shoes will help today'
+  ]);
+  if (weatherId >= 700 && weatherId < 800) return pickWeatherLine('fog-en', weatherId, temp, [
+    'Visibility may be low. Take your time outside',
+    'The air can feel hazy today',
+    'Move with a little extra caution'
+  ]);
+  if (temp >= 33) return pickWeatherLine('very-hot-en', weatherId, temp, [
+    'It is very hot. Prioritize shade and hydration',
+    'Carry water and avoid long exposure to direct sun',
+    'Keep outdoor time short and light'
+  ]);
+  if (temp >= 28) return pickWeatherLine('hot-en', weatherId, temp, [
+    'It is warm. Bring water and look for shade',
+    'Sunlight can feel strong. Sun protection helps',
+    'Short outings may still feel sweaty today'
+  ]);
+  if (temp >= 20) {
+    if (humid > 75) return pickWeatherLine('humid-en', weatherId, temp, [
+      'Humidity is high, so the air may feel heavy',
+      'It can feel sticky outside today',
+      'Light clothing will feel more comfortable'
+    ]);
+    if (wind > 6) return pickWeatherLine('warm-windy-en', weatherId, temp, [
+      'There is some wind. A light layer may help',
+      'Wind direction can change how warm it feels',
+      'Secure hats and light belongings'
+    ]);
+    return pickWeatherLine('pleasant-en', weatherId, temp, [
+      'The weather feels comfortable for being outside',
+      'A mild, steady day is ahead',
+      'It is a good day to spend some time outdoors'
+    ]);
+  }
+  if (temp >= 10) return wind > 8
+    ? pickWeatherLine('cool-windy-en', weatherId, temp, [
+      'Cool and windy. A windbreaker will help',
+      'Wind may make it feel colder than the number',
+      'Layering lightly is a good idea'
+    ])
+    : pickWeatherLine('cool-en', weatherId, temp, [
+      'Cool weather. A light outer layer is useful',
+      'The air feels calm and cool',
+      'Comfortable temperature, but shade may feel chilly'
+    ]);
+  if (temp >= 0) return pickWeatherLine('cold-en', weatherId, temp, [
+    'It is cold. Keep your hands and ears warm',
+    'Short outings are easier with proper warmth',
+    'Gloves can make a big difference today'
+  ]);
+  return pickWeatherLine('freezing-en', weatherId, temp, [
+    'It is freezing. Warmth matters most today',
+    'The air is sharp, so avoid unnecessary long outings',
+    'Indoor plans may feel better today'
+  ]);
+}
+
 function getWeatherFallbackHighLow(currentData, currentTemp) {
   const current = Number(currentTemp);
   const values = [current].filter(Number.isFinite);
@@ -9364,6 +9970,7 @@ function addForecastTemps(values, main) {
 }
 
 function makeForecastWeatherSummary(currentTemp, currentWeatherId, forecastData) {
+  if (appLanguage === 'en') return makeForecastWeatherSummaryEn(currentTemp, currentWeatherId, forecastData);
   if (!forecastData || !Array.isArray(forecastData.list)) return null;
   if (isPrecipWeatherId(currentWeatherId)) return null;
 
@@ -9426,6 +10033,62 @@ function makeForecastWeatherSummary(currentTemp, currentWeatherId, forecastData)
   return null;
 }
 
+function makeForecastWeatherSummaryEn(currentTemp, currentWeatherId, forecastData) {
+  if (!forecastData || !Array.isArray(forecastData.list)) return null;
+  if (isPrecipWeatherId(currentWeatherId)) return null;
+  const now = Date.now();
+  const nextItems = forecastData.list
+    .filter(item => item && item.dt && item.dt * 1000 > now && item.dt * 1000 <= now + 12 * 60 * 60 * 1000)
+    .slice(0, 5);
+  if (!nextItems.length) return null;
+  const snow = nextItems.find(item => isSnowForecast(item));
+  if (snow) {
+    const when = formatForecastGap(snow.dt);
+    return pickForecastLine('snow-soon-en', snow.dt, [
+      `${when}, snow is possible. Watch for slippery ground`,
+      `${when}, allow extra time if you go out`,
+      `${when}, warm shoes and layers will help`
+    ]);
+  }
+  const rain = nextItems.find(item => isRainForecast(item));
+  if (rain) {
+    const when = formatForecastGap(rain.dt);
+    return pickForecastLine('rain-soon-en', rain.dt, [
+      `${when}, rain is possible. Bring an umbrella`,
+      `${when}, check the sky before heading out`,
+      `${when}, give yourself extra time outside`
+    ]);
+  }
+  const windy = nextItems.find(item => Number(item.wind && item.wind.speed) >= 8);
+  if (windy) {
+    const when = formatForecastGap(windy.dt);
+    return pickForecastLine('wind-soon-en', windy.dt, [
+      `${when}, wind may pick up. A light jacket helps`,
+      `${when}, it may feel cooler because of the wind`,
+      `${when}, secure light belongings`
+    ]);
+  }
+  const temps = nextItems.map(item => Number(item.main && item.main.temp)).filter(Number.isFinite);
+  if (!temps.length) return null;
+  const minTemp = Math.round(Math.min(...temps));
+  const maxTemp = Math.round(Math.max(...temps));
+  if (currentTemp - minTemp >= 5 && minTemp <= 16) {
+    return pickForecastLine('temp-drop-en', minTemp, [
+      `It drops to ${minTemp}° later. Bring a light layer`,
+      `The temperature will fall later today`,
+      `It gets cooler later, so prepare an outer layer`
+    ]);
+  }
+  if (maxTemp - currentTemp >= 5 && maxTemp >= 28) {
+    return pickForecastLine('temp-rise-en', maxTemp, [
+      `It rises to ${maxTemp}° later. Plan around the heat`,
+      `It will get hotter later. Remember water and shade`,
+      `The afternoon may feel warmer than now`
+    ]);
+  }
+  return null;
+}
+
 function isPrecipWeatherId(id) {
   return id >= 200 && id < 700;
 }
@@ -9445,6 +10108,7 @@ function isSnowForecast(item) {
 
 function formatForecastGap(dtSeconds) {
   const hours = Math.max(1, Math.round((dtSeconds * 1000 - Date.now()) / 3600000));
+  if (appLanguage === 'en') return hours <= 1 ? 'soon' : `in about ${hours} hours`;
   if (hours <= 1) return '잠시 뒤';
   return `약 ${hours}시간 뒤`;
 }
@@ -9503,6 +10167,16 @@ function getPmGrade(val, type) {
 }
 
 function getDustStyle(grade) {
+  if (appLanguage === 'en') {
+    const enMap = {
+      '매우좋음': { label:'Excellent', bg:'#EEF8EA', color:'#3F6F3A' },
+      '좋음':     { label:'Good',      bg:'#FFF0EC', color:'#D84F45' },
+      '보통':     { label:'Moderate',  bg:'#F0EFEA', color:'#444441' },
+      '나쁨':     { label:'Bad',       bg:'#FAEEDA', color:'#BA7517' },
+      '매우나쁨': { label:'Very bad',  bg:'#FCEBEB', color:'#A32D2D' },
+    };
+    return enMap[grade] || enMap['보통'];
+  }
   const map = {
     '매우좋음': { label:'매우좋음', bg:'#EEF8EA', color:'#3F6F3A' },
     '좋음':     { label:'좋음',     bg:'#FFF0EC', color:'#D84F45' },
@@ -9831,7 +10505,7 @@ function drawMiniChevron(ctx, x, y, angle, color) {
 let tt;
 function toast(msg) {
   const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
+  t.textContent = localizeRuntimeText(msg); t.classList.add('show');
   clearTimeout(tt); tt = setTimeout(() => t.classList.remove('show'), 2500);
 }
 
@@ -9867,6 +10541,7 @@ function checkOnboarding() {
   if (!profile.onboarded) {
     el.style.display = 'flex';
     el.classList.add('active');
+    localizeStaticDom(el);
   } else {
     el.style.display = 'none';
   }
@@ -10011,6 +10686,7 @@ function openSettingsPage() {
   const settingsScreen = document.getElementById('screen-settings');
   if (settingsScreen) settingsScreen.classList.add('active');
   S.tab = 'settings';
+  localizeStaticDom(settingsScreen);
 }
 
 function closeSettingsPage() {
@@ -10036,7 +10712,9 @@ function openProfileEdit() {
   document.querySelectorAll('#editAvatarGrid .ob-avatar-item').forEach(el => {
     el.classList.toggle('selected', el.textContent === editSelectedAvatar);
   });
-  document.getElementById('profileEditModal').style.display = 'flex';
+  const modal = document.getElementById('profileEditModal');
+  modal.style.display = 'flex';
+  localizeStaticDom(modal);
 }
 
 function closeProfileEdit() {
@@ -10079,7 +10757,9 @@ function openGoalEdit() {
   const customInput = document.getElementById('editCustomGoalInput');
   if (customRow) customRow.classList.toggle('selected', !isPreset);
   if (customInput) customInput.value = isPreset ? '' : formatDailyGoal(editSelectedGoal);
-  document.getElementById('goalEditModal').style.display = 'flex';
+  const modal = document.getElementById('goalEditModal');
+  modal.style.display = 'flex';
+  localizeStaticDom(modal);
 }
 
 function closeGoalEdit() {
