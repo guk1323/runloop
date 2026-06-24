@@ -360,6 +360,21 @@ if ('serviceWorker' in navigator) {
   .all-record-dist{font-size:15px;font-weight:700;color:var(--coral);}
 
   #weatherCard{background:linear-gradient(135deg,#FFFFFF 0%,#FFF6F1 100%)!important;border:1px solid rgba(28,36,43,.07)!important;box-shadow:0 12px 28px rgba(28,36,43,.06)!important;}
+  .home-action-stack{display:flex;flex-direction:column;gap:10px;}
+  .home-action-card{width:100%;border-radius:var(--r);border:1px solid rgba(28,36,43,.08);background:#fff;padding:14px;box-shadow:0 10px 24px rgba(28,36,43,.05);}
+  .home-map-action{display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;font-family:inherit;cursor:pointer;}
+  button.home-map-action{appearance:none;color:inherit;}
+  .home-action-icon{width:38px;height:38px;border-radius:12px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:900;flex-shrink:0;}
+  .home-action-copy{min-width:0;flex:1;}
+  .home-action-title{display:block;font-size:15px;font-weight:900;color:var(--ink);margin-bottom:4px;}
+  .home-action-desc{display:block;font-size:12px;font-weight:700;color:var(--gray-500);line-height:1.45;}
+  .home-action-cta{height:34px;border-radius:999px;background:var(--coral-light);color:var(--ink);border:1px solid rgba(242,122,94,.18);padding:0 12px;font-size:12px;font-weight:900;white-space:nowrap;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .home-recent-card{display:none;align-items:center;gap:12px;}
+  .home-recent-main{min-width:0;flex:1;}
+  .home-recent-label{font-size:11px;font-weight:900;color:var(--coral);margin-bottom:3px;}
+  .home-recent-name{font-size:14px;font-weight:900;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .home-recent-meta{font-size:11px;font-weight:800;color:var(--gray-500);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .home-recent-route{height:38px;border-radius:var(--rs);background:var(--ink);border:none;color:#fff;padding:0 15px;font-size:13px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap;flex-shrink:0;}
   .near-course-card{background:rgba(255,255,255,.82);border-color:rgba(28,36,43,.07);box-shadow:0 8px 20px rgba(28,36,43,.045);}
   .save-course-btn{background:var(--ink);color:#fff;border:none;border-radius:var(--rp);padding:5px 11px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap;flex-shrink:0;}
   .save-course-btn:hover{background:#111820;}
@@ -801,19 +816,22 @@ if ('serviceWorker' in navigator) {
       <div style="margin-top:10px;font-size:12px;color:var(--gray-500);border-top:1px solid var(--gray-100);padding-top:10px;" id="wSummary">날씨 불러오는 중…</div>
     </div>
 
-    <!-- ── 근처 문화 스팟 ── -->
-    <div style="display:flex;justify-content:space-between;align-items:center;">
-      <div id="nearCultureTitle" style="font-size:15px;font-weight:700;color:var(--gray-900);">근처 문화 스팟</div>
-      <div id="nearCultureRefresh" style="font-size:12px;color:var(--coral);font-weight:500;cursor:pointer;" onclick="loadNearCourses()">새로고침</div>
-    </div>
-    <div class="course-filter" style="padding:0;background:transparent;">
-      <button id="cultureFilterDistance" class="active" onclick="setCultureSpotFilter('distance')">거리순</button>
-      <button id="cultureFilterStars" onclick="setCultureSpotFilter('stars')">별점순</button>
-    </div>
-    <div id="nearCourseList">
-      <div style="text-align:center;padding:20px 0;color:var(--gray-500);">
-        <div class="ml-spin" style="margin:0 auto 8px;"></div>
-        <div style="font-size:13px;">가까운 문화 스팟을 찾는 중이에요…</div>
+    <div class="home-action-stack">
+      <button class="home-action-card home-map-action" type="button" onclick="openCultureMapFromHome()">
+        <span class="home-action-icon" aria-hidden="true">◎</span>
+        <span class="home-action-copy">
+          <span class="home-action-title" id="homeMapActionTitle">주변 문화스팟 찾기</span>
+          <span class="home-action-desc" id="homeMapActionDesc">지도에서 현재 주변 장소를 보고 목적지를 정해보세요</span>
+        </span>
+        <span class="home-action-cta" id="homeMapActionButton">지도 열기</span>
+      </button>
+      <div class="home-action-card home-recent-card" id="homeRecentSpotCard">
+        <div class="home-recent-main">
+          <div class="home-recent-label" id="homeRecentSpotLabel">최근 저장한 스팟</div>
+          <div class="home-recent-name" id="homeRecentSpotName">저장한 문화스팟</div>
+          <div class="home-recent-meta" id="homeRecentSpotMeta">바로 길 안내를 시작할 수 있어요</div>
+        </div>
+        <button class="home-recent-route" type="button" id="homeRecentSpotRoute" onclick="startRecentSavedSpotFromHome()">길 안내</button>
       </div>
     </div>
 
@@ -1385,6 +1403,11 @@ const APP_COPY = {
     my: 'MY',
     edit: '편집',
     nearCultureSpots: '근처 문화 스팟',
+    homeMapActionTitle: '주변 문화스팟 찾기',
+    homeMapActionDesc: '지도에서 현재 주변 장소를 보고 목적지를 정해보세요',
+    openMap: '지도 열기',
+    recentSavedSpot: '최근 저장한 스팟',
+    recentSavedSpotMeta: '바로 길 안내를 시작할 수 있어요',
     refresh: '새로고침',
     distanceSort: '거리순',
     starsSort: '별점순',
@@ -1431,6 +1454,11 @@ const APP_COPY = {
     my: 'MY',
     edit: 'Edit',
     nearCultureSpots: 'Nearby Culture Spots',
+    homeMapActionTitle: 'Find Nearby Culture Spots',
+    homeMapActionDesc: 'Open the map, choose a nearby place, and set your destination',
+    openMap: 'Open Map',
+    recentSavedSpot: 'Recently Saved Spot',
+    recentSavedSpotMeta: 'Start guide from here',
     refresh: 'Refresh',
     recommend: 'Recommended',
     distanceSort: 'Distance',
@@ -1529,10 +1557,12 @@ function applyAppLanguage() {
     const el = document.querySelector(`[data-tab="${tab}"] span:last-child`);
     if (el) el.textContent = label;
   });
-  setTextContent('nearCultureTitle', t('nearCultureSpots'));
-  setTextContent('nearCultureRefresh', t('refresh'));
-  setTextContent('cultureFilterDistance', t('distanceSort'));
-  setTextContent('cultureFilterStars', t('starsSort'));
+  setTextContent('homeMapActionTitle', t('homeMapActionTitle'));
+  setTextContent('homeMapActionDesc', t('homeMapActionDesc'));
+  setTextContent('homeMapActionButton', t('openMap'));
+  setTextContent('homeRecentSpotLabel', t('recentSavedSpot'));
+  setTextContent('homeRecentSpotRoute', t('routeView'));
+  renderHomeActions();
   setTextContent('aiSearchSubmit', t('searchAction'));
   setTextContent('aiSearchStartBtn', t('startPoint'));
   setTextContent('aiSearchDestBtn', t('destination'));
@@ -3643,7 +3673,7 @@ function switchTab(tab, el) {
   if (tab === 'home') {
     fetchWeather();
     renderRecords();
-    loadNearCourses();
+    renderHomeActions();
   }
   if (tab === 'mycourse') renderMyCourses();
   if (tab === 'social') renderSocial();
@@ -5498,11 +5528,46 @@ function saveRecord() {
   toast(`기록 저장 완료! +${earnedPts}포인트 🏆`);
 }
 
+function renderHomeActions() {
+  const card = document.getElementById('homeRecentSpotCard');
+  if (!card) return;
+  const spot = getFavoriteCultureSpotList()[0];
+  if (!spot) {
+    card.style.display = 'none';
+    card.dataset.key = '';
+    return;
+  }
+  const nameEl = document.getElementById('homeRecentSpotName');
+  const metaEl = document.getElementById('homeRecentSpotMeta');
+  const routeEl = document.getElementById('homeRecentSpotRoute');
+  card.style.display = 'flex';
+  card.dataset.key = spot.key || '';
+  if (nameEl) nameEl.textContent = getCultureSpotDisplayName(spot, t('cultureSpots'));
+  if (metaEl) {
+    const dist = formatCultureSpotDistanceLabel(spot.distFromMe);
+    metaEl.textContent = /정보 없음/.test(dist) ? t('recentSavedSpotMeta') : dist;
+  }
+  if (routeEl) routeEl.textContent = t('routeView');
+}
+
+function openCultureMapFromHome() {
+  const createTab = document.querySelector('[data-tab="create"]');
+  switchTab('create', createTab);
+}
+
+function startRecentSavedSpotFromHome() {
+  const card = document.getElementById('homeRecentSpotCard');
+  const key = card && card.dataset ? card.dataset.key : '';
+  if (!key) return;
+  startSavedSpotRoute(key);
+}
+
 /* ── 근처 문화 스팟 (위치 기반) ── */
 async function loadNearCourses(options = {}) {
   const wrap = document.getElementById('nearCourseList');
-  if (!wrap) return;
-  wrap.innerHTML = `<div style="text-align:center;padding:20px 0;color:var(--gray-500);"><div class="ml-spin" style="margin:0 auto 8px;"></div><div style="font-size:13px;">${escapeHtml(t('loadingCulture'))}</div></div>`;
+  if (wrap) {
+    wrap.innerHTML = `<div style="text-align:center;padding:20px 0;color:var(--gray-500);"><div class="ml-spin" style="margin:0 auto 8px;"></div><div style="font-size:13px;">${escapeHtml(t('loadingCulture'))}</div></div>`;
+  }
   const searchCenter = getCultureSpotLoadCenter(options);
   const searchRadius = getCultureSpotLoadRadius(options);
 
@@ -6135,6 +6200,7 @@ function isCultureSpotFavorited(spot) {
 function refreshCultureSpotFavoriteViews() {
   updateCultureSpotSaveButtonLabels();
   updateAiPlaceSaveButton();
+  renderHomeActions();
   if (S.tab === 'mycourse') renderMyCourses();
   if (S.tab === 'mypage') renderRecords();
 }
@@ -6386,6 +6452,7 @@ function renderNearCourses(results) {
 
   const unique = selectHomeCultureSpots(safeResults);
   renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
+  if (!wrap) return;
   if (!unique.length) {
     wrap.innerHTML = `<div style="text-align:center;padding:22px 0;color:var(--gray-500);font-size:13px;line-height:1.5;">${appLanguage === 'en' ? 'No VisitKorea culture spots found in this area.' : '이 위치 주변에 한국관광공사 문화스팟이 없어요.'}</div>`;
     return;
