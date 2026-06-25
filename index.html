@@ -44,13 +44,12 @@ if ('serviceWorker' in navigator) {
 
   .header{background:rgba(255,253,248,.88);border-bottom:1px solid rgba(28,36,43,.08);padding:12px 18px 10px;flex-shrink:0;z-index:100;backdrop-filter:blur(16px);}
   .header-top{display:flex;justify-content:space-between;align-items:center;}
-  .logo{display:flex;align-items:center;gap:4px;min-height:38px;font-size:23px;font-weight:900;color:var(--ink);letter-spacing:0;overflow:visible;}
-  .logo-mark{width:31px;height:35px;position:relative;display:inline-block;flex-shrink:0;margin-top:1px;}
-  .logo-mark::before{content:'';position:absolute;left:3px;top:1px;width:23px;height:23px;border:3px solid var(--ink);border-radius:50%;background:rgba(255,253,248,.92);}
-  .logo-mark::after{content:'';position:absolute;left:11px;top:9px;width:8px;height:8px;background:var(--coral);border-radius:50%;box-shadow:0 0 0 2px rgba(255,253,248,.92);}
-  .logo-vowel::before{content:'';position:absolute;left:14px;top:26px;width:3px;height:6px;border-radius:999px;background:var(--ink);}
-  .logo-vowel::after{content:'';position:absolute;left:7px;bottom:0;width:17px;height:3px;border-radius:999px;background:var(--ink);}
-  .logo-word{display:inline-flex;align-items:center;min-height:32px;line-height:1.28;font-size:23px;font-weight:900;padding-top:1px;overflow:visible;}
+  .logo{display:flex;align-items:center;gap:7px;min-height:38px;font-size:23px;font-weight:900;color:var(--ink);letter-spacing:0;overflow:visible;}
+  .logo-mark{width:30px;height:30px;position:relative;display:inline-block;flex-shrink:0;}
+  .logo-mark::before{content:'';position:absolute;inset:1px;border:3px solid var(--ink);border-radius:50%;background:rgba(255,253,248,.92);}
+  .logo-mark::after{content:'';position:absolute;left:11px;top:11px;width:8px;height:8px;background:var(--coral);border-radius:50%;box-shadow:0 0 0 2px rgba(255,253,248,.92);}
+  .logo-vowel{display:none;}
+  .logo-word{display:inline-flex;align-items:center;min-height:32px;line-height:1.2;font-size:23px;font-weight:900;overflow:visible;}
   .header-settings-btn{width:38px;height:38px;border-radius:999px;border:1px solid rgba(28,36,43,.08);background:#fff;color:var(--ink);font-size:19px;font-weight:900;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(28,36,43,.08);}
   .loc-btn{display:flex;align-items:center;gap:5px;background:var(--coral-light);color:var(--ink);padding:6px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;cursor:pointer;border:1px solid rgba(242,122,94,.18);font-family:inherit;}
 
@@ -492,15 +491,19 @@ if ('serviceWorker' in navigator) {
   .course-card.route-guidance-card .route-card-close{width:32px;height:auto;min-height:48px;border-radius:13px;background:var(--gray-50);font-size:21px;}
 
   /* 마이페이지 */
-  .my-profile-card{margin:14px;background:linear-gradient(135deg,#1C242B 0%,#2B343B 58%,#F27A5E 150%);border-radius:16px;padding:20px;color:#fff;flex-shrink:0;box-shadow:0 16px 34px rgba(28,36,43,.14);}
+  .my-profile-card{margin:12px 14px;background:linear-gradient(135deg,#1C242B 0%,#2B343B 58%,#F27A5E 150%);border-radius:16px;padding:14px;color:#fff;flex-shrink:0;box-shadow:0 16px 34px rgba(28,36,43,.14);}
+  .my-profile-main{display:grid;grid-template-columns:54px minmax(0,1fr);gap:12px;align-items:center;}
   .my-avatar{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:10px;cursor:pointer;border:2px solid rgba(255,255,255,.4);}
+  .my-profile-main .my-avatar{width:54px!important;height:54px!important;font-size:28px!important;margin-bottom:0!important;}
+  .my-profile-copy{min-width:0;}
   .my-name{font-size:20px;font-weight:700;margin-bottom:2px;}
+  .my-profile-main .my-name{text-align:left!important;font-size:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .my-sub{font-size:13px;opacity:.8;}
-  .my-profile-level{width:100%;margin-top:14px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:10px 12px;}
-  .my-profile-level-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;}
-  .my-profile-level-head strong{font-size:18px;font-weight:950;line-height:1;color:#fff;}
-  .my-profile-level-head span{font-size:12px;font-weight:900;color:rgba(255,255,255,.72);}
-  .my-profile-level-track{height:7px;background:rgba(255,255,255,.18);border-radius:999px;overflow:hidden;margin-bottom:7px;}
+  .my-profile-level{width:100%;margin-top:8px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);border-radius:12px;padding:8px 10px;}
+  .my-profile-level-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;}
+  .my-profile-level-head strong{font-size:15px;font-weight:950;line-height:1;color:#fff;}
+  .my-profile-level-head span{font-size:11px;font-weight:900;color:rgba(255,255,255,.72);}
+  .my-profile-level-track{height:6px;background:rgba(255,255,255,.18);border-radius:999px;overflow:hidden;margin-bottom:6px;}
   .my-profile-level-fill{height:100%;width:0%;border-radius:999px;background:linear-gradient(90deg,var(--coral) 0%,var(--lime) 100%);transition:width .45s;}
   .my-profile-level-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;font-weight:800;color:rgba(255,255,255,.66);}
   .my-profile-level-foot strong{color:#fff;font-weight:950;}
@@ -563,7 +566,7 @@ if ('serviceWorker' in navigator) {
   .my-info-row:first-child{border-top:none;}
   .my-info-row span:first-child{color:var(--gray-500);}
   .my-info-row strong{font-size:13px;color:var(--gray-900);text-align:right;}
-  .my-goal-main{background:linear-gradient(135deg,#FFF6F1 0%,#FFFFFF 100%);border:1px solid rgba(242,122,94,.22);border-radius:14px;padding:14px;margin-bottom:14px;box-shadow:0 10px 24px rgba(242,122,94,.08);}
+  .my-goal-main{background:linear-gradient(135deg,#FFF6F1 0%,#FFFFFF 100%);border:1px solid rgba(242,122,94,.22);border-radius:14px;padding:14px;margin:14px 0 0;box-shadow:0 10px 24px rgba(242,122,94,.08);}
   .my-goal-main-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px;}
   .my-goal-label{font-size:11px;font-weight:800;color:var(--coral-dark);margin-bottom:4px;}
   .my-goal-percent{display:flex;align-items:flex-end;gap:5px;line-height:1;}
@@ -575,7 +578,7 @@ if ('serviceWorker' in navigator) {
   .my-goal-fill{height:100%;background:var(--coral);border-radius:999px;width:0%;transition:width .5s;}
   .week-activity-chart{display:flex;align-items:flex-end;gap:6px;height:76px;margin-top:16px;margin-bottom:7px;}
   .week-activity-labels{display:flex;gap:6px;}
-  .activity-calendar-panel{margin-top:16px;padding-top:14px;border-top:1px solid var(--gray-100);}
+  .activity-calendar-panel{margin-top:0;padding-top:0;border-top:none;}
   .activity-calendar-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
   .activity-calendar-title{font-size:14px;font-weight:950;color:var(--ink);line-height:1.2;}
   .activity-calendar-month{font-size:11px;font-weight:800;color:var(--gray-500);margin-top:4px;}
@@ -828,13 +831,13 @@ if ('serviceWorker' in navigator) {
     <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;">나를 표현할<br>아바타를 골라요</div>
     <div style="font-size:14px;color:var(--gray-500);margin-bottom:32px;">언제든 바꿀 수 있어요!</div>
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:32px;">
-      <div class="ob-avatar-item selected" onclick="selectObAvatar(this,'🏃')">🏃</div>
+      <div class="ob-avatar-item selected" onclick="selectObAvatar(this,'◎')">◎</div>
+      <div class="ob-avatar-item" onclick="selectObAvatar(this,'🏃')">🏃</div>
       <div class="ob-avatar-item" onclick="selectObAvatar(this,'🧗')">🧗</div>
       <div class="ob-avatar-item" onclick="selectObAvatar(this,'🚴')">🚴</div>
       <div class="ob-avatar-item" onclick="selectObAvatar(this,'🏊')">🏊</div>
       <div class="ob-avatar-item" onclick="selectObAvatar(this,'🤸')">🤸</div>
       <div class="ob-avatar-item" onclick="selectObAvatar(this,'💪')">💪</div>
-      <div class="ob-avatar-item" onclick="selectObAvatar(this,'🦅')">🦅</div>
       <div class="ob-avatar-item" onclick="selectObAvatar(this,'⚡')">⚡</div>
       <div class="ob-avatar-item" onclick="selectObAvatar(this,'🌟')">🌟</div>
       <div class="ob-avatar-item" onclick="selectObAvatar(this,'🔥')">🔥</div>
@@ -904,7 +907,7 @@ if ('serviceWorker' in navigator) {
 
 <div class="header">
   <div class="header-top">
-    <div class="logo" aria-label="오롯길"><span class="logo-mark" aria-hidden="true"><span class="logo-vowel"></span></span><span class="logo-word">롯길</span></div>
+    <div class="logo" aria-label="오롯길"><span class="logo-mark" aria-hidden="true"><span class="logo-vowel"></span></span><span class="logo-word">오롯길</span></div>
     <button class="header-settings-btn" type="button" onclick="openSettingsPage()" aria-label="설정" title="설정">⚙</button>
   </div>
 </div>
@@ -1145,9 +1148,10 @@ if ('serviceWorker' in navigator) {
     <!-- 프로필 카드 -->
     <div class="my-profile-card">
       <!-- 중앙: 아바타 + 이름 -->
-      <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:16px;">
-        <div class="my-avatar" id="myAvatar" onclick="openAvatarEdit()" title="탭해서 변경" style="width:72px;height:72px;font-size:36px;margin-bottom:10px;">🏃</div>
-        <div class="my-name" id="myNameDisplay" style="text-align:center;">런너</div>
+      <div class="my-profile-main">
+        <div class="my-avatar" id="myAvatar" onclick="openAvatarEdit()" title="탭해서 변경">◎</div>
+        <div class="my-profile-copy">
+        <div class="my-name" id="myNameDisplay">나의 활동</div>
         <div class="my-sub" id="myJoinDays" style="display:none;"></div>
         <div class="my-profile-level">
           <div class="my-profile-level-head">
@@ -1160,6 +1164,7 @@ if ('serviceWorker' in navigator) {
             <strong id="myLevelPercent">0%</strong>
           </div>
         </div>
+        </div>
       </div>
     </div>
 
@@ -1169,20 +1174,6 @@ if ('serviceWorker' in navigator) {
       <div style="font-size:12px;color:var(--coral);font-weight:500;cursor:pointer;" onclick="openAllRecords()">전체 기록 →</div>
     </div>
     <div style="background:#fff;border-top:1px solid var(--gray-100);border-bottom:1px solid var(--gray-100);padding:16px;">
-      <div class="my-goal-main">
-        <div class="my-goal-main-top">
-          <div>
-            <div class="my-goal-label">오늘 목표 달성률</div>
-            <div class="my-goal-percent"><strong id="goalPct">0%</strong><span>달성</span></div>
-          </div>
-          <div>
-            <div class="my-goal-main-text" id="homeGoalText">0.0 / 3km</div>
-          </div>
-        </div>
-        <div class="my-goal-track">
-          <div id="homeGoalFill" class="my-goal-fill"></div>
-        </div>
-      </div>
       <div class="activity-calendar-panel">
         <div class="activity-calendar-head">
           <div>
@@ -1198,6 +1189,20 @@ if ('serviceWorker' in navigator) {
         <div class="activity-calendar-grid" id="activityCalendarGrid"></div>
         <div class="activity-calendar-legend" id="activityCalendarLegend"></div>
         <div class="activity-calendar-detail" id="activityCalendarDetail"></div>
+      </div>
+      <div class="my-goal-main">
+        <div class="my-goal-main-top">
+          <div>
+            <div class="my-goal-label">오늘 목표 달성률</div>
+            <div class="my-goal-percent"><strong id="goalPct">0%</strong><span>달성</span></div>
+          </div>
+          <div>
+            <div class="my-goal-main-text" id="homeGoalText">0.0 / 3km</div>
+          </div>
+        </div>
+        <div class="my-goal-track">
+          <div id="homeGoalFill" class="my-goal-fill"></div>
+        </div>
       </div>
       <div class="week-activity-chart" id="weekBarChart"></div>
       <div class="week-activity-labels" id="weekBarLabels"></div>
@@ -1267,13 +1272,13 @@ if ('serviceWorker' in navigator) {
     <!-- 아바타 선택 -->
     <div style="font-size:12px;font-weight:500;color:var(--gray-500);margin-bottom:10px;">아바타</div>
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:18px;" id="editAvatarGrid">
+      <div class="ob-avatar-item" onclick="selectEditAvatar(this,'◎')">◎</div>
       <div class="ob-avatar-item" onclick="selectEditAvatar(this,'🏃')">🏃</div>
       <div class="ob-avatar-item" onclick="selectEditAvatar(this,'🧗')">🧗</div>
       <div class="ob-avatar-item" onclick="selectEditAvatar(this,'🚴')">🚴</div>
       <div class="ob-avatar-item" onclick="selectEditAvatar(this,'🏊')">🏊</div>
       <div class="ob-avatar-item" onclick="selectEditAvatar(this,'🤸')">🤸</div>
       <div class="ob-avatar-item" onclick="selectEditAvatar(this,'💪')">💪</div>
-      <div class="ob-avatar-item" onclick="selectEditAvatar(this,'🦅')">🦅</div>
       <div class="ob-avatar-item" onclick="selectEditAvatar(this,'⚡')">⚡</div>
       <div class="ob-avatar-item" onclick="selectEditAvatar(this,'🌟')">🌟</div>
       <div class="ob-avatar-item" onclick="selectEditAvatar(this,'🔥')">🔥</div>
@@ -4928,17 +4933,21 @@ function scheduleIdleTask(task, delay = 0) {
   return setTimeout(run, delay);
 }
 
+function scheduleCriticalTask(task, delay = 0) {
+  return setTimeout(() => task(), delay);
+}
+
 let startupDeferredLoadsStarted = false;
 
 function runDeferredStartupLoads(options = {}) {
   const forceSchedule = !!options.forceSchedule;
   const includeHealth = options.includeHealth !== false;
-  scheduleIdleTask(() => fetchWeather(), 80);
-  scheduleIdleTask(() => loadCultureSchedule({ force: forceSchedule, silent: true }), 650);
+  scheduleCriticalTask(() => fetchWeather(), 80);
+  scheduleCriticalTask(() => loadCultureSchedule({ force: forceSchedule, silent: true }), 120);
   scheduleIdleTask(() => {
     if (!lastCultureSpotResults.length || S.tab === 'create') loadNearCourses();
   }, 1150);
-  if (includeHealth) scheduleIdleTask(() => syncHealthActivity({ requestPermission: true, silent: true }), 1600);
+  if (includeHealth) scheduleCriticalTask(() => syncHealthActivity({ requestPermission: true, silent: true }), 1400);
 }
 
 function runStartupDeferredLoads(options = {}) {
@@ -5030,8 +5039,8 @@ function switchTab(tab, el) {
   if (tab === 'home') {
     renderRecords();
     renderHomeActions();
-    scheduleIdleTask(() => fetchWeather(), 80);
-    scheduleIdleTask(() => loadCultureSchedule({ silent: true }), 350);
+    scheduleCriticalTask(() => fetchWeather(), 80);
+    scheduleCriticalTask(() => loadCultureSchedule({ silent: true }), 120);
   }
   if (tab === 'mycourse') renderMyCourses();
   if (tab === 'mypage') {
@@ -7006,7 +7015,7 @@ function getHomeScheduleItems() {
       if (!event || !event.title) return false;
       if (isSportsScheduleEvent(event)) return false;
       const dist = getScheduleDistanceValue(event);
-      if (dist === null || dist > 10) return false;
+      if (dist === null || dist > 50) return false;
       const startKey = getScheduleDateKey(event.startDate) || todayKey;
       const endKey = getScheduleDateKey(event.endDate) || startKey;
       return endKey >= todayKey && startKey <= limitKey;
@@ -12019,7 +12028,7 @@ function selectGender(g) {
   }
 }
 
-let obSelectedAvatar = '🏃';
+let obSelectedAvatar = '◎';
 let obSelectedGoal = 2;
 
 function checkOnboarding() {
@@ -12115,7 +12124,7 @@ function getOnboardingGoal() {
 }
 
 function obFinish() {
-  const name = document.getElementById('ob-name').value.trim() || '런너';
+  const name = document.getElementById('ob-name').value.trim() || '나의 활동';
   const age = document.getElementById('ob-age').value;
   const height = document.getElementById('ob-height').value;
   const weight = document.getElementById('ob-weight').value;
@@ -12158,7 +12167,7 @@ function obFinish() {
 }
 
 /* ── 프로필 편집 모달 ── */
-let editSelectedAvatar = '🏃';
+let editSelectedAvatar = '◎';
 let settingsReturnTab = 'home';
 
 function openSettingsPage() {
@@ -12191,7 +12200,7 @@ function updateMySettingsValues() {
 
 function openProfileEdit() {
   const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
-  editSelectedAvatar = profile.avatar || '🏃';
+  editSelectedAvatar = profile.avatar || '◎';
   document.getElementById('editNameInput').value = profile.name || '';
   // 현재 아바타 선택 표시
   document.querySelectorAll('#editAvatarGrid .ob-avatar-item').forEach(el => {
@@ -12308,7 +12317,7 @@ function saveGoalEdit() {
 /* ══════════════════════════════════════
    마이페이지
 ══════════════════════════════════════ */
-const avatarList = ['🏃','🧗','🚴','🏊','🤸','💪','🦅','⚡','🌟','🔥'];
+const avatarList = ['◎','🏃','🧗','🚴','🏊','🤸','💪','⚡','🌟','🔥'];
 let avatarIdx = 0;
 
 function changeAvatar() {
