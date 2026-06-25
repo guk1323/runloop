@@ -45,9 +45,9 @@ if ('serviceWorker' in navigator) {
   .header{background:rgba(255,253,248,.88);border-bottom:1px solid rgba(28,36,43,.08);padding:12px 18px 10px;flex-shrink:0;z-index:100;backdrop-filter:blur(16px);}
   .header-top{display:flex;justify-content:space-between;align-items:center;}
   .logo{display:flex;align-items:center;gap:8px;min-height:38px;font-size:23px;font-weight:900;color:var(--ink);letter-spacing:0;overflow:visible;}
-  .logo-mark{width:30px;height:30px;position:relative;display:inline-block;flex-shrink:0;}
-  .logo-mark::before{content:'';position:absolute;left:3px;top:3px;width:24px;height:24px;border-radius:50%;background:rgba(242,122,94,.16);box-shadow:0 0 0 2px rgba(242,122,94,.08);}
-  .logo-mark::after{content:'';position:absolute;left:9px;top:9px;width:12px;height:12px;background:var(--coral);border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 2px rgba(242,122,94,.28);}
+  .logo-mark{width:38px;height:38px;position:relative;display:inline-block;flex-shrink:0;border-radius:50%;background:#fff;box-shadow:0 3px 12px rgba(28,36,43,.08),0 0 0 1px rgba(28,36,43,.04);}
+  .logo-mark::before{content:'';position:absolute;left:10px;top:10px;width:18px;height:18px;border:2px solid #B05245;border-radius:50%;background:transparent;}
+  .logo-mark::after{content:'';position:absolute;left:15px;top:15px;width:8px;height:8px;border:2px solid #B05245;border-radius:50%;background:transparent;}
   .logo-vowel{display:none;}
   .logo-word{display:inline-flex;align-items:center;min-height:32px;line-height:1.2;font-size:23px;font-weight:900;overflow:visible;}
   .header-settings-btn{width:38px;height:38px;border-radius:999px;border:1px solid rgba(28,36,43,.08);background:#fff;color:var(--ink);font-size:19px;font-weight:900;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(28,36,43,.08);}
@@ -9673,7 +9673,8 @@ function getActivityDailyTimeline(records, dailyGoal) {
   let lastGoalDate = null;
 
   return dailyTotals.map(day => {
-    const baseXp = getDailyActivityXp(day.distKm, dailyGoal);
+    const baseBreakdown = getDailyActivityXpBreakdown(day.distKm, dailyGoal);
+    const baseXp = baseBreakdown.total;
     const goalAchieved = isDailyGoalAchieved(day.distKm, dailyGoal);
     let streakBonus = 0;
     if (goalAchieved) {
