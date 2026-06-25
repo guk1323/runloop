@@ -4734,47 +4734,64 @@ function detectLocation() {
   }, { enableHighAccuracy: true, timeout: 10000 });
 }
 
+function scheduleIdleTask(task, delay = 0) {
+  const run = () => {
+    if ('requestIdleCallback' in window) {
+      window.requestIdleCallback(() => task(), { timeout: 1800 });
+      return;
+    }
+    setTimeout(task, 0);
+  };
+  return setTimeout(run, delay);
+}
+
+function runDeferredStartupLoads(options = {}) {
+  const forceSchedule = !!options.forceSchedule;
+  scheduleIdleTask(() => fetchWeather(), 80);
+  scheduleIdleTask(() => loadCultureSchedule({ force: forceSchedule, silent: true }), 650);
+  scheduleIdleTask(() => {
+    if (!lastCultureSpotResults.length || S.tab === 'create') loadNearCourses();
+  }, 1150);
+  scheduleIdleTask(() => syncHealthActivity({ requestPermission: true, silent: true }), 1600);
+}
+
+function requestStartupLocationAndData() {
+  if (!hasRunloopGeolocation()) {
+    runDeferredStartupLoads();
+    return;
+  }
+  runloopGetCurrentPosition(pos => {
+    S.lat = pos.coords.latitude;
+    S.lng = pos.coords.longitude;
+    document.getElementById('addrInput').value = getCurrentLocationLabel();
+    updateMapSearchClearButton();
+    runDeferredStartupLoads({ forceSchedule: true });
+  }, () => {
+    runDeferredStartupLoads();
+  }, { enableHighAccuracy: true, timeout: 5500, maximumAge: 120000 });
+}
+
 /* 페이지 로드 시 자동 위치 감지 */
 window.addEventListener('load', () => {
   checkOnboarding();
   applyAppLanguage();
   const homTab = document.querySelector('[data-tab="home"]');
-  switchTab('home', homTab);
   document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   homTab.classList.add('active');
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-home').classList.add('active');
   S.tab = 'home';
   renderRecords();
-  syncHealthActivity({ requestPermission: true, silent: true });
-  // 위치 먼저 잡고 → 날씨 + 추천코스 불러오기
-  if (hasRunloopGeolocation()) {
-    runloopGetCurrentPosition(pos => {
-      S.lat = pos.coords.latitude;
-      S.lng = pos.coords.longitude;
-      document.getElementById('addrInput').value = getCurrentLocationLabel();
-      updateMapSearchClearButton();
-      fetchWeather();
-      loadNearCourses();
-      loadCultureSchedule({ force: true, silent: true });
-    }, () => {
-      fetchWeather();
-      loadNearCourses();
-      loadCultureSchedule({ silent: true });
-    }, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 });
-  } else {
-    fetchWeather();
-    loadNearCourses();
-    loadCultureSchedule({ silent: true });
-  }
+  renderHomeActions();
+  requestStartupLocationAndData();
 });
 
 window.addEventListener('focus', () => {
-  syncHealthActivity({ silent: true });
+  scheduleIdleTask(() => syncHealthActivity({ silent: true }), 250);
 });
 
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden) syncHealthActivity({ silent: true });
+  if (!document.hidden) scheduleIdleTask(() => syncHealthActivity({ silent: true }), 250);
 });
 
 // 모달 바깥 클릭 시 닫기
@@ -4813,18 +4830,18 @@ function switchTab(tab, el) {
   targetScreen.classList.add('active');
   if (tab === 'create') {
     setTimeout(() => { if (S.kakaoReady) initCreateMap(); }, 100);
-    if (!lastCultureSpotResults.length) loadNearCourses();
+    if (!lastCultureSpotResults.length) scheduleIdleTask(() => loadNearCourses(), 120);
     else renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
   }
   if (tab === 'home') {
-    fetchWeather();
     renderRecords();
     renderHomeActions();
-    loadCultureSchedule({ silent: true });
+    scheduleIdleTask(() => fetchWeather(), 80);
+    scheduleIdleTask(() => loadCultureSchedule({ silent: true }), 350);
   }
   if (tab === 'mycourse') renderMyCourses();
   if (tab === 'mypage') {
-    syncHealthActivity({ silent: true });
+    scheduleIdleTask(() => syncHealthActivity({ silent: true }), 120);
     renderRecords();
     renderMyPage();
   }
@@ -5079,6 +5096,9 @@ const CULTURE_SPOT_EN_INFO_URL_MAP = {
 };
 let cultureSpotFilter = 'distance';
 let lastCultureSpotResults = [];
+let cultureSpotLoadedAt = 0;
+let cultureSpotCenterKey = '';
+let cultureSpotLoading = false;
 let cultureScheduleItems = [];
 let cultureScheduleLoadedAt = 0;
 let cultureScheduleLoading = false;
@@ -5086,9 +5106,15 @@ let cultureScheduleCenterKey = '';
 let cultureSchedulePendingReload = false;
 let homeScheduleCarouselTimer = null;
 let homeScheduleCarouselIndex = 0;
+let homeActionsSignature = '';
 let scheduleReturnTab = 'home';
 let schedulePageMode = 'all';
 const CULTURE_SCHEDULE_TTL_MS = 15 * 60 * 1000;
+const CULTURE_SPOT_TTL_MS = 10 * 60 * 1000;
+const WEATHER_TTL_MS = 8 * 60 * 1000;
+let weatherLoadedAt = 0;
+let weatherCenterKey = '';
+let weatherLoading = false;
 let culturePhotoInflight = new Map();
 let cultureDetailInflight = new Map();
 let cultureOverviewInflight = new Map();
@@ -6752,6 +6778,17 @@ function renderHomeActions() {
   const titleEl = document.getElementById('homeScheduleTitle');
   if (!track) return;
   const homeItems = getHomeScheduleItems();
+  const sportsItems = getHomeSportsScheduleItems();
+  const favoriteKey = Object.keys(readScheduleFavorites()).sort().join(',');
+  const signature = [
+    appLanguage,
+    cultureScheduleLoading ? 'loading' : 'ready',
+    homeItems.map(item => getScheduleFavoriteKey(item)).join(','),
+    sportsItems.map(({ event }) => getScheduleFavoriteKey(event)).join(','),
+    favoriteKey
+  ].join('|');
+  if (signature === homeActionsSignature) return;
+  homeActionsSignature = signature;
   if (titleEl) titleEl.textContent = cultureScheduleLoading && !homeItems.length ? t('scheduleBannerLoading') : t('scheduleBannerTitle');
   if (!homeItems.length) {
     track.innerHTML = renderHomeScheduleFallbackCard();
@@ -7593,12 +7630,26 @@ function renderScheduleHeartButton(event, index, className = '') {
 
 /* ── 근처 문화 스팟 (위치 기반) ── */
 async function loadNearCourses(options = {}) {
+  const force = !!options.force;
   const wrap = document.getElementById('nearCourseList');
-  if (wrap) {
-    wrap.innerHTML = `<div style="text-align:center;padding:20px 0;color:var(--gray-500);"><div class="ml-spin" style="margin:0 auto 8px;"></div><div style="font-size:13px;">${escapeHtml(t('loadingCulture'))}</div></div>`;
-  }
   const searchCenter = getCultureSpotLoadCenter(options);
   const searchRadius = getCultureSpotLoadRadius(options);
+  const requestKey = getCultureSpotRequestKey(searchCenter, searchRadius);
+  const now = Date.now();
+
+  if (!force && lastCultureSpotResults.length && cultureSpotCenterKey === requestKey && now - cultureSpotLoadedAt < CULTURE_SPOT_TTL_MS) {
+    renderNearCourses(lastCultureSpotResults);
+    return;
+  }
+  if (cultureSpotLoading) {
+    if (lastCultureSpotResults.length) renderNearCourses(lastCultureSpotResults);
+    return;
+  }
+  cultureSpotLoading = true;
+
+  if (wrap && !lastCultureSpotResults.length) {
+    wrap.innerHTML = `<div style="text-align:center;padding:20px 0;color:var(--gray-500);"><div class="ml-spin" style="margin:0 auto 8px;"></div><div style="font-size:13px;">${escapeHtml(t('loadingCulture'))}</div></div>`;
+  }
 
   try {
     const url = new URL(TOUR_SPOTS_URL, window.location.href);
@@ -7611,13 +7662,30 @@ async function loadNearCourses(options = {}) {
     if (!response.ok) throw new Error('Tour spot API failed');
     const data = await response.json();
     const spots = Array.isArray(data && data.spots) ? data.spots : [];
+    cultureSpotLoadedAt = Date.now();
+    cultureSpotCenterKey = requestKey;
     renderNearCourses(spots);
     return;
   } catch (error) {
     console.warn('KTO culture spots unavailable', error);
+  } finally {
+    cultureSpotLoading = false;
   }
 
+  cultureSpotLoadedAt = Date.now();
+  cultureSpotCenterKey = requestKey;
   renderNearCourses([]);
+}
+
+function getCultureSpotRequestKey(center, radius) {
+  const lat = Number(center && center.lat);
+  const lng = Number(center && center.lng);
+  return [
+    Number.isFinite(lat) ? lat.toFixed(3) : '',
+    Number.isFinite(lng) ? lng.toFixed(3) : '',
+    Number(radius) || CULTURE_SPOT_SEARCH_RADIUS_METERS,
+    appLanguage
+  ].join('|');
 }
 
 function getCultureSpotLoadCenter(options = {}) {
@@ -8609,7 +8677,7 @@ function updateHomeCultureSpotPhoto(key, photo) {
 }
 
 function hydrateHomeCultureSpotPhotos(spots) {
-  (Array.isArray(spots) ? spots : []).forEach(spot => {
+  (Array.isArray(spots) ? spots : []).slice(0, 3).forEach((spot, index) => {
     const key = getCultureSpotFavoriteKey(spot);
     if (!key) return;
     const existing = getCultureSpotPhoto(spot);
@@ -8617,22 +8685,26 @@ function hydrateHomeCultureSpotPhotos(spots) {
       updateHomeCultureSpotPhoto(key, existing);
       return;
     }
-    fetchCultureSpotPhoto({ ...spot, key }).then(photo => updateHomeCultureSpotPhoto(key, photo));
+    scheduleIdleTask(() => {
+      fetchCultureSpotPhoto({ ...spot, key }).then(photo => updateHomeCultureSpotPhoto(key, photo));
+    }, 220 + index * 180);
   });
 }
 
 function hydrateSavedSpotPhotos(spots) {
-  (Array.isArray(spots) ? spots : []).forEach(spot => {
+  (Array.isArray(spots) ? spots : []).slice(0, 12).forEach((spot, index) => {
     if (!spot || getCultureSpotPhoto(spot)) return;
-    fetchCultureSpotPhoto(spot).then(photo => {
-      if (!photo) return;
-      updateSpotPhotoBox(spot.key, photo, 'spotPhoto');
-      updateSpotPhotoBox(spot.key, photo, 'detailPhoto');
-      updateSpotPhotoBox(spot.key, photo, 'visitedSpotPhoto');
-      if (aiPendingPlace && aiPendingPlace.cultureSpot && getCultureSpotFavoriteKey(aiPendingPlace.cultureSpot) === spot.key) {
-        updateAiPlaceMedia({ ...aiPendingPlace.cultureSpot, photo });
-      }
-    });
+    scheduleIdleTask(() => {
+      fetchCultureSpotPhoto(spot).then(photo => {
+        if (!photo) return;
+        updateSpotPhotoBox(spot.key, photo, 'spotPhoto');
+        updateSpotPhotoBox(spot.key, photo, 'detailPhoto');
+        updateSpotPhotoBox(spot.key, photo, 'visitedSpotPhoto');
+        if (aiPendingPlace && aiPendingPlace.cultureSpot && getCultureSpotFavoriteKey(aiPendingPlace.cultureSpot) === spot.key) {
+          updateAiPlaceMedia({ ...aiPendingPlace.cultureSpot, photo });
+        }
+      });
+    }, 180 + index * 140);
   });
 }
 
@@ -8651,7 +8723,7 @@ function renderNearCourses(results) {
   updateCultureSpotFilterButtons();
 
   const unique = selectHomeCultureSpots(safeResults);
-  renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
+  if (S.tab === 'create') renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
   if (!wrap) return;
   if (!unique.length) {
     wrap.innerHTML = `<div style="text-align:center;padding:22px 0;color:var(--gray-500);font-size:13px;line-height:1.5;">${appLanguage === 'en' ? 'No VisitKorea culture spots found in this area.' : '이 위치 주변에 한국관광공사 문화스팟이 없어요.'}</div>`;
@@ -9398,7 +9470,26 @@ function renderRecords() {
 }
 
 /* 날씨 불러오기 */
-async function fetchWeather() {
+function getWeatherRequestKey() {
+  const lat = Number(S.lat);
+  const lng = Number(S.lng);
+  return [
+    Number.isFinite(lat) ? lat.toFixed(3) : '',
+    Number.isFinite(lng) ? lng.toFixed(3) : '',
+    appLanguage
+  ].join('|');
+}
+
+async function fetchWeather(options = {}) {
+  const force = !!options.force;
+  const requestKey = getWeatherRequestKey();
+  const now = Date.now();
+  if (weatherLoading && !force) return;
+  if (!force && weatherLoadedAt && weatherCenterKey === requestKey && now - weatherLoadedAt < WEATHER_TTL_MS) {
+    if (S.tab === 'weather') renderWeatherPage();
+    return;
+  }
+  weatherLoading = true;
   // OpenWeatherMap API 키 없이도 동작하는 데모
   // 실제 키: https://openweathermap.org 에서 무료 발급
 
@@ -9409,6 +9500,9 @@ async function fetchWeather() {
     document.getElementById('wIcon').textContent = '☀️';
     document.getElementById('wSummary').textContent = makeWeatherSummary(22, 45, 2, 800);
     if (S.tab === 'weather') renderWeatherPage();
+    weatherLoadedAt = Date.now();
+    weatherCenterKey = requestKey;
+    weatherLoading = false;
     return;
   }
 
@@ -9501,10 +9595,14 @@ async function fetchWeather() {
       if (b10) b10.textContent = '—';
       if (b25) b25.textContent = '—';
     }
+    weatherLoadedAt = Date.now();
+    weatherCenterKey = requestKey;
     if (S.tab === 'weather') renderWeatherPage();
   } catch(e) {
     document.getElementById('wDesc').textContent = appLanguage === 'en' ? 'Weather unavailable' : '날씨 정보를 불러오지 못했어요';
     if (S.tab === 'weather') renderWeatherPage();
+  } finally {
+    weatherLoading = false;
   }
 }
 
@@ -11560,7 +11658,7 @@ function obFinish() {
   ob.classList.remove('active');
   ob.style.display = 'none';
   renderMyPage();
-  syncHealthActivity({ requestPermission: true, force: true, silent: true });
+  scheduleIdleTask(() => syncHealthActivity({ requestPermission: true, force: true, silent: true }), 900);
   toast(`환영해요, ${name}님! 🎉`);
   // 온보딩 완료 후 위치 권한 요청
   setTimeout(() => {
@@ -11568,14 +11666,12 @@ function obFinish() {
       runloopGetCurrentPosition(pos => {
         S.lat = pos.coords.latitude;
         S.lng = pos.coords.longitude;
-        fetchWeather();
-        loadNearCourses();
-        loadCultureSchedule({ force: true, silent: true });
+        runDeferredStartupLoads({ forceSchedule: true });
       }, () => {
-        fetchWeather();
-        loadNearCourses();
-        loadCultureSchedule({ silent: true });
+        runDeferredStartupLoads();
       }, { enableHighAccuracy: true, timeout: 10000 });
+    } else {
+      runDeferredStartupLoads();
     }
   }, 800);
 }
