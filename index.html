@@ -123,11 +123,14 @@ if ('serviceWorker' in navigator) {
   .map-place-dest{background:var(--ink);border:1px solid var(--ink);color:#fff;}
   .map-place-save{display:none;background:var(--coral-light);border:1px solid rgba(242,122,94,.22);color:var(--ink);}
   .map-place-save.active{background:#fff;color:var(--coral);border-color:rgba(242,122,94,.45);}
-  .map-selected-pin{width:28px;height:34px;position:relative;filter:drop-shadow(0 8px 14px rgba(28,36,43,.24));}
-  .map-selected-pin::before{content:"";position:absolute;left:4px;top:1px;width:20px;height:20px;background:var(--ink);border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);}
-  .map-selected-pin::after{content:"";position:absolute;left:11px;top:8px;width:6px;height:6px;border-radius:50%;background:var(--coral);}
-  .map-selected-pin.culture::before{background:var(--coral);}
-  .map-selected-pin.culture::after{background:#fff;}
+  .map-point-marker{--marker-color:var(--ink);width:24px;height:24px;border-radius:50%;background:#fff;border:3px solid var(--marker-color);box-shadow:0 8px 18px rgba(28,36,43,.24),0 0 0 4px rgba(255,255,255,.55);box-sizing:border-box;position:relative;}
+  .map-point-marker::after{content:"";position:absolute;left:50%;top:50%;width:7px;height:7px;border-radius:50%;background:var(--marker-color);transform:translate(-50%,-50%);}
+  .map-point-marker.current,.map-point-marker.start{--marker-color:var(--coral);width:20px;height:20px;background:var(--coral);border-color:#fff;box-shadow:0 0 0 5px rgba(242,122,94,.24),0 7px 15px rgba(28,36,43,.18);}
+  .map-point-marker.current::after,.map-point-marker.start::after{display:none;}
+  .map-point-marker.destination,.map-point-marker.selected{--marker-color:var(--ink);}
+  .map-point-marker.culture{--marker-color:var(--coral);}
+  .map-point-marker.guide{--marker-color:#1C242B;width:23px;height:23px;background:#B7F06A;border-color:#1C242B;box-shadow:0 0 0 5px rgba(183,240,106,.28),0 8px 16px rgba(28,36,43,.18);}
+  .map-point-marker.guide::after{display:none;}
   .culture-map-marker{display:flex;align-items:center;gap:5px;height:30px;padding:0 10px;border:1px solid rgba(255,255,255,.72);border-radius:999px;background:var(--spot-status-color,var(--coral));color:#fff;font-size:11px;font-weight:950;font-family:inherit;box-shadow:0 7px 16px rgba(28,36,43,.18);cursor:pointer;white-space:nowrap;backdrop-filter:blur(10px);}
   .culture-map-marker:active{transform:scale(.96);}
   .culture-map-name{max-width:66px;overflow:hidden;text-overflow:ellipsis;letter-spacing:0;}
@@ -3639,13 +3642,20 @@ function getPositionLatLng(pos) {
   return new kakao.maps.LatLng(lat, lng);
 }
 
+function getMapPointMarkerHtml(type = 'current') {
+  const safeType = String(type || 'current').replace(/[^a-z0-9_-]/gi, '');
+  return `<div class="map-point-marker ${safeType}" aria-hidden="true"></div>`;
+}
+
 function setCurrentLocationMarker(map, latlng) {
   if (!map || !latlng) return;
   if (S.myMarker) S.myMarker.setMap(null);
   S.myMarker = new kakao.maps.CustomOverlay({
     map,
     position: latlng,
-    content: '<div style="width:14px;height:14px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(242,122,94,.22)"></div>',
+    content: getMapPointMarkerHtml('current'),
+    xAnchor: 0.5,
+    yAnchor: 0.5,
     zIndex: 3
   });
 }
@@ -3828,9 +3838,9 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
   aiPendingPlaceOverlay = new kakao.maps.CustomOverlay({
     map: createMap,
     position: new kakao.maps.LatLng(lat, lng),
-    content: `<div class="map-selected-pin${cultureSpot ? ' culture' : ''}" aria-hidden="true"></div>`,
+    content: getMapPointMarkerHtml(cultureSpot ? 'culture' : 'selected'),
     xAnchor: 0.5,
-    yAnchor: 1,
+    yAnchor: 0.5,
     zIndex: 7
   });
   const card = document.getElementById('aiPlaceCard');
@@ -4137,7 +4147,9 @@ function setAiMarker(latlng, addrName) {
   createAiMarker = new kakao.maps.CustomOverlay({
     map: createMap,
     position: latlng,
-    content: '<div style="display:flex;flex-direction:column;align-items:center;"><div style="width:14px;height:14px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div><div style="width:2px;height:8px;background:#F27A5E;"></div></div>',
+    content: getMapPointMarkerHtml('start'),
+    xAnchor: 0.5,
+    yAnchor: 0.5,
     zIndex: 5
   });
   if (createMap) createMap.setCenter(latlng);
@@ -4167,7 +4179,9 @@ function setAiDestinationMarker(latlng, addrName) {
   createDestMarker = new kakao.maps.CustomOverlay({
     map: createMap,
     position: latlng,
-    content: '<div style="display:flex;flex-direction:column;align-items:center;"><div style="width:14px;height:14px;background:#1C242B;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div><div style="width:2px;height:8px;background:#1C242B;"></div></div>',
+    content: getMapPointMarkerHtml('destination'),
+    xAnchor: 0.5,
+    yAnchor: 0.5,
     zIndex: 5
   });
   if (createMap) createMap.setCenter(latlng);
@@ -4920,7 +4934,9 @@ function detectLocation() {
       if (S.myMarker) S.myMarker.setMap(null);
       S.myMarker = new kakao.maps.CustomOverlay({
         map: S.map, position: latlng,
-        content: '<div style="width:14px;height:14px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(242,122,94,.22)"></div>',
+        content: getMapPointMarkerHtml('current'),
+        xAnchor: 0.5,
+        yAnchor: 0.5,
         zIndex: 3
       });
     }
@@ -6688,7 +6704,9 @@ function renderRouteGuideOverlays(current, progress) {
   routeGuide.overlays.push(new kakao.maps.CustomOverlay({
     map: createMap,
     position: current,
-    content: '<div style="width:17px;height:17px;background:#B7F06A;border:3px solid #1C242B;border-radius:50%;box-shadow:0 0 0 4px rgba(183,240,106,.28);"></div>',
+    content: '<div class="map-point-marker guide" aria-hidden="true"></div>',
+    xAnchor: 0.5,
+    yAnchor: 0.5,
     zIndex: 9
   }));
 }
@@ -12033,7 +12051,9 @@ function initRunMap(savedPoints) {
   runMarker = new kakao.maps.CustomOverlay({
     map: runMap,
     position: center,
-    content: '<div style="width:16px;height:16px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(242,122,94,.22)"></div>',
+    content: getMapPointMarkerHtml('current'),
+    xAnchor: 0.5,
+    yAnchor: 0.5,
     zIndex: 5
   });
 
@@ -12103,7 +12123,9 @@ function initRunMap(savedPoints) {
       if (runMarker) runMarker.setMap(null);
       runMarker = new kakao.maps.CustomOverlay({
         map: runMap, position: latlng,
-        content: '<div style="width:16px;height:16px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(242,122,94,.22)"></div>',
+        content: getMapPointMarkerHtml('current'),
+        xAnchor: 0.5,
+        yAnchor: 0.5,
         zIndex: 5
       });
       runMap.setCenter(latlng);
