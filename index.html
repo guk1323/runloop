@@ -2366,10 +2366,15 @@ function loadExternalStyle(href) {
 
 async function bootMapProvider() {
   try {
-    if (RUNLOOP_IS_NATIVE_APP || RUNLOOP_FORCE_LEAFLET_MAP) {
+    if (RUNLOOP_FORCE_LEAFLET_MAP) {
       await installLeafletKakaoAdapter();
     } else {
-      await loadKakaoMapSdk();
+      try {
+        await loadKakaoMapSdk();
+      } catch (kakaoError) {
+        console.warn('Kakao Maps failed; using Leaflet fallback', kakaoError);
+        await installLeafletKakaoAdapter();
+      }
     }
     S.kakaoReady = true;
     if (S.tab === 'create') initCreateMap();
@@ -8885,13 +8890,15 @@ async function fetchWeather() {
         const geocoder = new kakao.maps.services.Geocoder();
         geocoder.coord2Address(S.lng, S.lat, (result, status) => {
           if (status === kakao.maps.services.Status.OK) {
-            const addr = result[0].address;
+            const row = result && result[0] ? result[0] : {};
+            const addr = row.address || {};
+            const road = row.road_address || {};
             const dong = addr.region_3depth_h_name || addr.region_3depth_name;
             const loc = [addr.region_1depth_name, addr.region_2depth_name, dong]
               .filter(Boolean)
-              .join(' ');
+              .join(' ') || road.address_name || addr.address_name || d.name || getCurrentLocationLabel();
             document.getElementById('wLocation').textContent = appLanguage === 'en'
-              ? formatKakaoAddressLocation(addr, getCurrentLocationLabel())
+              ? formatKakaoAddressLocation(addr, localizeKoreanDisplayText(loc, getCurrentLocationLabel()))
               : loc;
           } else {
             document.getElementById('wLocation').textContent = appLanguage === 'en'
