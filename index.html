@@ -573,6 +573,40 @@ if ('serviceWorker' in navigator) {
   .my-goal-fill{height:100%;background:var(--coral);border-radius:999px;width:0%;transition:width .5s;}
   .week-activity-chart{display:flex;align-items:flex-end;gap:6px;height:76px;margin-top:4px;margin-bottom:7px;}
   .week-activity-labels{display:flex;gap:6px;}
+  .activity-calendar-panel{margin-top:16px;padding-top:14px;border-top:1px solid var(--gray-100);}
+  .activity-calendar-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
+  .activity-calendar-title{font-size:14px;font-weight:950;color:var(--ink);line-height:1.2;}
+  .activity-calendar-month{font-size:11px;font-weight:800;color:var(--gray-500);margin-top:4px;}
+  .activity-calendar-nav{display:flex;align-items:center;gap:6px;}
+  .activity-calendar-nav button{width:30px;height:30px;border-radius:999px;border:1px solid var(--gray-100);background:var(--gray-50);color:var(--ink);font-size:18px;font-weight:950;font-family:inherit;line-height:1;cursor:pointer;}
+  .activity-calendar-weekdays,.activity-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;}
+  .activity-calendar-weekday{text-align:center;font-size:10px;font-weight:900;color:var(--gray-500);padding-bottom:3px;}
+  .activity-calendar-day{position:relative;min-height:46px;border:1px solid var(--gray-100);border-radius:10px;background:var(--gray-50);padding:6px 5px 5px;display:flex;flex-direction:column;justify-content:space-between;gap:5px;cursor:pointer;overflow:hidden;}
+  .activity-calendar-day.empty{visibility:hidden;pointer-events:none;}
+  .activity-calendar-day.today{border-color:rgba(242,122,94,.38);}
+  .activity-calendar-day.selected{box-shadow:0 0 0 2px rgba(242,122,94,.24);border-color:var(--coral);background:#fff;}
+  .activity-calendar-day.goal{background:#FFF7F1;border-color:rgba(242,122,94,.2);}
+  .activity-calendar-day.levelup{border-color:rgba(139,111,214,.56);}
+  .activity-calendar-date{font-size:11px;font-weight:900;color:var(--gray-800);line-height:1;}
+  .activity-calendar-marks{position:absolute;top:5px;right:5px;display:flex;align-items:center;gap:3px;}
+  .activity-calendar-check{font-size:10px;font-weight:950;color:var(--coral);}
+  .activity-calendar-level{font-size:9px;font-weight:950;color:var(--spot-both);}
+  .activity-calendar-progress{height:4px;background:rgba(28,36,43,.08);border-radius:999px;overflow:hidden;}
+  .activity-calendar-progress span{display:block;height:100%;width:0%;border-radius:999px;background:var(--coral);}
+  .activity-calendar-day.levelup .activity-calendar-progress span{background:var(--spot-both);}
+  .activity-calendar-legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;font-size:10px;font-weight:800;color:var(--gray-500);}
+  .activity-calendar-legend span{display:flex;align-items:center;gap:4px;}
+  .activity-calendar-legend i{display:inline-block;width:14px;height:4px;border-radius:999px;background:var(--coral);}
+  .activity-calendar-legend b{font-size:10px;color:var(--coral);}
+  .activity-calendar-legend em{width:10px;height:10px;border:2px solid var(--spot-both);border-radius:3px;font-style:normal;}
+  .activity-calendar-detail{margin-top:12px;background:var(--gray-50);border:1px solid var(--gray-100);border-radius:14px;padding:12px;}
+  .activity-calendar-detail-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px;}
+  .activity-calendar-detail-date{font-size:13px;font-weight:950;color:var(--ink);}
+  .activity-calendar-detail-xp{font-size:15px;font-weight:950;color:var(--coral);white-space:nowrap;}
+  .activity-calendar-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}
+  .activity-calendar-detail-item{background:#fff;border:1px solid var(--gray-100);border-radius:11px;padding:9px 10px;min-height:52px;}
+  .activity-calendar-detail-label{font-size:10px;font-weight:800;color:var(--gray-500);margin-bottom:4px;}
+  .activity-calendar-detail-value{font-size:13px;font-weight:950;color:var(--ink);line-height:1.25;}
 
   .goal-bar-wrap{padding:0 16px 14px;background:#fff;}
   .goal-bar-track{height:8px;background:var(--gray-100);border-radius:4px;overflow:hidden;margin-top:6px;}
@@ -1145,6 +1179,22 @@ if ('serviceWorker' in navigator) {
       </div>
       <div class="week-activity-chart" id="weekBarChart"></div>
       <div class="week-activity-labels" id="weekBarLabels"></div>
+      <div class="activity-calendar-panel">
+        <div class="activity-calendar-head">
+          <div>
+            <div class="activity-calendar-title" id="activityCalendarTitle">월간 활동</div>
+            <div class="activity-calendar-month" id="activityCalendarMonth">-</div>
+          </div>
+          <div class="activity-calendar-nav">
+            <button type="button" onclick="moveActivityCalendarMonth(-1)" aria-label="이전 달">‹</button>
+            <button type="button" onclick="moveActivityCalendarMonth(1)" aria-label="다음 달">›</button>
+          </div>
+        </div>
+        <div class="activity-calendar-weekdays" id="activityCalendarWeekdays"></div>
+        <div class="activity-calendar-grid" id="activityCalendarGrid"></div>
+        <div class="activity-calendar-legend" id="activityCalendarLegend"></div>
+        <div class="activity-calendar-detail" id="activityCalendarDetail"></div>
+      </div>
     </div>
 
     <div style="height:20px;"></div>
@@ -1455,6 +1505,11 @@ const DAILY_GOAL_OPTIONS = [2, 3, 5, 7];
 const DAILY_GOAL_MIN_KM = 0.5;
 const DAILY_GOAL_MAX_KM = 50;
 let appLanguage = localStorage.getItem(APP_LANGUAGE_KEY) === 'en' ? 'en' : 'ko';
+let activityCalendarMonthDate = (() => {
+  const now = new Date();
+  return new Date(now.getFullYear(), now.getMonth(), 1);
+})();
+let selectedActivityCalendarKey = getLocalDateKey(new Date());
 
 function isRunloopNativeApp() {
   if (['capacitor:', 'ionic:'].includes(window.location.protocol)) return true;
@@ -9554,6 +9609,172 @@ function getActivityLevelSummary(records, dailyGoal) {
   };
 }
 
+function getActivityDailyTimeline(records, dailyGoal) {
+  const dailyTotals = getActivityDailyTotals(records);
+  let totalXp = 0;
+  let goalStreak = 0;
+  let lastGoalDate = null;
+
+  return dailyTotals.map(day => {
+    const baseXp = getDailyActivityXp(day.distKm, dailyGoal);
+    const goalAchieved = isDailyGoalAchieved(day.distKm, dailyGoal);
+    let streakBonus = 0;
+    if (goalAchieved) {
+      goalStreak = getDateGapDays(lastGoalDate, day.date) === 1 ? goalStreak + 1 : 1;
+      lastGoalDate = day.date;
+      streakBonus = getActivityStreakBonus(goalStreak);
+    } else {
+      goalStreak = 0;
+      lastGoalDate = null;
+    }
+
+    const levelBefore = getLevelProgress(totalXp).level;
+    const dayXp = baseXp + streakBonus;
+    totalXp += dayXp;
+    const levelAfter = getLevelProgress(totalXp).level;
+
+    return {
+      ...day,
+      baseXp: Math.round(baseXp),
+      streakBonus: Math.round(streakBonus),
+      xp: Math.round(dayXp),
+      goalAchieved,
+      goalStreak: goalAchieved ? goalStreak : 0,
+      levelUp: levelAfter > levelBefore,
+      levelAfter
+    };
+  });
+}
+
+function moveActivityCalendarMonth(delta) {
+  const next = new Date(activityCalendarMonthDate.getFullYear(), activityCalendarMonthDate.getMonth() + Number(delta || 0), 1);
+  activityCalendarMonthDate = next;
+  selectedActivityCalendarKey = '';
+  renderActivityCalendar(JSON.parse(localStorage.getItem('runRecords') || '[]'), getDailyGoal());
+}
+
+function selectActivityCalendarDate(key) {
+  selectedActivityCalendarKey = String(key || '');
+  renderActivityCalendar(JSON.parse(localStorage.getItem('runRecords') || '[]'), getDailyGoal());
+}
+
+function renderActivityCalendar(records, dailyGoal) {
+  const grid = document.getElementById('activityCalendarGrid');
+  const weekdaysEl = document.getElementById('activityCalendarWeekdays');
+  const monthEl = document.getElementById('activityCalendarMonth');
+  const titleEl = document.getElementById('activityCalendarTitle');
+  const legendEl = document.getElementById('activityCalendarLegend');
+  const detailEl = document.getElementById('activityCalendarDetail');
+  if (!grid || !weekdaysEl || !monthEl || !detailEl) return;
+
+  const timeline = getActivityDailyTimeline(records, dailyGoal);
+  const timelineMap = new Map(timeline.map(day => [day.key, day]));
+  const year = activityCalendarMonthDate.getFullYear();
+  const month = activityCalendarMonthDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDate = new Date(year, month + 1, 0).getDate();
+  const offset = (firstDay.getDay() + 6) % 7;
+  const todayKey = getLocalDateKey(new Date());
+  const currentMonthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
+  const selectedInMonth = selectedActivityCalendarKey && selectedActivityCalendarKey.startsWith(currentMonthKey);
+
+  if (!selectedInMonth) {
+    const activeInMonth = timeline.find(day => day.key.startsWith(currentMonthKey));
+    selectedActivityCalendarKey = todayKey.startsWith(currentMonthKey)
+      ? todayKey
+      : activeInMonth && activeInMonth.key || `${currentMonthKey}-01`;
+  }
+
+  if (titleEl) titleEl.textContent = appLanguage === 'en' ? 'Monthly Activity' : '월간 활동';
+  monthEl.textContent = firstDay.toLocaleDateString(appLanguage === 'en' ? 'en-US' : 'ko-KR', { year: 'numeric', month: 'long' });
+  const weekdayNames = appLanguage === 'en' ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['월','화','수','목','금','토','일'];
+  weekdaysEl.innerHTML = weekdayNames.map(day => `<div class="activity-calendar-weekday">${escapeHtml(day)}</div>`).join('');
+
+  const cells = [];
+  for (let i = 0; i < offset; i += 1) {
+    cells.push('<div class="activity-calendar-day empty"></div>');
+  }
+  for (let date = 1; date <= lastDate; date += 1) {
+    const key = `${currentMonthKey}-${String(date).padStart(2, '0')}`;
+    const day = timelineMap.get(key);
+    const progress = day ? Math.min(100, Math.round((day.distKm / Math.max(1, Number(dailyGoal) || 3)) * 100)) : 0;
+    const classes = [
+      'activity-calendar-day',
+      key === todayKey ? 'today' : '',
+      key === selectedActivityCalendarKey ? 'selected' : '',
+      day && day.goalAchieved ? 'goal' : '',
+      day && day.levelUp ? 'levelup' : ''
+    ].filter(Boolean).join(' ');
+    cells.push(`
+      <button class="${classes}" type="button" onclick="selectActivityCalendarDate('${key}')">
+        <span class="activity-calendar-date">${date}</span>
+        <span class="activity-calendar-marks">
+          ${day && day.goalAchieved ? '<span class="activity-calendar-check">✓</span>' : ''}
+          ${day && day.levelUp ? '<span class="activity-calendar-level">LV</span>' : ''}
+        </span>
+        <span class="activity-calendar-progress"><span style="width:${progress}%"></span></span>
+      </button>`);
+  }
+  grid.innerHTML = cells.join('');
+
+  legendEl.innerHTML = appLanguage === 'en'
+    ? '<span><i></i>Goal progress</span><span><b>✓</b>Goal met</span><span><em></em>Level up</span>'
+    : '<span><i></i>목표 진행률</span><span><b>✓</b>목표 달성</span><span><em></em>레벨업</span>';
+  renderActivityCalendarDetail(timelineMap.get(selectedActivityCalendarKey), selectedActivityCalendarKey, dailyGoal);
+}
+
+function renderActivityCalendarDetail(day, key, dailyGoal) {
+  const detailEl = document.getElementById('activityCalendarDetail');
+  if (!detailEl) return;
+  const date = parseLocalDateKey(key) || new Date();
+  const dateLabel = date.toLocaleDateString(appLanguage === 'en' ? 'en-US' : 'ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
+  const distKm = day ? Number(day.distKm) || 0 : 0;
+  const progress = Math.min(100, Math.round((distKm / Math.max(1, Number(dailyGoal) || 3)) * 100));
+  const xp = day ? Number(day.xp) || 0 : 0;
+  const streakText = day && day.goalAchieved
+    ? (appLanguage === 'en' ? `${day.goalStreak} days` : `${day.goalStreak}일`)
+    : (appLanguage === 'en' ? 'Not met' : '미달성');
+  const xpBreakdown = day
+    ? (day.streakBonus > 0
+      ? (appLanguage === 'en'
+        ? `${day.baseXp.toLocaleString('en-US')} base + ${day.streakBonus.toLocaleString('en-US')} streak`
+        : `${day.baseXp.toLocaleString('ko-KR')} 기본 + ${day.streakBonus.toLocaleString('ko-KR')} 연속`)
+      : (appLanguage === 'en'
+        ? `${day.baseXp.toLocaleString('en-US')} base`
+        : `${day.baseXp.toLocaleString('ko-KR')} 기본`))
+    : '0';
+
+  detailEl.innerHTML = `
+    <div class="activity-calendar-detail-head">
+      <div class="activity-calendar-detail-date">${escapeHtml(dateLabel)}</div>
+      <div class="activity-calendar-detail-xp">+${escapeHtml(xp.toLocaleString(appLanguage === 'en' ? 'en-US' : 'ko-KR'))} XP</div>
+    </div>
+    <div class="activity-calendar-detail-grid">
+      <div class="activity-calendar-detail-item">
+        <div class="activity-calendar-detail-label">${escapeHtml(appLanguage === 'en' ? 'Distance' : '걸은 거리')}</div>
+        <div class="activity-calendar-detail-value">${escapeHtml(distKm.toFixed(distKm >= 10 ? 1 : 2))}km</div>
+      </div>
+      <div class="activity-calendar-detail-item">
+        <div class="activity-calendar-detail-label">${escapeHtml(appLanguage === 'en' ? 'Goal' : '목표')}</div>
+        <div class="activity-calendar-detail-value">${escapeHtml(progress + '%')}</div>
+      </div>
+      <div class="activity-calendar-detail-item">
+        <div class="activity-calendar-detail-label">${escapeHtml(appLanguage === 'en' ? 'XP detail' : 'XP 내역')}</div>
+        <div class="activity-calendar-detail-value">${escapeHtml(xpBreakdown)} XP</div>
+      </div>
+      <div class="activity-calendar-detail-item">
+        <div class="activity-calendar-detail-label">${escapeHtml(appLanguage === 'en' ? 'Streak' : '연속 달성')}</div>
+        <div class="activity-calendar-detail-value">${escapeHtml(streakText)}</div>
+      </div>
+    </div>`;
+}
+
+function parseLocalDateKey(key) {
+  const match = String(key || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!match) return null;
+  return new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+}
+
 function renderMyLevel(records, dailyGoal) {
   const summary = getActivityLevelSummary(records, dailyGoal);
   const nextRemaining = Math.max(0, summary.nextXp - summary.currentXp);
@@ -9614,6 +9835,7 @@ function renderRecords() {
   const textEl = document.getElementById('homeGoalText');
   if (fillEl) fillEl.style.width = pct + '%';
   if (textEl) textEl.textContent = todayTotal.toFixed(1) + ' / ' + formatDailyGoal(goal) + 'km';
+  renderActivityCalendar(records, goal);
 
   if (!wrap) return;
   if (!records.length) {
@@ -12072,6 +12294,7 @@ function renderMyPage() {
   if (sourceInfo) sourceInfo.textContent = getMySourceSummary(records);
   updateMySettingsValues();
   renderMyLevel(records, goal);
+  renderActivityCalendar(records, goal);
 
   // 목표 바
   updateGoalBar();
