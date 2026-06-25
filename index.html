@@ -5352,19 +5352,19 @@ let aiRouteActiveCourse = null;
 let aiRouteZoomListenerAttached = false;
 const NATIONAL_WEATHER_CACHE_MS = 10 * 60 * 1000;
 const NATIONAL_WEATHER_CITIES = [
-  { id:'seoul', name:'서울', nameEn:'Seoul', lat:37.5665, lng:126.9780, x:49, y:17 },
-  { id:'incheon', name:'인천', nameEn:'Incheon', lat:37.4563, lng:126.7052, x:34, y:20 },
-  { id:'suwon', name:'수원', nameEn:'Suwon', lat:37.2636, lng:127.0286, x:48, y:25 },
-  { id:'chuncheon', name:'춘천', nameEn:'Chuncheon', lat:37.8813, lng:127.7298, x:62, y:15 },
-  { id:'gangneung', name:'강릉', nameEn:'Gangneung', lat:37.7519, lng:128.8761, x:78, y:23 },
-  { id:'cheongju', name:'청주', nameEn:'Cheongju', lat:36.6424, lng:127.4890, x:55, y:36 },
-  { id:'daejeon', name:'대전', nameEn:'Daejeon', lat:36.3504, lng:127.3845, x:52, y:45 },
-  { id:'jeonju', name:'전주', nameEn:'Jeonju', lat:35.8242, lng:127.1480, x:48, y:58 },
-  { id:'gwangju', name:'광주', nameEn:'Gwangju', lat:35.1595, lng:126.8526, x:40, y:70 },
-  { id:'daegu', name:'대구', nameEn:'Daegu', lat:35.8714, lng:128.6014, x:67, y:59 },
-  { id:'ulsan', name:'울산', nameEn:'Ulsan', lat:35.5384, lng:129.3114, x:78, y:69 },
-  { id:'busan', name:'부산', nameEn:'Busan', lat:35.1796, lng:129.0756, x:74, y:78 },
-  { id:'mokpo', name:'목포', nameEn:'Mokpo', lat:34.8118, lng:126.3922, x:31, y:78 },
+  { id:'seoul', name:'서울', nameEn:'Seoul', lat:37.5665, lng:126.9780, x:46, y:20 },
+  { id:'incheon', name:'인천', nameEn:'Incheon', lat:37.4563, lng:126.7052, x:34, y:24 },
+  { id:'suwon', name:'수원', nameEn:'Suwon', lat:37.2636, lng:127.0286, x:46, y:29 },
+  { id:'chuncheon', name:'춘천', nameEn:'Chuncheon', lat:37.8813, lng:127.7298, x:60, y:17 },
+  { id:'gangneung', name:'강릉', nameEn:'Gangneung', lat:37.7519, lng:128.8761, x:75, y:27 },
+  { id:'cheongju', name:'청주', nameEn:'Cheongju', lat:36.6424, lng:127.4890, x:52, y:41 },
+  { id:'daejeon', name:'대전', nameEn:'Daejeon', lat:36.3504, lng:127.3845, x:50, y:50 },
+  { id:'jeonju', name:'전주', nameEn:'Jeonju', lat:35.8242, lng:127.1480, x:44, y:62 },
+  { id:'gwangju', name:'광주', nameEn:'Gwangju', lat:35.1595, lng:126.8526, x:37, y:73 },
+  { id:'daegu', name:'대구', nameEn:'Daegu', lat:35.8714, lng:128.6014, x:67, y:63 },
+  { id:'ulsan', name:'울산', nameEn:'Ulsan', lat:35.5384, lng:129.3114, x:78, y:72 },
+  { id:'busan', name:'부산', nameEn:'Busan', lat:35.1796, lng:129.0756, x:72, y:81 },
+  { id:'mokpo', name:'목포', nameEn:'Mokpo', lat:34.8118, lng:126.3922, x:29, y:80 },
   { id:'jeju', name:'제주', nameEn:'Jeju', lat:33.4996, lng:126.5312, x:42, y:92 }
 ];
 let weatherReturnTab = 'home';
@@ -7183,14 +7183,14 @@ function getHomeAiReason(recommendation) {
   const preference = recommendation && recommendation.preference;
   if (preference && preference.bucket) {
     const label = getCulturePreferenceLabel(preference.bucket);
-    if (preference.source === 'recent') return `최근 저장한 ${label} 취향을 반영했어요.`;
-    if (preference.source === 'visit') return `방문 기록에서 ${label} 선호가 보여요.`;
-    if (preference.source === 'pattern') return `${label} 관심이 반복돼서 골랐어요.`;
-    return `${label} 관심을 반영했어요.`;
+    if (preference.source === 'recent') return `최근 ${label} 관심과 남은 거리를 함께 봤어요.`;
+    if (preference.source === 'visit') return `방문한 ${label} 취향과 남은 거리를 함께 봤어요.`;
+    if (preference.source === 'pattern') return `${label} 관심 패턴과 남은 거리를 함께 봤어요.`;
+    return `${label} 관심과 남은 거리를 함께 봤어요.`;
   }
-  if (spot && isCultureSpotFavorited(spot)) return '최근 관심 장소라 오늘 들르기 좋아요.';
-  if (spot && isCultureSpotMarkedVisited(spot)) return '방문 기록이 있어 다시 보기 좋아요.';
-  return '가볍게 둘러보기 좋은 장소예요.';
+  if (spot && isCultureSpotFavorited(spot)) return '관심 장소와 남은 거리를 함께 봤어요.';
+  if (spot && isCultureSpotMarkedVisited(spot)) return '방문 기록과 남은 거리를 함께 봤어요.';
+  return '현재 위치와 남은 거리를 기준으로 골랐어요.';
 }
 
 function renderHomeAiSpotCard() {
@@ -7850,20 +7850,12 @@ function openCultureScheduleItem(index) {
 function getScheduleExternalUrl(event) {
   const directLink = String(event && event.link || '').trim();
   if (directLink) return directLink;
-  if (isSportsScheduleEvent(event)) return getSportsScheduleSearchUrl(event);
+  if (isSportsScheduleEvent(event)) return getSportsSchedulePortalUrl();
   return '';
 }
 
-function getSportsScheduleSearchUrl(event) {
-  const title = getScheduleDisplayTitle(event, '');
-  if (!title) return '';
-  const place = getScheduleDisplayPlace(event);
-  const query = [title, place, '대한체육회']
-    .map(value => String(value || '').trim())
-    .filter(Boolean)
-    .filter((value, index, list) => list.indexOf(value) === index)
-    .join(' ');
-  return `https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`;
+function getSportsSchedulePortalUrl() {
+  return 'https://g1.sports.or.kr/schedule/month.do';
 }
 
 function showCultureScheduleOnMap(index) {
