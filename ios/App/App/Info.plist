@@ -26,8 +26,12 @@
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
 	<string>Orotgil uses your step count and walking or running distance to calculate daily activity, goals, and level progress.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>문화재 사진 촬영과 활동 인증샷 저장을 위해 카메라를 사용합니다.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Orotgil uses your location to show nearby culture spots, routes, weather, and activity progress.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>선택한 사진으로 문화재를 추정하거나 활동 기록에 사진을 저장하기 위해 사진 보관함을 사용합니다.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
