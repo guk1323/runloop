@@ -18,6 +18,7 @@ const KNOWN_HERITAGE_SEEDS = [
     id: 'cheomseongdae',
     name: '첨성대',
     aliases: ['첨성대', '경주 첨성대', 'Cheomseongdae', '천문대', '석조 천문대', 'astronomical observatory', 'stone observatory'],
+    dedupeAliases: ['경주 첨성대', 'Cheomseongdae'],
     visualKeywords: ['첨성대', '천문대', '석조천문대', '석조 천문대', '관측대', '원통형', '병 모양', '돌탑', '석조', '사각 창', '네모난 창', '신라', '경주', 'observatory', 'astronomical', 'stone tower', 'cylindrical', 'square window'],
     lat: 35.834722,
     lng: 129.218611,
@@ -29,6 +30,7 @@ const KNOWN_HERITAGE_SEEDS = [
     id: 'gyeongbokgung',
     name: '경복궁',
     aliases: ['경복궁', '근정전', 'Gyeongbokgung', 'Geunjeongjeon'],
+    dedupeAliases: ['서울 경복궁', 'Gyeongbokgung'],
     visualKeywords: ['궁궐', '궁전', '근정전', '경복궁', '단청', '월대', 'palace', 'royal palace'],
     lat: 37.579617,
     lng: 126.977041,
@@ -40,6 +42,7 @@ const KNOWN_HERITAGE_SEEDS = [
     id: 'bulguksa',
     name: '불국사',
     aliases: ['불국사', 'Bulguksa', '청운교', '백운교'],
+    dedupeAliases: ['경주 불국사', 'Bulguksa'],
     visualKeywords: ['사찰', '절', '불국사', '석가탑', '다보탑', 'temple', 'pagoda'],
     lat: 35.790014,
     lng: 129.331961,
@@ -51,6 +54,7 @@ const KNOWN_HERITAGE_SEEDS = [
     id: 'suwon-hwaseong',
     name: '수원화성',
     aliases: ['수원화성', '화성행궁', 'Hwaseong Fortress'],
+    dedupeAliases: ['수원 화성', '수원화성', 'Hwaseong Fortress'],
     visualKeywords: ['성곽', '성벽', '장안문', '팔달문', '화성', 'fortress', 'city wall'],
     lat: 37.287889,
     lng: 127.011778,
@@ -59,6 +63,18 @@ const KNOWN_HERITAGE_SEEDS = [
     description: '정조 시대에 축성된 계획도시 성곽으로, 군사·도시·건축 기술이 함께 담긴 세계유산입니다.'
   }
 ];
+const HERITAGE_REGION_PREFIXES = [
+  '서울특별시', '부산광역시', '대구광역시', '인천광역시', '광주광역시', '대전광역시', '울산광역시', '세종특별자치시',
+  '경기도', '강원특별자치도', '충청북도', '충청남도', '전북특별자치도', '전라남도', '경상북도', '경상남도', '제주특별자치도',
+  '서울시', '부산시', '대구시', '인천시', '광주시', '대전시', '울산시', '세종시',
+  '경주시', '수원시', '공주시', '부여군', '전주시', '안동시', '강릉시', '춘천시', '청주시', '목포시', '여수시', '순천시', '제주시', '서귀포시',
+  '서울', '부산', '대구', '인천', '광주', '대전', '울산', '세종', '경기', '강원', '충북', '충남', '전북', '전남', '경북', '경남', '제주',
+  '경주', '수원', '공주', '부여', '전주', '안동', '강릉', '춘천', '청주', '목포', '여수', '순천', '서귀포'
+].map(normalizeName).filter(Boolean).sort((a, b) => b.length - a.length);
+const GENERIC_HERITAGE_NAME_KEYS = new Set([
+  '궁궐', '궁전', '석탑', '불상', '성곽', '사찰', '절', '문화재', '유적', '유산', '관광지', '박물관', '전시관',
+  '천문대', '행궁', '화성', '왕릉', '고분', '서원', '향교', '한옥', '문', '탑'
+]);
 const rateBuckets = globalThis.__runloopHeritageIdentifyRateBuckets || (globalThis.__runloopHeritageIdentifyRateBuckets = new Map());
 
 export default async function handler(req, res) {
@@ -235,8 +251,9 @@ async function buildCultureDataCandidates(analysis, context) {
 
   const candidates = await enrichKtoCandidateDetails(Array.from(bucket.values()), ktoKey);
   candidates.sort((a, b) => b.score - a.score);
+  const publicCandidates = dedupePublicCandidates(candidates.map(candidate => toPublicCandidate(candidate, context)));
   return {
-    candidates: candidates.map(candidate => toPublicCandidate(candidate, context)),
+    candidates: publicCandidates,
     sources: Array.from(new Set(sources))
   };
 }
@@ -291,6 +308,7 @@ function getKnownHeritageMatches(analysis, context) {
         id: `known:${seed.id}`,
         contentId: '',
         name: seed.name,
+        query: seed.name,
         type: seed.type || '문화재',
         address: seed.address || '',
         lat: seed.lat,
@@ -437,6 +455,7 @@ function normalizeKtoCandidate(item, query, baseScore, context) {
     id: cleanText(item.contentid, 60),
     contentId: cleanText(item.contentid, 60),
     name,
+    query: cleanText(query, 80),
     type: item.contenttypeid === '14' ? '문화시설' : '관광지',
     address: cleanText([item.addr1, item.addr2].filter(Boolean).join(' '), 120),
     lat,
@@ -461,6 +480,7 @@ function normalizeChaCandidate(item, query, baseScore) {
     id: cleanText(item.uci || item.regDate || name, 90),
     contentId: '',
     name,
+    query: cleanText(query, 80),
     type: '문화재',
     address: cleanText(item.spatial || item.spatialCoverage || '', 120),
     lat: null,
@@ -478,25 +498,227 @@ function normalizeChaCandidate(item, query, baseScore) {
 
 function addCandidate(bucket, candidate) {
   if (!candidate || !candidate.key) return;
-  const existing = bucket.get(candidate.key);
+  const bucketKey = getCandidateBucketKey(bucket, candidate);
+  candidate.key = bucketKey;
+  const existing = bucket.get(bucketKey);
   if (!existing) {
-    bucket.set(candidate.key, candidate);
+    bucket.set(bucketKey, candidate);
     return;
   }
+  const existingDescription = String(existing.description || '');
+  const candidateDescription = String(candidate.description || '');
   existing.score = Math.max(existing.score, candidate.score) + 6;
+  existing.name = chooseBetterCandidateName(existing.name, candidate.name);
   existing.contentId = existing.contentId || candidate.contentId;
-  existing.lat = existing.lat ?? candidate.lat;
-  existing.lng = existing.lng ?? candidate.lng;
-  existing.distKm = existing.distKm ?? candidate.distKm;
+  existing.lat = existing.lat ?? candidate.lat ?? null;
+  existing.lng = existing.lng ?? candidate.lng ?? null;
+  if (isFiniteNumber(candidate.distKm) && (!isFiniteNumber(existing.distKm) || Number(candidate.distKm) < Number(existing.distKm))) {
+    existing.distKm = candidate.distKm;
+  }
   existing.address = existing.address || candidate.address;
   existing.imageUrl = existing.imageUrl || candidate.imageUrl;
-  if (candidate.description && candidate.description.length > existing.description.length) {
+  if (candidateDescription && candidateDescription.length > existingDescription.length) {
     existing.description = candidate.description;
   }
   if (!existing.source.includes(candidate.source)) existing.source += `+${candidate.source}`;
-  const labels = new Set([existing.sourceLabel, candidate.sourceLabel].filter(Boolean));
-  existing.sourceLabel = Array.from(labels).join(' · ');
+  existing.sourceLabel = mergeSourceLabels(existing.sourceLabel, candidate.sourceLabel);
   existing.confidence = Math.max(existing.confidence || 0, candidate.confidence || 0);
+}
+
+function getCandidateBucketKey(bucket, candidate) {
+  const key = getCanonicalCandidateKey(candidate) || candidate.key;
+  if (key && bucket.has(key)) return key;
+  for (const [existingKey, existing] of bucket.entries()) {
+    if (areDuplicateHeritageCandidates(existing, candidate)) return existingKey;
+  }
+  return key || candidate.key;
+}
+
+function getCanonicalCandidateKey(candidate) {
+  const name = candidate && candidate.name;
+  const knownName = getKnownHeritageCanonicalName(name) || getKnownHeritageCanonicalName(candidate && candidate.query);
+  if (knownName) return normalizeName(knownName);
+
+  const key = normalizeName(name);
+  if (!key) return '';
+  const compactKey = stripCommonHeritageQualifiers(key);
+  const regionlessKey = stripLeadingHeritageRegion(compactKey);
+  if (isStrongSpecificHeritageKey(regionlessKey)) return regionlessKey;
+  return compactKey || key;
+}
+
+function areDuplicateHeritageCandidates(a, b) {
+  if (!a || !b) return false;
+  if (a.contentId && b.contentId && String(a.contentId) === String(b.contentId)) return true;
+
+  const aKnown = getKnownHeritageCanonicalName(a.name) || getKnownHeritageCanonicalName(a.query);
+  const bKnown = getKnownHeritageCanonicalName(b.name) || getKnownHeritageCanonicalName(b.query);
+  if (aKnown && bKnown && normalizeName(aKnown) === normalizeName(bKnown)) return true;
+
+  if (areEquivalentHeritageNames(a.name, b.name)) return true;
+
+  const distKm = getCandidatePairDistanceKm(a, b);
+  if (distKm !== null && distKm <= 0.25 && areLooseHeritageNameVariants(a.name, b.name)) return true;
+  return false;
+}
+
+function dedupePublicCandidates(candidates) {
+  const bucket = new Map();
+  (Array.isArray(candidates) ? candidates : []).forEach(candidate => {
+    if (!candidate || !candidate.name) return;
+    const key = getCanonicalCandidateKey(candidate) || normalizeName(candidate.name);
+    const existingKey = Array.from(bucket.keys()).find(currentKey => (
+      currentKey === key || areDuplicateHeritageCandidates(bucket.get(currentKey), candidate)
+    ));
+    if (!existingKey) {
+      bucket.set(key, { ...candidate });
+      return;
+    }
+    const existing = bucket.get(existingKey);
+    existing.name = chooseBetterCandidateName(existing.name, candidate.name);
+    existing.contentId = existing.contentId || candidate.contentId;
+    existing.lat = existing.lat ?? candidate.lat ?? null;
+    existing.lng = existing.lng ?? candidate.lng ?? null;
+    if (isFiniteNumber(candidate.distKm) && (!isFiniteNumber(existing.distKm) || Number(candidate.distKm) < Number(existing.distKm))) {
+      existing.distKm = candidate.distKm;
+    }
+    existing.address = existing.address || candidate.address;
+    existing.imageUrl = existing.imageUrl || candidate.imageUrl;
+    if (candidate.description && String(candidate.description).length > String(existing.description || '').length) {
+      existing.description = candidate.description;
+    }
+    if (!String(existing.source || '').includes(candidate.source)) {
+      existing.source = [existing.source, candidate.source].filter(Boolean).join('+');
+    }
+    existing.sourceLabel = mergeSourceLabels(existing.sourceLabel, candidate.sourceLabel);
+    existing.confidence = Math.max(existing.confidence || 0, candidate.confidence || 0);
+  });
+  return Array.from(bucket.values());
+}
+
+function mergeSourceLabels(...labels) {
+  const values = labels
+    .flatMap(label => String(label || '').split(' · '))
+    .map(label => label.trim())
+    .filter(Boolean);
+  return Array.from(new Set(values)).join(' · ');
+}
+
+function chooseBetterCandidateName(existingName, candidateName) {
+  const existing = cleanText(existingName, 100);
+  const candidate = cleanText(candidateName, 100);
+  if (!existing) return candidate;
+  if (!candidate) return existing;
+
+  const existingKnown = getKnownHeritageCanonicalName(existing);
+  const candidateKnown = getKnownHeritageCanonicalName(candidate);
+  if (candidateKnown && normalizeName(existing) !== normalizeName(candidateKnown)) return candidateKnown;
+  if (existingKnown) return existingKnown;
+
+  const existingKey = normalizeName(existing);
+  const candidateKey = normalizeName(candidate);
+  if (isStrongSpecificHeritageKey(candidateKey) && existingKey.includes(candidateKey)) return candidate;
+  if (isStrongSpecificHeritageKey(existingKey) && candidateKey.includes(existingKey)) return existing;
+  return existing.length <= candidate.length ? existing : candidate;
+}
+
+function getKnownHeritageCanonicalName(value) {
+  const key = normalizeName(value);
+  if (!key) return '';
+  for (const seed of KNOWN_HERITAGE_SEEDS) {
+    const seedKeys = [seed.name, ...(seed.dedupeAliases || [])]
+      .map(normalizeName)
+      .filter(Boolean);
+    if (seedKeys.some(seedKey => areComparableHeritageKeys(key, seedKey))) return seed.name;
+  }
+  return '';
+}
+
+function areEquivalentHeritageNames(a, b) {
+  const aKnown = getKnownHeritageCanonicalName(a);
+  const bKnown = getKnownHeritageCanonicalName(b);
+  if (aKnown && bKnown) return normalizeName(aKnown) === normalizeName(bKnown);
+
+  const aKey = stripCommonHeritageQualifiers(normalizeName(a));
+  const bKey = stripCommonHeritageQualifiers(normalizeName(b));
+  if (!aKey || !bKey) return false;
+  return areComparableHeritageKeys(aKey, bKey);
+}
+
+function areLooseHeritageNameVariants(a, b) {
+  const aKey = stripLeadingHeritageRegion(stripCommonHeritageQualifiers(normalizeName(a)));
+  const bKey = stripLeadingHeritageRegion(stripCommonHeritageQualifiers(normalizeName(b)));
+  if (!aKey || !bKey) return false;
+  if (aKey === bKey) return true;
+  return isStrongSpecificHeritageKey(aKey) && bKey.includes(aKey)
+    || isStrongSpecificHeritageKey(bKey) && aKey.includes(bKey);
+}
+
+function areComparableHeritageKeys(a, b) {
+  const aKey = stripCommonHeritageQualifiers(a);
+  const bKey = stripCommonHeritageQualifiers(b);
+  if (!aKey || !bKey) return false;
+  if (aKey === bKey) return true;
+
+  const aRegionless = stripLeadingHeritageRegion(aKey);
+  const bRegionless = stripLeadingHeritageRegion(bKey);
+  if (aRegionless && bRegionless && aRegionless === bRegionless && isStrongSpecificHeritageKey(aRegionless)) {
+    return true;
+  }
+
+  const shorter = aKey.length <= bKey.length ? aKey : bKey;
+  const longer = aKey.length <= bKey.length ? bKey : aKey;
+  return isStrongSpecificHeritageKey(shorter) && longer.includes(shorter);
+}
+
+function stripCommonHeritageQualifiers(value) {
+  let key = normalizeName(value);
+  [
+    '유네스코세계문화유산',
+    '유네스코세계유산',
+    '세계문화유산',
+    '세계유산',
+    '국가지정문화재',
+    '사적',
+    '보물'
+  ].forEach(token => {
+    key = key.replace(new RegExp(normalizeName(token), 'g'), '');
+  });
+  return key;
+}
+
+function stripLeadingHeritageRegion(value) {
+  let key = normalizeName(value);
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const prefix of HERITAGE_REGION_PREFIXES) {
+      if (key.startsWith(prefix) && key.length - prefix.length >= 3) {
+        key = key.slice(prefix.length);
+        changed = true;
+        break;
+      }
+    }
+  }
+  return key;
+}
+
+function isStrongSpecificHeritageKey(key) {
+  const normalized = normalizeName(key);
+  return normalized.length >= 3 && !GENERIC_HERITAGE_NAME_KEYS.has(normalized);
+}
+
+function isFiniteNumber(value) {
+  return Number.isFinite(Number(value));
+}
+
+function getCandidatePairDistanceKm(a, b) {
+  const aLat = Number(a.lat);
+  const aLng = Number(a.lng);
+  const bLat = Number(b.lat);
+  const bLng = Number(b.lng);
+  if (![aLat, aLng, bLat, bLng].every(Number.isFinite)) return null;
+  return getDistKm(aLat, aLng, bLat, bLng);
 }
 
 function toPublicCandidate(candidate, context) {
@@ -524,13 +746,11 @@ function toPublicCandidate(candidate, context) {
 }
 
 function mergeAiFallbackCandidates(candidates, analysis) {
-  const list = Array.isArray(candidates) ? candidates.slice() : [];
-  const seen = new Set(list.map(item => normalizeName(item && item.name)));
+  const list = dedupePublicCandidates(Array.isArray(candidates) ? candidates.slice() : []);
   (analysis.candidates || []).forEach(item => {
     const name = cleanText(item && item.name, 80);
     const key = normalizeName(name);
-    if (!key || seen.has(key) || list.length >= 3) return;
-    seen.add(key);
+    if (!key || list.some(candidate => areDuplicateHeritageCandidates(candidate, { name })) || list.length >= 3) return;
     list.push({
       id: `ai:${key}`,
       contentId: '',
@@ -548,7 +768,7 @@ function mergeAiFallbackCandidates(candidates, analysis) {
       confidence: clampNumber(item.confidence, 0.2, 0.7, 0.36)
     });
   });
-  return list;
+  return dedupePublicCandidates(list);
 }
 
 function normalizeAiAnalysis(raw) {
