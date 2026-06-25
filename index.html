@@ -376,31 +376,28 @@ if ('serviceWorker' in navigator) {
 
   #weatherCard{background:linear-gradient(135deg,#FFFFFF 0%,#FFF6F1 100%)!important;border:1px solid rgba(28,36,43,.07)!important;box-shadow:0 12px 28px rgba(28,36,43,.06)!important;cursor:pointer;transition:transform .15s,box-shadow .15s;}
   #weatherCard:active{transform:scale(.99);}
-  .weather-page{min-height:100%;padding:16px 16px 28px;background:linear-gradient(180deg,#FFFDF8 0%,#F7F3EC 100%);overflow-y:auto;}
-  .weather-current-card{border:1px solid var(--gray-100);background:#fff;border-radius:14px;padding:14px;box-shadow:0 8px 18px rgba(28,36,43,.04);margin-bottom:12px;}
-  .weather-current-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
-  .weather-current-title{font-size:12px;font-weight:800;color:var(--gray-500);margin-bottom:4px;}
-  .weather-current-place{font-size:17px;font-weight:950;color:var(--ink);line-height:1.2;}
-  .weather-current-temp{font-size:34px;font-weight:950;color:var(--ink);line-height:1;white-space:nowrap;}
-  .weather-current-summary{font-size:12px;line-height:1.45;color:var(--gray-600);border-top:1px solid var(--gray-100);padding-top:10px;}
-  .weather-board{position:relative;min-height:440px;border:1px solid var(--gray-100);background:linear-gradient(160deg,#F8FBFF 0%,#FFFFFF 48%,#FFF3EE 100%);border-radius:18px;overflow:hidden;box-shadow:0 10px 24px rgba(28,36,43,.05);margin-bottom:12px;}
-  .weather-board::before{content:'';position:absolute;left:28%;top:6%;width:48%;height:88%;border-radius:48% 52% 44% 56%;background:rgba(255,255,255,.68);border:1px solid rgba(28,36,43,.06);box-shadow:inset 0 0 0 1px rgba(242,122,94,.05);transform:rotate(10deg);}
-  .weather-board-label{position:absolute;top:14px;left:14px;font-size:12px;font-weight:950;color:var(--ink);z-index:1;}
-  .weather-city-chip{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);z-index:2;min-width:64px;max-width:90px;border:1px solid rgba(255,255,255,.82);background:rgba(255,255,255,.92);border-radius:999px;padding:7px 8px;box-shadow:0 8px 18px rgba(28,36,43,.1);font-family:inherit;color:var(--ink);cursor:pointer;text-align:left;backdrop-filter:blur(10px);}
-  .weather-city-chip.active{border-color:rgba(242,122,94,.5);box-shadow:0 10px 22px rgba(242,122,94,.18);}
+  #screen-weather.settings-screen{overflow:hidden;}
+  .weather-page{height:100%;min-height:0;padding:14px 14px 16px;background:linear-gradient(180deg,#FFFDF8 0%,#F7F3EC 100%);overflow:hidden;display:flex;flex-direction:column;gap:10px;}
+  .weather-page .settings-page-header{margin-bottom:2px;flex-shrink:0;}
+  .weather-board{position:relative;flex:1 1 auto;min-height:0;border:1px solid var(--gray-100);background:linear-gradient(160deg,#EDF7F8 0%,#FFFFFF 48%,#FFF3EE 100%);border-radius:18px;overflow:hidden;box-shadow:0 10px 24px rgba(28,36,43,.05);}
+  .weather-board::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 24% 22%,rgba(255,255,255,.72) 0 18%,transparent 40%),radial-gradient(circle at 78% 72%,rgba(242,122,94,.13) 0 20%,transparent 48%);z-index:0;}
+  .weather-map-image{position:absolute;left:28px;right:26px;top:28px;bottom:12px;width:calc(100% - 54px);height:calc(100% - 40px);object-fit:contain;z-index:1;pointer-events:none;filter:drop-shadow(0 14px 22px rgba(28,36,43,.12));}
+  .weather-board-label{position:absolute;top:12px;left:14px;font-size:12px;font-weight:950;color:var(--ink);z-index:3;}
+  .weather-city-chip{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);z-index:4;min-width:58px;max-width:86px;border:1px solid rgba(255,255,255,.84);background:rgba(255,255,255,.92);border-radius:999px;padding:6px 8px;box-shadow:0 8px 18px rgba(28,36,43,.1);font-family:inherit;color:var(--ink);cursor:pointer;text-align:left;backdrop-filter:blur(10px);}
+  .weather-city-chip.active{border-color:rgba(242,122,94,.62);background:#FFF7F2;box-shadow:0 10px 22px rgba(242,122,94,.2);}
   .weather-city-name{display:block;font-size:10px;font-weight:950;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .weather-city-temp{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:950;line-height:1.2;margin-top:2px;}
-  .weather-city-temp span:first-child{font-size:13px;}
-  .weather-detail-card{border:1px solid var(--gray-100);background:#fff;border-radius:14px;padding:14px;box-shadow:0 8px 18px rgba(28,36,43,.04);}
-  .weather-detail-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
-  .weather-detail-name{font-size:18px;font-weight:950;color:var(--ink);line-height:1.2;}
+  .weather-city-temp{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:950;line-height:1.1;margin-top:3px;color:var(--coral-dark);}
+  .weather-city-temp span:first-child{font-size:13px;line-height:1;}
+  .weather-detail-card{flex:0 0 auto;border:1px solid var(--gray-100);background:#fff;border-radius:14px;padding:12px;box-shadow:0 8px 18px rgba(28,36,43,.04);}
+  .weather-detail-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px;}
+  .weather-detail-name{font-size:17px;font-weight:950;color:var(--ink);line-height:1.15;}
   .weather-detail-desc{font-size:12px;font-weight:800;color:var(--gray-500);margin-top:3px;}
-  .weather-detail-temp{font-size:32px;font-weight:950;color:var(--coral);line-height:1;}
-  .weather-detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
-  .weather-detail-stat{background:var(--gray-50);border-radius:12px;padding:9px 8px;text-align:center;}
-  .weather-detail-stat span{display:block;font-size:10px;font-weight:800;color:var(--gray-500);margin-bottom:3px;}
-  .weather-detail-stat strong{display:block;font-size:13px;font-weight:950;color:var(--ink);}
-  .weather-empty{border:1px dashed var(--gray-200);background:rgba(255,255,255,.75);border-radius:14px;padding:20px;text-align:center;color:var(--gray-500);font-size:13px;line-height:1.45;}
+  .weather-detail-temp{font-size:30px;font-weight:950;color:var(--coral);line-height:1;white-space:nowrap;}
+  .weather-detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px;}
+  .weather-detail-stat{background:var(--gray-50);border-radius:10px;padding:7px 6px;text-align:center;min-width:0;}
+  .weather-detail-stat span{display:block;font-size:10px;font-weight:800;color:var(--gray-500);margin-bottom:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .weather-detail-stat strong{display:block;font-size:12px;font-weight:950;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .weather-empty{border:1px dashed var(--gray-200);background:rgba(255,255,255,.75);border-radius:14px;padding:16px;text-align:center;color:var(--gray-500);font-size:13px;line-height:1.45;}
   .home-promo-section{background:#fff;border:1px solid rgba(28,36,43,.08);border-radius:var(--r);padding:13px;box-shadow:0 12px 28px rgba(28,36,43,.055);overflow:hidden;}
   .home-promo-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
   .home-promo-head-copy{min-width:0;}
@@ -1167,7 +1164,6 @@ if ('serviceWorker' in navigator) {
       <button class="settings-back-btn" type="button" onclick="closeWeatherPage()" aria-label="뒤로 가기">‹</button>
       <div class="settings-title" id="weatherPageTitle">전국 날씨</div>
     </div>
-    <div class="weather-current-card" id="weatherCurrentCard"></div>
     <div class="weather-board" id="nationalWeatherBoard">
       <div class="weather-board-label" id="weatherBoardLabel">주요 도시 날씨</div>
     </div>
@@ -1629,6 +1625,9 @@ const APP_COPY = {
     weatherFeels: '체감',
     weatherHumidity: '습도',
     weatherWind: '바람',
+    weatherClouds: '구름',
+    weatherPressure: '기압',
+    weatherVisibility: '가시거리',
     langChanged: '언어 설정을 변경했어요'
   },
   en: {
@@ -1715,6 +1714,9 @@ const APP_COPY = {
     weatherFeels: 'Feels',
     weatherHumidity: 'Humidity',
     weatherWind: 'Wind',
+    weatherClouds: 'Clouds',
+    weatherPressure: 'Pressure',
+    weatherVisibility: 'Visibility',
     langChanged: 'Language updated'
   }
 };
@@ -6857,13 +6859,19 @@ async function fetchNationalWeatherCity(city) {
   const temp = Number(data.main && data.main.temp);
   const feelsLike = Number(data.main && data.main.feels_like);
   const humidity = Number(data.main && data.main.humidity);
+  const pressure = Number(data.main && data.main.pressure);
   const wind = Number(data.wind && data.wind.speed);
+  const visibility = Number(data.visibility);
+  const clouds = Number(data.clouds && data.clouds.all);
   return {
     ...city,
     temp: Number.isFinite(temp) ? Math.round(temp) : null,
     feelsLike: Number.isFinite(feelsLike) ? Math.round(feelsLike) : null,
     humidity: Number.isFinite(humidity) ? Math.round(humidity) : null,
+    pressure: Number.isFinite(pressure) ? Math.round(pressure) : null,
     wind: Number.isFinite(wind) ? wind : null,
+    visibility: Number.isFinite(visibility) ? visibility : null,
+    clouds: Number.isFinite(clouds) ? Math.round(clouds) : null,
     weatherId,
     desc: appLanguage === 'en' ? getWeatherDescEn(weatherId) : getWeatherDesc(weatherId),
     icon: getWeatherEmoji(weatherId)
@@ -6873,29 +6881,8 @@ async function fetchNationalWeatherCity(city) {
 function renderWeatherPage() {
   setTextContent('weatherPageTitle', t('weatherPageTitle'));
   setTextContent('weatherBoardLabel', t('weatherBoardLabel'));
-  renderWeatherCurrentCard();
   renderNationalWeatherBoard();
   renderWeatherCityDetail();
-}
-
-function renderWeatherCurrentCard() {
-  const el = document.getElementById('weatherCurrentCard');
-  if (!el) return;
-  const location = (document.getElementById('wLocation') && document.getElementById('wLocation').textContent.trim()) || getCurrentLocationLabel();
-  const temp = formatWeatherTempText(document.getElementById('wTemp') && document.getElementById('wTemp').textContent);
-  const desc = (document.getElementById('wDesc') && document.getElementById('wDesc').textContent.trim()) || '—';
-  const icon = (document.getElementById('wIcon') && document.getElementById('wIcon').textContent.trim()) || '🌤';
-  const summary = (document.getElementById('wSummary') && document.getElementById('wSummary').textContent.trim()) || t('weatherLoading');
-  el.innerHTML = `
-    <div class="weather-current-top">
-      <div>
-        <div class="weather-current-title">${escapeHtml(t('weatherCurrentTitle'))}</div>
-        <div class="weather-current-place">${escapeHtml(location)}</div>
-      </div>
-      <div class="weather-current-temp">${escapeHtml(icon)} ${escapeHtml(temp)}</div>
-    </div>
-    <div class="weather-current-summary">${escapeHtml(desc)} · ${escapeHtml(summary)}</div>
-  `;
 }
 
 function renderNationalWeatherBoard() {
@@ -6915,7 +6902,11 @@ function renderNationalWeatherBoard() {
       </button>
     `;
   }).join('');
-  el.innerHTML = `<div class="weather-board-label" id="weatherBoardLabel">${escapeHtml(t('weatherBoardLabel'))}</div>${chips}`;
+  el.innerHTML = `
+    <div class="weather-board-label" id="weatherBoardLabel">${escapeHtml(t('weatherBoardLabel'))}</div>
+    <img class="weather-map-image" src="assets/weather-korea-map.svg" alt="" aria-hidden="true">
+    ${chips}
+  `;
 }
 
 function selectWeatherCity(id) {
@@ -6948,6 +6939,9 @@ function renderWeatherCityDetail() {
       <div class="weather-detail-stat"><span>${escapeHtml(t('weatherFeels'))}</span><strong>${escapeHtml(formatWeatherTempText(city.feelsLike))}</strong></div>
       <div class="weather-detail-stat"><span>${escapeHtml(t('weatherHumidity'))}</span><strong>${Number.isFinite(city.humidity) ? escapeHtml(city.humidity + '%') : '—'}</strong></div>
       <div class="weather-detail-stat"><span>${escapeHtml(t('weatherWind'))}</span><strong>${Number.isFinite(city.wind) ? escapeHtml(city.wind.toFixed(1) + 'm/s') : '—'}</strong></div>
+      <div class="weather-detail-stat"><span>${escapeHtml(t('weatherClouds'))}</span><strong>${Number.isFinite(city.clouds) ? escapeHtml(city.clouds + '%') : '—'}</strong></div>
+      <div class="weather-detail-stat"><span>${escapeHtml(t('weatherPressure'))}</span><strong>${Number.isFinite(city.pressure) ? escapeHtml(city.pressure + 'hPa') : '—'}</strong></div>
+      <div class="weather-detail-stat"><span>${escapeHtml(t('weatherVisibility'))}</span><strong>${escapeHtml(formatWeatherVisibilityText(city.visibility))}</strong></div>
     </div>
   `;
 }
@@ -6957,6 +6951,14 @@ function formatWeatherTempText(value) {
   const raw = String(value).trim();
   if (!raw || raw === '—') return '—';
   return raw.endsWith('°') ? raw : raw + '°';
+}
+
+function formatWeatherVisibilityText(value) {
+  const meters = Number(value);
+  if (!Number.isFinite(meters)) return '—';
+  if (meters >= 10000) return '10km+';
+  if (meters >= 1000) return (meters / 1000).toFixed(1).replace(/\.0$/, '') + 'km';
+  return Math.round(meters) + 'm';
 }
 
 async function loadCultureSchedule(options = {}) {
