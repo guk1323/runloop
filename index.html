@@ -1394,6 +1394,114 @@ const DAILY_GOAL_OPTIONS = [2, 3, 5, 7];
 const DAILY_GOAL_MIN_KM = 0.5;
 const DAILY_GOAL_MAX_KM = 50;
 let appLanguage = localStorage.getItem(APP_LANGUAGE_KEY) === 'en' ? 'en' : 'ko';
+
+function getRunloopGeolocationPlugin() {
+  const capacitor = window.Capacitor;
+  const plugin = capacitor && capacitor.Plugins && capacitor.Plugins.Geolocation;
+  if (!plugin) return null;
+  if (capacitor && typeof capacitor.isPluginAvailable === 'function' && !capacitor.isPluginAvailable('Geolocation')) return null;
+  return plugin;
+}
+
+function isRunloopNativeGeolocation() {
+  return !!getRunloopGeolocationPlugin();
+}
+
+function hasRunloopGeolocation() {
+  return !!getRunloopGeolocationPlugin() || !!(typeof navigator !== 'undefined' && navigator.geolocation);
+}
+
+function normalizeRunloopGeoOptions(options = {}) {
+  return {
+    enableHighAccuracy: options.enableHighAccuracy !== false,
+    timeout: Number.isFinite(options.timeout) ? options.timeout : 10000,
+    maximumAge: Number.isFinite(options.maximumAge) ? options.maximumAge : 1000
+  };
+}
+
+async function ensureRunloopLocationPermission(plugin) {
+  if (!plugin || typeof plugin.requestPermissions !== 'function') return;
+  try {
+    const status = typeof plugin.checkPermissions === 'function' ? await plugin.checkPermissions() : null;
+    const permission = status && (status.location || status.coarseLocation);
+    if (permission === 'granted') return;
+  } catch(e) {}
+  try {
+    await plugin.requestPermissions();
+  } catch(e) {}
+}
+
+function runloopGetCurrentPosition(success, failure, options = {}) {
+  const plugin = getRunloopGeolocationPlugin();
+  if (plugin && typeof plugin.getCurrentPosition === 'function') {
+    (async () => {
+      await ensureRunloopLocationPermission(plugin);
+      return plugin.getCurrentPosition(normalizeRunloopGeoOptions(options));
+    })().then(success).catch(error => {
+      if (typeof failure === 'function') failure(error);
+    });
+    return;
+  }
+
+  if (typeof navigator !== 'undefined' && navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(success, failure, normalizeRunloopGeoOptions(options));
+    return;
+  }
+
+  if (typeof failure === 'function') failure(new Error('Geolocation unavailable'));
+}
+
+function runloopWatchPosition(success, failure, options = {}) {
+  const plugin = getRunloopGeolocationPlugin();
+  if (plugin && typeof plugin.watchPosition === 'function') {
+    const token = { plugin, id: null, cleared: false };
+    (async () => {
+      await ensureRunloopLocationPermission(plugin);
+      return plugin.watchPosition(normalizeRunloopGeoOptions(options), (position, error) => {
+        if (token.cleared) return;
+        if (error) {
+          if (typeof failure === 'function') failure(error);
+          return;
+        }
+        if (position && typeof success === 'function') success(position);
+      });
+    })().then(id => {
+      token.id = id;
+      if (token.cleared) clearRunloopWatch(token);
+    }).catch(error => {
+      if (!token.cleared && typeof failure === 'function') failure(error);
+    });
+    return token;
+  }
+
+  if (typeof navigator !== 'undefined' && navigator.geolocation) {
+    return navigator.geolocation.watchPosition(success, failure, normalizeRunloopGeoOptions(options));
+  }
+
+  if (typeof failure === 'function') failure(new Error('Geolocation unavailable'));
+  return null;
+}
+
+function clearRunloopWatch(watchId) {
+  if (watchId === null || watchId === undefined) return;
+  if (typeof watchId === 'object' && watchId.plugin) {
+    watchId.cleared = true;
+    if (watchId.id && typeof watchId.plugin.clearWatch === 'function') {
+      watchId.plugin.clearWatch({ id: watchId.id }).catch(() => {});
+    }
+    return;
+  }
+  if (typeof navigator !== 'undefined' && navigator.geolocation) navigator.geolocation.clearWatch(watchId);
+}
+
+function getRunloopLocationSource() {
+  return isRunloopNativeGeolocation() ? 'native_gps' : 'web_gps';
+}
+
+function getRunloopLocationSourceLabel() {
+  return isRunloopNativeGeolocation() ? 'iPhone GPS' : 'GPS';
+}
+
 const APP_COPY = {
   ko: {
     home: '홈',
@@ -1824,7 +1932,7 @@ const UI_TRANSLATIONS_EN = {
   'GPS 연결됐어요! 실제 거리로 측정해요': 'GPS connected. Measuring real distance',
   'GPS 정확도가 낮아요. 실내에서는 거리 누적을 보수적으로 봐요': 'GPS accuracy is low. Distance will be counted conservatively indoors',
   'GPS 오차가 커서 이 위치 변화는 거리에서 제외했어요': 'GPS drift was too large, so this movement was excluded',
-  'GPS를 찾는 중이에요… 시뮬레이션으로 진행해요': 'Finding GPS… continuing in simulation mode',
+  'GPS를 찾는 중이에요… 실제 위치가 잡히면 거리 측정을 시작해요': 'Finding GPS… distance starts when a real location is received',
   '목표 달성 중 🎯': 'On target 🎯',
   '페이스 올리기 💪': 'Pick up the pace 💪',
   '계속': 'Resume',
@@ -2001,6 +2109,217 @@ function getCurrentLocationLabel() {
 function isCurrentLocationLabel(value) {
   const text = String(value || '').trim();
   return text === '현재 위치' || text === 'Current location';
+}
+
+const HANGUL_INITIAL_ROMAN = ['', 'g', 'kk', 'n', 'd', 'tt', 'r', 'm', 'b', 'pp', 's', 'ss', '', 'j', 'jj', 'ch', 'k', 't', 'p', 'h'];
+const HANGUL_MEDIAL_ROMAN = ['a', 'ae', 'ya', 'yae', 'eo', 'e', 'yeo', 'ye', 'o', 'wa', 'wae', 'oe', 'yo', 'u', 'wo', 'we', 'wi', 'yu', 'eu', 'ui', 'i'];
+const HANGUL_FINAL_ROMAN = ['', 'k', 'k', 'ks', 'n', 'nj', 'nh', 't', 'l', 'lk', 'lm', 'lb', 'ls', 'lt', 'lp', 'lh', 'm', 'p', 'ps', 't', 't', 'ng', 't', 't', 'k', 't', 'p', 't'];
+const KOREAN_ADMIN_EN_MAP = {
+  '서울특별시': 'Seoul', '서울': 'Seoul',
+  '부산광역시': 'Busan', '부산': 'Busan',
+  '대구광역시': 'Daegu', '대구': 'Daegu',
+  '인천광역시': 'Incheon', '인천': 'Incheon',
+  '광주광역시': 'Gwangju', '광주': 'Gwangju',
+  '대전광역시': 'Daejeon', '대전': 'Daejeon',
+  '울산광역시': 'Ulsan', '울산': 'Ulsan',
+  '세종특별자치시': 'Sejong', '세종': 'Sejong',
+  '경기도': 'Gyeonggi-do', '강원특별자치도': 'Gangwon-do', '강원도': 'Gangwon-do',
+  '충청북도': 'Chungcheongbuk-do', '충청남도': 'Chungcheongnam-do',
+  '전북특별자치도': 'Jeonbuk-do', '전라북도': 'Jeollabuk-do', '전라남도': 'Jeollanam-do',
+  '경상북도': 'Gyeongsangbuk-do', '경상남도': 'Gyeongsangnam-do',
+  '제주특별자치도': 'Jeju-do', '제주도': 'Jeju-do',
+  '용인시': 'Yongin-si', '수원시': 'Suwon-si', '화성시': 'Hwaseong-si',
+  '성남시': 'Seongnam-si', '고양시': 'Goyang-si', '기흥구': 'Giheung-gu',
+  '영덕동': 'Yeongdeok-dong', '오산동': 'Osan-dong', '동탄': 'Dongtan'
+};
+const KOREAN_DISPLAY_NAME_EN_MAP = {
+  '심곡서원': 'Simgok Seowon Confucian Academy',
+  '경희대학교국제캠퍼스노천극장': 'Kyung Hee University Global Campus Outdoor Theater',
+  '경희대학교 국제캠퍼스 노천극장': 'Kyung Hee University Global Campus Outdoor Theater',
+  '수원박물관': 'Suwon Museum',
+  'N서울타워': 'N Seoul Tower',
+  '남산서울타워': 'N Seoul Tower',
+  '튼튼펫페스타': 'Tunteun Pet Festa',
+  '튼튼 펫 페스타': 'Tunteun Pet Festa',
+  '교보생명컵꿈나무체육대회': 'Kyobo Life Cup Youth Sports Festival',
+  '교보생명컵 꿈나무 체육대회': 'Kyobo Life Cup Youth Sports Festival',
+  'DDP건축투어': 'DDP Architecture Tour',
+  'DDP 건축투어': 'DDP Architecture Tour',
+  '숭례문파수의식': 'Sungnyemun Gate Guard Ceremony',
+  '숭례문 파수의식': 'Sungnyemun Gate Guard Ceremony',
+  '페인터즈': 'Painters'
+};
+const KOREAN_DISPLAY_PHRASES_EN = [
+  ['경희대학교', 'Kyung Hee University'],
+  ['국제캠퍼스', 'Global Campus'],
+  ['노천극장', 'Outdoor Theater'],
+  ['교보생명', 'Kyobo Life'],
+  ['꿈나무', 'Youth'],
+  ['체육대회', 'Sports Festival'],
+  ['나이트워크', 'Night Walk'],
+  ['건축투어', 'Architecture Tour'],
+  ['파수의식', 'Gate Guard Ceremony'],
+  ['문화재청', 'Korea Heritage Service'],
+  ['한국관광공사', 'VisitKorea'],
+  ['서울타워', 'Seoul Tower'],
+  ['글로벌', 'Global'],
+  ['페스타', 'Festa'],
+  ['축제', 'Festival'],
+  ['박물관', 'Museum'],
+  ['미술관', 'Art Museum'],
+  ['전시관', 'Exhibition Hall'],
+  ['전시회', 'Exhibition'],
+  ['서원', 'Seowon Confucian Academy'],
+  ['향교', 'Hyanggyo Confucian School'],
+  ['노천', 'Outdoor'],
+  ['극장', 'Theater'],
+  ['공연장', 'Performance Hall'],
+  ['아트센터', 'Arts Center'],
+  ['문화예술회관', 'Culture and Arts Center'],
+  ['산성', 'Fortress'],
+  ['성곽', 'Fortress Wall'],
+  ['궁궐', 'Palace'],
+  ['궁', 'Palace'],
+  ['사찰', 'Temple'],
+  ['사', 'Temple'],
+  ['타워', 'Tower'],
+  ['공원', 'Park'],
+  ['시장', 'Market'],
+  ['센터', 'Center'],
+  ['캠퍼스', 'Campus'],
+  ['대학교', 'University'],
+  ['대학', 'University'],
+  ['컵', 'Cup'],
+  ['펫', 'Pet']
+];
+
+function romanizeHangulText(value) {
+  return Array.from(String(value || '')).map(char => {
+    const code = char.charCodeAt(0);
+    if (code < 0xAC00 || code > 0xD7A3) return char;
+    const syllable = code - 0xAC00;
+    const initial = Math.floor(syllable / 588);
+    const medial = Math.floor((syllable % 588) / 28);
+    const final = syllable % 28;
+    return (HANGUL_INITIAL_ROMAN[initial] || '') + (HANGUL_MEDIAL_ROMAN[medial] || '') + (HANGUL_FINAL_ROMAN[final] || '');
+  }).join('');
+}
+
+function titleCaseEnglishDisplay(value) {
+  return String(value || '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .split(' ')
+    .map(word => word.split('-').map(part => {
+      if (!part || /^[A-Z0-9]{2,}$/.test(part)) return part;
+      return part.charAt(0).toUpperCase() + part.slice(1).toLowerCase();
+    }).join('-'))
+    .join(' ');
+}
+
+function getOrdinalEnglish(number) {
+  const n = Number(number);
+  if (!Number.isFinite(n)) return String(number || '');
+  const mod100 = n % 100;
+  const suffix = mod100 >= 11 && mod100 <= 13 ? 'th' : ({ 1: 'st', 2: 'nd', 3: 'rd' }[n % 10] || 'th');
+  return `${n}${suffix}`;
+}
+
+function getExactKoreanDisplayName(value) {
+  const text = String(value || '').trim();
+  const compact = text.replace(/\s+/g, '');
+  return KOREAN_DISPLAY_NAME_EN_MAP[text] || KOREAN_DISPLAY_NAME_EN_MAP[compact] || '';
+}
+
+function translateKoreanNameToken(token) {
+  const text = String(token || '').trim();
+  if (!text) return '';
+  const ordinal = text.match(/^제?(\d+)회$/);
+  if (ordinal) return getOrdinalEnglish(ordinal[1]);
+  if (!hasKoreanText(text)) return text;
+  return titleCaseEnglishDisplay(romanizeHangulText(text));
+}
+
+function translateKoreanDisplayName(value) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!text) return '';
+  if (!hasKoreanText(text)) return text;
+  const exact = getExactKoreanDisplayName(text);
+  if (exact) return exact;
+  let replaced = text;
+  KOREAN_DISPLAY_PHRASES_EN
+    .slice()
+    .sort((a, b) => b[0].length - a[0].length)
+    .forEach(([ko, en]) => {
+      replaced = replaced.split(ko).join(` ${en} `);
+    });
+  const translated = replaced
+    .replace(/[·•]/g, ' ')
+    .split(/\s+/)
+    .map(translateKoreanNameToken)
+    .filter(Boolean)
+    .join(' ')
+    .replace(/\s+([,.)])/g, '$1')
+    .replace(/([(])\s+/g, '$1');
+  return titleCaseEnglishDisplay(translated);
+}
+
+function translateKoreanAddressToken(token) {
+  const text = String(token || '').trim();
+  if (!text) return '';
+  if (KOREAN_ADMIN_EN_MAP[text]) return KOREAN_ADMIN_EN_MAP[text];
+  const paren = text.match(/^\((.+)\)$/);
+  if (paren) return `(${translateKoreanAddressToken(paren[1])})`;
+  if (!hasKoreanText(text)) return text;
+  const roadMatch = text.match(/^(.+?)(대로|로|길)$/);
+  if (roadMatch) {
+    const suffix = roadMatch[2] === '대로' ? 'daero' : roadMatch[2] === '로' ? 'ro' : 'gil';
+    return `${titleCaseEnglishDisplay(romanizeHangulText(roadMatch[1]))}-${suffix}`;
+  }
+  const adminMatch = text.match(/^(.+?)(특별자치도|특별시|광역시|자치시|도|시|군|구|읍|면|동|리)$/);
+  if (adminMatch) {
+    const suffixMap = {
+      특별자치도: 'do', 특별시: '', 광역시: '', 자치시: 'si', 도: 'do',
+      시: 'si', 군: 'gun', 구: 'gu', 읍: 'eup', 면: 'myeon', 동: 'dong', 리: 'ri'
+    };
+    const suffix = suffixMap[adminMatch[2]];
+    const base = titleCaseEnglishDisplay(romanizeHangulText(adminMatch[1]));
+    return suffix ? `${base}-${suffix}` : base;
+  }
+  return translateKoreanDisplayName(text);
+}
+
+function formatKoreanLocationDisplay(value, fallback = '') {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!text) return fallback;
+  if (appLanguage !== 'en' || !hasKoreanText(text)) return text;
+  const exact = getExactKoreanDisplayName(text);
+  if (exact) return exact;
+  const translated = text
+    .split(/\s+/)
+    .map(translateKoreanAddressToken)
+    .filter(Boolean)
+    .join(', ');
+  return translated || fallback;
+}
+
+function formatKakaoAddressLocation(addr, fallback = '') {
+  if (!addr) return fallback || getCurrentLocationLabel();
+  const parts = [addr.region_1depth_name, addr.region_2depth_name, addr.region_3depth_h_name || addr.region_3depth_name]
+    .filter(Boolean)
+    .map(translateKoreanAddressToken)
+    .filter(Boolean);
+  return parts.length ? parts.join(', ') : (fallback || getCurrentLocationLabel());
+}
+
+function localizeKoreanDisplayText(value, fallback = '') {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!text) return fallback;
+  if (appLanguage !== 'en' || !hasKoreanText(text)) return text;
+  const looksLikeAddress = /\s/.test(text) && /(특별시|광역시|특별자치도|도|시|군|구|읍|면|동|리|대로|로|길|\d)/.test(text);
+  return looksLikeAddress
+    ? formatKoreanLocationDisplay(text, fallback)
+    : (translateKoreanDisplayName(text) || fallback);
 }
 
 function loadExternalScript(src) {
@@ -2464,8 +2783,8 @@ function initCreateMap() {
     renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
   };
 
-  if (navigator.geolocation && S.lat === 37.5503 && S.lng === 126.9200) {
-    navigator.geolocation.getCurrentPosition(pos => {
+  if (hasRunloopGeolocation() && S.lat === 37.5503 && S.lng === 126.9200) {
+    runloopGetCurrentPosition(pos => {
       S.lat = pos.coords.latitude; S.lng = pos.coords.longitude;
       initWith(S.lat, S.lng);
     }, () => initWith(S.lat, S.lng), { enableHighAccuracy: true, timeout: 5000 });
@@ -3023,8 +3342,8 @@ function addPoint(latlng) {
 function moveToMyLocation() {
   const map = createMap || S.map;
   if (!map) return;
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
+  if (hasRunloopGeolocation()) {
+    runloopGetCurrentPosition(pos => {
       setAiSearchTarget('start');
       S.lat = pos.coords.latitude; S.lng = pos.coords.longitude;
       const latlng = new kakao.maps.LatLng(S.lat, S.lng);
@@ -3040,6 +3359,8 @@ function moveToMyLocation() {
       loadNearCourses();
       toast('현재 위치로 이동했어요!');
     }, () => toast('위치 권한을 허용해주세요'), { enableHighAccuracy: true, timeout: 8000 });
+  } else {
+    toast('위치 감지 불가');
   }
 }
 
@@ -3110,9 +3431,9 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
   const lng = latlng.getLng ? latlng.getLng() : parseFloat(latlng.lng);
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
   const rawName = String(name || '').trim();
-  const fallbackName = rawName && !(appLanguage === 'en' && hasKoreanText(rawName))
-    ? rawName
-    : (appLanguage === 'en' ? 'Selected place' : '선택한 장소');
+  const fallbackName = appLanguage === 'en'
+    ? localizeKoreanDisplayText(rawName, 'Selected place')
+    : (rawName || '선택한 장소');
   const displayName = options && options.spot
     ? getCultureSpotDisplayName(options.spot, fallbackName)
     : fallbackName;
@@ -3136,7 +3457,9 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
     lat,
     lng,
     name: displayName,
-    sub: safeSub && !(appLanguage === 'en' && hasKoreanText(safeSub)) ? safeSub : (appLanguage === 'en' ? 'Set as start or destination' : '출발 또는 도착으로 설정하세요'),
+    sub: appLanguage === 'en'
+      ? localizeKoreanDisplayText(safeSub, 'Set as start or destination')
+      : (safeSub || '출발 또는 도착으로 설정하세요'),
     cultureSpot,
     mediaSpot
   };
@@ -3328,13 +3651,13 @@ function setCurrentLocationAsAiStart(options = {}) {
     const latlng = new kakao.maps.LatLng(S.lat, S.lng);
     setAiMarker(latlng, getCurrentLocationLabel());
   };
-  if (!navigator.geolocation) {
+  if (!hasRunloopGeolocation()) {
     useFallback();
     return Promise.resolve();
   }
   if (!options.silent) toast('현재 위치 확인 중…');
   return new Promise(resolve => {
-    navigator.geolocation.getCurrentPosition(pos => {
+    runloopGetCurrentPosition(pos => {
       S.lat = pos.coords.latitude;
       S.lng = pos.coords.longitude;
       const latlng = new kakao.maps.LatLng(S.lat, S.lng);
@@ -3441,6 +3764,9 @@ function getAiSearchInputValue() {
 function setAiMarker(latlng, addrName) {
   S.lat = latlng.getLat ? latlng.getLat() : parseFloat(latlng.lat);
   S.lng = latlng.getLng ? latlng.getLng() : parseFloat(latlng.lng);
+  const displayName = appLanguage === 'en'
+    ? localizeKoreanDisplayText(addrName, getCurrentLocationLabel())
+    : (addrName || getCurrentLocationLabel());
   resetAiCourseSuggestions();
   if (createAiMarker) createAiMarker.setMap(null);
   createAiMarker = new kakao.maps.CustomOverlay({
@@ -3452,9 +3778,9 @@ function setAiMarker(latlng, addrName) {
   if (createMap) createMap.setCenter(latlng);
   // 출발지 상태 저장
   document.getElementById('aiSelectedAddr').style.display = 'none';
-  document.getElementById('aiSelectedAddrText').textContent = addrName;
+  document.getElementById('aiSelectedAddrText').textContent = displayName;
   document.getElementById('aiMapGuide').style.display = 'none';
-  document.getElementById('addrInput').value = addrName;
+  document.getElementById('addrInput').value = displayName;
   updateMapSearchClearButton();
   // 드롭다운 닫기
   document.getElementById('addrDropdown').style.display = 'none';
@@ -3467,7 +3793,10 @@ function setAiDestinationMarker(latlng, addrName) {
   aiDestinationSameAsStart = false;
   const sameBtn = document.getElementById('aiSameDestBtn');
   if (sameBtn) sameBtn.classList.remove('active');
-  aiDestination = { lat, lng, name: addrName || '목적지' };
+  const displayName = appLanguage === 'en'
+    ? localizeKoreanDisplayText(addrName, t('destination'))
+    : (addrName || '목적지');
+  aiDestination = { lat, lng, name: displayName };
   resetAiCourseSuggestions();
   if (createDestMarker) createDestMarker.setMap(null);
   createDestMarker = new kakao.maps.CustomOverlay({
@@ -3508,9 +3837,9 @@ function clearAiDestination(options = {}) {
 }
 
 function useMyLocation() {
-  if (!navigator.geolocation) { toast('위치 감지 불가'); return; }
+  if (!hasRunloopGeolocation()) { toast('위치 감지 불가'); return; }
   toast('위치 감지 중…');
-  navigator.geolocation.getCurrentPosition(pos => {
+  runloopGetCurrentPosition(pos => {
     const latlng = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
     S.lat = pos.coords.latitude; S.lng = pos.coords.longitude;
     if (aiMap) {
@@ -3611,14 +3940,17 @@ function selectAddress(name, lat, lng) {
   const map = createMap || aiMap;
   if (!map) return;
   const latlng = new kakao.maps.LatLng(parseFloat(lat), parseFloat(lng));
+  const displayName = appLanguage === 'en'
+    ? localizeKoreanDisplayText(name, 'Selected place')
+    : name;
   map.setCenter(latlng);
   map.setLevel(4);
-  document.getElementById('addrInput').value = name;
+  document.getElementById('addrInput').value = displayName;
   updateMapSearchClearButton();
   document.getElementById('addrDropdown').style.display = 'none';
   setCultureMapSearch('');
   if (createMode === 'ai') {
-    showAiPlaceCard(latlng, name, appLanguage === 'en' ? 'Search result' : '검색한 장소');
+    showAiPlaceCard(latlng, displayName, appLanguage === 'en' ? 'Search result' : '검색한 장소');
   }
 }
 
@@ -3872,14 +4204,20 @@ function renderAddressDropdown(results) {
     renderAddressDropdownMessage('검색 결과가 없어요. 건물명, 역 이름, 동 이름을 조금 다르게 입력해보세요.');
     return;
   }
-  dropdown.innerHTML = results.map((item, i) => `
-    <div class="addr-dropdown-item" onclick="selectAddressResult(${i})">
-      <div class="addr-dropdown-main">
-        <span>${escapeHtml(item.name)}</span>
-        <span class="addr-dropdown-type">${escapeHtml(item.type)}</span>
-      </div>
-      <div class="addr-dropdown-addr">${escapeHtml(localizeRuntimeText(item.sub || '위치 선택'))}</div>
-    </div>`).join('');
+  dropdown.innerHTML = results.map((item, i) => {
+    const displayName = appLanguage === 'en' ? localizeKoreanDisplayText(item.name, item.name) : item.name;
+    const displaySub = appLanguage === 'en'
+      ? localizeKoreanDisplayText(item.sub || '', 'Select location')
+      : localizeRuntimeText(item.sub || '위치 선택');
+    return `
+      <div class="addr-dropdown-item" onclick="selectAddressResult(${i})">
+        <div class="addr-dropdown-main">
+          <span>${escapeHtml(displayName)}</span>
+          <span class="addr-dropdown-type">${escapeHtml(item.type)}</span>
+        </div>
+        <div class="addr-dropdown-addr">${escapeHtml(displaySub)}</div>
+      </div>`;
+  }).join('');
   localizeStaticDom(dropdown);
   dropdown.style.display = 'block';
 }
@@ -4000,9 +4338,9 @@ document.addEventListener('click', e => {
 
 /* 위치 감지 */
 function detectLocation() {
-  if (!navigator.geolocation) { toast('위치 감지 불가'); return; }
+  if (!hasRunloopGeolocation()) { toast('위치 감지 불가'); return; }
   // 위치 감지 중
-  navigator.geolocation.getCurrentPosition(pos => {
+  runloopGetCurrentPosition(pos => {
     S.lat = pos.coords.latitude;
     S.lng = pos.coords.longitude;
     // 위치 감지 완료
@@ -4040,8 +4378,8 @@ window.addEventListener('load', () => {
   renderRecords();
   syncHealthActivity({ requestPermission: true, silent: true });
   // 위치 먼저 잡고 → 날씨 + 추천코스 불러오기
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(pos => {
+  if (hasRunloopGeolocation()) {
+    runloopGetCurrentPosition(pos => {
       S.lat = pos.coords.latitude;
       S.lng = pos.coords.longitude;
       document.getElementById('addrInput').value = getCurrentLocationLabel();
@@ -4169,8 +4507,8 @@ function initMap() {
   };
 
   // GPS로 현재 위치 잡고 초기화
-  if (navigator.geolocation && (S.lat === 37.5503 && S.lng === 126.9200)) {
-    navigator.geolocation.getCurrentPosition(pos => {
+  if (hasRunloopGeolocation() && (S.lat === 37.5503 && S.lng === 126.9200)) {
+    runloopGetCurrentPosition(pos => {
       S.lat = pos.coords.latitude;
       S.lng = pos.coords.longitude;
       initWithLocation(S.lat, S.lng);
@@ -4895,9 +5233,9 @@ function mergeAiCourseCandidates(candidates, maxCount) {
 
 function getAiCoursePlaceLabel() {
   const selected = document.getElementById('aiSelectedAddrText')?.textContent;
-  if (selected && selected !== '—') return selected;
+  if (selected && selected !== '—') return appLanguage === 'en' ? localizeKoreanDisplayText(selected, selected) : selected;
   const weatherLoc = document.getElementById('wLocation')?.textContent;
-  if (weatherLoc && !weatherLoc.includes('불러오는')) return weatherLoc;
+  if (weatherLoc && !weatherLoc.includes('불러오는')) return appLanguage === 'en' ? localizeKoreanDisplayText(weatherLoc, weatherLoc) : weatherLoc;
   return appLanguage === 'en' ? 'near current location' : '현재 위치 주변';
 }
 
@@ -5562,12 +5900,12 @@ function startRouteGuidance(index) {
     toast('안내할 지도 경로가 없어요');
     return;
   }
-  if (!navigator.geolocation) {
+  if (!hasRunloopGeolocation()) {
     toast('GPS를 사용할 수 없어 안내를 시작할 수 없어요');
     return;
   }
   toast('현재 위치 확인 중…');
-  navigator.geolocation.getCurrentPosition(pos => {
+  runloopGetCurrentPosition(pos => {
     const current = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
     const nearest = getNearestRouteProgress(current, path);
     if (!nearest || nearest.distanceMeters > ROUTE_GUIDE_START_MAX_DISTANCE_METERS) {
@@ -5599,7 +5937,7 @@ function beginRouteGuidance(index, course, path, current, nearest) {
   showAiRoutePreview(course, { fitBounds: false });
   setRouteGuideButtonState(index, true);
   updateRouteGuidancePosition(current, nearest);
-  routeGuide.watchId = navigator.geolocation.watchPosition(pos => {
+  routeGuide.watchId = runloopWatchPosition(pos => {
     const latlng = new kakao.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
     updateRouteGuidancePosition(latlng);
   }, () => {
@@ -5609,9 +5947,7 @@ function beginRouteGuidance(index, course, path, current, nearest) {
 }
 
 function stopRouteGuidance(message, options = {}) {
-  if (routeGuide.watchId !== null && navigator.geolocation) {
-    navigator.geolocation.clearWatch(routeGuide.watchId);
-  }
+  if (routeGuide.watchId !== null) clearRunloopWatch(routeGuide.watchId);
   clearRouteGuideOverlays();
   const previousIndex = routeGuide.courseIndex;
   routeGuide = {
@@ -5804,11 +6140,7 @@ function buildKmTrack(total) {
 function runTick() {
   if (!R.running) return;
   R.elapsed++;
-  // GPS 없을 때만 시뮬레이션으로 거리 증가
-  if (!R.gpsActive) {
-    R.dist = Math.min(R.dist + (1/390), R.totalKm);
-    if (R.dist >= R.totalKm) { clearInterval(R.interval); stopRun(); }
-  }
+  // 실제 위치가 들어오기 전에는 거리를 누적하지 않는다.
   updateRunStats();
   if (!runMap) drawRunCanvas();
 }
@@ -5862,7 +6194,7 @@ function togglePause() {
 
 function stopRun() {
   clearInterval(R.interval);
-  if (R.watchId) { navigator.geolocation.clearWatch(R.watchId); R.watchId = null; }
+  if (R.watchId) { clearRunloopWatch(R.watchId); R.watchId = null; }
   R.running = false;
   resetFinishPhoto();
   document.getElementById('photoPromptOverlay').classList.add('active');
@@ -6007,7 +6339,7 @@ function saveRecord() {
     memo: memo,
     conditionScore,
     photo: finishPhotoDataUrl,
-    source: R.gpsActive ? 'web_gps' : 'web_sim',
+    source: R.gpsActive ? getRunloopLocationSource() : 'web_sim',
     gpsAccuracy: R.gpsAccuracy ? Math.round(R.gpsAccuracy) : null,
     path: runPath.map(p => ({ lat: p.getLat(), lng: p.getLng() }))
   });
@@ -6485,7 +6817,11 @@ function getScheduleDisplayTitle(event, fallback = '') {
   for (const candidate of candidates) {
     const text = String(candidate || '').trim();
     if (!text) continue;
-    if (appLanguage === 'en' && hasKoreanText(text)) continue;
+    if (appLanguage === 'en' && hasKoreanText(text)) {
+      const translated = translateKoreanDisplayName(text);
+      if (translated) return translated;
+      continue;
+    }
     return text;
   }
   return appLanguage === 'en' ? getScheduleGenericTitle(event) : (fallback || t('schedule'));
@@ -6498,7 +6834,7 @@ function getScheduleDisplayPlace(event) {
   for (const candidate of candidates) {
     const text = String(candidate || '').trim();
     if (!text) continue;
-    if (appLanguage === 'en' && hasKoreanText(text)) continue;
+    if (appLanguage === 'en' && hasKoreanText(text)) return formatKoreanLocationDisplay(text);
     return text;
   }
   return '';
@@ -6588,10 +6924,14 @@ function normalizeScheduleFavorite(event, existing = null) {
   const lng = Number(source.lng);
   const title = String(source.title || existing && existing.title || t('schedule')).trim() || t('schedule');
   const rawTitleEn = String(source.titleEn || source.englishTitle || existing && existing.titleEn || '').trim();
-  const titleEn = rawTitleEn && !hasKoreanText(rawTitleEn) ? rawTitleEn : (appLanguage === 'en' && !hasKoreanText(title) ? title : '');
+  const titleEn = rawTitleEn && !hasKoreanText(rawTitleEn)
+    ? rawTitleEn
+    : (hasKoreanText(title) ? translateKoreanDisplayName(title) : title);
   const place = String(source.place || existing && existing.place || '').trim();
   const rawPlaceEn = String(source.placeEn || source.englishPlace || existing && existing.placeEn || '').trim();
-  const placeEn = rawPlaceEn && !hasKoreanText(rawPlaceEn) ? rawPlaceEn : (appLanguage === 'en' && !hasKoreanText(place) ? place : '');
+  const placeEn = rawPlaceEn && !hasKoreanText(rawPlaceEn)
+    ? rawPlaceEn
+    : (hasKoreanText(place) ? formatKoreanLocationDisplay(place) : place);
   return {
     key,
     id: source.id || source.contentId || source.contentid || '',
@@ -6750,7 +7090,7 @@ function getCultureSpotDisplayName(spot, fallback = '문화 스팟') {
   const storedEnglishName = String(spot && (spot.nameEn || spot.titleEn || spot.englishName || spot.placeNameEn) || '').trim();
   if (storedEnglishName && !/[가-힣]/.test(storedEnglishName)) return storedEnglishName;
   if (!/[가-힣]/.test(raw)) return raw;
-  return getEnglishCultureSpotName(raw) || getCultureSpotGenericEnglishName(spot);
+  return getEnglishCultureSpotName(raw) || translateKoreanDisplayName(raw) || getCultureSpotGenericEnglishName(spot);
 }
 
 function getEnglishCultureSpotName(name) {
@@ -6866,7 +7206,9 @@ function setCultureSpotVisit(spot) {
   const photo = getCultureSpotPhoto(spot);
   const visit = {
     name: String(spot.place_name || '문화 스팟'),
-    nameEn: spotNameEn && !/[가-힣]/.test(spotNameEn) ? spotNameEn : getEnglishCultureSpotName(spot.place_name || spot.name || ''),
+    nameEn: spotNameEn && !/[가-힣]/.test(spotNameEn)
+      ? spotNameEn
+      : (getEnglishCultureSpotName(spot.place_name || spot.name || '') || translateKoreanDisplayName(spot.place_name || spot.name || '')),
     type: spot.cultureType || getCultureSpotType(spot, ''),
     valueStars: stars,
     medalTier: getCultureMedalLabel(stars),
@@ -7392,7 +7734,9 @@ function normalizeCultureSpotFavorite(spot, existing = null) {
   const latlng = getCultureSpotLatLng(source);
   const name = String(source.place_name || source.name || '문화 스팟').trim() || '문화 스팟';
   const rawNameEn = String(source.nameEn || source.englishName || source.titleEn || existing && existing.nameEn || '').trim();
-  const nameEn = rawNameEn && !/[가-힣]/.test(rawNameEn) ? rawNameEn : getEnglishCultureSpotName(name);
+  const nameEn = rawNameEn && !/[가-힣]/.test(rawNameEn)
+    ? rawNameEn
+    : (getEnglishCultureSpotName(name) || translateKoreanDisplayName(name));
   const rawOverviewEn = cleanCultureOverview(source.overviewEn || source.englishOverview || existing && existing.overviewEn || (appLanguage === 'en' ? source.overview || source.detailOverview || '' : ''));
   const overviewEn = isUsableEnglishText(rawOverviewEn) ? rawOverviewEn : '';
   const type = source.cultureType || source.type || getCultureSpotType(source, '');
@@ -8546,16 +8890,24 @@ async function fetchWeather() {
             const loc = [addr.region_1depth_name, addr.region_2depth_name, dong]
               .filter(Boolean)
               .join(' ');
-            document.getElementById('wLocation').textContent = loc;
+            document.getElementById('wLocation').textContent = appLanguage === 'en'
+              ? formatKakaoAddressLocation(addr, getCurrentLocationLabel())
+              : loc;
           } else {
-            document.getElementById('wLocation').textContent = d.name;
+            document.getElementById('wLocation').textContent = appLanguage === 'en'
+              ? localizeKoreanDisplayText(d.name, getCurrentLocationLabel())
+              : d.name;
           }
         });
       } else {
-        document.getElementById('wLocation').textContent = d.name;
+        document.getElementById('wLocation').textContent = appLanguage === 'en'
+          ? localizeKoreanDisplayText(d.name, getCurrentLocationLabel())
+          : d.name;
       }
     } catch(e) {
-      document.getElementById('wLocation').textContent = d.name;
+      document.getElementById('wLocation').textContent = appLanguage === 'en'
+        ? localizeKoreanDisplayText(d.name, getCurrentLocationLabel())
+        : d.name;
     }
     document.getElementById('wTemp').textContent = temp;
     document.getElementById('wDesc').textContent = desc;
@@ -8722,8 +9074,9 @@ function hasSafeRecordPhoto(value) {
 
 function getRecordSourceLabel(source) {
   const map = {
+    native_gps: 'iPhone GPS',
     web_gps: 'iPhone GPS',
-    web_sim: appLanguage === 'en' ? 'Demo record' : '시연 기록',
+    web_sim: appLanguage === 'en' ? 'No GPS measurement' : 'GPS 미측정',
     healthkit: 'HealthKit',
     apple_watch: 'Apple Watch'
   };
@@ -10290,46 +10643,49 @@ function initRunMap(savedPoints) {
   }
 
   // GPS watchPosition으로 실시간 위치 추적
-  if (R.watchId) navigator.geolocation.clearWatch(R.watchId);
+  if (R.watchId) clearRunloopWatch(R.watchId);
   R.gpsActive = false;
   R.lastLat = null; R.lastLng = null;
   R.gpsAccuracy = null; R.lowAccuracyWarned = false;
   updateGpsChip('GPS 찾는 중', 'warn');
 
-  if (navigator.geolocation) {
-    R.watchId = navigator.geolocation.watchPosition(pos => {
+  if (hasRunloopGeolocation()) {
+    R.watchId = runloopWatchPosition(pos => {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
       const accuracy = pos.coords.accuracy || Infinity;
       const latlng = new kakao.maps.LatLng(lat, lng);
       R.gpsAccuracy = accuracy;
+      const sourceLabel = getRunloopLocationSourceLabel();
       updateGpsChip(
-        Number.isFinite(accuracy) ? `GPS ${Math.round(accuracy)}m` : 'GPS 수신',
+        Number.isFinite(accuracy)
+          ? `${sourceLabel} ${Math.round(accuracy)}m`
+          : (appLanguage === 'en' ? `${sourceLabel} received` : `${sourceLabel} 수신`),
         accuracy <= 30 ? 'good' : accuracy <= 80 ? 'warn' : 'bad'
       );
 
-      // GPS 첫 수신 시 시뮬레이션 끄기
+      // GPS 첫 수신 이후부터 실제 거리만 누적
       if (!R.gpsActive) {
         R.gpsActive = true;
         toast(accuracy <= 80 ? 'GPS 연결됐어요! 실제 거리로 측정해요' : 'GPS 정확도가 낮아요. 실내에서는 거리 누적을 보수적으로 봐요');
       }
 
-      // 이전 위치와 거리 계산해서 누적
-      if (R.lastLat !== null) {
-        const moved = getDistKm(R.lastLat, R.lastLng, lat, lng);
-        // 노이즈 필터: 실내/저정확도 GPS 점프는 거리로 반영하지 않음
-        if (accuracy > 80) {
-          if (!R.lowAccuracyWarned) {
-            R.lowAccuracyWarned = true;
-            toast('GPS 오차가 커서 이 위치 변화는 거리에서 제외했어요');
-          }
-        } else if (moved > 0.003 && moved < 0.1) {
-          R.dist = Math.min(R.dist + moved, R.totalKm * 1.5);
+      const usableAccuracy = accuracy <= 80;
+      if (!usableAccuracy) {
+        if (!R.lowAccuracyWarned) {
+          R.lowAccuracyWarned = true;
+          toast('GPS 오차가 커서 이 위치 변화는 거리에서 제외했어요');
         }
+      } else {
+        if (R.lastLat !== null) {
+          const moved = getDistKm(R.lastLat, R.lastLng, lat, lng);
+          if (moved > 0.003 && moved < 0.2) {
+            R.dist = Math.min(R.dist + moved, R.totalKm * 1.5);
+          }
+        }
+        R.lastLat = lat; R.lastLng = lng;
+        runPath.push(latlng);
       }
-      R.lastLat = lat; R.lastLng = lng;
-
-      runPath.push(latlng);
 
       // 마커 이동
       if (runMarker) runMarker.setMap(null);
@@ -10352,9 +10708,8 @@ function initRunMap(savedPoints) {
       updateRunStats();
 
     }, (err) => {
-      // GPS 실패 시 시뮬레이션으로 폴백
       updateGpsChip('GPS 대기', 'warn');
-      if (!R.gpsActive) toast('GPS를 찾는 중이에요… 시뮬레이션으로 진행해요');
+      if (!R.gpsActive) toast('GPS를 찾는 중이에요… 실제 위치가 잡히면 거리 측정을 시작해요');
     }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 });
   } else {
     updateGpsChip('GPS 없음', 'bad');
@@ -10665,8 +11020,8 @@ function obFinish() {
   toast(`환영해요, ${name}님! 🎉`);
   // 온보딩 완료 후 위치 권한 요청
   setTimeout(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(pos => {
+    if (hasRunloopGeolocation()) {
+      runloopGetCurrentPosition(pos => {
         S.lat = pos.coords.latitude;
         S.lng = pos.coords.longitude;
         fetchWeather();
@@ -10921,8 +11276,9 @@ function getMySourceSummary(records) {
   const sources = new Set(records.map(r => r.source || 'web_sim'));
   if (sources.has('apple_watch')) return 'Apple Watch';
   if (sources.has('healthkit')) return 'HealthKit';
+  if (sources.has('native_gps')) return 'iPhone GPS';
   if (sources.has('web_gps')) return 'iPhone GPS';
-  return '시연 기록';
+  return appLanguage === 'en' ? 'No GPS measurement' : 'GPS 미측정';
 }
 
 window.addEventListener('resize', () => {
