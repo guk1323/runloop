@@ -42,15 +42,15 @@ if ('serviceWorker' in navigator) {
   html,body{height:100%;font-family:'Inter','Noto Sans KR',sans-serif;background:var(--cream);color:var(--gray-900);}
   body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100dvh;overflow:hidden;background:linear-gradient(180deg,#FFFDF8 0%,#F7F3EC 100%);box-shadow:0 0 0 1px rgba(23,26,24,.06);}
 
-  .header{background:rgba(255,253,248,.88);border-bottom:1px solid rgba(28,36,43,.08);padding:14px 18px 11px;flex-shrink:0;z-index:100;backdrop-filter:blur(16px);}
+  .header{background:rgba(255,253,248,.88);border-bottom:1px solid rgba(28,36,43,.08);padding:12px 18px 10px;flex-shrink:0;z-index:100;backdrop-filter:blur(16px);}
   .header-top{display:flex;justify-content:space-between;align-items:center;}
-  .logo{display:flex;align-items:center;gap:5px;min-height:42px;font-size:24px;font-weight:900;color:var(--ink);letter-spacing:0;overflow:visible;}
-  .logo-mark{width:35px;height:39px;position:relative;display:inline-block;flex-shrink:0;}
-  .logo-mark::before{content:'';position:absolute;left:3px;top:0;width:27px;height:27px;border:4px solid var(--ink);border-radius:50%;background:rgba(255,253,248,.92);}
-  .logo-mark::after{content:'';position:absolute;left:13px;top:10px;width:9px;height:9px;background:var(--coral);border-radius:50%;box-shadow:0 0 0 2px rgba(255,253,248,.92);}
-  .logo-vowel::before{content:'';position:absolute;left:16px;top:28px;width:4px;height:7px;border-radius:999px;background:var(--ink);}
-  .logo-vowel::after{content:'';position:absolute;left:8px;bottom:0;width:19px;height:4px;border-radius:999px;background:var(--ink);}
-  .logo-word{display:inline-flex;align-items:center;min-height:34px;line-height:1.24;font-weight:900;padding-bottom:1px;overflow:visible;}
+  .logo{display:flex;align-items:center;gap:4px;min-height:38px;font-size:23px;font-weight:900;color:var(--ink);letter-spacing:0;overflow:visible;}
+  .logo-mark{width:31px;height:35px;position:relative;display:inline-block;flex-shrink:0;margin-top:1px;}
+  .logo-mark::before{content:'';position:absolute;left:3px;top:1px;width:23px;height:23px;border:3px solid var(--ink);border-radius:50%;background:rgba(255,253,248,.92);}
+  .logo-mark::after{content:'';position:absolute;left:11px;top:9px;width:8px;height:8px;background:var(--coral);border-radius:50%;box-shadow:0 0 0 2px rgba(255,253,248,.92);}
+  .logo-vowel::before{content:'';position:absolute;left:14px;top:26px;width:3px;height:6px;border-radius:999px;background:var(--ink);}
+  .logo-vowel::after{content:'';position:absolute;left:7px;bottom:0;width:17px;height:3px;border-radius:999px;background:var(--ink);}
+  .logo-word{display:inline-flex;align-items:center;min-height:32px;line-height:1.28;font-size:23px;font-weight:900;padding-top:1px;overflow:visible;}
   .header-settings-btn{width:38px;height:38px;border-radius:999px;border:1px solid rgba(28,36,43,.08);background:#fff;color:var(--ink);font-size:19px;font-weight:900;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(28,36,43,.08);}
   .loc-btn{display:flex;align-items:center;gap:5px;background:var(--coral-light);color:var(--ink);padding:6px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;cursor:pointer;border:1px solid rgba(242,122,94,.18);font-family:inherit;}
 
@@ -573,7 +573,7 @@ if ('serviceWorker' in navigator) {
   .my-goal-main-btn{margin-top:7px;height:28px;padding:0 11px;border:none;border-radius:999px;background:var(--ink);color:#fff;font-size:11px;font-weight:800;font-family:inherit;cursor:pointer;}
   .my-goal-track{height:8px;background:rgba(28,36,43,.1);border-radius:999px;overflow:hidden;}
   .my-goal-fill{height:100%;background:var(--coral);border-radius:999px;width:0%;transition:width .5s;}
-  .week-activity-chart{display:flex;align-items:flex-end;gap:6px;height:76px;margin-top:4px;margin-bottom:7px;}
+  .week-activity-chart{display:flex;align-items:flex-end;gap:6px;height:76px;margin-top:16px;margin-bottom:7px;}
   .week-activity-labels{display:flex;gap:6px;}
   .activity-calendar-panel{margin-top:16px;padding-top:14px;border-top:1px solid var(--gray-100);}
   .activity-calendar-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px;}
@@ -1140,7 +1140,7 @@ if ('serviceWorker' in navigator) {
 
 <!-- 마이페이지 -->
 <div id="screen-mypage" class="screen">
-  <div style="flex:1;overflow-y:auto;">
+  <div style="flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;">
 
     <!-- 프로필 카드 -->
     <div class="my-profile-card">
@@ -1183,8 +1183,6 @@ if ('serviceWorker' in navigator) {
           <div id="homeGoalFill" class="my-goal-fill"></div>
         </div>
       </div>
-      <div class="week-activity-chart" id="weekBarChart"></div>
-      <div class="week-activity-labels" id="weekBarLabels"></div>
       <div class="activity-calendar-panel">
         <div class="activity-calendar-head">
           <div>
@@ -1201,6 +1199,8 @@ if ('serviceWorker' in navigator) {
         <div class="activity-calendar-legend" id="activityCalendarLegend"></div>
         <div class="activity-calendar-detail" id="activityCalendarDetail"></div>
       </div>
+      <div class="week-activity-chart" id="weekBarChart"></div>
+      <div class="week-activity-labels" id="weekBarLabels"></div>
     </div>
 
     <div style="height:20px;"></div>
@@ -4928,19 +4928,32 @@ function scheduleIdleTask(task, delay = 0) {
   return setTimeout(run, delay);
 }
 
+let startupDeferredLoadsStarted = false;
+
 function runDeferredStartupLoads(options = {}) {
   const forceSchedule = !!options.forceSchedule;
+  const includeHealth = options.includeHealth !== false;
   scheduleIdleTask(() => fetchWeather(), 80);
   scheduleIdleTask(() => loadCultureSchedule({ force: forceSchedule, silent: true }), 650);
   scheduleIdleTask(() => {
     if (!lastCultureSpotResults.length || S.tab === 'create') loadNearCourses();
   }, 1150);
-  scheduleIdleTask(() => syncHealthActivity({ requestPermission: true, silent: true }), 1600);
+  if (includeHealth) scheduleIdleTask(() => syncHealthActivity({ requestPermission: true, silent: true }), 1600);
+}
+
+function runStartupDeferredLoads(options = {}) {
+  const firstRun = !startupDeferredLoadsStarted;
+  startupDeferredLoadsStarted = true;
+  runDeferredStartupLoads({
+    ...options,
+    forceSchedule: !!options.forceSchedule || firstRun,
+    includeHealth: firstRun || options.includeHealth === true
+  });
 }
 
 function requestStartupLocationAndData() {
+  runStartupDeferredLoads();
   if (!hasRunloopGeolocation()) {
-    runDeferredStartupLoads();
     return;
   }
   runloopGetCurrentPosition(pos => {
@@ -4948,10 +4961,8 @@ function requestStartupLocationAndData() {
     S.lng = pos.coords.longitude;
     document.getElementById('addrInput').value = getCurrentLocationLabel();
     updateMapSearchClearButton();
-    runDeferredStartupLoads({ forceSchedule: true });
-  }, () => {
-    runDeferredStartupLoads();
-  }, { enableHighAccuracy: true, timeout: 5500, maximumAge: 120000 });
+    runStartupDeferredLoads({ forceSchedule: true });
+  }, () => {}, { enableHighAccuracy: true, timeout: 5500, maximumAge: 120000 });
 }
 
 /* 페이지 로드 시 자동 위치 감지 */
