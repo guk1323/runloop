@@ -110,9 +110,6 @@ if ('serviceWorker' in navigator) {
   .map-place-desc{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;}
   .map-place-meta-chip{height:28px;display:inline-flex;align-items:center;max-width:100%;border-radius:999px;background:#fff;border:1px solid var(--gray-100);color:var(--gray-700);font-size:12px;font-weight:900;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;}
   .map-place-meta-chip.star{color:var(--spot-status-color,var(--coral));background:#FFF6F1;border-color:rgba(242,122,94,.16);flex-shrink:0;}
-  .map-place-weather{display:none;align-items:center;gap:5px;min-width:0;max-width:100%;font-size:12px;font-weight:900;color:var(--ink);background:#FFF6F1;border:1px solid rgba(242,122,94,.16);border-radius:999px;padding:7px 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .map-place-weather.active{display:flex;}
-  .map-place-weather span{min-width:0;overflow:hidden;text-overflow:ellipsis;}
   .map-place-credit{display:none;}
   .map-place-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
   .map-place-actions.has-save{grid-template-columns:repeat(3,minmax(0,1fr));}
@@ -303,9 +300,6 @@ if ('serviceWorker' in navigator) {
   .spot-photo-credit{position:absolute;left:8px;right:8px;bottom:7px;color:#fff;font-size:10px;font-weight:800;text-shadow:0 1px 4px rgba(0,0,0,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .course-detail-photo{width:100%;aspect-ratio:16/9;border-radius:12px;overflow:hidden;background:var(--gray-50);border:1px solid var(--gray-100);margin-bottom:12px;position:relative;}
   .course-detail-photo img{width:100%;height:100%;object-fit:cover;display:block;}
-  .course-detail-weather{display:none;margin-bottom:12px;background:#FFF6F1;border:1px solid rgba(242,122,94,.16);border-radius:var(--rs);padding:9px 10px;color:var(--ink);font-size:12px;font-weight:900;line-height:1.35;}
-  .course-detail-weather.active{display:block;}
-  .course-detail-weather small{display:block;margin-top:2px;color:var(--gray-500);font-size:11px;font-weight:700;}
   .mc-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding-right:34px;}
   .mc-card.saved-spot .mc-card-top{padding-right:0;}
   .mc-title{min-width:0;flex:1;}
@@ -378,7 +372,33 @@ if ('serviceWorker' in navigator) {
   .all-record-meta{font-size:11px;color:var(--gray-500);}
   .all-record-dist{font-size:15px;font-weight:700;color:var(--coral);}
 
-  #weatherCard{background:linear-gradient(135deg,#FFFFFF 0%,#FFF6F1 100%)!important;border:1px solid rgba(28,36,43,.07)!important;box-shadow:0 12px 28px rgba(28,36,43,.06)!important;}
+  #weatherCard{background:linear-gradient(135deg,#FFFFFF 0%,#FFF6F1 100%)!important;border:1px solid rgba(28,36,43,.07)!important;box-shadow:0 12px 28px rgba(28,36,43,.06)!important;cursor:pointer;transition:transform .15s,box-shadow .15s;}
+  #weatherCard:active{transform:scale(.99);}
+  .weather-page{min-height:100%;padding:16px 16px 28px;background:linear-gradient(180deg,#FFFDF8 0%,#F7F3EC 100%);overflow-y:auto;}
+  .weather-current-card{border:1px solid var(--gray-100);background:#fff;border-radius:14px;padding:14px;box-shadow:0 8px 18px rgba(28,36,43,.04);margin-bottom:12px;}
+  .weather-current-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:10px;}
+  .weather-current-title{font-size:12px;font-weight:800;color:var(--gray-500);margin-bottom:4px;}
+  .weather-current-place{font-size:17px;font-weight:950;color:var(--ink);line-height:1.2;}
+  .weather-current-temp{font-size:34px;font-weight:950;color:var(--ink);line-height:1;white-space:nowrap;}
+  .weather-current-summary{font-size:12px;line-height:1.45;color:var(--gray-600);border-top:1px solid var(--gray-100);padding-top:10px;}
+  .weather-board{position:relative;min-height:440px;border:1px solid var(--gray-100);background:linear-gradient(160deg,#F8FBFF 0%,#FFFFFF 48%,#FFF3EE 100%);border-radius:18px;overflow:hidden;box-shadow:0 10px 24px rgba(28,36,43,.05);margin-bottom:12px;}
+  .weather-board::before{content:'';position:absolute;left:28%;top:6%;width:48%;height:88%;border-radius:48% 52% 44% 56%;background:rgba(255,255,255,.68);border:1px solid rgba(28,36,43,.06);box-shadow:inset 0 0 0 1px rgba(242,122,94,.05);transform:rotate(10deg);}
+  .weather-board-label{position:absolute;top:14px;left:14px;font-size:12px;font-weight:950;color:var(--ink);z-index:1;}
+  .weather-city-chip{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);z-index:2;min-width:64px;max-width:90px;border:1px solid rgba(255,255,255,.82);background:rgba(255,255,255,.92);border-radius:999px;padding:7px 8px;box-shadow:0 8px 18px rgba(28,36,43,.1);font-family:inherit;color:var(--ink);cursor:pointer;text-align:left;backdrop-filter:blur(10px);}
+  .weather-city-chip.active{border-color:rgba(242,122,94,.5);box-shadow:0 10px 22px rgba(242,122,94,.18);}
+  .weather-city-name{display:block;font-size:10px;font-weight:950;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .weather-city-temp{display:flex;align-items:center;gap:3px;font-size:12px;font-weight:950;line-height:1.2;margin-top:2px;}
+  .weather-city-temp span:first-child{font-size:13px;}
+  .weather-detail-card{border:1px solid var(--gray-100);background:#fff;border-radius:14px;padding:14px;box-shadow:0 8px 18px rgba(28,36,43,.04);}
+  .weather-detail-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
+  .weather-detail-name{font-size:18px;font-weight:950;color:var(--ink);line-height:1.2;}
+  .weather-detail-desc{font-size:12px;font-weight:800;color:var(--gray-500);margin-top:3px;}
+  .weather-detail-temp{font-size:32px;font-weight:950;color:var(--coral);line-height:1;}
+  .weather-detail-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px;}
+  .weather-detail-stat{background:var(--gray-50);border-radius:12px;padding:9px 8px;text-align:center;}
+  .weather-detail-stat span{display:block;font-size:10px;font-weight:800;color:var(--gray-500);margin-bottom:3px;}
+  .weather-detail-stat strong{display:block;font-size:13px;font-weight:950;color:var(--ink);}
+  .weather-empty{border:1px dashed var(--gray-200);background:rgba(255,255,255,.75);border-radius:14px;padding:20px;text-align:center;color:var(--gray-500);font-size:13px;line-height:1.45;}
   .home-promo-section{background:#fff;border:1px solid rgba(28,36,43,.08);border-radius:var(--r);padding:13px;box-shadow:0 12px 28px rgba(28,36,43,.055);overflow:hidden;}
   .home-promo-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;}
   .home-promo-head-copy{min-width:0;}
@@ -839,7 +859,7 @@ if ('serviceWorker' in navigator) {
   <div style="padding:14px;display:flex;flex-direction:column;gap:12px;">
 
     <!-- ── 날씨 카드 ── -->
-    <div id="weatherCard" style="background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:16px 18px;box-shadow:0 8px 22px rgba(39,49,58,.04);">
+    <div id="weatherCard" role="button" tabindex="0" onclick="openWeatherPage()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openWeatherPage();}" aria-label="전국 날씨 보기" style="background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:16px 18px;box-shadow:0 8px 22px rgba(39,49,58,.04);">
       <!-- 1행: 위치 + 날씨 상태 -->
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
         <div style="font-size:12px;color:var(--gray-500);font-weight:500;display:flex;align-items:center;gap:4px;">
@@ -978,7 +998,6 @@ if ('serviceWorker' in navigator) {
         </div>
         <div class="map-place-copy">
           <div class="map-place-desc" id="aiPlaceDesc"></div>
-          <div class="map-place-weather" id="aiPlaceWeather"></div>
           <div class="map-place-credit" id="aiPlaceCredit"></div>
         </div>
       </div>
@@ -1136,6 +1155,21 @@ if ('serviceWorker' in navigator) {
       <div class="settings-title" id="cultureScheduleTitle">주변 일정</div>
     </div>
     <div class="schedule-list" id="cultureScheduleList"></div>
+  </div>
+</div>
+
+<!-- 전국 날씨 화면 -->
+<div id="screen-weather" class="screen settings-screen">
+  <div class="weather-page">
+    <div class="settings-page-header">
+      <button class="settings-back-btn" type="button" onclick="closeWeatherPage()" aria-label="뒤로 가기">‹</button>
+      <div class="settings-title" id="weatherPageTitle">전국 날씨</div>
+    </div>
+    <div class="weather-current-card" id="weatherCurrentCard"></div>
+    <div class="weather-board" id="nationalWeatherBoard">
+      <div class="weather-board-label" id="weatherBoardLabel">주요 도시 날씨</div>
+    </div>
+    <div class="weather-detail-card" id="weatherCityDetail"></div>
   </div>
 </div>
 
@@ -1368,7 +1402,6 @@ const TOUR_SPOTS_URL = runloopApiUrl('/api/tour-spots');
 const TOUR_PHOTO_URL = runloopApiUrl('/api/tour-photo');
 const HERITAGE_PHOTO_URL = runloopApiUrl('/api/heritage-photo');
 const TOUR_DETAIL_URL = runloopApiUrl('/api/tour-detail');
-const TOUR_WEATHER_URL = runloopApiUrl('/api/tour-weather');
 const TOUR_EVENTS_URL = runloopApiUrl('/api/tour-events');
 const OPEN_WEATHER_MAP_KEY = 'c4e77c4cac686498d868b622be22e841';
 const APP_LANGUAGE_KEY = 'runloopAppLanguageV1';
@@ -1585,6 +1618,15 @@ const APP_COPY = {
     infoView: '소개 보기',
     photoPreparing: '사진 준비중',
     cultureValue: '문화 가치',
+    weatherPageTitle: '전국 날씨',
+    weatherCurrentTitle: '내 위치 날씨',
+    weatherBoardLabel: '주요 도시 날씨',
+    weatherDetailEmpty: '도시를 선택하면 상세 날씨를 볼 수 있어요',
+    weatherLoading: '날씨를 불러오는 중이에요',
+    weatherUnavailable: '날씨 정보를 불러오지 못했어요',
+    weatherFeels: '체감',
+    weatherHumidity: '습도',
+    weatherWind: '바람',
     langChanged: '언어 설정을 변경했어요'
   },
   en: {
@@ -1662,6 +1704,15 @@ const APP_COPY = {
     infoView: 'Info',
     photoPreparing: 'Photo coming soon',
     cultureValue: 'Cultural value',
+    weatherPageTitle: 'Korea Weather',
+    weatherCurrentTitle: 'My weather',
+    weatherBoardLabel: 'Major cities',
+    weatherDetailEmpty: 'Select a city to see detailed weather',
+    weatherLoading: 'Loading weather',
+    weatherUnavailable: 'Could not load weather',
+    weatherFeels: 'Feels',
+    weatherHumidity: 'Humidity',
+    weatherWind: 'Wind',
     langChanged: 'Language updated'
   }
 };
@@ -2090,6 +2141,8 @@ function applyAppLanguage() {
   setTextContent('aiSameDestBtn', t('roundTrip'));
   updateInterestStaticLabels();
   setTextContent('appSettingsTitle', t('appSettings'));
+  setTextContent('weatherPageTitle', t('weatherPageTitle'));
+  setTextContent('weatherBoardLabel', t('weatherBoardLabel'));
   setTextContent('appLanguageLabel', t('language'));
   setTextContent('settingsGoalLabel', t('dailyGoal'));
   setTextContent('policyTitle', t('policy'));
@@ -3512,9 +3565,8 @@ function updateAiPlaceMedia(spot) {
   const img = document.getElementById('aiPlaceImage');
   const fallback = document.getElementById('aiPlaceImageFallback');
   const desc = document.getElementById('aiPlaceDesc');
-  const weatherEl = document.getElementById('aiPlaceWeather');
   const credit = document.getElementById('aiPlaceCredit');
-  if (!media || !img || !fallback || !desc || !weatherEl || !credit) return;
+  if (!media || !img || !fallback || !desc || !credit) return;
   if (!spot) {
     media.classList.remove('active');
     img.removeAttribute('src');
@@ -3524,15 +3576,12 @@ function updateAiPlaceMedia(spot) {
     img.removeAttribute('title');
     fallback.style.display = 'none';
     desc.innerHTML = '';
-    weatherEl.classList.remove('active');
-    weatherEl.textContent = '';
     credit.textContent = '';
     return;
   }
   const photo = getCultureSpotPhoto(spot);
   const displayName = getCultureSpotDisplayName(spot);
   desc.innerHTML = getMapPlaceMetaHtml(spot);
-  updateAiPlaceWeather(spot);
   if (photo && photo.imageUrl) {
     syncAiPendingPlacePhoto(spot, photo);
     media.classList.add('active');
@@ -3605,26 +3654,6 @@ function hydrateAiPlaceDescription(spot) {
     if (desc) desc.textContent = summarizeCultureOverview(overview, 128);
     aiPendingPlace.mediaSpot.overview = overview;
     if (aiPendingPlace.cultureSpot) aiPendingPlace.cultureSpot.overview = overview;
-  });
-}
-
-function updateAiPlaceWeather(spot) {
-  const weatherEl = document.getElementById('aiPlaceWeather');
-  if (!weatherEl || !spot) return;
-  const key = getCultureSpotFavoriteKey(spot);
-  weatherEl.classList.add('active');
-  weatherEl.textContent = appLanguage === 'en' ? 'Weather loading' : '날씨 확인 중';
-  fetchCultureSpotWeather(spot).then(weather => {
-    if (!aiPendingPlace || !aiPendingPlace.mediaSpot) return;
-    if (key !== getCultureSpotFavoriteKey(aiPendingPlace.mediaSpot)) return;
-    const line = formatCultureSpotWeatherLine(weather);
-    if (!line) {
-      weatherEl.classList.remove('active');
-      weatherEl.textContent = '';
-      return;
-    }
-    weatherEl.classList.add('active');
-    weatherEl.innerHTML = `<span>${escapeHtml(line)}</span>`;
   });
 }
 
@@ -4731,10 +4760,31 @@ const CULTURE_SCHEDULE_TTL_MS = 15 * 60 * 1000;
 let culturePhotoInflight = new Map();
 let cultureDetailInflight = new Map();
 let cultureOverviewInflight = new Map();
-let cultureWeatherInflight = new Map();
 let aiRouteOverlays = [];
 let aiRouteActiveCourse = null;
 let aiRouteZoomListenerAttached = false;
+const NATIONAL_WEATHER_CACHE_MS = 10 * 60 * 1000;
+const NATIONAL_WEATHER_CITIES = [
+  { id:'seoul', name:'서울', nameEn:'Seoul', lat:37.5665, lng:126.9780, x:49, y:17 },
+  { id:'incheon', name:'인천', nameEn:'Incheon', lat:37.4563, lng:126.7052, x:34, y:20 },
+  { id:'suwon', name:'수원', nameEn:'Suwon', lat:37.2636, lng:127.0286, x:48, y:25 },
+  { id:'chuncheon', name:'춘천', nameEn:'Chuncheon', lat:37.8813, lng:127.7298, x:62, y:15 },
+  { id:'gangneung', name:'강릉', nameEn:'Gangneung', lat:37.7519, lng:128.8761, x:78, y:23 },
+  { id:'cheongju', name:'청주', nameEn:'Cheongju', lat:36.6424, lng:127.4890, x:55, y:36 },
+  { id:'daejeon', name:'대전', nameEn:'Daejeon', lat:36.3504, lng:127.3845, x:52, y:45 },
+  { id:'jeonju', name:'전주', nameEn:'Jeonju', lat:35.8242, lng:127.1480, x:48, y:58 },
+  { id:'gwangju', name:'광주', nameEn:'Gwangju', lat:35.1595, lng:126.8526, x:40, y:70 },
+  { id:'daegu', name:'대구', nameEn:'Daegu', lat:35.8714, lng:128.6014, x:67, y:59 },
+  { id:'ulsan', name:'울산', nameEn:'Ulsan', lat:35.5384, lng:129.3114, x:78, y:69 },
+  { id:'busan', name:'부산', nameEn:'Busan', lat:35.1796, lng:129.0756, x:74, y:78 },
+  { id:'mokpo', name:'목포', nameEn:'Mokpo', lat:34.8118, lng:126.3922, x:31, y:78 },
+  { id:'jeju', name:'제주', nameEn:'Jeju', lat:33.4996, lng:126.5312, x:42, y:92 }
+];
+let weatherReturnTab = 'home';
+let nationalWeatherItems = [];
+let nationalWeatherLoadedAt = 0;
+let nationalWeatherLoading = false;
+let selectedWeatherCityId = 'seoul';
 
 function resetAiCourseSuggestions() {
   stopRouteGuidance('', { silent: true });
@@ -6401,12 +6451,8 @@ function getHomeScheduleItems() {
 function renderHomeSportsList() {
   const list = document.getElementById('homeSportsList');
   const block = document.querySelector('.home-sports-block');
-  if (block) block.style.display = appLanguage === 'en' ? 'none' : '';
   if (!list) return;
-  if (appLanguage === 'en') {
-    list.innerHTML = '';
-    return;
-  }
+  if (block) block.style.display = '';
   const items = getHomeSportsScheduleItems();
   if (!items.length) {
     list.innerHTML = `<div class="home-sports-empty">${escapeHtml(cultureScheduleLoading ? t('scheduleBannerLoading') : t('homeSportsEmpty'))}</div>`;
@@ -6582,6 +6628,182 @@ function closeCultureSchedulePage() {
   switchTab(scheduleReturnTab || 'home');
 }
 
+function openWeatherPage() {
+  weatherReturnTab = S.tab && !['weather', 'settings', 'schedule'].includes(S.tab) ? S.tab : 'home';
+  selectedWeatherCityId = getNearestNationalWeatherCityId(nationalWeatherItems.length ? nationalWeatherItems : NATIONAL_WEATHER_CITIES);
+  if (routeGuide.active) stopRouteGuidance('', { silent: true });
+  setMainChromeVisible(false);
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const weatherScreen = document.getElementById('screen-weather');
+  if (weatherScreen) weatherScreen.classList.add('active');
+  S.tab = 'weather';
+  renderWeatherPage();
+  fetchWeather();
+  loadNationalWeather();
+}
+
+function closeWeatherPage() {
+  switchTab(weatherReturnTab || 'home');
+}
+
+function getWeatherCityName(city) {
+  if (!city) return '';
+  return appLanguage === 'en' ? (city.nameEn || city.name) : city.name;
+}
+
+function getNearestNationalWeatherCityId(items = NATIONAL_WEATHER_CITIES) {
+  const candidates = Array.isArray(items) && items.length ? items : NATIONAL_WEATHER_CITIES;
+  const lat = Number(S.lat);
+  const lng = Number(S.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return (candidates[0] && candidates[0].id) || selectedWeatherCityId;
+  return candidates.reduce((best, city) => {
+    const dist = haversineMeters(lat, lng, city.lat, city.lng);
+    return dist < best.dist ? { id: city.id, dist } : best;
+  }, { id: (candidates[0] && candidates[0].id) || selectedWeatherCityId, dist: Infinity }).id;
+}
+
+async function loadNationalWeather(options = {}) {
+  const force = !!options.force;
+  const now = Date.now();
+  if (!force && nationalWeatherItems.length && now - nationalWeatherLoadedAt < NATIONAL_WEATHER_CACHE_MS) {
+    renderWeatherPage();
+    return nationalWeatherItems;
+  }
+  if (nationalWeatherLoading) return nationalWeatherItems;
+  nationalWeatherLoading = true;
+  const selectionBeforeLoad = selectedWeatherCityId;
+  renderWeatherPage();
+  try {
+    const items = await Promise.all(NATIONAL_WEATHER_CITIES.map(city =>
+      fetchNationalWeatherCity(city).catch(() => ({ ...city, unavailable: true }))
+    ));
+    nationalWeatherItems = items.filter(Boolean);
+    nationalWeatherLoadedAt = Date.now();
+    selectedWeatherCityId = nationalWeatherItems.some(item => item.id === selectionBeforeLoad)
+      ? selectionBeforeLoad
+      : getNearestNationalWeatherCityId(nationalWeatherItems);
+  } catch (error) {
+    console.warn('National weather unavailable', error);
+  } finally {
+    nationalWeatherLoading = false;
+    renderWeatherPage();
+  }
+  return nationalWeatherItems;
+}
+
+async function fetchNationalWeatherCity(city) {
+  if (!OPEN_WEATHER_MAP_KEY) return { ...city, unavailable: true };
+  const url = `https://api.openweathermap.org/data/2.5/weather?lat=${city.lat}&lon=${city.lng}&appid=${OPEN_WEATHER_MAP_KEY}&units=metric&lang=${appLanguage === 'en' ? 'en' : 'kr'}`;
+  const response = await fetch(url);
+  if (!response.ok) throw new Error(`weather ${city.id} ${response.status}`);
+  const data = await response.json();
+  const weatherId = Number(data.weather && data.weather[0] && data.weather[0].id) || 800;
+  const temp = Number(data.main && data.main.temp);
+  const feelsLike = Number(data.main && data.main.feels_like);
+  const humidity = Number(data.main && data.main.humidity);
+  const wind = Number(data.wind && data.wind.speed);
+  return {
+    ...city,
+    temp: Number.isFinite(temp) ? Math.round(temp) : null,
+    feelsLike: Number.isFinite(feelsLike) ? Math.round(feelsLike) : null,
+    humidity: Number.isFinite(humidity) ? Math.round(humidity) : null,
+    wind: Number.isFinite(wind) ? wind : null,
+    weatherId,
+    desc: appLanguage === 'en' ? getWeatherDescEn(weatherId) : getWeatherDesc(weatherId),
+    icon: getWeatherEmoji(weatherId)
+  };
+}
+
+function renderWeatherPage() {
+  setTextContent('weatherPageTitle', t('weatherPageTitle'));
+  setTextContent('weatherBoardLabel', t('weatherBoardLabel'));
+  renderWeatherCurrentCard();
+  renderNationalWeatherBoard();
+  renderWeatherCityDetail();
+}
+
+function renderWeatherCurrentCard() {
+  const el = document.getElementById('weatherCurrentCard');
+  if (!el) return;
+  const location = (document.getElementById('wLocation') && document.getElementById('wLocation').textContent.trim()) || getCurrentLocationLabel();
+  const temp = formatWeatherTempText(document.getElementById('wTemp') && document.getElementById('wTemp').textContent);
+  const desc = (document.getElementById('wDesc') && document.getElementById('wDesc').textContent.trim()) || '—';
+  const icon = (document.getElementById('wIcon') && document.getElementById('wIcon').textContent.trim()) || '🌤';
+  const summary = (document.getElementById('wSummary') && document.getElementById('wSummary').textContent.trim()) || t('weatherLoading');
+  el.innerHTML = `
+    <div class="weather-current-top">
+      <div>
+        <div class="weather-current-title">${escapeHtml(t('weatherCurrentTitle'))}</div>
+        <div class="weather-current-place">${escapeHtml(location)}</div>
+      </div>
+      <div class="weather-current-temp">${escapeHtml(icon)} ${escapeHtml(temp)}</div>
+    </div>
+    <div class="weather-current-summary">${escapeHtml(desc)} · ${escapeHtml(summary)}</div>
+  `;
+}
+
+function renderNationalWeatherBoard() {
+  const el = document.getElementById('nationalWeatherBoard');
+  if (!el) return;
+  const cities = nationalWeatherItems.length
+    ? nationalWeatherItems
+    : NATIONAL_WEATHER_CITIES.map(city => ({ ...city, loading: true }));
+  const chips = cities.map(city => {
+    const active = city.id === selectedWeatherCityId;
+    const temp = city.loading ? '—' : formatWeatherTempText(city.temp);
+    const icon = city.loading ? '…' : (city.icon || '🌤');
+    return `
+      <button class="weather-city-chip ${active ? 'active' : ''}" type="button" style="--x:${city.x}%;--y:${city.y}%;" onclick="selectWeatherCity('${escapeHtml(city.id)}')" aria-pressed="${active ? 'true' : 'false'}">
+        <span class="weather-city-name">${escapeHtml(getWeatherCityName(city))}</span>
+        <span class="weather-city-temp"><span>${escapeHtml(icon)}</span><span>${escapeHtml(temp)}</span></span>
+      </button>
+    `;
+  }).join('');
+  el.innerHTML = `<div class="weather-board-label" id="weatherBoardLabel">${escapeHtml(t('weatherBoardLabel'))}</div>${chips}`;
+}
+
+function selectWeatherCity(id) {
+  selectedWeatherCityId = String(id || selectedWeatherCityId);
+  renderWeatherPage();
+}
+
+function renderWeatherCityDetail() {
+  const el = document.getElementById('weatherCityDetail');
+  if (!el) return;
+  const cities = nationalWeatherItems.length ? nationalWeatherItems : [];
+  const city = cities.find(item => item.id === selectedWeatherCityId) || cities[0];
+  if (!city) {
+    el.innerHTML = `<div class="weather-empty">${escapeHtml(nationalWeatherLoading ? t('weatherLoading') : t('weatherDetailEmpty'))}</div>`;
+    return;
+  }
+  if (city.unavailable) {
+    el.innerHTML = `<div class="weather-empty">${escapeHtml(t('weatherUnavailable'))}</div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="weather-detail-head">
+      <div>
+        <div class="weather-detail-name">${escapeHtml(getWeatherCityName(city))}</div>
+        <div class="weather-detail-desc">${escapeHtml(city.icon || '🌤')} ${escapeHtml(city.desc || '')}</div>
+      </div>
+      <div class="weather-detail-temp">${escapeHtml(formatWeatherTempText(city.temp))}</div>
+    </div>
+    <div class="weather-detail-grid">
+      <div class="weather-detail-stat"><span>${escapeHtml(t('weatherFeels'))}</span><strong>${escapeHtml(formatWeatherTempText(city.feelsLike))}</strong></div>
+      <div class="weather-detail-stat"><span>${escapeHtml(t('weatherHumidity'))}</span><strong>${Number.isFinite(city.humidity) ? escapeHtml(city.humidity + '%') : '—'}</strong></div>
+      <div class="weather-detail-stat"><span>${escapeHtml(t('weatherWind'))}</span><strong>${Number.isFinite(city.wind) ? escapeHtml(city.wind.toFixed(1) + 'm/s') : '—'}</strong></div>
+    </div>
+  `;
+}
+
+function formatWeatherTempText(value) {
+  if (value === null || value === undefined) return '—';
+  const raw = String(value).trim();
+  if (!raw || raw === '—') return '—';
+  return raw.endsWith('°') ? raw : raw + '°';
+}
+
 async function loadCultureSchedule(options = {}) {
   const force = !!options.force;
   const silent = !!options.silent;
@@ -6660,12 +6882,12 @@ function renderCultureSchedulePage() {
     return;
   }
   const cultureEntries = getSchedulePageEntries('culture');
-  const sportsEntries = appLanguage === 'en' ? [] : getSchedulePageEntries('sports');
+  const sportsEntries = getSchedulePageEntries('sports');
   const sections = [];
   if (schedulePageMode === 'all' || schedulePageMode === 'culture') {
     sections.push(renderScheduleSection(t('scheduleCultureSection'), cultureEntries, renderCultureScheduleCard));
   }
-  if (appLanguage !== 'en' && (schedulePageMode === 'all' || schedulePageMode === 'sports')) {
+  if (schedulePageMode === 'all' || schedulePageMode === 'sports') {
     sections.push(renderScheduleSection(t('scheduleSportsSection'), sportsEntries, renderSportsScheduleCard));
   }
   const visibleSections = sections.filter(Boolean);
@@ -6747,7 +6969,7 @@ function renderSportsScheduleCard(event, index) {
 function openCultureScheduleItem(index) {
   const event = cultureScheduleItems[index];
   if (!event) return;
-  const link = String(event.link || '').trim() || getSearchLinkForSchedule(event.title || '');
+  const link = String(event.link || '').trim();
   if (link) window.open(link, '_blank', 'noopener');
 }
 
@@ -6893,11 +7115,6 @@ function formatScheduleDate(value) {
   return date.toLocaleDateString(appLanguage === 'en' ? 'en-US' : 'ko-KR', { month: 'short', day: 'numeric' });
 }
 
-function getSearchLinkForSchedule(title) {
-  const query = appLanguage === 'en' ? `${title} Korea event` : `${title} 행사`;
-  return `https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`;
-}
-
 function getScheduleItemIndex(item) {
   return (Array.isArray(cultureScheduleItems) ? cultureScheduleItems : []).findIndex(event => getScheduleFavoriteKey(event) === getScheduleFavoriteKey(item));
 }
@@ -7022,7 +7239,7 @@ function removeSavedScheduleFavoriteFromButton(clickEvent, key) {
 function openSavedScheduleFavorite(key) {
   const item = readScheduleFavorites()[String(key)];
   if (!item) return;
-  const link = String(item.link || '').trim() || getSearchLinkForSchedule(item.title || '');
+  const link = String(item.link || '').trim();
   if (link) window.open(link, '_blank', 'noopener');
 }
 
@@ -7052,7 +7269,8 @@ async function loadNearCourses(options = {}) {
     url.searchParams.set('lat', String(searchCenter.lat));
     url.searchParams.set('lng', String(searchCenter.lng));
     url.searchParams.set('radius', String(searchRadius));
-    url.searchParams.set('lang', appLanguage);
+    url.searchParams.set('lang', 'ko');
+    url.searchParams.set('displayLang', appLanguage);
     const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error('Tour spot API failed');
     const data = await response.json();
@@ -7178,14 +7396,28 @@ function getCultureSpotIcon(type) {
 }
 
 function getCultureSpotInfoUrl(placeName, placeUrl) {
+  const safePlaceUrl = String(placeUrl || '').trim();
+  const canonical = getCultureSpotCanonicalName(placeName);
   if (appLanguage === 'en') {
-    if (placeUrl && /^https?:\/\//.test(placeUrl) && /english\.visitkorea\.or\.kr/.test(placeUrl) && !/\/svc\/search\/index\.do/.test(placeUrl)) return placeUrl;
-    const canonical = getCultureSpotCanonicalName(placeName);
     if (CULTURE_SPOT_EN_INFO_URL_MAP[canonical]) return CULTURE_SPOT_EN_INFO_URL_MAP[canonical];
-    return 'https://www.google.com/search?q=' + encodeURIComponent(`site:english.visitkorea.or.kr/svc/contents/contentsView.do ${placeName || canonical}`);
   }
-  if (placeUrl && /^https?:\/\//.test(placeUrl)) return placeUrl;
-  return 'https://search.naver.com/search.naver?query=' + encodeURIComponent(placeName + ' 소개');
+  if (isOfficialCultureInfoUrl(safePlaceUrl)) return safePlaceUrl;
+  return getOfficialVisitKoreaSearchUrl(canonical || placeName, appLanguage);
+}
+
+function isOfficialCultureInfoUrl(url) {
+  return /^https?:\/\//i.test(url)
+    && /(^|\.)visitkorea\.or\.kr\//i.test(url)
+    && !/(google\.com|search\.naver\.com|naver\.com\/search)/i.test(url);
+}
+
+function getOfficialVisitKoreaSearchUrl(placeName, lang = appLanguage) {
+  const keyword = String(placeName || '').trim();
+  if (!keyword) return '';
+  if (lang === 'en') {
+    return 'https://english.visitkorea.or.kr/svc/search/index.do?keyword=' + encodeURIComponent(keyword);
+  }
+  return 'https://korean.visitkorea.or.kr/search/search_list.do?keyword=' + encodeURIComponent(keyword);
 }
 
 function getCultureSpotVisitKey(spot) {
@@ -7589,113 +7821,6 @@ function saveCultureSpotPhotoToVisit(key, photo) {
   item.firstImage = item.firstImage || photo.imageUrl;
   visits[String(key)] = item;
   try { localStorage.setItem(CULTURE_SPOT_VISITS_KEY, JSON.stringify(visits)); } catch (_) {}
-}
-
-function getCultureSpotWeatherCacheKey(spot) {
-  const latlng = getCultureSpotLatLng(spot);
-  const name = getCultureSpotOriginalName(spot, '').replace(/\s+/g, '').slice(0, 40);
-  const latKey = latlng.lat !== null ? Number(latlng.lat).toFixed(3) : '0.000';
-  const lngKey = latlng.lng !== null ? Number(latlng.lng).toFixed(3) : '0.000';
-  return `${appLanguage}:${name}:${latKey}:${lngKey}`;
-}
-
-async function fetchCultureSpotWeather(spot) {
-  if (!spot) return null;
-  const cacheKey = getCultureSpotWeatherCacheKey(spot);
-  if (cultureWeatherInflight.has(cacheKey)) return cultureWeatherInflight.get(cacheKey);
-  const request = fetchCultureSpotWeatherFromApi(spot)
-    .then(weather => weather || fetchOpenWeatherSpotWeather(spot))
-    .finally(() => cultureWeatherInflight.delete(cacheKey));
-  cultureWeatherInflight.set(cacheKey, request);
-  return request;
-}
-
-async function fetchCultureSpotWeatherFromApi(spot) {
-  const latlng = getCultureSpotLatLng(spot);
-  if (latlng.lat === null || latlng.lng === null) return null;
-  try {
-    const url = new URL(TOUR_WEATHER_URL, window.location.href);
-    url.searchParams.set('lat', String(latlng.lat));
-    url.searchParams.set('lng', String(latlng.lng));
-    url.searchParams.set('name', getCultureSpotOriginalName(spot, ''));
-    const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
-    if (!response.ok) return null;
-    const data = await response.json();
-    return data && data.weather ? { ...data.weather, source: data.weather.source || 'kma' } : null;
-  } catch (error) {
-    console.warn('KMA tour weather unavailable', error);
-    return null;
-  }
-}
-
-async function fetchOpenWeatherSpotWeather(spot) {
-  const latlng = getCultureSpotLatLng(spot);
-  if (!OPEN_WEATHER_MAP_KEY || latlng.lat === null || latlng.lng === null) return null;
-  try {
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latlng.lat}&lon=${latlng.lng}&appid=${OPEN_WEATHER_MAP_KEY}&units=metric&lang=${appLanguage === 'en' ? 'en' : 'kr'}`;
-    const response = await fetch(url);
-    if (!response.ok) return null;
-    const data = await response.json();
-    const weatherId = Number(data.weather && data.weather[0] && data.weather[0].id) || 800;
-    return {
-      source: 'openweather',
-      temp: Number(data.main && data.main.temp),
-      feelsLike: Number(data.main && data.main.feels_like),
-      humidity: Number(data.main && data.main.humidity),
-      wind: Number(data.wind && data.wind.speed),
-      sky: appLanguage === 'en' ? getWeatherDescEn(weatherId) : getWeatherDesc(weatherId),
-      weatherId
-    };
-  } catch (error) {
-    return null;
-  }
-}
-
-function formatCultureSpotWeatherLine(weather) {
-  if (!weather) return '';
-  const temp = Number(weather.temp ?? weather.th3);
-  const sky = localizeSkyText(weather.sky);
-  const pop = Number(weather.pop ?? weather.rainProbability);
-  const parts = [];
-  if (sky) parts.push(sky);
-  if (Number.isFinite(temp)) parts.push(Math.round(temp) + '°');
-  if (Number.isFinite(pop)) parts.push((appLanguage === 'en' ? 'Rain ' : '강수 ') + Math.round(pop) + '%');
-  return parts.join(' · ');
-}
-
-function localizeSkyText(value) {
-  const text = String(value || '').trim();
-  if (appLanguage !== 'en') return text;
-  const map = {
-    '맑음': 'Clear',
-    '구름조금': 'Partly cloudy',
-    '구름많음': 'Cloudy',
-    '흐림': 'Overcast',
-    '비': 'Rain',
-    '눈': 'Snow'
-  };
-  return map[text] || text;
-}
-
-function renderSpotWeatherBox(spot, prefix = 'spotWeather') {
-  const key = getSpotPhotoDomId(spot && spot.key || getCultureSpotFavoriteKey(spot), prefix);
-  return `<div class="course-detail-weather" id="${escapeHtml(key)}"></div>`;
-}
-
-function updateSpotWeatherBox(spot, weather, prefix = 'spotWeather') {
-  const key = getSpotPhotoDomId(spot && spot.key || getCultureSpotFavoriteKey(spot), prefix);
-  const el = document.getElementById(key);
-  if (!el || !weather) return;
-  const line = formatCultureSpotWeatherLine(weather);
-  if (!line) return;
-  el.classList.add('active');
-  el.textContent = line;
-}
-
-function hydrateSpotWeather(spots, prefix = 'spotWeather') {
-  (Array.isArray(spots) ? spots : []).forEach(spot => {
-    fetchCultureSpotWeather(spot).then(weather => updateSpotWeatherBox(spot, weather, prefix));
-  });
 }
 
 function getWeatherDescEn(id) {
@@ -8877,6 +9002,7 @@ async function fetchWeather() {
     document.getElementById('wDesc').textContent = appLanguage === 'en' ? 'Clear' : '맑음';
     document.getElementById('wIcon').textContent = '☀️';
     document.getElementById('wSummary').textContent = makeWeatherSummary(22, 45, 2, 800);
+    if (S.tab === 'weather') renderWeatherPage();
     return;
   }
 
@@ -8907,15 +9033,19 @@ async function fetchWeather() {
             document.getElementById('wLocation').textContent = appLanguage === 'en'
               ? formatKakaoAddressLocation(addr, localizeKoreanDisplayText(loc, getCurrentLocationLabel()))
               : loc;
+            if (S.tab === 'weather') renderWeatherPage();
           } else {
             document.getElementById('wLocation').textContent = getCurrentLocationLabel();
+            if (S.tab === 'weather') renderWeatherPage();
           }
         });
       } else {
         document.getElementById('wLocation').textContent = getCurrentLocationLabel();
+        if (S.tab === 'weather') renderWeatherPage();
       }
     } catch(e) {
       document.getElementById('wLocation').textContent = getCurrentLocationLabel();
+      if (S.tab === 'weather') renderWeatherPage();
     }
     document.getElementById('wTemp').textContent = temp;
     document.getElementById('wDesc').textContent = desc;
@@ -8965,8 +9095,10 @@ async function fetchWeather() {
       if (b10) b10.textContent = '—';
       if (b25) b25.textContent = '—';
     }
+    if (S.tab === 'weather') renderWeatherPage();
   } catch(e) {
     document.getElementById('wDesc').textContent = appLanguage === 'en' ? 'Weather unavailable' : '날씨 정보를 불러오지 못했어요';
+    if (S.tab === 'weather') renderWeatherPage();
   }
 }
 
@@ -9694,7 +9826,7 @@ function renderSavedSpotCard(spot) {
 function renderSavedScheduleCard(item) {
   const keyJson = escapeHtml(JSON.stringify(item.key));
   const image = String(item.image || '').trim();
-  const link = String(item.link || '').trim() || getSearchLinkForSchedule(item.title || '');
+  const link = String(item.link || '').trim();
   const title = getScheduleDisplayTitle(item);
   const meta = [getScheduleDisplayPlace(item), formatScheduleDistance(item), localizeProviderName(item.source)].filter(Boolean).join(' · ');
   return `
@@ -9804,7 +9936,6 @@ function openCourseDetail(id) {
   document.getElementById('courseDetailMeta').textContent = [`★${stars}`, dist].filter(Boolean).join(' · ');
   document.getElementById('courseDetailBody').innerHTML = `
     ${renderSpotPhotoBox(course, 'detailPhoto')}
-    ${renderSpotWeatherBox(course, 'detailWeather')}
     <div class="course-detail-chiprow">
       <span class="course-detail-chip">${escapeHtml(getCultureValueStarsText(stars))}</span>
     </div>
@@ -9826,7 +9957,6 @@ function openCourseDetail(id) {
   `;
   document.getElementById('courseDetailModal').style.display = 'flex';
   hydrateSavedSpotPhotos([course]);
-  hydrateSpotWeather([course], 'detailWeather');
 }
 
 function closeCourseDetail() {

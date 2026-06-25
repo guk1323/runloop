@@ -43,7 +43,8 @@ export default async function handler(req, res) {
   }
 
   const query = req.query || {};
-  const lang = getKtoLanguage(getQueryValue(query.lang));
+  const requestedLang = getKtoLanguage(getQueryValue(query.lang));
+  const lang = 'ko';
   const serviceKey = getKtoServiceKey(lang);
   if (!serviceKey) {
     return res.status(500).json({ error: `${KTO_KEY_ENV[lang]} is not configured` });
@@ -79,7 +80,7 @@ export default async function handler(req, res) {
 
     spots = await enrichWithChaHeritage(spots, lat, lng, radius, lang);
 
-    return res.status(200).json({ spots, lang });
+    return res.status(200).json({ spots, lang, displayLang: requestedLang });
   } catch (error) {
     console.error('KTO tour spot proxy failed', error);
     return res.status(400).json({ error: 'Invalid KTO tour spot request' });
@@ -522,7 +523,7 @@ function buildKtoCategoryLabel(item, fallback) {
 
 function getVisitKoreaSearchUrl(title, lang = 'ko') {
   if (lang === 'en') {
-    return 'https://www.google.com/search?q=' + encodeURIComponent(`site:english.visitkorea.or.kr/svc/contents/contentsView.do ${title}`);
+    return 'https://english.visitkorea.or.kr/svc/search/index.do?keyword=' + encodeURIComponent(title);
   }
   const base = 'https://korean.visitkorea.or.kr/search/search_list.do?keyword=';
   return base + encodeURIComponent(title);

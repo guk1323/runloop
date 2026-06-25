@@ -64,9 +64,8 @@ export default async function handler(req, res) {
   const lang = getKtoLanguage(getQueryValue(query.lang));
   const debug = isTruthy(getQueryValue(query.debug));
   const ktoServiceKey = getKtoServiceKey(lang);
-  const sportsEnabled = lang !== 'en';
-  const sportsServiceKey = sportsEnabled ? getSportsServiceKey() : '';
-  if (!ktoServiceKey && !sportsServiceKey && !(sportsEnabled && KSPORTS_PORTAL_URL)) {
+  const sportsServiceKey = getSportsServiceKey();
+  if (!ktoServiceKey && !sportsServiceKey && !KSPORTS_PORTAL_URL) {
     return res.status(500).json({ error: `${KTO_KEY_ENV[lang]} or ${KSPORTS_KEY_ENV} is not configured` });
   }
 
@@ -95,21 +94,19 @@ export default async function handler(req, res) {
         }
       );
     }
-    if (sportsEnabled && sportsServiceKey) {
+    if (sportsServiceKey) {
       requests.push({
         label: 'ksports-open-data',
         run: () => fetchSportsItems({ rows: Math.min(rows * 8, 800), pageNo: 1 }, sportsServiceKey)
       });
     }
 
-    if (sportsEnabled) {
-      getSportsPortalMonths(today, days).forEach(month => {
-        requests.push({
-          label: `ksports-portal-${month.year}-${String(month.month).padStart(2, '0')}`,
-          run: () => fetchSportsPortalItems(month)
-        });
+    getSportsPortalMonths(today, days).forEach(month => {
+      requests.push({
+        label: `ksports-portal-${month.year}-${String(month.month).padStart(2, '0')}`,
+        run: () => fetchSportsPortalItems(month)
       });
-    }
+    });
 
     const results = await Promise.allSettled(requests.map(request => request.run()));
     const diagnostics = [];
@@ -212,7 +209,7 @@ function normalizeKtoEvent(item, userLat, userLng, lang) {
     lng: hasPoint ? lng : null,
     distFromMe,
     tel: cleanText(item.tel, 80),
-    link: getSearchLink(title, lang),
+    link: getVisitKoreaSearchLink(title, lang),
     category: lang === 'en' ? 'Festival' : '축제',
     type: 'festival',
     source: lang === 'en' ? 'VisitKorea' : '한국관광공사'
@@ -276,7 +273,7 @@ function parseSportsPortalHtml(html, link) {
         '시작일자': startRaw,
         '종료일자': endRaw,
         '개최지': place,
-        '자료바로가기': link
+        '자료바로가기': ''
       });
     }
   }
@@ -334,7 +331,7 @@ function normalizeSportsEvent(item, userLat, userLng, lang) {
     lng: point ? point.lng : null,
     distFromMe,
     tel: cleanText(firstValue(item, ['전화번호', '문의전화', 'tel']), 80),
-    link: cleanUrl(firstValue(item, ['자료바로가기', '단체홈페이지', '홈페이지', '바로가기', 'url'])) || getSearchLink(title, lang),
+    link: getSportsEventLink(item),
     category: lang === 'en' ? 'Sports' : '체육',
     type: 'sports',
     source,
@@ -398,9 +395,19 @@ function inferRegionPoint(place) {
   return match ? { lat: match.lat, lng: match.lng } : null;
 }
 
-function getSearchLink(title, lang) {
-  const query = lang === 'en' ? `${title} Korea festival` : `${title} 행사`;
-  return `https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`;
+function getVisitKoreaSearchLink(title, lang) {
+  if (!title) return '';
+  if (lang === 'en') {
+    return `https://english.visitkorea.or.kr/svc/search/index.do?keyword=${encodeURIComponent(title)}`;
+  }
+  return `https://korean.visitkorea.or.kr/search/search_list.do?keyword=${encodeURIComponent(title)}`;
+}
+
+function getSportsEventLink(item) {
+  const link = cleanUrl(firstValue(item, ['자료바로가기', '단체홈페이지', '홈페이지', '바로가기', 'url']));
+  if (!link) return '';
+  if (item && item.__portal && /g1\.sports\.or\.kr\/schedule\/month\.do/i.test(link)) return '';
+  return link;
 }
 
 function getSportsPortalMonths(start, days) {
