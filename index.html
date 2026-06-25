@@ -44,11 +44,7 @@ if ('serviceWorker' in navigator) {
 
   .header{background:rgba(255,253,248,.88);border-bottom:1px solid rgba(28,36,43,.08);padding:12px 18px 10px;flex-shrink:0;z-index:100;backdrop-filter:blur(16px);}
   .header-top{display:flex;justify-content:space-between;align-items:center;}
-  .logo{display:flex;align-items:center;gap:8px;min-height:38px;font-size:23px;font-weight:900;color:var(--ink);letter-spacing:0;overflow:visible;}
-  .logo-mark{width:38px;height:38px;position:relative;display:inline-block;flex-shrink:0;border-radius:50%;background:#fff;box-shadow:0 3px 12px rgba(28,36,43,.08),0 0 0 1px rgba(28,36,43,.04);}
-  .logo-mark::before{content:'';position:absolute;left:10px;top:10px;width:18px;height:18px;border:2px solid #B05245;border-radius:50%;background:transparent;}
-  .logo-mark::after{content:'';position:absolute;left:15px;top:15px;width:8px;height:8px;border:2px solid #B05245;border-radius:50%;background:transparent;}
-  .logo-vowel{display:none;}
+  .logo{display:flex;align-items:center;min-height:38px;font-size:23px;font-weight:900;color:var(--ink);letter-spacing:0;overflow:visible;}
   .logo-word{display:inline-flex;align-items:center;min-height:32px;line-height:1.2;font-size:23px;font-weight:900;overflow:visible;}
   .header-settings-btn{width:38px;height:38px;border-radius:999px;border:1px solid rgba(28,36,43,.08);background:#fff;color:var(--ink);font-size:19px;font-weight:900;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(28,36,43,.08);}
   .loc-btn{display:flex;align-items:center;gap:5px;background:var(--coral-light);color:var(--ink);padding:6px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;cursor:pointer;border:1px solid rgba(242,122,94,.18);font-family:inherit;}
@@ -648,6 +644,11 @@ if ('serviceWorker' in navigator) {
   .goal-custom-input{width:86px;height:36px;border:1px solid var(--gray-300);border-radius:var(--rs);background:#fff;padding:0 10px;font-size:15px;font-weight:800;color:var(--ink);font-family:inherit;text-align:right;outline:none;}
   .goal-custom-input:focus{border-color:var(--coral);box-shadow:0 0 0 3px rgba(242,122,94,.14);}
   .goal-custom-unit{font-size:13px;font-weight:900;color:var(--gray-700);margin-left:-6px;}
+  .ob-choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+  .ob-choice-grid.single{grid-template-columns:1fr;}
+  .ob-choice-item{min-height:54px;border:2px solid var(--gray-100);border-radius:var(--r);background:var(--gray-50);color:var(--gray-700);font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;text-align:left;padding:10px 14px;display:flex;flex-direction:column;justify-content:center;gap:4px;}
+  .ob-choice-item span{font-size:12px;font-weight:700;color:var(--gray-500);}
+  .ob-choice-item.selected{background:var(--coral-light);border-color:var(--coral);color:var(--ink);}
 
   .near-course-card{background:rgba(255,255,255,.82);border-radius:12px;border:1px solid rgba(28,36,43,.07);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:border-color .15s,transform .15s,box-shadow .15s;box-shadow:0 8px 20px rgba(28,36,43,.045);}
   .near-course-card:hover{border-color:var(--coral);transform:translateY(-1px);}
@@ -755,92 +756,57 @@ if ('serviceWorker' in navigator) {
     <div id="ob-dot-4" style="flex:1;height:4px;border-radius:2px;background:var(--gray-100);transition:background .3s;"></div>
   </div>
 
-  <!-- 스텝 1: 닉네임 -->
+  <!-- 스텝 1: 언어 -->
   <div id="ob-step-1" style="flex:1;display:flex;flex-direction:column;padding:40px 24px 32px;">
+    <div style="font-size:32px;margin-bottom:16px;">◎</div>
+    <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;line-height:1.3;">오롯길에 오신 걸<br>환영해요</div>
+    <div style="font-size:14px;color:var(--gray-500);margin-bottom:34px;line-height:1.6;">앱에서 사용할 언어를 선택해주세요.<br>기본은 한국어예요.</div>
+    <div class="ob-choice-grid">
+      <button id="ob-lang-ko" class="ob-choice-item selected" type="button" onclick="selectOnboardingLanguage('ko')">한국어<span>바로 시작</span></button>
+      <button id="ob-lang-en" class="ob-choice-item" type="button" onclick="selectOnboardingLanguage('en')">English<span>Restart required</span></button>
+    </div>
+    <div style="font-size:12px;color:var(--gray-500);line-height:1.5;">영어 화면은 나중에 한 번에 다듬을 예정이에요. 지금은 한국어 기준으로 안정화합니다.</div>
+    <div style="margin-top:auto;">
+      <button onclick="obNext(1)" style="width:100%;height:52px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">다음 →</button>
+    </div>
+  </div>
+
+  <!-- 스텝 2: 닉네임 -->
+  <div id="ob-step-2b" style="flex:1;display:none;flex-direction:column;padding:40px 24px 32px;">
     <div style="font-size:32px;margin-bottom:16px;">👋</div>
-    <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;line-height:1.3;">오롯길에 오신 걸<br>환영해요!</div>
+    <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;line-height:1.3;">어떻게 불러드릴까요?</div>
     <div style="font-size:14px;color:var(--gray-500);margin-bottom:40px;line-height:1.6;">오늘의 걸음으로 가까운 문화와<br>나만의 길을 발견해요.</div>
     <div style="font-size:13px;font-weight:500;color:var(--gray-700);margin-bottom:8px;">닉네임을 입력해주세요</div>
     <input type="text" id="ob-name" placeholder="예: 산책 좋아하는 훈" maxlength="12"
       style="width:100%;height:52px;border:2px solid var(--gray-100);border-radius:var(--r);padding:0 16px;font-size:16px;font-family:inherit;outline:none;transition:border-color .2s;"
       oninput="this.style.borderColor=this.value?'var(--coral)':'var(--gray-100)'"
     >
-    <div style="font-size:12px;color:var(--gray-500);margin-top:8px;">최대 12자 · 언제든 변경 가능해요</div>
-    <div style="margin-top:auto;">
-      <button onclick="obNext(1)" style="width:100%;height:52px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">다음 →</button>
-    </div>
-  </div>
-
-  <!-- 스텝 2: 신체 정보 -->
-  <div id="ob-step-2b" style="flex:1;display:none;flex-direction:column;padding:40px 24px 32px;">
-    <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;">기본 정보를<br>알려주세요</div>
-    <div style="font-size:14px;color:var(--gray-500);margin-bottom:32px;">더 정확한 칼로리 계산에 사용돼요 🔥</div>
-
-    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:32px;">
-      <!-- 나이 -->
-      <div>
-        <div style="font-size:13px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">나이</div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <input type="number" id="ob-age" placeholder="25" min="10" max="100"
-            style="flex:1;height:48px;border:2px solid var(--gray-100);border-radius:var(--rs);padding:0 14px;font-size:16px;font-family:inherit;outline:none;transition:border-color .2s;"
-            oninput="this.style.borderColor=this.value?'var(--coral)':'var(--gray-100)'">
-          <span style="font-size:14px;color:var(--gray-500);">세</span>
-        </div>
-      </div>
-      <!-- 키 -->
-      <div>
-        <div style="font-size:13px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">키</div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <input type="number" id="ob-height" placeholder="170" min="100" max="250"
-            style="flex:1;height:48px;border:2px solid var(--gray-100);border-radius:var(--rs);padding:0 14px;font-size:16px;font-family:inherit;outline:none;transition:border-color .2s;"
-            oninput="this.style.borderColor=this.value?'var(--coral)':'var(--gray-100)'">
-          <span style="font-size:14px;color:var(--gray-500);">cm</span>
-        </div>
-      </div>
-      <!-- 몸무게 -->
-      <div>
-        <div style="font-size:13px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">몸무게</div>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <input type="number" id="ob-weight" placeholder="70" min="30" max="200"
-            style="flex:1;height:48px;border:2px solid var(--gray-100);border-radius:var(--rs);padding:0 14px;font-size:16px;font-family:inherit;outline:none;transition:border-color .2s;"
-            oninput="this.style.borderColor=this.value?'var(--coral)':'var(--gray-100)'">
-          <span style="font-size:14px;color:var(--gray-500);">kg</span>
-        </div>
-      </div>
-      <!-- 성별 -->
-      <div>
-        <div style="font-size:13px;font-weight:500;color:var(--gray-700);margin-bottom:6px;">성별</div>
-        <div style="display:flex;gap:10px;">
-          <button id="ob-male" onclick="selectGender('male')"
-            style="flex:1;height:48px;border:2px solid var(--gray-100);border-radius:var(--rs);font-size:14px;font-family:inherit;cursor:pointer;background:var(--gray-50);transition:all .15s;">남성</button>
-          <button id="ob-female" onclick="selectGender('female')"
-            style="flex:1;height:48px;border:2px solid var(--gray-100);border-radius:var(--rs);font-size:14px;font-family:inherit;cursor:pointer;background:var(--gray-50);transition:all .15s;">여성</button>
-        </div>
-      </div>
-    </div>
-
-    <div style="font-size:12px;color:var(--gray-500);margin-bottom:16px;text-align:center;">입력하지 않아도 괜찮아요 — 나중에 MY탭에서 수정 가능해요</div>
+    <div style="font-size:12px;color:var(--gray-500);margin-top:8px;">최대 12자</div>
     <div style="display:flex;gap:10px;margin-top:auto;">
       <button onclick="obBack(2)" style="width:52px;height:52px;background:var(--gray-100);border:none;border-radius:var(--r);font-size:20px;cursor:pointer;">←</button>
       <button onclick="obNext(2)" style="flex:1;height:52px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;font-family:inherit;cursor:pointer;">다음 →</button>
     </div>
   </div>
 
-  <!-- 스텝 3: 아바타 -->
+  <!-- 스텝 3: 기본 분포 정보 -->
   <div id="ob-step-3a" style="flex:1;display:none;flex-direction:column;padding:40px 24px 32px;">
-    <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;">나를 표현할<br>아바타를 골라요</div>
-    <div style="font-size:14px;color:var(--gray-500);margin-bottom:32px;">언제든 바꿀 수 있어요!</div>
-    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:32px;">
-      <div class="ob-avatar-item selected" onclick="selectObAvatar(this,'🏃')">🏃</div>
-      <div class="ob-avatar-item" onclick="selectObAvatar(this,'🧗')">🧗</div>
-      <div class="ob-avatar-item" onclick="selectObAvatar(this,'🚴')">🚴</div>
-      <div class="ob-avatar-item" onclick="selectObAvatar(this,'🏊')">🏊</div>
-      <div class="ob-avatar-item" onclick="selectObAvatar(this,'🤸')">🤸</div>
-      <div class="ob-avatar-item" onclick="selectObAvatar(this,'💪')">💪</div>
-      <div class="ob-avatar-item" onclick="selectObAvatar(this,'🦅')">🦅</div>
-      <div class="ob-avatar-item" onclick="selectObAvatar(this,'⚡')">⚡</div>
-      <div class="ob-avatar-item" onclick="selectObAvatar(this,'🌟')">🌟</div>
-      <div class="ob-avatar-item" onclick="selectObAvatar(this,'🔥')">🔥</div>
+    <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;">기본 정보를<br>선택해주세요</div>
+    <div style="font-size:14px;color:var(--gray-500);margin-bottom:28px;line-height:1.6;">사용자 분포를 이해하기 위한 선택 항목이에요.<br>원하지 않으면 선택하지 않아도 돼요.</div>
+    <div style="font-size:13px;font-weight:700;color:var(--gray-700);margin-bottom:8px;">연령대</div>
+    <div class="ob-choice-grid">
+      <button class="ob-choice-item" type="button" data-age-group="10s" onclick="selectAgeGroup(this,'10s')">10대</button>
+      <button class="ob-choice-item" type="button" data-age-group="20s" onclick="selectAgeGroup(this,'20s')">20대</button>
+      <button class="ob-choice-item" type="button" data-age-group="30s" onclick="selectAgeGroup(this,'30s')">30대</button>
+      <button class="ob-choice-item" type="button" data-age-group="40s" onclick="selectAgeGroup(this,'40s')">40대</button>
+      <button class="ob-choice-item" type="button" data-age-group="50plus" onclick="selectAgeGroup(this,'50plus')">50대 이상</button>
+      <button class="ob-choice-item selected" type="button" data-age-group="" onclick="selectAgeGroup(this,'')">선택 안 함</button>
+    </div>
+    <div style="font-size:13px;font-weight:700;color:var(--gray-700);margin-bottom:8px;">성별</div>
+    <div class="ob-choice-grid">
+      <button id="ob-female" class="ob-choice-item" type="button" onclick="selectGender(this,'female')">여성</button>
+      <button id="ob-male" class="ob-choice-item" type="button" onclick="selectGender(this,'male')">남성</button>
+      <button id="ob-gender-other" class="ob-choice-item" type="button" onclick="selectGender(this,'other')">기타</button>
+      <button id="ob-gender-none" class="ob-choice-item selected" type="button" onclick="selectGender(this,'')">선택 안 함</button>
     </div>
     <div style="margin-top:auto;display:flex;gap:10px;">
       <button onclick="obBack(3)" style="width:52px;height:52px;background:var(--gray-100);border:none;border-radius:var(--r);font-size:20px;cursor:pointer;">←</button>
@@ -851,7 +817,7 @@ if ('serviceWorker' in navigator) {
   <!-- 스텝 4: 목표 설정 -->
   <div id="ob-step-4" style="flex:1;display:none;flex-direction:column;padding:40px 24px 32px;">
     <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;">하루 활동 목표를<br>설정해요</div>
-    <div style="font-size:14px;color:var(--gray-500);margin-bottom:32px;">나중에 MY 탭에서 바꿀 수 있어요</div>
+    <div style="font-size:14px;color:var(--gray-500);margin-bottom:32px;">설정에서 목표 거리만 먼저 바꿀 수 있어요</div>
 
     <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:32px;">
       <div class="ob-goal-item selected" onclick="selectObGoal(this,2)">
@@ -907,7 +873,7 @@ if ('serviceWorker' in navigator) {
 
 <div class="header">
   <div class="header-top">
-    <div class="logo" aria-label="오롯길"><span class="logo-mark" aria-hidden="true"><span class="logo-vowel"></span></span><span class="logo-word">오롯길</span></div>
+    <div class="logo" aria-label="오롯길"><span class="logo-word">오롯길</span></div>
     <button class="header-settings-btn" type="button" onclick="openSettingsPage()" aria-label="설정" title="설정">⚙</button>
   </div>
 </div>
@@ -12064,27 +12030,38 @@ function toast(msg) {
    온보딩
 ══════════════════════════════════════ */
 let obSelectedGender = '';
-
-function selectGender(g) {
-  obSelectedGender = g;
-  const male = document.getElementById('ob-male');
-  const female = document.getElementById('ob-female');
-  if (male) {
-    male.style.borderColor = g === 'male' ? 'var(--coral)' : 'var(--gray-100)';
-    male.style.background = g === 'male' ? 'var(--coral-light)' : 'var(--gray-50)';
-    male.style.color = g === 'male' ? 'var(--ink)' : 'var(--gray-700)';
-    male.style.fontWeight = g === 'male' ? '700' : '400';
-  }
-  if (female) {
-    female.style.borderColor = g === 'female' ? 'var(--coral)' : 'var(--gray-100)';
-    female.style.background = g === 'female' ? 'var(--coral-light)' : 'var(--gray-50)';
-    female.style.color = g === 'female' ? 'var(--ink)' : 'var(--gray-700)';
-    female.style.fontWeight = g === 'female' ? '700' : '400';
-  }
-}
-
+let obSelectedAgeGroup = '';
 let obSelectedAvatar = '🏃';
 let obSelectedGoal = 2;
+
+function syncOnboardingLanguageButtons() {
+  const ko = document.getElementById('ob-lang-ko');
+  const en = document.getElementById('ob-lang-en');
+  if (ko) ko.classList.toggle('selected', appLanguage !== 'en');
+  if (en) en.classList.toggle('selected', appLanguage === 'en');
+}
+
+function selectOnboardingLanguage(lang) {
+  const next = lang === 'en' ? 'en' : 'ko';
+  if (appLanguage !== next) {
+    localStorage.setItem(APP_LANGUAGE_KEY, next);
+    window.location.reload();
+    return;
+  }
+  syncOnboardingLanguageButtons();
+}
+
+function selectAgeGroup(el, value) {
+  obSelectedAgeGroup = value || '';
+  document.querySelectorAll('[data-age-group]').forEach(item => item.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+}
+
+function selectGender(el, value) {
+  obSelectedGender = value || '';
+  document.querySelectorAll('#ob-step-3a [id^="ob-gender"], #ob-step-3a #ob-male, #ob-step-3a #ob-female').forEach(item => item.classList.remove('selected'));
+  if (el) el.classList.add('selected');
+}
 
 function checkOnboarding() {
   const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
@@ -12092,6 +12069,7 @@ function checkOnboarding() {
   if (!profile.onboarded) {
     el.style.display = 'flex';
     el.classList.add('active');
+    syncOnboardingLanguageButtons();
     localizeStaticDom(el);
   } else {
     el.style.display = 'none';
@@ -12100,12 +12078,17 @@ function checkOnboarding() {
 
 function obNext(step) {
   if (step === 1) {
-    const name = document.getElementById('ob-name').value.trim();
-    if (!name) { document.getElementById('ob-name').focus(); document.getElementById('ob-name').style.borderColor='var(--red)'; return; }
     document.getElementById('ob-step-1').style.display = 'none';
     document.getElementById('ob-step-2b').style.display = 'flex';
     document.getElementById('ob-dot-2').style.background = 'var(--coral)';
   } else if (step === 2) {
+    const nameInput = document.getElementById('ob-name');
+    const name = nameInput.value.trim();
+    if (!name) {
+      nameInput.focus();
+      nameInput.style.borderColor = 'var(--red)';
+      return;
+    }
     document.getElementById('ob-step-2b').style.display = 'none';
     document.getElementById('ob-step-3a').style.display = 'flex';
     document.getElementById('ob-dot-3').style.background = 'var(--coral)';
@@ -12130,12 +12113,6 @@ function obBack(step) {
     document.getElementById('ob-step-3a').style.display = 'flex';
     document.getElementById('ob-dot-4').style.background = 'var(--gray-100)';
   }
-}
-
-function selectObAvatar(el, avatar) {
-  obSelectedAvatar = avatar;
-  document.querySelectorAll('#ob-step-3a .ob-avatar-item').forEach(i => i.classList.remove('selected'));
-  el.classList.add('selected');
 }
 
 function selectObGoal(el, km) {
@@ -12180,9 +12157,6 @@ function getOnboardingGoal() {
 
 function obFinish() {
   const name = document.getElementById('ob-name').value.trim() || '런너';
-  const age = document.getElementById('ob-age').value;
-  const height = document.getElementById('ob-height').value;
-  const weight = document.getElementById('ob-weight').value;
   const goal = getOnboardingGoal();
   if (!goal) {
     toast('하루 목표를 입력해주세요');
@@ -12192,9 +12166,7 @@ function obFinish() {
   const profile = {
     name, avatar: obSelectedAvatar,
     goal, onboarded: true,
-    age: age ? parseInt(age) : null,
-    height: height ? parseInt(height) : null,
-    weight: weight ? parseInt(weight) : null,
+    ageGroup: obSelectedAgeGroup || null,
     gender: obSelectedGender || null
   };
   localStorage.setItem('runProfile', JSON.stringify(profile));
@@ -12369,6 +12341,36 @@ function saveGoalEdit() {
   toast('목표가 변경됐어요! 💪');
 }
 
+function getAgeGroupLabel(value) {
+  const labels = {
+    '10s': '10대',
+    '20s': '20대',
+    '30s': '30대',
+    '40s': '40대',
+    '50plus': '50대 이상'
+  };
+  return labels[value] || '';
+}
+
+function getGenderLabel(value) {
+  const labels = {
+    female: '여성',
+    male: '남성',
+    other: '기타'
+  };
+  return labels[value] || '';
+}
+
+function getProfileDistributionLabel(profile) {
+  const ageGroup = getAgeGroupLabel(profile && profile.ageGroup);
+  const gender = getGenderLabel(profile && profile.gender);
+  const legacyHeight = profile && profile.height ? profile.height + 'cm' : '';
+  const legacyWeight = profile && profile.weight ? profile.weight + 'kg' : '';
+  return [ageGroup, gender].filter(Boolean).join(' · ')
+    || [legacyHeight, legacyWeight].filter(Boolean).join(' · ')
+    || '선택 안 함';
+}
+
 /* ══════════════════════════════════════
    마이페이지
 ══════════════════════════════════════ */
@@ -12443,9 +12445,7 @@ function renderMyPage() {
   const goal = getDailyGoal();
   if (goalInfo) goalInfo.textContent = formatDailyGoal(goal) + 'km';
   if (bodyInfo) {
-    const height = profile.height ? profile.height + 'cm' : '';
-    const weight = profile.weight ? profile.weight + 'kg' : '';
-    bodyInfo.textContent = [height, weight].filter(Boolean).join(' · ') || '미입력';
+    bodyInfo.textContent = getProfileDistributionLabel(profile);
   }
   if (sourceInfo) sourceInfo.textContent = getMySourceSummary(records);
   updateMySettingsValues();
