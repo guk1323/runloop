@@ -2950,7 +2950,9 @@ let aiDestinationSameAsStart = true;
 let aiPendingPlace = null;
 let aiPendingPlaceOverlay = null;
 let aiDirectRouteSeq = 0;
-let cultureSpotMapOverlays = [];
+let cultureSpotMapOverlays = new Map();
+let cultureSpotMapRenderTimer = null;
+let cultureSpotMapLastSignature = '';
 let cultureSpotMarkersHiddenForRoute = false;
 
 function initCreateMap() {
@@ -2978,7 +2980,7 @@ function initCreateMap() {
       }
     });
     kakao.maps.event.addListener(createMap, 'idle', function() {
-      if (createMode === 'ai') renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
+      if (createMode === 'ai') scheduleCultureSpotMapMarkerRender();
     });
     initDrawTap();
     renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
@@ -5047,7 +5049,7 @@ const CULTURE_SPOT_PHOTO_CACHE_MS = 7 * 24 * 60 * 60 * 1000;
 const CULTURE_SPOT_PHOTO_CACHE_VERSION = 'v2';
 const CULTURE_SPOT_PHOTO_MISSING_CACHE_MS = 6 * 60 * 60 * 1000;
 const CULTURE_SPOT_MIN_VALUE_STARS = 2;
-const CULTURE_MAP_MARKER_LIMIT = 80;
+const CULTURE_MAP_MARKER_LIMIT = 36;
 const CULTURE_SPOT_EN_NAME_MAP = {
   '경복궁': 'Gyeongbokgung Palace',
   '창덕궁': 'Changdeokgung Palace',
@@ -8721,14 +8723,19 @@ function selectMapCultureSpots(results) {
 }
 
 function setCultureMapSearch() {
-  renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
+  renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems(), { force: true });
 }
 
 function clearCultureSpotMapMarkers() {
+  if (cultureSpotMapRenderTimer) {
+    clearTimeout(cultureSpotMapRenderTimer);
+    cultureSpotMapRenderTimer = null;
+  }
   cultureSpotMapOverlays.forEach(overlay => {
     if (overlay && overlay.setMap) overlay.setMap(null);
   });
-  cultureSpotMapOverlays = [];
+  cultureSpotMapOverlays.clear();
+  cultureSpotMapLastSignature = '';
 }
 
 function setCultureSpotRouteFocus(active) {
@@ -8739,7 +8746,19 @@ function setCultureSpotRouteFocus(active) {
     clearCultureSpotMapMarkers();
     return;
   }
-  renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
+  renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems(), { force: true });
+}
+
+function scheduleCultureSpotMapMarkerRender(spots = null, options = {}) {
+  if (options.force) {
+    renderCultureSpotMapMarkers(spots || getCurrentCultureSpotMapItems(), { force: true });
+    return;
+  }
+  if (cultureSpotMapRenderTimer) clearTimeout(cultureSpotMapRenderTimer);
+  cultureSpotMapRenderTimer = setTimeout(() => {
+    cultureSpotMapRenderTimer = null;
+    renderCultureSpotMapMarkers(spots || getCurrentCultureSpotMapItems());
+  }, 140);
 }
 
 function isCultureSpotInsideMapBounds(spot, map) {
@@ -8757,15 +8776,56 @@ function isCultureSpotInsideMapBounds(spot, map) {
   return lat >= sw.getLat() && lat <= ne.getLat() && lng >= sw.getLng() && lng <= ne.getLng();
 }
 
-function renderCultureSpotMapMarkers(spots) {
-  clearCultureSpotMapMarkers();
+function getCultureSpotMapMarkerKey(spot) {
+  return String((spot && (spot.id || spot.contentId || spot.key)) || getCultureSpotVisitKey(spot) || '');
+}
+
+function getCultureSpotMapSignature(spots) {
+  if (!createMap) return '';
+  const level = typeof createMap.getLevel === 'function' ? createMap.getLevel() : '';
+  return [appLanguage, level].concat(spots.map(spot => {
+    const key = getCultureSpotMapMarkerKey(spot);
+    const lat = Number(spot && spot.y);
+    const lng = Number(spot && spot.x);
+    return [
+      key,
+      getCultureSpotStatus(spot),
+      Math.round(Number(spot && spot.cultureValueStars) || 1),
+      Number.isFinite(lat) ? lat.toFixed(5) : '',
+      Number.isFinite(lng) ? lng.toFixed(5) : ''
+    ].join(':');
+  })).join('|');
+}
+
+function removeCultureSpotMapMarker(key) {
+  const overlay = cultureSpotMapOverlays.get(key);
+  if (overlay && overlay.setMap) overlay.setMap(null);
+  cultureSpotMapOverlays.delete(key);
+}
+
+function renderCultureSpotMapMarkers(spots, options = {}) {
   if (cultureSpotMarkersHiddenForRoute) return;
   const sourceSpots = Array.isArray(spots) ? spots : [];
   const visibleSpots = createMap ? sourceSpots.filter(spot => isCultureSpotInsideMapBounds(spot, createMap)) : sourceSpots;
-  if (!createMap || createMode !== 'ai' || !visibleSpots.length) return;
+  if (!createMap || createMode !== 'ai' || !visibleSpots.length) {
+    clearCultureSpotMapMarkers();
+    return;
+  }
+
+  const signature = getCultureSpotMapSignature(visibleSpots);
+  if (!options.force && signature && signature === cultureSpotMapLastSignature) return;
+  cultureSpotMapLastSignature = signature;
+
+  const nextKeys = new Set(visibleSpots.map(getCultureSpotMapMarkerKey).filter(Boolean));
+  Array.from(cultureSpotMapOverlays.keys()).forEach(key => {
+    if (!nextKeys.has(key)) removeCultureSpotMapMarker(key);
+  });
 
   visibleSpots.forEach(spot => {
     if (!spot || spot.fallback) return;
+    const key = getCultureSpotMapMarkerKey(spot);
+    if (!key) return;
+    removeCultureSpotMapMarker(key);
     const lat = Number(spot.y);
     const lng = Number(spot.x);
     if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
@@ -8818,7 +8878,7 @@ function renderCultureSpotMapMarkers(spots) {
       yAnchor: 1.08,
       zIndex: 6
     });
-    cultureSpotMapOverlays.push(overlay);
+    cultureSpotMapOverlays.set(key, overlay);
   });
 }
 
