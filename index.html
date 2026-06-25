@@ -3775,6 +3775,23 @@ function resolveAiPlaceFromLatLng(latlng) {
   });
 }
 
+function normalizeAiMapCultureSpot(spot, lat, lng, nameEn = '') {
+  if (!spot) return null;
+  const sourceLatLng = getCultureSpotLatLng(spot);
+  const safeLat = Number.isFinite(Number(lat)) ? Number(lat) : sourceLatLng.lat;
+  const safeLng = Number.isFinite(Number(lng)) ? Number(lng) : sourceLatLng.lng;
+  const normalized = withCurrentCultureSpotDistance({
+    ...spot,
+    nameEn: spot.nameEn || nameEn,
+    y: safeLat,
+    x: safeLng,
+    lat: safeLat,
+    lng: safeLng
+  });
+  const key = getCultureSpotFavoriteKey(normalized);
+  return { ...normalized, key: key || normalized.key || '' };
+}
+
 function showAiPlaceCard(latlng, name, sub, options = {}) {
   const lat = latlng.getLat ? latlng.getLat() : parseFloat(latlng.lat);
   const lng = latlng.getLng ? latlng.getLng() : parseFloat(latlng.lng);
@@ -3788,7 +3805,7 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
     : fallbackName;
   const displayNameEn = appLanguage === 'en' && !/[가-힣]/.test(displayName) ? displayName : '';
   const cultureSpot = options && options.spot
-    ? { ...options.spot, nameEn: options.spot.nameEn || displayNameEn, y: lat, x: lng }
+    ? normalizeAiMapCultureSpot(options.spot, lat, lng, displayNameEn)
     : null;
   const showMedia = !!cultureSpot || options.showMedia === true;
   const mediaSpot = showMedia ? (cultureSpot || {
@@ -8121,6 +8138,37 @@ function withCurrentCultureSpotDistance(spot) {
     : spot;
 }
 
+function getCultureSpotMatchKeys(spot) {
+  if (!spot) return [];
+  const stableId = String(spot.contentId || spot.contentid || spot.id || '').trim();
+  return [
+    spot.key,
+    getCultureSpotFavoriteKey(spot),
+    getCultureSpotVisitKey(spot),
+    stableId,
+    stableId ? 'id:' + stableId : ''
+  ].filter(Boolean).map(String);
+}
+
+function findCultureSpotByKey(key, preferredSpots = []) {
+  const target = String(key || '').trim();
+  if (!target) return null;
+  const seen = new Set();
+  const candidates = [];
+  const add = spot => {
+    if (!spot) return;
+    const signature = getCultureSpotMatchKeys(spot).join('|');
+    if (seen.has(signature)) return;
+    seen.add(signature);
+    candidates.push(spot);
+  };
+  (Array.isArray(preferredSpots) ? preferredSpots : [preferredSpots]).forEach(add);
+  getFavoriteCultureSpotList().forEach(add);
+  getCultureSpotVisitList().map(getVisitedSpotAsCultureSpot).forEach(add);
+  (Array.isArray(lastCultureSpotResults) ? lastCultureSpotResults : []).forEach(add);
+  return candidates.find(spot => getCultureSpotMatchKeys(spot).includes(target)) || null;
+}
+
 function getCultureSpotClickCandidates() {
   const seen = new Set();
   const candidates = [];
@@ -8193,8 +8241,10 @@ function writeCultureSpotPhotoCache(cache) {
 }
 
 function getCultureSpotPhotoCacheKey(spot) {
+  const stableKey = getCultureSpotFavoriteKey(spot);
+  if (stableKey) return stableKey;
   const name = String(spot && (spot.place_name || spot.name) || '').replace(/\s+/g, '').toLowerCase().slice(0, 50);
-  return name || getCultureSpotFavoriteKey(spot);
+  return name;
 }
 
 function getCultureSpotPhoto(spot) {
@@ -9024,7 +9074,7 @@ function renderNearCourses(results) {
             </div>
           </div>
           <div class="culture-spot-actions">
-            <button class="culture-spot-route-btn" data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" onclick="goToAiFromHomeButton(this)">${escapeHtml(t('route'))}</button>
+            <button class="culture-spot-route-btn" data-key="${escapeHtml(favoriteKey)}" data-place="${escapeHtml(placeName)}" data-lat="${lat}" data-lng="${lng}" onclick="goToAiFromHomeButton(this)">${escapeHtml(t('route'))}</button>
           </div>
         </div>
       </div>`;
@@ -9042,7 +9092,7 @@ function selectMapCultureSpots(results) {
   return (Array.isArray(results) ? results : [])
     .filter(spot => {
       if (!spot || spot.fallback) return false;
-      const key = spot.id || getCultureSpotVisitKey(spot);
+      const key = getCultureSpotFavoriteKey(spot);
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -9111,7 +9161,7 @@ function isCultureSpotInsideMapBounds(spot, map) {
 }
 
 function getCultureSpotMapMarkerKey(spot) {
-  return String((spot && (spot.id || spot.contentId || spot.key)) || getCultureSpotVisitKey(spot) || '');
+  return String(getCultureSpotFavoriteKey(spot) || '');
 }
 
 function getCultureSpotMapSignature(spots) {
@@ -9238,7 +9288,7 @@ function selectHomeCultureSpots(results) {
   const seen = new Set();
   const deduped = results
     .filter(r => {
-      const key = r.id || getCultureSpotVisitKey(r);
+      const key = getCultureSpotFavoriteKey(r);
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
@@ -9268,31 +9318,37 @@ function selectHomeCultureSpots(results) {
 
 function goToAiFromHomeButton(button) {
   const data = button && button.dataset ? button.dataset : {};
-  goToAiWithLocation(data.place || t('nearCultureSpots'), data.lat, data.lng);
+  const spot = findCultureSpotByKey(data.key, lastCultureSpotResults);
+  goToAiWithLocation(data.place || t('nearCultureSpots'), data.lat, data.lng, { spot });
 }
 
-function goToAiWithLocation(name, lat, lng) {
+function goToAiWithLocation(name, lat, lng, options = {}) {
   // 홈 문화 스팟을 만들기 화면의 목적지 경로 흐름으로 넘긴다.
   const createTab = document.querySelector('[data-tab="create"]');
   switchTab('create', createTab);
   setCreateMode('ai');
-  applyHomeRecommendationToCreate(name, lat, lng, 0);
+  applyHomeRecommendationToCreate(name, lat, lng, 0, options);
 }
 
-function applyHomeRecommendationToCreate(name, lat, lng, attempt) {
+function applyHomeRecommendationToCreate(name, lat, lng, attempt, options = {}) {
   setTimeout(() => {
     if (!S.kakaoReady || !createMap) {
-      if (attempt < 10) applyHomeRecommendationToCreate(name, lat, lng, attempt + 1);
+      if (attempt < 10) applyHomeRecommendationToCreate(name, lat, lng, attempt + 1, options);
       return;
     }
     const safeLat = parseFloat(lat);
     const safeLng = parseFloat(lng);
     if (!Number.isFinite(safeLat) || !Number.isFinite(safeLng)) return;
+    const cultureSpot = options && options.spot
+      ? normalizeAiMapCultureSpot(options.spot, safeLat, safeLng)
+      : null;
     aiPendingPlace = {
       lat: safeLat,
       lng: safeLng,
       name: name || (appLanguage === 'en' ? 'Culture spot' : '문화 스팟'),
-      sub: appLanguage === 'en' ? 'Culture spot selected from Home' : '홈에서 선택한 문화 스팟'
+      sub: appLanguage === 'en' ? 'Culture spot selected from Home' : '홈에서 선택한 문화 스팟',
+      cultureSpot,
+      mediaSpot: cultureSpot
     };
     applyPendingPlaceAsDestination();
   }, attempt ? 250 : 350);
@@ -11169,7 +11225,7 @@ function startCultureSpotRoute(spot) {
     toast('경로를 찾을 위치 정보가 없어요');
     return;
   }
-  goToAiWithLocation(getCultureSpotDisplayName(spot), latlng.lat, latlng.lng);
+  goToAiWithLocation(getCultureSpotDisplayName(spot), latlng.lat, latlng.lng, { spot });
 }
 
 function startSavedSpotRoute(id) {
