@@ -7059,17 +7059,51 @@ function getCulturePreferenceLabel(bucket) {
   }[bucket] || '문화';
 }
 
+function getHomeAiRecencyWeight(value) {
+  const time = Date.parse(value || '');
+  if (!Number.isFinite(time)) return 0.8;
+  const days = Math.max(0, (Date.now() - time) / 86400000);
+  if (days <= 7) return 2.6;
+  if (days <= 30) return 1.9;
+  if (days <= 90) return 1.25;
+  return 0.75;
+}
+
 function getCulturePreferenceSummary() {
-  const counts = {};
-  const add = spot => {
+  const buckets = {};
+  const add = (spot, kind = 'favorite') => {
     const bucket = getCultureSpotPreferenceBucket(spot);
     if (!bucket) return;
-    counts[bucket] = (counts[bucket] || 0) + 1;
+    const savedTime = spot && (spot.updatedAt || spot.savedAt);
+    const visitedTime = spot && spot.visitedAt;
+    const recency = getHomeAiRecencyWeight(kind === 'visit' ? visitedTime : savedTime);
+    const base = kind === 'visit' ? 1.55 : 1;
+    const weight = base * recency;
+    const entry = buckets[bucket] || { bucket, score: 0, count: 0, recentScore: 0, favoriteScore: 0, visitScore: 0 };
+    entry.score += weight;
+    entry.count += 1;
+    if (recency >= 1.9) entry.recentScore += weight;
+    if (kind === 'visit') entry.visitScore += weight;
+    else entry.favoriteScore += weight;
+    buckets[bucket] = entry;
   };
-  getFavoriteCultureSpotList().forEach(add);
-  getCultureSpotVisitList().map(getVisitedSpotAsCultureSpot).forEach(add);
-  const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
-  return top && top[1] >= 2 ? { bucket: top[0], count: top[1] } : null;
+  getFavoriteCultureSpotList().forEach(spot => add(spot, 'favorite'));
+  getCultureSpotVisitList().map(getVisitedSpotAsCultureSpot).forEach(spot => add(spot, 'visit'));
+  const top = Object.values(buckets)
+    .map(entry => ({
+      ...entry,
+      score: entry.score + Math.min(3, Math.max(0, entry.count - 1)) * 0.8
+    }))
+    .sort((a, b) => b.score - a.score)[0];
+  if (!top || top.score < 1.7) return null;
+  const source = top.recentScore >= 2
+    ? 'recent'
+    : top.visitScore >= top.favoriteScore && top.visitScore >= 1.5
+      ? 'visit'
+      : top.count >= 2
+        ? 'pattern'
+        : 'favorite';
+  return { ...top, source };
 }
 
 function getHomeAiCandidateSpots() {
@@ -7110,9 +7144,13 @@ function scoreHomeAiSpot(spot, goalSummary, preference) {
   const stars = Math.max(1, Math.min(5, Math.round(Number(spot && (spot.cultureValueStars || spot.stars)) || 1)));
   const valueScore = stars * 4;
   const bucket = getCultureSpotPreferenceBucket(spot);
-  const preferenceScore = preference && preference.bucket && bucket === preference.bucket ? 18 : 0;
-  const favoriteScore = isCultureSpotFavorited(spot) ? 5 : 0;
-  const visitedPenalty = isCultureSpotMarkedVisited(spot) ? -28 : 0;
+  const preferenceScore = preference && preference.bucket && bucket === preference.bucket
+    ? Math.min(30, 7 + preference.score * 4)
+    : 0;
+  const favoriteRecord = readCultureSpotFavorites()[getCultureSpotFavoriteKey(spot)];
+  const favoriteScore = favoriteRecord ? Math.min(12, 3 + getHomeAiRecencyWeight(favoriteRecord.updatedAt || favoriteRecord.savedAt) * 2.4) : 0;
+  const visited = isCultureSpotMarkedVisited(spot);
+  const visitedPenalty = visited ? (favoriteRecord ? -10 : -34) : 0;
   return distanceScore + valueScore + preferenceScore + favoriteScore + visitedPenalty;
 }
 
@@ -7144,9 +7182,13 @@ function getHomeAiReason(recommendation) {
   const spot = recommendation && recommendation.spot;
   const preference = recommendation && recommendation.preference;
   if (preference && preference.bucket) {
-    return `최근 ${getCulturePreferenceLabel(preference.bucket)} 관심이 보여서 골랐어요.`;
+    const label = getCulturePreferenceLabel(preference.bucket);
+    if (preference.source === 'recent') return `최근 저장한 ${label} 취향을 반영했어요.`;
+    if (preference.source === 'visit') return `방문 기록에서 ${label} 선호가 보여요.`;
+    if (preference.source === 'pattern') return `${label} 관심이 반복돼서 골랐어요.`;
+    return `${label} 관심을 반영했어요.`;
   }
-  if (spot && isCultureSpotFavorited(spot)) return '관심 장소 중 오늘 들르기 좋아요.';
+  if (spot && isCultureSpotFavorited(spot)) return '최근 관심 장소라 오늘 들르기 좋아요.';
   if (spot && isCultureSpotMarkedVisited(spot)) return '방문 기록이 있어 다시 보기 좋아요.';
   return '가볍게 둘러보기 좋은 장소예요.';
 }
@@ -7314,12 +7356,12 @@ function renderHomeSportsItem(event, index) {
   const date = formatScheduleDateRange(event);
   const title = getScheduleDisplayTitle(event);
   const meta = getScheduleDisplayPlace(event) || localizeProviderName(event.source) || t('scheduleSportsSection');
-  const hasLink = !!String(event && event.link || '').trim();
-  const clickAttrs = hasLink
+  const hasExternalUrl = !!getScheduleExternalUrl(event);
+  const clickAttrs = hasExternalUrl
     ? `role="button" tabindex="0" onclick="openCultureScheduleItem(${index})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCultureScheduleItem(${index});}"`
     : '';
   return `
-    <div class="home-sports-item ${hasLink ? 'has-link' : 'no-link'}" ${clickAttrs} data-index="${index}">
+    <div class="home-sports-item ${hasExternalUrl ? 'has-link' : 'no-link'}" ${clickAttrs} data-index="${index}">
       <span style="min-width:0;">
         <span class="home-sports-name">${escapeHtml(title)}</span>
         <span class="home-sports-meta">${escapeHtml(meta)}</span>
@@ -7778,12 +7820,12 @@ function renderSportsScheduleCard(event, index) {
   const distance = formatApproxScheduleDistance(event);
   const title = getScheduleDisplayTitle(event);
   const placeMeta = [getScheduleDisplayPlace(event), distance].filter(Boolean).join(' · ') || t('scheduleBannerMeta');
-  const hasLink = !!String(event && event.link || '').trim();
-  const clickAttrs = hasLink
+  const hasExternalUrl = !!getScheduleExternalUrl(event);
+  const clickAttrs = hasExternalUrl
     ? `role="button" tabindex="0" onclick="openCultureScheduleItem(${index})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openCultureScheduleItem(${index});}"`
     : '';
   return `
-    <div class="schedule-card text-only ${hasLink ? 'has-link' : 'no-link'}" ${clickAttrs}>
+    <div class="schedule-card text-only ${hasExternalUrl ? 'has-link' : 'no-link'}" ${clickAttrs}>
       <div class="schedule-text-row">
         <div class="schedule-text-row-main">
           <div class="schedule-topline">
@@ -7801,8 +7843,27 @@ function renderSportsScheduleCard(event, index) {
 function openCultureScheduleItem(index) {
   const event = cultureScheduleItems[index];
   if (!event) return;
-  const link = String(event.link || '').trim();
+  const link = getScheduleExternalUrl(event);
   if (link) window.open(link, '_blank', 'noopener');
+}
+
+function getScheduleExternalUrl(event) {
+  const directLink = String(event && event.link || '').trim();
+  if (directLink) return directLink;
+  if (isSportsScheduleEvent(event)) return getSportsScheduleSearchUrl(event);
+  return '';
+}
+
+function getSportsScheduleSearchUrl(event) {
+  const title = getScheduleDisplayTitle(event, '');
+  if (!title) return '';
+  const place = getScheduleDisplayPlace(event);
+  const query = [title, place, '대한체육회']
+    .map(value => String(value || '').trim())
+    .filter(Boolean)
+    .filter((value, index, list) => list.indexOf(value) === index)
+    .join(' ');
+  return `https://search.naver.com/search.naver?query=${encodeURIComponent(query)}`;
 }
 
 function showCultureScheduleOnMap(index) {
@@ -8071,7 +8132,7 @@ function removeSavedScheduleFavoriteFromButton(clickEvent, key) {
 function openSavedScheduleFavorite(key) {
   const item = readScheduleFavorites()[String(key)];
   if (!item) return;
-  const link = String(item.link || '').trim();
+  const link = getScheduleExternalUrl(item);
   if (link) window.open(link, '_blank', 'noopener');
 }
 
@@ -11117,7 +11178,7 @@ function renderSavedSpotCard(spot) {
 function renderSavedScheduleCard(item) {
   const keyJson = escapeHtml(JSON.stringify(item.key));
   const image = String(item.image || '').trim();
-  const link = String(item.link || '').trim();
+  const link = getScheduleExternalUrl(item);
   const title = getScheduleDisplayTitle(item);
   const meta = [getScheduleDisplayPlace(item), formatScheduleDistance(item), localizeProviderName(item.source)].filter(Boolean).join(' · ');
   return `
