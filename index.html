@@ -2366,16 +2366,7 @@ function loadExternalStyle(href) {
 
 async function bootMapProvider() {
   try {
-    if (RUNLOOP_FORCE_LEAFLET_MAP) {
-      await installLeafletKakaoAdapter();
-    } else {
-      try {
-        await loadKakaoMapSdk();
-      } catch (kakaoError) {
-        console.warn('Kakao Maps failed; using Leaflet fallback', kakaoError);
-        await installLeafletKakaoAdapter();
-      }
-    }
+    await loadKakaoMapSdk();
     S.kakaoReady = true;
     if (S.tab === 'create') initCreateMap();
   } catch (err) {
@@ -2387,11 +2378,16 @@ async function bootMapProvider() {
 function loadKakaoMapSdk() {
   const sdkUrl = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_APP_KEY}&libraries=services&autoload=false`;
   return loadExternalScript(sdkUrl).then(() => new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Kakao Maps SDK load timed out')), 7000);
     if (!window.kakao || !kakao.maps || !kakao.maps.load) {
+      clearTimeout(timer);
       reject(new Error('Kakao Maps SDK is unavailable'));
       return;
     }
-    kakao.maps.load(resolve);
+    kakao.maps.load(() => {
+      clearTimeout(timer);
+      resolve();
+    });
   }));
 }
 
@@ -8901,20 +8897,14 @@ async function fetchWeather() {
               ? formatKakaoAddressLocation(addr, localizeKoreanDisplayText(loc, getCurrentLocationLabel()))
               : loc;
           } else {
-            document.getElementById('wLocation').textContent = appLanguage === 'en'
-              ? localizeKoreanDisplayText(d.name, getCurrentLocationLabel())
-              : d.name;
+            document.getElementById('wLocation').textContent = getCurrentLocationLabel();
           }
         });
       } else {
-        document.getElementById('wLocation').textContent = appLanguage === 'en'
-          ? localizeKoreanDisplayText(d.name, getCurrentLocationLabel())
-          : d.name;
+        document.getElementById('wLocation').textContent = getCurrentLocationLabel();
       }
     } catch(e) {
-      document.getElementById('wLocation').textContent = appLanguage === 'en'
-        ? localizeKoreanDisplayText(d.name, getCurrentLocationLabel())
-        : d.name;
+      document.getElementById('wLocation').textContent = getCurrentLocationLabel();
     }
     document.getElementById('wTemp').textContent = temp;
     document.getElementById('wDesc').textContent = desc;
