@@ -3650,6 +3650,16 @@ function initAiMap() {
 function handleAiMapPlaceTap(latlng) {
   const dropdown = document.getElementById('addrDropdown');
   if (dropdown) dropdown.style.display = 'none';
+  const nearbySpot = findCultureSpotNearLatLng(latlng);
+  if (nearbySpot) {
+    const spot = withCurrentCultureSpotDistance(nearbySpot);
+    const spotLatLng = getCultureSpotLatLng(spot);
+    const position = new kakao.maps.LatLng(spotLatLng.lat, spotLatLng.lng);
+    const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
+    const displayName = getCultureSpotDisplayName(spot);
+    showAiPlaceCard(position, displayName, `${formatCultureSpotDistanceLabel(spot.distFromMe)} · ★${stars}`, { spot });
+    return;
+  }
   resolveAiPlaceFromLatLng(latlng).then(place => {
     showAiPlaceCard(latlng, place.name, place.sub);
   });
@@ -3757,6 +3767,7 @@ function clearAiPlaceCard() {
 }
 
 function updateAiPlaceMedia(spot) {
+  if (spot) spot = withCurrentCultureSpotDistance(spot);
   const card = document.getElementById('aiPlaceCard');
   const media = document.getElementById('aiPlaceMedia');
   const img = document.getElementById('aiPlaceImage');
@@ -4455,10 +4466,11 @@ function searchLoadedCultureSpots(query) {
     })
     .slice(0, 6)
     .map(spot => {
+      const displaySpot = withCurrentCultureSpotDistance(spot);
       const latlng = getCultureSpotLatLng(spot);
       const name = getCultureSpotDisplayName(spot, getCultureSpotOriginalName(spot, t('cultureSpots')));
       const address = spot.address_name || spot.addr1 || spot.address || '';
-      const dist = Number(spot.distFromMe);
+      const dist = Number(displaySpot.distFromMe);
       const distanceMeters = Number.isFinite(dist) ? Math.round(dist * 1000) : getDistanceFromSearchCenter(getSearchCenter(), latlng.lat, latlng.lng);
       return {
         source: 'culture',
@@ -4470,7 +4482,7 @@ function searchLoadedCultureSpots(query) {
         phone: '',
         lat: latlng.lat,
         lng: latlng.lng,
-        cultureSpot: spot
+        cultureSpot: displaySpot
       };
     })
     .filter(isValidSearchResult);
@@ -4517,10 +4529,11 @@ async function fetchRemoteCultureSpotResults(query, center) {
 }
 
 function mapCultureSpotSearchResult(spot) {
+  const displaySpot = withCurrentCultureSpotDistance(spot);
   const latlng = getCultureSpotLatLng(spot);
   const name = getCultureSpotDisplayName(spot, getCultureSpotOriginalName(spot, t('cultureSpots')));
   const address = spot.address_name || spot.addr1 || spot.address || '';
-  const dist = Number(spot.distFromMe);
+  const dist = Number(displaySpot.distFromMe);
   const distanceMeters = Number.isFinite(dist)
     ? Math.round(dist * 1000)
     : getDistanceFromSearchCenter(getSearchCenter(), latlng.lat, latlng.lng);
@@ -4534,7 +4547,7 @@ function mapCultureSpotSearchResult(spot) {
     phone: '',
     lat: latlng.lat,
     lng: latlng.lng,
-    cultureSpot: spot
+    cultureSpot: displaySpot
   };
 }
 
@@ -7984,6 +7997,66 @@ function getCultureSpotLatLng(spot) {
   };
 }
 
+function getCurrentUserLatLng() {
+  const lat = Number(S.lat);
+  const lng = Number(S.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  return { lat, lng };
+}
+
+function getCultureSpotCurrentDistanceKm(spot) {
+  const current = getCurrentUserLatLng();
+  const latlng = getCultureSpotLatLng(spot);
+  if (current && Number.isFinite(Number(latlng.lat)) && Number.isFinite(Number(latlng.lng))) {
+    return haversineMeters(current.lat, current.lng, Number(latlng.lat), Number(latlng.lng)) / 1000;
+  }
+  const stored = Number(spot && spot.distFromMe);
+  return Number.isFinite(stored) ? stored : null;
+}
+
+function withCurrentCultureSpotDistance(spot) {
+  if (!spot) return spot;
+  const distFromMe = getCultureSpotCurrentDistanceKm(spot);
+  return Number.isFinite(Number(distFromMe))
+    ? { ...spot, distFromMe }
+    : spot;
+}
+
+function getCultureSpotClickCandidates() {
+  const seen = new Set();
+  const candidates = [];
+  const add = spot => {
+    if (!spot || spot.fallback) return;
+    const latlng = getCultureSpotLatLng(spot);
+    if (!Number.isFinite(Number(latlng.lat)) || !Number.isFinite(Number(latlng.lng))) return;
+    const key = getCultureSpotFavoriteKey(spot) || getCultureSpotVisitKey(spot);
+    const pointKey = `${Number(latlng.lat).toFixed(5)}:${Number(latlng.lng).toFixed(5)}`;
+    const dedupeKey = `${key}:${pointKey}`;
+    if (seen.has(dedupeKey)) return;
+    seen.add(dedupeKey);
+    candidates.push(withCurrentCultureSpotDistance(spot));
+  };
+  getFavoriteCultureSpotList().forEach(add);
+  getCultureSpotVisitList().map(getVisitedSpotAsCultureSpot).forEach(add);
+  (Array.isArray(lastCultureSpotResults) ? lastCultureSpotResults : []).forEach(add);
+  return candidates;
+}
+
+function findCultureSpotNearLatLng(latlng, maxMeters = 100) {
+  if (!latlng || typeof latlng.getLat !== 'function' || typeof latlng.getLng !== 'function') return null;
+  const clickedLat = latlng.getLat();
+  const clickedLng = latlng.getLng();
+  if (!Number.isFinite(clickedLat) || !Number.isFinite(clickedLng)) return null;
+  let best = null;
+  getCultureSpotClickCandidates().forEach(spot => {
+    const spotLatLng = getCultureSpotLatLng(spot);
+    const meters = haversineMeters(clickedLat, clickedLng, Number(spotLatLng.lat), Number(spotLatLng.lng));
+    if (!Number.isFinite(meters) || meters > maxMeters) return;
+    if (!best || meters < best.meters) best = { spot, meters };
+  });
+  return best ? best.spot : null;
+}
+
 function getCultureSpotFavoriteKey(spot) {
   const stableId = spot && (spot.contentId || spot.contentid || spot.id);
   if (stableId && !String(stableId).startsWith('fallback')) return 'id:' + String(stableId);
@@ -8368,7 +8441,7 @@ function normalizeCultureSpotFavorite(spot, existing = null) {
   const overviewEn = isUsableEnglishText(rawOverviewEn) ? rawOverviewEn : '';
   const type = source.cultureType || source.type || getCultureSpotType(source, '');
   const stars = Math.max(1, Math.min(5, Math.round(Number(source.cultureValueStars || source.stars) || 1)));
-  const dist = Number(source.distFromMe);
+  const dist = Number(getCultureSpotCurrentDistanceKm({ ...source, y: latlng.lat, x: latlng.lng }));
   const key = getCultureSpotFavoriteKey({ ...source, place_name: name, y: latlng.lat, x: latlng.lng });
   const sourcePhoto = source.photo && source.photo.imageUrl ? source.photo : null;
   const existingPhoto = existing && existing.photo && existing.photo.imageUrl ? existing.photo : null;
@@ -8644,7 +8717,7 @@ function getCultureSpotFavoriteDataAttrs(spot, key = '') {
   const nameEn = spot && spot.nameEn || (displayName !== rawName && !/[가-힣]/.test(displayName) ? displayName : '');
   const type = spot && (spot.cultureType || spot.type) || getCultureSpotType(spot || {}, '');
   const stars = Math.max(1, Math.min(5, Math.round(Number(spot && (spot.cultureValueStars || spot.stars)) || 1)));
-  const dist = Number(spot && spot.distFromMe);
+  const dist = Number(getCultureSpotCurrentDistanceKm(spot));
   const photo = getCultureSpotPhoto(spot);
   const image = spot && (spot.firstImage || spot.firstimage || spot.imageUrl) || photo && photo.imageUrl || '';
   const attrs = {
@@ -8875,6 +8948,7 @@ function selectMapCultureSpots(results) {
       seen.add(key);
       return true;
     })
+    .map(withCurrentCultureSpotDistance)
     .sort((a, b) => {
       const distDiff = Number(a.distFromMe) - Number(b.distFromMe);
       if (Number.isFinite(distDiff) && distDiff) return distDiff;
@@ -8982,7 +9056,8 @@ function renderCultureSpotMapMarkers(spots, options = {}) {
     if (!nextKeys.has(key)) removeCultureSpotMapMarker(key);
   });
 
-  visibleSpots.forEach(spot => {
+  visibleSpots.forEach(sourceSpot => {
+    const spot = withCurrentCultureSpotDistance(sourceSpot);
     if (!spot || spot.fallback) return;
     const key = getCultureSpotMapMarkerKey(spot);
     if (!key) return;
@@ -9068,7 +9143,8 @@ function selectHomeCultureSpots(results) {
       if (seen.has(key)) return false;
       seen.add(key);
       return true;
-    });
+    })
+    .map(withCurrentCultureSpotDistance);
 
   if (cultureSpotFilter === 'distance') {
     return deduped
@@ -10390,6 +10466,7 @@ function renderInterestEmpty(list, title, desc) {
 }
 
 function renderSavedSpotCard(spot) {
+    spot = withCurrentCultureSpotDistance(spot);
     const keyJson = escapeHtml(JSON.stringify(spot.key));
     const displayName = getCultureSpotDisplayName(spot);
     const stars = Math.max(1, Math.min(5, Math.round(Number(spot.cultureValueStars) || 1)));
@@ -10517,7 +10594,7 @@ function getCourseById(id) {
 }
 
 function openCourseDetail(id) {
-  const course = getFavoriteCultureSpotByKey(id);
+  const course = withCurrentCultureSpotDistance(getFavoriteCultureSpotByKey(id));
   if (!course) return;
   courseDetailTargetId = id;
   const stars = Math.max(1, Math.min(5, Math.round(Number(course.cultureValueStars) || 1)));
@@ -10726,6 +10803,7 @@ function showSavedSpotOnCreateMap(spot, attempt) {
     }
     setCreateMode('ai');
     resetAiCourseSuggestions();
+    spot = withCurrentCultureSpotDistance(spot);
     const latlng = getCultureSpotLatLng(spot);
     if (latlng.lat === null || latlng.lng === null || !Number.isFinite(Number(latlng.lat)) || !Number.isFinite(Number(latlng.lng))) {
       toast('지도에 표시할 위치 정보가 없어요');
