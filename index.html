@@ -1354,7 +1354,7 @@ const S = {
 };
 
 const RUNLOOP_FORCE_LEAFLET_MAP = new URLSearchParams(window.location.search).get('map') === 'leaflet';
-const RUNLOOP_IS_NATIVE_APP = ['capacitor:', 'ionic:'].includes(window.location.protocol);
+const RUNLOOP_IS_NATIVE_APP = isRunloopNativeApp();
 const RUNLOOP_REMOTE_API_ORIGIN = 'https://runloop-jet.vercel.app';
 const RUNLOOP_STATIC_LOCAL_HOSTS = ['127.0.0.1:5500', 'localhost:5500'];
 const RUNLOOP_STATIC_LOCAL_HOSTNAMES = ['127.0.0.1', 'localhost'];
@@ -1394,6 +1394,14 @@ const DAILY_GOAL_OPTIONS = [2, 3, 5, 7];
 const DAILY_GOAL_MIN_KM = 0.5;
 const DAILY_GOAL_MAX_KM = 50;
 let appLanguage = localStorage.getItem(APP_LANGUAGE_KEY) === 'en' ? 'en' : 'ko';
+
+function isRunloopNativeApp() {
+  if (['capacitor:', 'ionic:'].includes(window.location.protocol)) return true;
+  const capacitor = window.Capacitor;
+  if (!capacitor) return false;
+  if (typeof capacitor.isNativePlatform === 'function' && capacitor.isNativePlatform()) return true;
+  return !!(capacitor.Plugins && (capacitor.Plugins.Geolocation || capacitor.Plugins.HealthActivity));
+}
 
 function getRunloopGeolocationPlugin() {
   const capacitor = window.Capacitor;
@@ -8529,7 +8537,7 @@ function isHealthActivityProfileReady() {
 }
 
 function isHealthActivityAvailable() {
-  if (!RUNLOOP_IS_NATIVE_APP || !isHealthActivityProfileReady()) return false;
+  if (!RUNLOOP_IS_NATIVE_APP) return false;
   const capacitor = window.Capacitor;
   const plugin = getHealthActivityPlugin();
   if (!plugin) return false;
