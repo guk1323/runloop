@@ -95,28 +95,31 @@ if ('serviceWorker' in navigator) {
   .ai-location-btn{position:absolute;right:14px;bottom:18px;z-index:23;width:46px;height:46px;background:rgba(255,255,255,.96);border:1px solid rgba(28,36,43,.08);border-radius:999px;cursor:pointer;font-size:22px;font-weight:800;line-height:1;color:var(--coral-dark);font-family:inherit;box-shadow:0 8px 22px rgba(28,36,43,.18);backdrop-filter:blur(12px);}
   .ai-selected-hidden{display:none!important;}
   .create-map-shell{position:relative;flex:1;min-height:220px;}
-  .map-place-card{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:24;background:rgba(255,255,255,.97);border:1px solid rgba(28,36,43,.08);border-radius:18px;padding:13px;box-shadow:0 12px 30px rgba(28,36,43,.18);backdrop-filter:blur(14px);}
-  .map-place-title{font-size:18px;font-weight:900;color:var(--ink);line-height:1.28;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;padding-right:36px;}
-  .map-place-close{position:absolute;top:9px;right:9px;width:28px;height:28px;border:none;border-radius:999px;background:var(--gray-50);color:var(--gray-500);font-size:18px;font-weight:800;line-height:1;font-family:inherit;cursor:pointer;}
+  .map-place-card{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:24;background:#fff;border:1px solid var(--gray-100);border-radius:var(--r);padding:13px;box-shadow:0 12px 30px rgba(28,36,43,.16);backdrop-filter:blur(14px);}
+  .map-place-title{font-size:15px;font-weight:800;color:var(--gray-900);line-height:1.28;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .map-place-close{position:absolute;top:21px;left:21px;width:30px;height:30px;border:1px solid rgba(255,255,255,.72);border-radius:999px;background:rgba(255,255,255,.92);color:var(--gray-600);font-size:18px;font-weight:900;line-height:1;font-family:inherit;cursor:pointer;box-shadow:0 4px 12px rgba(28,36,43,.14);z-index:2;}
   .map-place-close:active{transform:scale(.94);}
   .map-place-sub{display:none;}
-  .map-place-media{display:none;margin-top:10px;gap:9px;}
+  .map-place-media{display:none;margin:0;}
   .map-place-media.active{display:block;}
-  .map-place-photo-frame{position:relative;width:100%;min-height:150px;aspect-ratio:16/8.5;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#FFF7F1 0%,#F4EFE8 52%,#EEF8EA 100%);border:1px solid var(--gray-100);display:flex;align-items:center;justify-content:center;}
+  .map-place-photo-frame{position:relative;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,#FFF7F1 0%,#F4EFE8 52%,#EEF8EA 100%);border:1px solid var(--gray-100);display:flex;align-items:center;justify-content:center;}
   .map-place-image{width:100%;height:100%;object-fit:cover;display:none;}
   .map-place-image.active{display:block;}
   .map-place-photo-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gray-600);font-size:12px;font-weight:900;text-align:center;}
-  .map-place-footer{display:grid;grid-template-columns:minmax(0,1fr) minmax(132px,.85fr);gap:8px;align-items:center;margin-top:10px;}
-  .map-place-card:not(.has-meta) .map-place-footer{grid-template-columns:1fr;}
-  .map-place-card:not(.has-meta) .map-place-copy{display:none;}
-  .map-place-copy{min-width:0;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
-  .map-place-desc{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;}
-  .map-place-meta-chip{height:28px;display:inline-flex;align-items:center;max-width:100%;border-radius:999px;background:#fff;border:1px solid var(--gray-100);color:var(--gray-700);font-size:12px;font-weight:900;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;}
-  .map-place-meta-chip.star{color:var(--spot-status-color,var(--coral));background:#FFF6F1;border-color:rgba(242,122,94,.16);flex-shrink:0;}
+  .map-place-body{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:11px;}
+  .map-place-main{min-width:0;flex:1;}
+  .map-place-meta{font-size:11px;color:var(--gray-500);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .map-place-meta:empty{display:none;}
+  .map-place-stat{text-align:right;flex-shrink:0;display:none;}
+  .map-place-card.has-meta .map-place-stat{display:block;}
+  .map-place-stars{font-size:23px;font-weight:900;color:var(--spot-status-color,var(--coral));line-height:1;}
+  .map-place-distance{font-size:11px;color:var(--gray-500);margin-top:1px;font-weight:800;}
+  .map-place-copy{display:none;}
+  .map-place-desc{display:none;}
   .map-place-credit{display:none;}
-  .map-place-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:0;}
+  .map-place-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--gray-100);}
   .map-place-actions.has-save{grid-template-columns:repeat(3,minmax(0,1fr));}
-  .map-place-actions button{height:40px;border-radius:var(--rs);font-size:13px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap;}
+  .map-place-actions button{height:34px;border-radius:var(--rs);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;white-space:nowrap;}
   .map-place-start{display:none;background:#fff;border:1px solid var(--gray-300);color:var(--gray-900);}
   .map-place-dest{background:var(--ink);border:1px solid var(--ink);color:#fff;}
   .map-place-save{display:none;background:var(--coral-light);border:1px solid rgba(242,122,94,.22);color:var(--ink);}
@@ -143,7 +146,8 @@ if ('serviceWorker' in navigator) {
   .cname{font-size:15px;font-weight:800;flex:1;min-width:0;line-height:1.35;}
   .route-title-block{flex:1;min-width:0;}
   .route-point-list{display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 8px;align-items:start;min-width:0;}
-  .route-point-list.destination-only{grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px;}
+  .route-point-list.destination-only{grid-template-columns:1fr;align-items:center;gap:8px;}
+  .route-point-list.destination-only .route-point{grid-column:1;}
   .route-current-pill{height:28px;display:inline-flex;align-items:center;border-radius:999px;background:#fff;border:1px solid var(--gray-100);color:var(--gray-600);font-size:11px;font-weight:900;padding:0 9px;white-space:nowrap;box-shadow:0 2px 8px rgba(28,36,43,.04);}
   .route-rail{grid-row:1/4;grid-column:1;width:22px;display:flex;flex-direction:column;align-items:center;padding-top:3px;}
   .route-dot{width:8px;height:8px;border-radius:50%;background:var(--gray-300);flex-shrink:0;}
@@ -1004,8 +1008,6 @@ if ('serviceWorker' in navigator) {
     </div>
     <div id="aiPlaceCard" class="map-place-card">
       <button class="map-place-close" type="button" onclick="clearAiPlaceCard()" aria-label="닫기">×</button>
-      <div class="map-place-title" id="aiPlaceTitle">선택한 장소</div>
-      <div class="map-place-sub" id="aiPlaceSub">출발 또는 도착으로 설정하세요</div>
       <div class="map-place-media" id="aiPlaceMedia">
         <div class="map-place-photo-frame">
           <img class="map-place-image" id="aiPlaceImage" alt="">
@@ -1013,15 +1015,23 @@ if ('serviceWorker' in navigator) {
           <button class="mc-fav map-place-heart" id="aiPlaceSaveHeartBtn" type="button" onclick="savePendingCultureSpotFavorite(event)" aria-label="관심 장소 저장">♥</button>
         </div>
       </div>
-      <div class="map-place-footer">
-        <div class="map-place-copy">
-          <div class="map-place-desc" id="aiPlaceDesc"></div>
-          <div class="map-place-credit" id="aiPlaceCredit"></div>
+      <div class="map-place-body">
+        <div class="map-place-main">
+          <div class="map-place-title" id="aiPlaceTitle">선택한 장소</div>
+          <div class="map-place-meta" id="aiPlaceSub">출발 또는 도착으로 설정하세요</div>
         </div>
-        <div class="map-place-actions">
-          <button class="map-place-dest" onclick="applyPendingPlaceAsDestination()">경로 탐색</button>
-          <button class="map-place-save" id="aiPlaceSaveBtn" onclick="savePendingCultureSpotFavorite()">저장</button>
+        <div class="map-place-stat" id="aiPlaceStat">
+          <div class="map-place-stars" id="aiPlaceStars"></div>
+          <div class="map-place-distance" id="aiPlaceDistance"></div>
         </div>
+      </div>
+      <div class="map-place-copy">
+        <div class="map-place-desc" id="aiPlaceDesc"></div>
+        <div class="map-place-credit" id="aiPlaceCredit"></div>
+      </div>
+      <div class="map-place-actions">
+        <button class="map-place-dest" onclick="applyPendingPlaceAsDestination()">경로 탐색</button>
+        <button class="map-place-save" id="aiPlaceSaveBtn" onclick="savePendingCultureSpotFavorite()">저장</button>
       </div>
     </div>
 
@@ -3718,7 +3728,7 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
   const title = document.getElementById('aiPlaceTitle');
   const desc = document.getElementById('aiPlaceSub');
   if (title) title.textContent = aiPendingPlace.name;
-  if (desc) desc.textContent = '';
+  if (desc) desc.textContent = cultureSpot ? '' : aiPendingPlace.sub;
   if (card) card.style.display = 'block';
   updateAiPlaceSaveButton();
   updateAiPlaceMedia(showMedia ? aiPendingPlace.mediaSpot : null);
@@ -3749,8 +3759,16 @@ function updateAiPlaceMedia(spot) {
   const fallback = document.getElementById('aiPlaceImageFallback');
   const desc = document.getElementById('aiPlaceDesc');
   const credit = document.getElementById('aiPlaceCredit');
-  if (!media || !img || !fallback || !desc || !credit) return;
+  const starsEl = document.getElementById('aiPlaceStars');
+  const distanceEl = document.getElementById('aiPlaceDistance');
+  if (!media || !img || !fallback || !desc || !credit || !starsEl || !distanceEl) return;
+  const clearCardStatus = () => {
+    if (!card) return;
+    card.classList.remove('has-meta', 'has-media', 'spot-status-default', 'spot-status-favorite', 'spot-status-visited', 'spot-status-both');
+    card.style.removeProperty('--spot-status-color');
+  };
   if (!spot) {
+    clearCardStatus();
     media.classList.remove('active');
     img.removeAttribute('src');
     img.alt = '';
@@ -3760,14 +3778,26 @@ function updateAiPlaceMedia(spot) {
     fallback.style.display = 'none';
     desc.innerHTML = '';
     credit.textContent = '';
-    if (card) card.classList.remove('has-meta');
+    starsEl.textContent = '';
+    distanceEl.textContent = '';
     return;
   }
   const photo = getCultureSpotPhoto(spot);
   const displayName = getCultureSpotDisplayName(spot);
-  const metaHtml = getMapPlaceMetaHtml(spot);
-  desc.innerHTML = metaHtml;
-  if (card) card.classList.toggle('has-meta', !!metaHtml);
+  const stars = Math.round(Number(spot.cultureValueStars) || 0);
+  const hasStars = stars > 0 && !spot.transient;
+  const dist = Number(spot.distFromMe);
+  const hasDistance = Number.isFinite(dist);
+  desc.innerHTML = '';
+  starsEl.textContent = hasStars ? `★${Math.max(1, Math.min(5, stars))}` : '';
+  distanceEl.textContent = hasDistance ? formatCultureSpotDistanceLabel(dist) : '';
+  if (card) {
+    clearCardStatus();
+    card.classList.toggle('has-meta', hasStars || hasDistance);
+    card.classList.toggle('has-media', !!photo && !!photo.imageUrl);
+    card.classList.add(getCultureSpotStatusClass(spot));
+    card.style.setProperty('--spot-status-color', getCultureSpotStatusColor(spot));
+  }
   if (photo && photo.imageUrl) {
     syncAiPendingPlacePhoto(spot, photo);
     media.classList.add('active');
@@ -5114,6 +5144,7 @@ function dismissRouteSheet() {
 function closeRouteCard(index) {
   if (routeGuide.active && routeGuide.courseIndex === index) {
     stopRouteGuidance('안내를 종료했어요');
+    dismissRouteSheet();
     return;
   }
   dismissRouteSheet();
@@ -6064,7 +6095,6 @@ function getAiTagClass(label) {
 function getRouteCardTitleHtml(course) {
   const isDestinationRoute = course && course.routeKind === 'destination';
   const destination = getRouteEndpointLabel(course && (course.destinationLabel || course.name), t('destination'));
-  const start = getRouteEndpointLabel(course && course.startLabel, getAiCoursePlaceLabel());
   if (!isDestinationRoute || !destination) {
     const name = escapeHtml(course && course.name || '');
     return `
@@ -6073,16 +6103,14 @@ function getRouteCardTitleHtml(course) {
         <div class="route-guide-place dest" style="grid-column:1 / -1;"><span>${escapeHtml(t('destination'))}</span><strong>${name}</strong></div>
       </div>`;
   }
-  const title = `${start} → ${destination}`;
-  const currentLabel = appLanguage === 'en' ? 'From current location' : '현재 위치 출발';
+  const title = destination;
   return `
     <div class="route-title-block" title="${escapeHtml(title)}">
       <div class="route-point-list destination-only">
-        <span class="route-current-pill">${escapeHtml(currentLabel)}</span>
         <span class="route-point compact-dest dest"><span class="route-point-label">${escapeHtml(t('destination'))}</span><span class="route-place">${escapeHtml(destination)}</span></span>
       </div>
       <div class="route-guide-route destination-only">
-        <div class="route-guide-place dest"><span>${escapeHtml(currentLabel)}</span><strong>${escapeHtml(destination)}</strong></div>
+        <div class="route-guide-place dest"><span>${escapeHtml(t('destination'))}</span><strong>${escapeHtml(destination)}</strong></div>
       </div>
     </div>`;
 }
