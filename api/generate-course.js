@@ -89,7 +89,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({ courses });
   } catch (error) {
-    console.error('Runloop AI route error', error);
+    console.error('Orotgil AI route error', error);
     return res.status(500).json({ error: 'Failed to generate courses' });
   }
 }
@@ -129,7 +129,7 @@ async function createOpenAiResponse(apiKey, context) {
       body: JSON.stringify({
         model,
         instructions: [
-          'You create concise Korean running course recommendation cards for Runloop.',
+          'You create concise Korean activity route recommendation cards for Orotgil.',
           'Do not invent exact coordinates, turn-by-turn routes, businesses, safety guarantees, or live map data.',
           'Return valid JSON only. Keep names short, cute, and minimal. Include a local area hint when possible.'
         ].join(' '),

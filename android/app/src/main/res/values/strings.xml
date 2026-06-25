@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">Runloop</string>
-    <string name="title_activity_main">Runloop</string>
+    <string name="app_name">오롯길</string>
+    <string name="title_activity_main">오롯길</string>
     <string name="package_name">com.sonhunguk.runloop</string>
     <string name="custom_url_scheme">com.sonhunguk.runloop</string>
 </resources>

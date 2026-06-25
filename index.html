@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Runloop</title>
+<title>오롯길</title>
 
 <!-- PWA 설정 -->
 <link rel="manifest" href="/manifest.json">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Runloop">
+<meta name="apple-mobile-web-app-title" content="오롯길">
 <meta name="theme-color" content="#F7F7F2">
 
 <!-- 아이오에스 아이콘 -->
-<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='42' fill='%231C242B'/><path d='M48 96c25-48 88-42 88-2 0 39-60 49-72 14-9-27 23-47 55-25' fill='none' stroke='%23FFF7F1' stroke-width='14' stroke-linecap='round' stroke-linejoin='round'/><circle cx='50' cy='108' r='11' fill='%23F27A5E'/><circle cx='132' cy='52' r='9' fill='%23B7F06A'/></svg>">
+<link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'><rect width='180' height='180' rx='42' fill='%231C242B'/><circle cx='90' cy='73' r='39' fill='none' stroke='%23FFF7F1' stroke-width='15'/><circle cx='90' cy='73' r='12' fill='%23F27A5E'/><path d='M90 113v17M62 130h56' fill='none' stroke='%23FFF7F1' stroke-width='13' stroke-linecap='round'/></svg>">
 
 <!-- 서비스 워커 등록 -->
 <script>
@@ -44,11 +44,13 @@ if ('serviceWorker' in navigator) {
 
   .header{background:rgba(255,253,248,.88);border-bottom:1px solid rgba(28,36,43,.08);padding:16px 18px 12px;flex-shrink:0;z-index:100;backdrop-filter:blur(16px);}
   .header-top{display:flex;justify-content:space-between;align-items:center;}
-  .logo{display:flex;align-items:center;gap:9px;font-size:21px;font-weight:800;color:var(--ink);letter-spacing:0;}
-  .logo-mark{width:31px;height:31px;border-radius:11px;background:var(--ink);position:relative;display:inline-block;box-shadow:0 8px 18px rgba(28,36,43,.18);}
-  .logo-mark::before{content:'';position:absolute;left:7px;top:9px;width:16px;height:10px;border:2.5px solid #FFF7F1;border-top-color:transparent;border-radius:999px;transform:rotate(-17deg);}
-  .logo-mark::after{content:'';position:absolute;left:7px;bottom:8px;width:7px;height:7px;background:var(--coral);border:2px solid var(--ink);border-radius:50%;}
-  .logo span:last-child{line-height:1;}
+  .logo{display:flex;align-items:center;gap:5px;font-size:24px;font-weight:900;color:var(--ink);letter-spacing:0;}
+  .logo-mark{width:35px;height:39px;position:relative;display:inline-block;flex-shrink:0;}
+  .logo-mark::before{content:'';position:absolute;left:3px;top:0;width:27px;height:27px;border:4px solid var(--ink);border-radius:50%;background:rgba(255,253,248,.92);}
+  .logo-mark::after{content:'';position:absolute;left:13px;top:10px;width:9px;height:9px;background:var(--coral);border-radius:50%;box-shadow:0 0 0 2px rgba(255,253,248,.92);}
+  .logo-vowel::before{content:'';position:absolute;left:16px;top:28px;width:4px;height:7px;border-radius:999px;background:var(--ink);}
+  .logo-vowel::after{content:'';position:absolute;left:8px;bottom:0;width:19px;height:4px;border-radius:999px;background:var(--ink);}
+  .logo-word{line-height:1;font-weight:900;}
   .header-settings-btn{width:38px;height:38px;border-radius:999px;border:1px solid rgba(28,36,43,.08);background:#fff;color:var(--ink);font-size:19px;font-weight:900;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(28,36,43,.08);}
   .loc-btn{display:flex;align-items:center;gap:5px;background:var(--coral-light);color:var(--ink);padding:6px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;cursor:pointer;border:1px solid rgba(242,122,94,.18);font-family:inherit;}
 
@@ -605,8 +607,12 @@ if ('serviceWorker' in navigator) {
   .activity-calendar-detail-xp{font-size:15px;font-weight:950;color:var(--coral);white-space:nowrap;}
   .activity-calendar-detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;}
   .activity-calendar-detail-item{background:#fff;border:1px solid var(--gray-100);border-radius:11px;padding:9px 10px;min-height:52px;}
+  .activity-calendar-detail-item.wide{grid-column:1/-1;}
   .activity-calendar-detail-label{font-size:10px;font-weight:800;color:var(--gray-500);margin-bottom:4px;}
   .activity-calendar-detail-value{font-size:13px;font-weight:950;color:var(--ink);line-height:1.25;}
+  .activity-calendar-xp-lines{display:flex;flex-direction:column;gap:5px;font-size:12px;font-weight:900;color:var(--ink);line-height:1.35;}
+  .activity-calendar-xp-lines span{display:flex;justify-content:space-between;gap:10px;}
+  .activity-calendar-xp-lines b{font-weight:950;color:var(--coral);white-space:nowrap;}
 
   .goal-bar-wrap{padding:0 16px 14px;background:#fff;}
   .goal-bar-track{height:8px;background:var(--gray-100);border-radius:4px;overflow:hidden;margin-top:6px;}
@@ -749,10 +755,10 @@ if ('serviceWorker' in navigator) {
   <!-- 스텝 1: 닉네임 -->
   <div id="ob-step-1" style="flex:1;display:flex;flex-direction:column;padding:40px 24px 32px;">
     <div style="font-size:32px;margin-bottom:16px;">👋</div>
-    <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;line-height:1.3;">Runloop에 오신 걸<br>환영해요!</div>
-    <div style="font-size:14px;color:var(--gray-500);margin-bottom:40px;line-height:1.6;">함께 달리며 더 건강한 일상을<br>만들어봐요.</div>
+    <div style="font-size:24px;font-weight:700;color:var(--gray-900);margin-bottom:8px;line-height:1.3;">오롯길에 오신 걸<br>환영해요!</div>
+    <div style="font-size:14px;color:var(--gray-500);margin-bottom:40px;line-height:1.6;">오늘의 걸음으로 가까운 문화와<br>나만의 길을 발견해요.</div>
     <div style="font-size:13px;font-weight:500;color:var(--gray-700);margin-bottom:8px;">닉네임을 입력해주세요</div>
-    <input type="text" id="ob-name" placeholder="예: 달리기 좋아하는 훈" maxlength="12"
+    <input type="text" id="ob-name" placeholder="예: 산책 좋아하는 훈" maxlength="12"
       style="width:100%;height:52px;border:2px solid var(--gray-100);border-radius:var(--r);padding:0 16px;font-size:16px;font-family:inherit;outline:none;transition:border-color .2s;"
       oninput="this.style.borderColor=this.value?'var(--coral)':'var(--gray-100)'"
     >
@@ -898,7 +904,7 @@ if ('serviceWorker' in navigator) {
 
 <div class="header">
   <div class="header-top">
-    <div class="logo"><span class="logo-mark" aria-hidden="true"></span><span>Runloop</span></div>
+    <div class="logo" aria-label="오롯길"><span class="logo-mark" aria-hidden="true"><span class="logo-vowel"></span></span><span class="logo-word">롯길</span></div>
     <button class="header-settings-btn" type="button" onclick="openSettingsPage()" aria-label="설정" title="설정">⚙</button>
   </div>
 </div>
@@ -1843,12 +1849,12 @@ function t(key) {
 }
 
 const UI_TRANSLATIONS_EN = {
-  'Runloop에 오신 걸': 'Welcome to',
-  '환영해요!': 'Runloop!',
-  '함께 달리며 더 건강한 일상을': 'Build a healthier daily rhythm',
-  '만들어봐요.': 'through walking and movement.',
+  '오롯길에 오신 걸': 'Welcome to',
+  '환영해요!': 'Orotgil!',
+  '오늘의 걸음으로 가까운 문화와': 'Find nearby culture',
+  '나만의 길을 발견해요.': 'through today’s walk.',
   '닉네임을 입력해주세요': 'Enter your nickname',
-  '예: 달리기 좋아하는 훈': 'e.g. Alex',
+  '예: 산책 좋아하는 훈': 'e.g. Alex',
   '최대 12자 · 언제든 변경 가능해요': 'Up to 12 characters · You can change it anytime',
   '다음 →': 'Next →',
   '기본 정보를': 'Tell us your',
@@ -2545,13 +2551,13 @@ async function bootMapProvider(options = {}) {
         try {
           await loadKakaoMapSdk({ forceReload: true });
         } catch (secondError) {
-          console.warn('Runloop Kakao map provider failed', secondError);
+          console.warn('Orotgil Kakao map provider failed', secondError);
           S.kakaoReady = false;
           showMapProviderError(secondError);
           return false;
         }
       } else {
-        console.warn('Runloop Kakao map provider failed', firstError);
+        console.warn('Orotgil Kakao map provider failed', firstError);
         S.kakaoReady = false;
         showMapProviderError(firstError);
         return false;
@@ -4471,7 +4477,7 @@ function getTmapPoiType(poi) {
   const biz = [poi.upperBizName, poi.middleBizName, poi.lowerBizName].filter(Boolean).join(' ');
   if (/지하철|전철|역|출구/.test(biz) || normalizeSearchText(poi.name).endsWith('역')) return appLanguage === 'en' ? 'Station' : '역';
   if (/버스|정류장/.test(biz)) return appLanguage === 'en' ? 'Bus stop' : '정류장';
-  if (/공원|산책|체육/.test(biz)) return appLanguage === 'en' ? 'Activity' : '러닝';
+  if (/공원|산책|체육/.test(biz)) return appLanguage === 'en' ? 'Activity' : '활동';
   return appLanguage === 'en' ? 'Place' : '장소';
 }
 
@@ -5784,7 +5790,7 @@ function makeNearbyCourseName(name, type = '') {
   const base = cleaned || (appLanguage === 'en' ? 'Nearby' : '주변');
   const suffix = appLanguage === 'en'
     ? (type === 'track' ? 'loop' : type === 'river' ? 'walkway' : 'route')
-    : (type === 'track' ? '반복 코스' : type === 'river' ? '러닝길' : '코스');
+    : (type === 'track' ? '반복 코스' : type === 'river' ? '산책길' : '코스');
   return `${base} ${suffix}`.slice(0, 18);
 }
 
@@ -9511,7 +9517,7 @@ function getTodayActivityDistance(records) {
   return today ? today.distKm : 0;
 }
 
-function getDailyActivityXp(distanceKm, dailyGoal) {
+function getDailyActivityXpBreakdown(distanceKm, dailyGoal) {
   const safeDistance = Math.max(0, Number(distanceKm) || 0);
   const safeGoal = Math.max(1, Number(dailyGoal) || 3);
   const goalRatio = safeDistance / safeGoal;
@@ -9519,7 +9525,19 @@ function getDailyActivityXp(distanceKm, dailyGoal) {
   const activeXp = safeDistance >= Math.min(1.2, safeGoal * 0.35) ? ACTIVITY_DAILY_ACTIVE_XP : 0;
   const goalXp = goalRatio >= 1 ? ACTIVITY_DAILY_GOAL_XP : Math.round(Math.min(goalRatio, 1) * 35);
   const stretchXp = goalRatio >= 1.5 ? ACTIVITY_DAILY_STRETCH_XP : 0;
-  return Math.max(0, distanceXp + activeXp + goalXp + stretchXp);
+  return {
+    distanceKm: safeDistance,
+    goalKm: safeGoal,
+    distanceXp,
+    activeXp,
+    goalXp,
+    stretchXp,
+    total: Math.max(0, distanceXp + activeXp + goalXp + stretchXp)
+  };
+}
+
+function getDailyActivityXp(distanceKm, dailyGoal) {
+  return getDailyActivityXpBreakdown(distanceKm, dailyGoal).total;
 }
 
 function isDailyGoalAchieved(distanceKm, dailyGoal) {
@@ -9577,7 +9595,8 @@ function getActivityLevelSummary(records, dailyGoal) {
   let lastGoalStreak = 0;
 
   dailyTotals.forEach(day => {
-    const baseXp = getDailyActivityXp(day.distKm, dailyGoal);
+    const baseBreakdown = getDailyActivityXpBreakdown(day.distKm, dailyGoal);
+    const baseXp = baseBreakdown.total;
     const goalAchieved = isDailyGoalAchieved(day.distKm, dailyGoal);
     let streakBonus = 0;
     if (goalAchieved) {
@@ -9636,6 +9655,7 @@ function getActivityDailyTimeline(records, dailyGoal) {
     return {
       ...day,
       baseXp: Math.round(baseXp),
+      xpBreakdown: baseBreakdown,
       streakBonus: Math.round(streakBonus),
       xp: Math.round(dayXp),
       goalAchieved,
@@ -9731,18 +9751,10 @@ function renderActivityCalendarDetail(day, key, dailyGoal) {
   const distKm = day ? Number(day.distKm) || 0 : 0;
   const progress = Math.min(100, Math.round((distKm / Math.max(1, Number(dailyGoal) || 3)) * 100));
   const xp = day ? Number(day.xp) || 0 : 0;
-  const streakText = day && day.goalAchieved
-    ? (appLanguage === 'en' ? `${day.goalStreak} days` : `${day.goalStreak}일`)
-    : (appLanguage === 'en' ? 'Not met' : '미달성');
-  const xpBreakdown = day
-    ? (day.streakBonus > 0
-      ? (appLanguage === 'en'
-        ? `${day.baseXp.toLocaleString('en-US')} base + ${day.streakBonus.toLocaleString('en-US')} streak`
-        : `${day.baseXp.toLocaleString('ko-KR')} 기본 + ${day.streakBonus.toLocaleString('ko-KR')} 연속`)
-      : (appLanguage === 'en'
-        ? `${day.baseXp.toLocaleString('en-US')} base`
-        : `${day.baseXp.toLocaleString('ko-KR')} 기본`))
-    : '0';
+  const xpBreakdown = day && day.xpBreakdown
+    ? day.xpBreakdown
+    : getDailyActivityXpBreakdown(distKm, dailyGoal);
+  const xpLines = getActivityXpBreakdownLines(xpBreakdown, day && day.streakBonus || 0);
 
   detailEl.innerHTML = `
     <div class="activity-calendar-detail-head">
@@ -9758,15 +9770,64 @@ function renderActivityCalendarDetail(day, key, dailyGoal) {
         <div class="activity-calendar-detail-label">${escapeHtml(appLanguage === 'en' ? 'Goal' : '목표')}</div>
         <div class="activity-calendar-detail-value">${escapeHtml(progress + '%')}</div>
       </div>
-      <div class="activity-calendar-detail-item">
-        <div class="activity-calendar-detail-label">${escapeHtml(appLanguage === 'en' ? 'XP detail' : 'XP 내역')}</div>
-        <div class="activity-calendar-detail-value">${escapeHtml(xpBreakdown)} XP</div>
-      </div>
-      <div class="activity-calendar-detail-item">
-        <div class="activity-calendar-detail-label">${escapeHtml(appLanguage === 'en' ? 'Streak' : '연속 달성')}</div>
-        <div class="activity-calendar-detail-value">${escapeHtml(streakText)}</div>
+      <div class="activity-calendar-detail-item wide">
+        <div class="activity-calendar-detail-label">${escapeHtml(appLanguage === 'en' ? 'XP calculation' : 'XP 계산')}</div>
+        <div class="activity-calendar-xp-lines">
+          ${xpLines.map(line => `<span>${escapeHtml(line.label)}<b>${escapeHtml(line.value)}</b></span>`).join('')}
+        </div>
       </div>
     </div>`;
+}
+
+function getActivityXpBreakdownLines(breakdown, streakBonus) {
+  const locale = appLanguage === 'en' ? 'en-US' : 'ko-KR';
+  const lines = [];
+  const distance = Number(breakdown && breakdown.distanceKm) || 0;
+  const distanceXp = Math.max(0, Math.round(Number(breakdown && breakdown.distanceXp) || 0));
+  const activeXp = Math.max(0, Math.round(Number(breakdown && breakdown.activeXp) || 0));
+  const goalXp = Math.max(0, Math.round(Number(breakdown && breakdown.goalXp) || 0));
+  const stretchXp = Math.max(0, Math.round(Number(breakdown && breakdown.stretchXp) || 0));
+  const safeStreakBonus = Math.max(0, Math.round(Number(streakBonus) || 0));
+
+  if (distanceXp > 0) {
+    lines.push({
+      label: appLanguage === 'en'
+        ? `Distance ${distance.toFixed(distance >= 10 ? 1 : 2)}km x ${ACTIVITY_XP_PER_KM}`
+        : `거리 ${distance.toFixed(distance >= 10 ? 1 : 2)}km x ${ACTIVITY_XP_PER_KM}`,
+      value: `+${distanceXp.toLocaleString(locale)} XP`
+    });
+  }
+  if (activeXp > 0) {
+    lines.push({
+      label: appLanguage === 'en' ? 'Activity bonus' : '활동 보너스',
+      value: `+${activeXp.toLocaleString(locale)} XP`
+    });
+  }
+  if (goalXp > 0) {
+    lines.push({
+      label: appLanguage === 'en' ? 'Goal progress bonus' : '목표 진행 보너스',
+      value: `+${goalXp.toLocaleString(locale)} XP`
+    });
+  }
+  if (stretchXp > 0) {
+    lines.push({
+      label: appLanguage === 'en' ? 'Extra distance bonus' : '초과 달성 보너스',
+      value: `+${stretchXp.toLocaleString(locale)} XP`
+    });
+  }
+  if (safeStreakBonus > 0) {
+    lines.push({
+      label: appLanguage === 'en' ? 'Streak bonus' : '연속 보너스',
+      value: `+${safeStreakBonus.toLocaleString(locale)} XP`
+    });
+  }
+  if (!lines.length) {
+    lines.push({
+      label: appLanguage === 'en' ? 'No activity recorded' : '활동 기록 없음',
+      value: '+0 XP'
+    });
+  }
+  return lines;
 }
 
 function parseLocalDateKey(key) {
@@ -10111,7 +10172,7 @@ function getRecordSourceLabel(source) {
     healthkit: 'HealthKit',
     apple_watch: 'Apple Watch'
   };
-  return map[source] || (appLanguage === 'en' ? 'Runloop record' : 'Runloop 기록');
+  return map[source] || (appLanguage === 'en' ? 'Orotgil record' : '오롯길 기록');
 }
 
 function escapeHtml(value) {

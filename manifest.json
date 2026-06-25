@@ -1,7 +1,7 @@
 {
-  "name": "Runloop",
-  "short_name": "Runloop",
-  "description": "나만의 러닝 루틴과 코스를 관리하는 앱",
+  "name": "오롯길",
+  "short_name": "오롯길",
+  "description": "걸음과 문화스팟을 연결해 하루 활동을 기록하는 앱",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#F7F7F2",
@@ -9,12 +9,12 @@
   "orientation": "portrait",
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='46' fill='%231C242B'/><path d='M52 104c27-52 94-46 94-3 0 42-64 53-77 15-10-29 25-51 59-27' fill='none' stroke='%23FFF7F1' stroke-width='16' stroke-linecap='round' stroke-linejoin='round'/><circle cx='54' cy='117' r='12' fill='%23F27A5E'/><circle cx='142' cy='56' r='10' fill='%23B7F06A'/></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='46' fill='%231C242B'/><circle cx='96' cy='78' r='42' fill='none' stroke='%23FFF7F1' stroke-width='16'/><circle cx='96' cy='78' r='13' fill='%23F27A5E'/><path d='M96 121v19M66 140h60' fill='none' stroke='%23FFF7F1' stroke-width='14' stroke-linecap='round'/></svg>",
       "sizes": "192x192",
       "type": "image/svg+xml"
     },
     {
-      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='122' fill='%231C242B'/><path d='M139 276c72-136 252-122 250-8-2 112-174 142-209 41-28-78 68-136 158-70' fill='none' stroke='%23FFF7F1' stroke-width='44' stroke-linecap='round' stroke-linejoin='round'/><circle cx='144' cy='312' r='32' fill='%23F27A5E'/><circle cx='376' cy='150' r='26' fill='%23B7F06A'/></svg>",
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='122' fill='%231C242B'/><circle cx='256' cy='209' r='112' fill='none' stroke='%23FFF7F1' stroke-width='44'/><circle cx='256' cy='209' r='34' fill='%23F27A5E'/><path d='M256 323v50M176 373h160' fill='none' stroke='%23FFF7F1' stroke-width='38' stroke-linecap='round'/></svg>",
       "sizes": "512x512",
       "type": "image/svg+xml"
     }

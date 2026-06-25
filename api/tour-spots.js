@@ -467,7 +467,7 @@ async function fetchKtoItems(operation, params, serviceKey, lang) {
   const search = new URLSearchParams({
     serviceKey,
     MobileOS: 'ETC',
-    MobileApp: 'Runloop',
+    MobileApp: 'Orotgil',
     _type: 'json',
     ...Object.fromEntries(Object.entries(params).map(([key, value]) => [key, String(value)]))
   });

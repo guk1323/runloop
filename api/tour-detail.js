@@ -50,7 +50,7 @@ async function fetchKtoDetail(contentId, serviceKey, lang) {
   url.search = new URLSearchParams({
     serviceKey,
     MobileOS: 'ETC',
-    MobileApp: 'Runloop',
+    MobileApp: 'Orotgil',
     _type: 'json',
     contentId,
     defaultYN: 'Y',

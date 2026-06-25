@@ -1,6 +1,6 @@
 {
   "appId": "com.sonhunguk.runloop",
-  "appName": "Runloop",
+  "appName": "오롯길",
   "webDir": "www",
   "server": {
     "iosScheme": "capacitor",

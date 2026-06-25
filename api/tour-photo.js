@@ -43,7 +43,7 @@ async function fetchPhotoItems(keyword, serviceKey, rows) {
   url.search = new URLSearchParams({
     serviceKey,
     MobileOS: 'ETC',
-    MobileApp: 'Runloop',
+    MobileApp: 'Orotgil',
     _type: 'json',
     arrange: 'A',
     numOfRows: String(rows),

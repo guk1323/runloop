@@ -171,7 +171,7 @@ async function fetchKtoItems(operation, params, serviceKey, lang) {
   url.search = new URLSearchParams({
     serviceKey,
     MobileOS: 'ETC',
-    MobileApp: 'Runloop',
+    MobileApp: 'Orotgil',
     _type: 'json',
     ...Object.fromEntries(Object.entries(params).map(([key, value]) => [key, String(value)]))
   }).toString();
@@ -243,7 +243,7 @@ async function fetchSportsPortalItems(params) {
   const response = await fetch(url, {
     headers: {
       Accept: 'text/html,application/xhtml+xml',
-      'User-Agent': 'Runloop/1.0'
+      'User-Agent': 'Orotgil/1.0'
     }
   });
   const text = await response.text();

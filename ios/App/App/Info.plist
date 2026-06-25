@@ -7,7 +7,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Runloop</string>
+	<string>오롯길</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -25,9 +25,9 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSHealthShareUsageDescription</key>
-	<string>Runloop uses your step count and walking or running distance to calculate daily activity, goals, and level progress.</string>
+	<string>Orotgil uses your step count and walking or running distance to calculate daily activity, goals, and level progress.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Runloop uses your location to show nearby routes, weather, and running progress.</string>
+	<string>Orotgil uses your location to show nearby culture spots, routes, weather, and activity progress.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>

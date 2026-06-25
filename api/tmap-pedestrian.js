@@ -77,7 +77,7 @@ function cleanOption(value, fallback) {
 }
 
 function cleanName(value) {
-  return String(value || '').replace(/[^\p{L}\p{N}%._~+-]/gu, '').slice(0, 60) || 'Runloop';
+  return String(value || '').replace(/[^\p{L}\p{N}%._~+-]/gu, '').slice(0, 60) || 'Orotgil';
 }
 
 function cleanPassList(value) {
