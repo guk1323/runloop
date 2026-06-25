@@ -101,23 +101,31 @@ if ('serviceWorker' in navigator) {
   .map-place-close:active{transform:scale(.94);}
   .map-place-sub{display:none;}
   .map-place-media{display:none;margin-top:10px;gap:9px;}
-  .map-place-media.active{display:flex;flex-direction:column;}
+  .map-place-media.active{display:block;}
   .map-place-photo-frame{position:relative;width:100%;min-height:150px;aspect-ratio:16/8.5;border-radius:14px;overflow:hidden;background:linear-gradient(135deg,#FFF7F1 0%,#F4EFE8 52%,#EEF8EA 100%);border:1px solid var(--gray-100);display:flex;align-items:center;justify-content:center;}
   .map-place-image{width:100%;height:100%;object-fit:cover;display:none;}
   .map-place-image.active{display:block;}
   .map-place-photo-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gray-600);font-size:12px;font-weight:900;text-align:center;}
+  .map-place-footer{display:grid;grid-template-columns:minmax(0,1fr) minmax(132px,.85fr);gap:8px;align-items:center;margin-top:10px;}
+  .map-place-card:not(.has-meta) .map-place-footer{grid-template-columns:1fr;}
+  .map-place-card:not(.has-meta) .map-place-copy{display:none;}
   .map-place-copy{min-width:0;display:flex;align-items:center;gap:7px;flex-wrap:wrap;}
   .map-place-desc{display:flex;align-items:center;gap:6px;min-width:0;overflow:hidden;}
   .map-place-meta-chip{height:28px;display:inline-flex;align-items:center;max-width:100%;border-radius:999px;background:#fff;border:1px solid var(--gray-100);color:var(--gray-700);font-size:12px;font-weight:900;padding:0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex-shrink:1;}
   .map-place-meta-chip.star{color:var(--spot-status-color,var(--coral));background:#FFF6F1;border-color:rgba(242,122,94,.16);flex-shrink:0;}
   .map-place-credit{display:none;}
-  .map-place-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px;}
+  .map-place-actions{display:grid;grid-template-columns:1fr;gap:8px;margin-top:0;}
   .map-place-actions.has-save{grid-template-columns:repeat(3,minmax(0,1fr));}
-  .map-place-actions button{height:38px;border-radius:var(--rs);font-size:13px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap;}
-  .map-place-start{background:#fff;border:1px solid var(--gray-300);color:var(--gray-900);}
+  .map-place-actions button{height:40px;border-radius:var(--rs);font-size:13px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap;}
+  .map-place-start{display:none;background:#fff;border:1px solid var(--gray-300);color:var(--gray-900);}
   .map-place-dest{background:var(--ink);border:1px solid var(--ink);color:#fff;}
   .map-place-save{display:none;background:var(--coral-light);border:1px solid rgba(242,122,94,.22);color:var(--ink);}
   .map-place-save.active{background:#fff;color:var(--coral);border-color:rgba(242,122,94,.45);}
+  .map-selected-pin{width:28px;height:34px;position:relative;filter:drop-shadow(0 8px 14px rgba(28,36,43,.24));}
+  .map-selected-pin::before{content:"";position:absolute;left:4px;top:1px;width:20px;height:20px;background:var(--ink);border:3px solid #fff;border-radius:50% 50% 50% 0;transform:rotate(-45deg);}
+  .map-selected-pin::after{content:"";position:absolute;left:11px;top:8px;width:6px;height:6px;border-radius:50%;background:var(--coral);}
+  .map-selected-pin.culture::before{background:var(--coral);}
+  .map-selected-pin.culture::after{background:#fff;}
   .culture-map-marker{display:flex;align-items:center;gap:5px;height:30px;padding:0 10px;border:1px solid rgba(255,255,255,.72);border-radius:999px;background:var(--spot-status-color,var(--coral));color:#fff;font-size:11px;font-weight:950;font-family:inherit;box-shadow:0 7px 16px rgba(28,36,43,.18);cursor:pointer;white-space:nowrap;backdrop-filter:blur(10px);}
   .culture-map-marker:active{transform:scale(.96);}
   .culture-map-name{max-width:66px;overflow:hidden;text-overflow:ellipsis;letter-spacing:0;}
@@ -135,6 +143,8 @@ if ('serviceWorker' in navigator) {
   .cname{font-size:15px;font-weight:800;flex:1;min-width:0;line-height:1.35;}
   .route-title-block{flex:1;min-width:0;}
   .route-point-list{display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px 8px;align-items:start;min-width:0;}
+  .route-point-list.destination-only{grid-template-columns:auto minmax(0,1fr);align-items:center;gap:8px;}
+  .route-current-pill{height:28px;display:inline-flex;align-items:center;border-radius:999px;background:#fff;border:1px solid var(--gray-100);color:var(--gray-600);font-size:11px;font-weight:900;padding:0 9px;white-space:nowrap;box-shadow:0 2px 8px rgba(28,36,43,.04);}
   .route-rail{grid-row:1/4;grid-column:1;width:22px;display:flex;flex-direction:column;align-items:center;padding-top:3px;}
   .route-dot{width:8px;height:8px;border-radius:50%;background:var(--gray-300);flex-shrink:0;}
   .route-dot.dest{background:var(--coral);}
@@ -142,13 +152,19 @@ if ('serviceWorker' in navigator) {
   .route-arrow{width:20px;height:20px;border-radius:999px;background:var(--coral);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;box-shadow:0 4px 10px rgba(242,122,94,.22);}
   .route-point{grid-column:2;min-width:0;border:1px solid var(--gray-100);background:#fff;border-radius:10px;padding:6px 9px;box-shadow:0 2px 8px rgba(28,36,43,.04);}
   .route-point.dest{background:var(--coral-light);border-color:rgba(242,122,94,.22);}
+  .route-point.compact-dest{display:flex;align-items:center;gap:7px;padding:7px 9px;}
   .route-point-label{font-size:10px;font-weight:900;color:var(--gray-500);line-height:1;margin-bottom:3px;}
   .route-point.dest .route-point-label{color:var(--coral-dark);}
+  .route-point.compact-dest .route-point-label{margin-bottom:0;flex-shrink:0;}
   .route-place{font-size:13px;font-weight:900;color:var(--ink);line-height:1.28;word-break:keep-all;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .route-point.compact-dest .route-place{-webkit-line-clamp:1;}
   .route-guide-route{display:none;grid-template-columns:minmax(0,1fr) 26px minmax(0,1fr);align-items:stretch;gap:7px;width:100%;}
+  .route-guide-route.destination-only{grid-template-columns:1fr;}
   .route-guide-place{min-width:0;background:#fff;border:1px solid var(--gray-100);border-radius:12px;padding:8px 9px;box-shadow:0 3px 10px rgba(28,36,43,.04);}
   .route-guide-place span{display:block;font-size:10px;font-weight:900;color:var(--gray-500);line-height:1;margin-bottom:4px;}
   .route-guide-place strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:12px;font-weight:900;color:var(--ink);line-height:1.25;word-break:keep-all;overflow-wrap:anywhere;}
+  .route-guide-route.destination-only .route-guide-place{padding:7px 10px;}
+  .route-guide-route.destination-only .route-guide-place strong{-webkit-line-clamp:1;font-size:13px;}
   .route-guide-place.dest{background:var(--coral-light);border-color:rgba(242,122,94,.22);}
   .route-guide-place.dest span{color:var(--coral-dark);}
   .route-guide-divider{align-self:center;width:26px;height:26px;border-radius:999px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:900;box-shadow:0 4px 12px rgba(28,36,43,.16);}
@@ -443,21 +459,21 @@ if ('serviceWorker' in navigator) {
   .route-card-actions{display:grid;grid-template-columns:1fr;gap:8px;align-items:center;}
   .route-guide-btn{height:34px;border-radius:var(--rp);border:1px solid var(--ink);background:var(--ink);color:#fff;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer;white-space:nowrap;}
   .route-guide-btn.active{background:#fff;color:var(--coral);border-color:rgba(242,122,94,.45);}
-  .route-guide-status{display:none;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px;padding:12px 12px 20px;border-radius:16px;background:linear-gradient(135deg,#1C242B 0%,#27323A 72%,#F27A5E 180%);border:none;font-size:12px;font-weight:800;color:#fff;position:relative;overflow:hidden;box-shadow:0 10px 22px rgba(28,36,43,.16);}
-  .route-guide-status::before{content:'';position:absolute;left:12px;right:12px;bottom:8px;height:4px;border-radius:999px;background:rgba(255,255,255,.16);}
-  .route-guide-status::after{content:'';position:absolute;left:12px;bottom:8px;height:4px;width:var(--guide-progress,0%);max-width:calc(100% - 24px);border-radius:999px;background:var(--lime);}
+  .route-guide-status{display:none;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;padding:10px 10px 16px;border-radius:14px;background:linear-gradient(135deg,#1C242B 0%,#27323A 72%,#F27A5E 180%);border:none;font-size:12px;font-weight:800;color:#fff;position:relative;overflow:hidden;box-shadow:0 10px 22px rgba(28,36,43,.16);}
+  .route-guide-status::before{content:'';position:absolute;left:10px;right:10px;bottom:7px;height:3px;border-radius:999px;background:rgba(255,255,255,.16);}
+  .route-guide-status::after{content:'';position:absolute;left:10px;bottom:7px;height:3px;width:var(--guide-progress,0%);max-width:calc(100% - 20px);border-radius:999px;background:var(--lime);}
   .route-guide-status.off-route{background:linear-gradient(135deg,#6A2C23 0%,#D9654D 130%);}
   .route-guide-status.off-route::after{background:#fff;}
-  .route-guide-copy{min-width:0;display:flex;flex-direction:column;gap:4px;}
-  .route-guide-label{display:inline-flex;width:max-content;max-width:100%;align-items:center;height:22px;padding:0 8px;border-radius:999px;background:rgba(255,255,255,.14);font-size:11px;font-weight:900;color:#fff;}
-  .route-guide-sub{font-size:12px;font-weight:800;color:rgba(255,255,255,.74);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .route-guide-distance{font-size:24px;font-weight:950;color:#fff;line-height:1;white-space:nowrap;text-align:right;}
+  .route-guide-copy{min-width:0;display:flex;flex-direction:column;gap:3px;}
+  .route-guide-label{display:inline-flex;width:max-content;max-width:100%;align-items:center;height:20px;padding:0 7px;border-radius:999px;background:rgba(255,255,255,.14);font-size:10px;font-weight:900;color:#fff;}
+  .route-guide-sub{font-size:11px;font-weight:800;color:rgba(255,255,255,.74);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .route-guide-distance{font-size:20px;font-weight:950;color:#fff;line-height:1;white-space:nowrap;text-align:right;}
   .route-card-close{width:28px;height:28px;border-radius:50%;border:1px solid var(--gray-100);background:#fff;color:var(--gray-500);font-size:20px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;cursor:pointer;font-family:inherit;flex-shrink:0;}
   .route-card-close:hover{color:var(--ink);border-color:var(--gray-300);}
   .course-list.guidance-mode{overflow:hidden!important;padding:8px 12px 12px;}
   .course-card.guidance-hidden{display:none;}
   .course-card.route-guidance-card{border-radius:18px;border:1px solid rgba(28,36,43,.08);box-shadow:0 16px 34px rgba(28,36,43,.14);background:rgba(255,255,255,.96);}
-  .course-card.route-guidance-card .cinfo{padding:12px;display:flex;flex-direction:column;}
+  .course-card.route-guidance-card .cinfo{padding:10px;display:flex;flex-direction:column;}
   .course-card.route-guidance-card .cinfo-head{align-items:stretch;margin-bottom:0;gap:8px;}
   .course-card.route-guidance-card .ckm-badge{display:none;}
   .course-card.route-guidance-card .route-point-list{display:none;}
@@ -465,7 +481,7 @@ if ('serviceWorker' in navigator) {
   .course-card.route-guidance-card .route-guide-route{display:grid;}
   .course-card.route-guidance-card .route-card-actions{display:none;}
   .course-card.route-guidance-card .route-guide-status{display:flex;order:-1;}
-  .course-card.route-guidance-card .route-card-close{width:34px;height:auto;min-height:68px;border-radius:14px;background:var(--gray-50);font-size:22px;}
+  .course-card.route-guidance-card .route-card-close{width:32px;height:auto;min-height:48px;border-radius:13px;background:var(--gray-50);font-size:21px;}
 
   /* 마이페이지 */
   .my-profile-card{margin:14px;background:linear-gradient(135deg,#1C242B 0%,#2B343B 58%,#F27A5E 150%);border-radius:16px;padding:20px;color:#fff;flex-shrink:0;box-shadow:0 16px 34px rgba(28,36,43,.14);}
@@ -996,15 +1012,16 @@ if ('serviceWorker' in navigator) {
           <div class="map-place-photo-empty" id="aiPlaceImageFallback">사진 준비중</div>
           <button class="mc-fav map-place-heart" id="aiPlaceSaveHeartBtn" type="button" onclick="savePendingCultureSpotFavorite(event)" aria-label="관심 장소 저장">♥</button>
         </div>
+      </div>
+      <div class="map-place-footer">
         <div class="map-place-copy">
           <div class="map-place-desc" id="aiPlaceDesc"></div>
           <div class="map-place-credit" id="aiPlaceCredit"></div>
         </div>
-      </div>
-      <div class="map-place-actions">
-        <button class="map-place-start" onclick="applyPendingPlaceAsStart()">출발</button>
-        <button class="map-place-dest" onclick="applyPendingPlaceAsDestination()">도착</button>
-        <button class="map-place-save" id="aiPlaceSaveBtn" onclick="savePendingCultureSpotFavorite()">저장</button>
+        <div class="map-place-actions">
+          <button class="map-place-dest" onclick="applyPendingPlaceAsDestination()">경로 탐색</button>
+          <button class="map-place-save" id="aiPlaceSaveBtn" onclick="savePendingCultureSpotFavorite()">저장</button>
+        </div>
       </div>
     </div>
 
@@ -1583,6 +1600,7 @@ const APP_COPY = {
     all: '전체',
     loadingCulture: '10km 이내 문화 스팟을 찾는 중이에요…',
     route: '경로',
+    routeSearch: '경로 탐색',
     save: '저장',
     saved: '저장됨',
     favorite: '관심',
@@ -1672,6 +1690,7 @@ const APP_COPY = {
     all: 'All',
     loadingCulture: 'Finding culture spots within 10 km…',
     route: 'Route',
+    routeSearch: 'Find route',
     save: 'Save',
     saved: 'Saved',
     favorite: 'Saved',
@@ -1829,6 +1848,7 @@ const UI_TRANSLATIONS_EN = {
   '관심 장소 저장': 'Save place',
   '출발': 'Start',
   '도착': 'Destination',
+  '경로 탐색': 'Find route',
   '저장': 'Save',
   '지도에서 시작점과 다음 지점을 차례로 눌러요': 'Tap the start point, then the next point on the map',
   '길 따라가기': 'Follow roads',
@@ -2921,6 +2941,7 @@ let aiPendingPlace = null;
 let aiPendingPlaceOverlay = null;
 let aiDirectRouteSeq = 0;
 let cultureSpotMapOverlays = [];
+let cultureSpotMarkersHiddenForRoute = false;
 
 function initCreateMap() {
   if (createMap) {
@@ -3688,7 +3709,9 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
   aiPendingPlaceOverlay = new kakao.maps.CustomOverlay({
     map: createMap,
     position: new kakao.maps.LatLng(lat, lng),
-    content: '<div style="width:16px;height:16px;background:#D9654D;border:3px solid #fff;border-radius:50%;box-shadow:0 2px 8px rgba(0,0,0,.28);"></div>',
+    content: `<div class="map-selected-pin${cultureSpot ? ' culture' : ''}" aria-hidden="true"></div>`,
+    xAnchor: 0.5,
+    yAnchor: 1,
     zIndex: 7
   });
   const card = document.getElementById('aiPlaceCard');
@@ -3720,6 +3743,7 @@ function clearAiPlaceCard() {
 }
 
 function updateAiPlaceMedia(spot) {
+  const card = document.getElementById('aiPlaceCard');
   const media = document.getElementById('aiPlaceMedia');
   const img = document.getElementById('aiPlaceImage');
   const fallback = document.getElementById('aiPlaceImageFallback');
@@ -3736,11 +3760,14 @@ function updateAiPlaceMedia(spot) {
     fallback.style.display = 'none';
     desc.innerHTML = '';
     credit.textContent = '';
+    if (card) card.classList.remove('has-meta');
     return;
   }
   const photo = getCultureSpotPhoto(spot);
   const displayName = getCultureSpotDisplayName(spot);
-  desc.innerHTML = getMapPlaceMetaHtml(spot);
+  const metaHtml = getMapPlaceMetaHtml(spot);
+  desc.innerHTML = metaHtml;
+  if (card) card.classList.toggle('has-meta', !!metaHtml);
   if (photo && photo.imageUrl) {
     syncAiPendingPlacePhoto(spot, photo);
     media.classList.add('active');
@@ -3840,6 +3867,7 @@ async function applyPendingPlaceAsDestination() {
   if (!createAiMarker) await setCurrentLocationAsAiStart({ silent: true, recenter: false });
   setAiDestinationMarker(latlng, place.name);
   clearAiPlaceCard();
+  setCultureSpotRouteFocus(true);
   await previewDirectPedestrianRoute(place);
 }
 
@@ -6046,17 +6074,15 @@ function getRouteCardTitleHtml(course) {
       </div>`;
   }
   const title = `${start} → ${destination}`;
+  const currentLabel = appLanguage === 'en' ? 'From current location' : '현재 위치 출발';
   return `
     <div class="route-title-block" title="${escapeHtml(title)}">
-      <div class="route-point-list">
-        <span class="route-rail" aria-hidden="true"><span class="route-dot"></span><span class="route-rail-line"></span><span class="route-arrow">↓</span><span class="route-rail-line"></span><span class="route-dot dest"></span></span>
-        <span class="route-point start"><span class="route-point-label">${escapeHtml(t('startPoint'))}</span><span class="route-place">${escapeHtml(start)}</span></span>
-        <span class="route-point dest"><span class="route-point-label">${escapeHtml(t('destination'))}</span><span class="route-place">${escapeHtml(destination)}</span></span>
+      <div class="route-point-list destination-only">
+        <span class="route-current-pill">${escapeHtml(currentLabel)}</span>
+        <span class="route-point compact-dest dest"><span class="route-point-label">${escapeHtml(t('destination'))}</span><span class="route-place">${escapeHtml(destination)}</span></span>
       </div>
-      <div class="route-guide-route">
-        <div class="route-guide-place"><span>${escapeHtml(t('startPoint'))}</span><strong>${escapeHtml(start)}</strong></div>
-        <div class="route-guide-divider" aria-hidden="true">→</div>
-        <div class="route-guide-place dest"><span>${escapeHtml(t('destination'))}</span><strong>${escapeHtml(destination)}</strong></div>
+      <div class="route-guide-route destination-only">
+        <div class="route-guide-place dest"><span>${escapeHtml(currentLabel)}</span><strong>${escapeHtml(destination)}</strong></div>
       </div>
     </div>`;
 }
@@ -6124,24 +6150,32 @@ function selCourse(i) {
   showAiRoutePreview(S.courses[i]);
 }
 
-function clearAiRoutePreview() {
+function clearAiRoutePreview(options = {}) {
   aiRouteOverlays.forEach(overlay => {
     if (overlay && overlay.setMap) overlay.setMap(null);
   });
   aiRouteOverlays = [];
   aiRouteActiveCourse = null;
+  if (!options.keepCultureMarkersHidden) setCultureSpotRouteFocus(false);
 }
 
 function showAiRoutePreview(course, options = {}) {
   const fitBounds = options.fitBounds !== false;
-  clearAiRoutePreview();
-  if (!createMap || !course || !Array.isArray(course.points) || course.points.length < 2) return;
-  aiRouteActiveCourse = course;
-  ensureAiRouteZoomListener();
+  clearAiRoutePreview({ keepCultureMarkersHidden: true });
+  if (!createMap || !course || !Array.isArray(course.points) || course.points.length < 2) {
+    setCultureSpotRouteFocus(false);
+    return;
+  }
   const path = course.points
     .map(point => makeRouteLatLng(point.lat, point.lng))
     .filter(Boolean);
-  if (path.length < 2) return;
+  if (path.length < 2) {
+    setCultureSpotRouteFocus(false);
+    return;
+  }
+  aiRouteActiveCourse = course;
+  ensureAiRouteZoomListener();
+  setCultureSpotRouteFocus(true);
 
   const isDestinationRoute = course.routeKind === 'destination';
   const routeColor = getAiRouteStrokeColor(course);
@@ -8669,6 +8703,17 @@ function clearCultureSpotMapMarkers() {
   cultureSpotMapOverlays = [];
 }
 
+function setCultureSpotRouteFocus(active) {
+  const next = !!active;
+  if (cultureSpotMarkersHiddenForRoute === next) return;
+  cultureSpotMarkersHiddenForRoute = next;
+  if (cultureSpotMarkersHiddenForRoute) {
+    clearCultureSpotMapMarkers();
+    return;
+  }
+  renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
+}
+
 function isCultureSpotInsideMapBounds(spot, map) {
   if (!map || typeof map.getBounds !== 'function') return true;
   const lat = Number(spot && spot.y);
@@ -8686,6 +8731,7 @@ function isCultureSpotInsideMapBounds(spot, map) {
 
 function renderCultureSpotMapMarkers(spots) {
   clearCultureSpotMapMarkers();
+  if (cultureSpotMarkersHiddenForRoute) return;
   const sourceSpots = Array.isArray(spots) ? spots : [];
   const visibleSpots = createMap ? sourceSpots.filter(spot => isCultureSpotInsideMapBounds(spot, createMap)) : sourceSpots;
   if (!createMap || createMode !== 'ai' || !visibleSpots.length) return;
