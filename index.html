@@ -189,7 +189,9 @@ if ('serviceWorker' in navigator) {
   .save-btn:hover{background:#000;transform:translateY(-1px);}
   .save-btn:disabled{background:var(--gray-300);cursor:not-allowed;}
 
-  .map-loading{position:absolute;inset:0;background:#F3F0E6;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:5;font-size:14px;color:var(--gray-700);}
+  .map-loading{position:absolute;inset:0;background:#F3F0E6;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px;z-index:5;font-size:14px;color:var(--gray-700);text-align:center;padding:18px;}
+  .map-loading button{height:38px;border:1px solid var(--gray-200);background:#fff;border-radius:999px;padding:0 16px;font-family:inherit;font-size:13px;font-weight:800;color:var(--ink);box-shadow:0 6px 16px rgba(28,36,43,.08);cursor:pointer;}
+  .map-loading small{display:block;max-width:260px;font-size:11px;line-height:1.45;color:var(--gray-500);}
   .ml-spin{width:28px;height:28px;border:3px solid var(--gray-300);border-top-color:var(--coral);border-radius:50%;animation:spin .8s linear infinite;}
   .leaflet-container{font-family:'Inter','Noto Sans KR',sans-serif;background:#EEEADF;}
   .leaflet-control-attribution{font-size:9px!important;}
@@ -2425,31 +2427,118 @@ function loadExternalStyle(href) {
   });
 }
 
-async function bootMapProvider() {
-  try {
-    await loadKakaoMapSdk();
-    S.kakaoReady = true;
-    if (S.tab === 'create') initCreateMap();
-  } catch (err) {
-    console.warn('Runloop map provider failed', err);
-    showMapProviderError();
-  }
+let mapProviderBootPromise = null;
+let kakaoMapSdkLoadPromise = null;
+
+function isKakaoMapsReady() {
+  const maps = window.kakao && window.kakao.maps;
+  return !!(maps && typeof maps.load === 'function' && typeof maps.Map === 'function' && typeof maps.LatLng === 'function');
 }
 
-function loadKakaoMapSdk() {
-  const sdkUrl = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${KAKAO_MAP_APP_KEY}&libraries=services&autoload=false`;
-  return loadExternalScript(sdkUrl).then(() => new Promise((resolve, reject) => {
-    const timer = setTimeout(() => reject(new Error('Kakao Maps SDK load timed out')), 7000);
-    if (!window.kakao || !kakao.maps || !kakao.maps.load) {
-      clearTimeout(timer);
-      reject(new Error('Kakao Maps SDK is unavailable'));
-      return;
+function showMapProviderLoading() {
+  ['createMapLoading', 'mapLoading'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.display = 'flex';
+    el.innerHTML = `<div class="ml-spin"></div><span>${escapeHtml(appLanguage === 'en' ? 'Loading Kakao Map...' : '카카오맵 불러오는 중...')}</span>`;
+  });
+}
+
+async function bootMapProvider(options = {}) {
+  if (mapProviderBootPromise && !options.forceReload) return mapProviderBootPromise;
+  mapProviderBootPromise = (async () => {
+    showMapProviderLoading();
+    try {
+      await loadKakaoMapSdk(options);
+    } catch (firstError) {
+      if (!options.forceReload) {
+        try {
+          await loadKakaoMapSdk({ forceReload: true });
+        } catch (secondError) {
+          console.warn('Runloop Kakao map provider failed', secondError);
+          S.kakaoReady = false;
+          showMapProviderError(secondError);
+          return false;
+        }
+      } else {
+        console.warn('Runloop Kakao map provider failed', firstError);
+        S.kakaoReady = false;
+        showMapProviderError(firstError);
+        return false;
+      }
+    } finally {
+      mapProviderBootPromise = null;
     }
-    kakao.maps.load(() => {
+
+    S.kakaoReady = true;
+    if (S.tab === 'create') initCreateMap();
+    return true;
+  })();
+  return mapProviderBootPromise;
+}
+
+function loadKakaoMapSdk(options = {}) {
+  if (isKakaoMapsReady() && !options.forceReload) return Promise.resolve();
+  if (kakaoMapSdkLoadPromise && !options.forceReload) return kakaoMapSdkLoadPromise;
+
+  kakaoMapSdkLoadPromise = new Promise((resolve, reject) => {
+    if (options.forceReload) {
+      document.querySelectorAll('script[data-runloop-kakao-sdk="true"]').forEach(script => script.remove());
+      if (window.kakao && window.kakao.maps && !window.kakao.maps.Map) {
+        try { delete window.kakao; } catch(e) { window.kakao = undefined; }
+      }
+    }
+
+    const sdkUrl = new URL('https://dapi.kakao.com/v2/maps/sdk.js');
+    sdkUrl.searchParams.set('appkey', KAKAO_MAP_APP_KEY);
+    sdkUrl.searchParams.set('libraries', 'services');
+    sdkUrl.searchParams.set('autoload', 'false');
+    if (options.forceReload) sdkUrl.searchParams.set('retry', String(Date.now()));
+
+    const existing = Array.from(document.querySelectorAll('script[data-runloop-kakao-sdk="true"]')).find(script => !options.forceReload && script.src);
+    const script = existing || document.createElement('script');
+    let settled = false;
+    const finish = fn => value => {
+      if (settled) return;
+      settled = true;
       clearTimeout(timer);
-      resolve();
-    });
-  }));
+      kakaoMapSdkLoadPromise = null;
+      fn(value);
+    };
+    const done = finish(resolve);
+    const fail = finish(reject);
+    const timer = setTimeout(() => fail(new Error('Kakao Maps SDK load timed out')), 10000);
+
+    const waitForMaps = () => {
+      const maps = window.kakao && window.kakao.maps;
+      if (!maps || typeof maps.load !== 'function') {
+        fail(new Error('Kakao Maps SDK is unavailable'));
+        return;
+      }
+      maps.load(() => {
+        if (isKakaoMapsReady()) done();
+        else fail(new Error('Kakao Maps SDK map constructor unavailable'));
+      });
+    };
+
+    script.onload = () => {
+      script.dataset.loaded = 'true';
+      waitForMaps();
+    };
+    script.onerror = () => fail(new Error('Kakao Maps SDK script failed'));
+    if (!existing) {
+      script.dataset.runloopKakaoSdk = 'true';
+      script.async = true;
+      script.src = sdkUrl.toString();
+      document.head.appendChild(script);
+    } else if (isKakaoMapsReady()) {
+      done();
+    } else if (script.dataset.loaded === 'true' || (window.kakao && window.kakao.maps && typeof window.kakao.maps.load === 'function')) {
+      waitForMaps();
+    }
+  });
+
+  return kakaoMapSdkLoadPromise;
 }
 
 async function installLeafletKakaoAdapter() {
@@ -2678,11 +2767,33 @@ async function installLeafletKakaoAdapter() {
   };
 }
 
-function showMapProviderError() {
+function retryMapProvider() {
+  bootMapProvider({ forceReload: true });
+}
+
+function showMapProviderError(error) {
+  const isNativeLocal = RUNLOOP_IS_NATIVE_APP && window.location && window.location.protocol === 'capacitor:';
+  const main = appLanguage === 'en' ? 'Could not load Kakao Map' : '카카오맵을 불러오지 못했어요';
+  const hint = isNativeLocal
+    ? (appLanguage === 'en'
+      ? 'For iPhone testing, run the remote URL sync build.'
+      : '아이폰 테스트는 원격 URL 동기화 빌드가 필요해요.')
+    : (appLanguage === 'en'
+      ? 'Check the network connection and try again.'
+      : '네트워크 상태를 확인하고 다시 시도해주세요.');
+  const button = appLanguage === 'en' ? 'Reload Map' : '지도 다시 불러오기';
   ['createMapLoading', 'mapLoading'].forEach(id => {
     const el = document.getElementById(id);
-    if (el) el.innerHTML = `<span>${escapeHtml(appLanguage === 'en' ? 'Could not load the map' : '지도를 불러오지 못했어요')}</span>`;
+    if (el) {
+      el.style.display = 'flex';
+      el.innerHTML = `
+        <span>${escapeHtml(main)}</span>
+        <small>${escapeHtml(hint)}</small>
+        <button type="button" onclick="retryMapProvider()">${escapeHtml(button)}</button>
+      `;
+    }
   });
+  if (error) console.warn('Map provider error detail:', error);
 }
 
 bootMapProvider();
@@ -2823,13 +2934,7 @@ function initCreateMap() {
     });
     document.getElementById('createMapLoading').style.display = 'none';
 
-    // 내 위치 마커
-    S.myMarker = new kakao.maps.CustomOverlay({
-      map: createMap,
-      position: new kakao.maps.LatLng(lat, lng),
-      content: '<div style="width:14px;height:14px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(242,122,94,.22)"></div>',
-      zIndex: 3
-    });
+    setCurrentLocationMarker(createMap, new kakao.maps.LatLng(lat, lng));
 
     kakao.maps.event.addListener(createMap, 'click', function(e) {
       if (createMode === 'draw') {
@@ -2843,6 +2948,15 @@ function initCreateMap() {
     });
     initDrawTap();
     renderCultureSpotMapMarkers(getCurrentCultureSpotMapItems());
+    refreshCurrentMapLocation({
+      map: createMap,
+      recenter: true,
+      reloadCulture: true,
+      refreshWeather: true,
+      useMapBounds: true,
+      silent: true,
+      timeout: 15000
+    });
   };
 
   if (hasRunloopGeolocation() && S.lat === 37.5503 && S.lng === 126.9200) {
@@ -3401,29 +3515,70 @@ function addPoint(latlng) {
   handleDrawMapTap(latlng);
 }
 
-function moveToMyLocation() {
-  const map = createMap || S.map;
-  if (!map) return;
-  if (hasRunloopGeolocation()) {
-    runloopGetCurrentPosition(pos => {
-      setAiSearchTarget('start');
-      S.lat = pos.coords.latitude; S.lng = pos.coords.longitude;
-      const latlng = new kakao.maps.LatLng(S.lat, S.lng);
-      map.setCenter(latlng); map.setLevel(4);
-      if (S.myMarker) S.myMarker.setMap(null);
-      S.myMarker = new kakao.maps.CustomOverlay({
-        map, position: latlng,
-        content: '<div style="width:14px;height:14px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(242,122,94,.22)"></div>',
-        zIndex: 3
-      });
-      if (createMode === 'ai' && map === createMap) setAiMarker(latlng, getCurrentLocationLabel());
-      setCultureMapSearch('');
-      loadNearCourses();
-      toast('현재 위치로 이동했어요!');
-    }, () => toast('위치 권한을 허용해주세요'), { enableHighAccuracy: true, timeout: 8000 });
-  } else {
-    toast('위치 감지 불가');
+function getPositionLatLng(pos) {
+  const coords = pos && pos.coords;
+  const lat = Number(coords && coords.latitude);
+  const lng = Number(coords && coords.longitude);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  return new kakao.maps.LatLng(lat, lng);
+}
+
+function setCurrentLocationMarker(map, latlng) {
+  if (!map || !latlng) return;
+  if (S.myMarker) S.myMarker.setMap(null);
+  S.myMarker = new kakao.maps.CustomOverlay({
+    map,
+    position: latlng,
+    content: '<div style="width:14px;height:14px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(242,122,94,.22)"></div>',
+    zIndex: 3
+  });
+}
+
+function refreshCurrentMapLocation(options = {}) {
+  const map = options.map || createMap || S.map;
+  if (!map || !isKakaoMapsReady()) return;
+  if (!hasRunloopGeolocation()) {
+    if (!options.silent) toast(appLanguage === 'en' ? 'Location is unavailable' : '위치 감지 불가');
+    return;
   }
+
+  runloopGetCurrentPosition(pos => {
+    const latlng = getPositionLatLng(pos);
+    if (!latlng) {
+      if (!options.silent) toast(appLanguage === 'en' ? 'Could not read your location' : '현재 위치를 읽지 못했어요');
+      return;
+    }
+    S.lat = latlng.getLat();
+    S.lng = latlng.getLng();
+    if (options.recenter !== false) map.setCenter(latlng);
+    if (options.level) map.setLevel(options.level);
+    setCurrentLocationMarker(map, latlng);
+    if (options.setStart && createMode === 'ai' && map === createMap) {
+      setAiSearchTarget('start');
+      setAiMarker(latlng, getCurrentLocationLabel());
+      setCultureMapSearch('');
+    }
+    if (options.reloadCulture) loadNearCourses(options.useMapBounds ? getCultureMapCenterOptions() : {});
+    if (options.refreshWeather) fetchWeather();
+    if (!options.silent) toast(appLanguage === 'en' ? 'Moved to current location' : '현재 위치로 이동했어요!');
+  }, () => {
+    if (!options.silent) toast(appLanguage === 'en' ? 'Please allow location permission' : '위치 권한을 허용해주세요');
+  }, {
+    enableHighAccuracy: true,
+    timeout: options.timeout || 12000,
+    maximumAge: options.maximumAge || 0
+  });
+}
+
+function moveToMyLocation() {
+  refreshCurrentMapLocation({
+    recenter: true,
+    level: 4,
+    setStart: true,
+    reloadCulture: true,
+    refreshWeather: true,
+    silent: false
+  });
 }
 
 /* ── AI 추천 지도 ── */
@@ -4529,18 +4684,18 @@ function initMap() {
     });
     document.getElementById('mapLoading').style.display = 'none';
 
-    // 내 위치 마커
-    if (S.myMarker) S.myMarker.setMap(null);
-    S.myMarker = new kakao.maps.CustomOverlay({
-      map: S.map,
-      position: new kakao.maps.LatLng(lat, lng),
-      content: '<div style="width:14px;height:14px;background:#F27A5E;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 4px rgba(242,122,94,.22)"></div>',
-      zIndex: 3
-    });
+    setCurrentLocationMarker(S.map, new kakao.maps.LatLng(lat, lng));
 
     // 지도 클릭 시 경로 추가
     kakao.maps.event.addListener(S.map, 'click', function(e) {
       addPoint(e.latLng);
+    });
+    refreshCurrentMapLocation({
+      map: S.map,
+      recenter: true,
+      refreshWeather: true,
+      silent: true,
+      timeout: 15000
     });
   };
 

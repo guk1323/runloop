@@ -9,11 +9,12 @@
     "cap:open:android": "npx cap open android",
     "cap:run:android": "npm run cap:sync:android && npx cap run android",
     "cap:add:ios": "npm run cap:prepare && npx cap add ios",
-    "cap:sync:ios": "npm run cap:prepare && npx cap sync ios",
-    "cap:sync:ios:web": "npm run cap:sync:ios && node scripts/use-ios-remote-url.mjs",
+    "cap:sync:ios:local": "npm run cap:prepare && npx cap sync ios",
+    "cap:sync:ios": "npm run cap:sync:ios:local && node scripts/use-ios-remote-url.mjs",
+    "cap:sync:ios:web": "npm run cap:sync:ios",
     "cap:open:ios": "npx cap open ios",
-    "cap:run:ios": "npm run cap:sync:ios && npx cap run ios",
-    "cap:run:ios:web": "npm run cap:sync:ios:web && npx cap run ios --no-sync"
+    "cap:run:ios": "npm run cap:sync:ios && npx cap run ios --no-sync",
+    "cap:run:ios:web": "npm run cap:run:ios"
   },
   "dependencies": {
     "@capacitor/core": "8.3.4",
