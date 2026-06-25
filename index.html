@@ -8327,13 +8327,16 @@ function renderCultureSpotMapMarkers(spots) {
         kakao.maps.event.preventMap();
       }
     };
-    markerEl.addEventListener('mousedown', stopMarkerEvent);
-    markerEl.addEventListener('touchstart', stopMarkerEvent, { passive: false });
-    markerEl.onclick = event => {
+    const openMarkerCard = event => {
       stopMarkerEvent(event);
       const nameEn = appLanguage === 'en' && !/[가-힣]/.test(placeName) ? placeName : '';
       showAiPlaceCard(position, placeName, `${distText} · ★${stars}`, { spot: { ...spot, nameEn: spot.nameEn || nameEn } });
     };
+    markerEl.addEventListener('mousedown', stopMarkerEvent);
+    markerEl.addEventListener('touchstart', stopMarkerEvent, { passive: false });
+    markerEl.addEventListener('pointerup', openMarkerCard);
+    markerEl.addEventListener('touchend', openMarkerCard, { passive: false });
+    markerEl.addEventListener('click', openMarkerCard);
 
     const overlay = new kakao.maps.CustomOverlay({
       map: createMap,
