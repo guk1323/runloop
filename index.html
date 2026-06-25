@@ -42,15 +42,15 @@ if ('serviceWorker' in navigator) {
   html,body{height:100%;font-family:'Inter','Noto Sans KR',sans-serif;background:var(--cream);color:var(--gray-900);}
   body{display:flex;flex-direction:column;max-width:430px;margin:0 auto;height:100dvh;overflow:hidden;background:linear-gradient(180deg,#FFFDF8 0%,#F7F3EC 100%);box-shadow:0 0 0 1px rgba(23,26,24,.06);}
 
-  .header{background:rgba(255,253,248,.88);border-bottom:1px solid rgba(28,36,43,.08);padding:16px 18px 12px;flex-shrink:0;z-index:100;backdrop-filter:blur(16px);}
+  .header{background:rgba(255,253,248,.88);border-bottom:1px solid rgba(28,36,43,.08);padding:14px 18px 11px;flex-shrink:0;z-index:100;backdrop-filter:blur(16px);}
   .header-top{display:flex;justify-content:space-between;align-items:center;}
-  .logo{display:flex;align-items:center;gap:5px;font-size:24px;font-weight:900;color:var(--ink);letter-spacing:0;}
+  .logo{display:flex;align-items:center;gap:5px;min-height:42px;font-size:24px;font-weight:900;color:var(--ink);letter-spacing:0;overflow:visible;}
   .logo-mark{width:35px;height:39px;position:relative;display:inline-block;flex-shrink:0;}
   .logo-mark::before{content:'';position:absolute;left:3px;top:0;width:27px;height:27px;border:4px solid var(--ink);border-radius:50%;background:rgba(255,253,248,.92);}
   .logo-mark::after{content:'';position:absolute;left:13px;top:10px;width:9px;height:9px;background:var(--coral);border-radius:50%;box-shadow:0 0 0 2px rgba(255,253,248,.92);}
   .logo-vowel::before{content:'';position:absolute;left:16px;top:28px;width:4px;height:7px;border-radius:999px;background:var(--ink);}
   .logo-vowel::after{content:'';position:absolute;left:8px;bottom:0;width:19px;height:4px;border-radius:999px;background:var(--ink);}
-  .logo-word{line-height:1;font-weight:900;}
+  .logo-word{display:inline-flex;align-items:center;min-height:34px;line-height:1.24;font-weight:900;padding-bottom:1px;overflow:visible;}
   .header-settings-btn{width:38px;height:38px;border-radius:999px;border:1px solid rgba(28,36,43,.08);background:#fff;color:var(--ink);font-size:19px;font-weight:900;font-family:inherit;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(28,36,43,.08);}
   .loc-btn{display:flex;align-items:center;gap:5px;background:var(--coral-light);color:var(--ink);padding:6px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;cursor:pointer;border:1px solid rgba(242,122,94,.18);font-family:inherit;}
 
@@ -2536,7 +2536,7 @@ function showMapProviderLoading() {
     const el = document.getElementById(id);
     if (!el) return;
     el.style.display = 'flex';
-    el.innerHTML = `<div class="ml-spin"></div><span>${escapeHtml(appLanguage === 'en' ? 'Loading Kakao Map...' : '카카오맵 불러오는 중...')}</span>`;
+    el.innerHTML = `<div class="ml-spin"></div><span>${escapeHtml(appLanguage === 'en' ? 'Loading map...' : '지도 불러오는 중...')}</span>`;
   });
 }
 
@@ -2552,15 +2552,21 @@ async function bootMapProvider(options = {}) {
           await loadKakaoMapSdk({ forceReload: true });
         } catch (secondError) {
           console.warn('Orotgil Kakao map provider failed', secondError);
-          S.kakaoReady = false;
-          showMapProviderError(secondError);
-          return false;
+          const fallbackReady = await installFallbackMapProvider(secondError);
+          if (!fallbackReady) {
+            S.kakaoReady = false;
+            showMapProviderError(secondError);
+          }
+          return fallbackReady;
         }
       } else {
         console.warn('Orotgil Kakao map provider failed', firstError);
-        S.kakaoReady = false;
-        showMapProviderError(firstError);
-        return false;
+        const fallbackReady = await installFallbackMapProvider(firstError);
+        if (!fallbackReady) {
+          S.kakaoReady = false;
+          showMapProviderError(firstError);
+        }
+        return fallbackReady;
       }
     } finally {
       mapProviderBootPromise = null;
@@ -2571,6 +2577,18 @@ async function bootMapProvider(options = {}) {
     return true;
   })();
   return mapProviderBootPromise;
+}
+
+async function installFallbackMapProvider(originalError) {
+  try {
+    await installLeafletKakaoAdapter();
+    S.kakaoReady = true;
+    if (S.tab === 'create') initCreateMap();
+    return true;
+  } catch (fallbackError) {
+    console.warn('Orotgil fallback map provider failed', fallbackError || originalError);
+    return false;
+  }
 }
 
 function loadKakaoMapSdk(options = {}) {
@@ -2747,13 +2765,15 @@ async function installLeafletKakaoAdapter() {
       this._mapWrapper = null;
       this._position = toLatLng(options.position || new LeafletLatLng(S.lat, S.lng));
       this._content = options.content || '';
+      this._clickable = !!options.clickable;
       this._zIndex = options.zIndex || 1;
       this._marker = null;
       if (options.map) this.setMap(options.map);
     }
     _makeMarker() {
       return L.marker([this._position.getLat(), this._position.getLng()], {
-        interactive: false,
+        interactive: this._clickable,
+        bubblingMouseEvents: false,
         zIndexOffset: this._zIndex * 100,
         icon: L.divIcon({
           html: this._content,
