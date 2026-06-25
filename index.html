@@ -68,7 +68,7 @@ if ('serviceWorker' in navigator) {
   /* AI 탭 */
   .ai-top{background:var(--paper);padding:14px 16px;border-bottom:1px solid var(--gray-100);flex-shrink:0;}
   .slabel{font-size:11px;font-weight:500;color:var(--gray-500);margin-bottom:7px;letter-spacing:.3px;}
-  .addr-input{width:100%;height:40px;border:1px solid var(--gray-300);border-radius:var(--rs);padding:0 34px 0 12px;font-size:14px;font-family:inherit;outline:none;background:var(--gray-50);transition:border-color .2s;}
+  .addr-input{width:100%;height:42px;border:1px solid var(--gray-300);border-radius:var(--rs);padding:0 34px 0 12px;font-size:16px;font-family:inherit;outline:none;background:var(--gray-50);transition:border-color .2s;}
   .addr-input:focus{border-color:var(--coral);background:#fff;}
   .addr-input::placeholder{color:var(--gray-500);}
   .map-search-clear{display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:22px;height:22px;border:none;border-radius:999px;background:var(--gray-100);color:var(--gray-500);font-size:15px;font-weight:900;line-height:1;font-family:inherit;cursor:pointer;align-items:center;justify-content:center;padding:0;}
@@ -91,8 +91,8 @@ if ('serviceWorker' in navigator) {
   .ai-search-targets button.active{background:var(--ink);color:#fff;}
   .ai-same-dest-btn.active{background:var(--coral-light);border:1px solid rgba(242,122,94,.28);color:var(--ink);}
   .ai-search-row{display:flex;gap:6px;}
-  .ai-search-submit{min-width:50px;height:40px;padding:0 10px;border:none;border-radius:var(--rs);background:var(--ink);color:#fff;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer;flex-shrink:0;}
-  .ai-location-btn{position:absolute;right:14px;bottom:96px;z-index:23;width:46px;height:46px;background:rgba(255,255,255,.96);border:1px solid rgba(28,36,43,.08);border-radius:999px;cursor:pointer;font-size:22px;font-weight:800;line-height:1;color:var(--coral-dark);font-family:inherit;box-shadow:0 8px 22px rgba(28,36,43,.18);backdrop-filter:blur(12px);}
+  .ai-search-submit{min-width:52px;height:42px;padding:0 10px;border:none;border-radius:var(--rs);background:var(--ink);color:#fff;font-size:12px;font-weight:900;font-family:inherit;cursor:pointer;flex-shrink:0;}
+  .ai-location-btn{position:absolute;right:14px;bottom:18px;z-index:23;width:46px;height:46px;background:rgba(255,255,255,.96);border:1px solid rgba(28,36,43,.08);border-radius:999px;cursor:pointer;font-size:22px;font-weight:800;line-height:1;color:var(--coral-dark);font-family:inherit;box-shadow:0 8px 22px rgba(28,36,43,.18);backdrop-filter:blur(12px);}
   .ai-selected-hidden{display:none!important;}
   .create-map-shell{position:relative;flex:1;min-height:220px;}
   .map-place-card{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:24;background:rgba(255,255,255,.97);border:1px solid rgba(28,36,43,.08);border-radius:18px;padding:13px;box-shadow:0 12px 30px rgba(28,36,43,.18);backdrop-filter:blur(14px);}
@@ -364,6 +364,7 @@ if ('serviceWorker' in navigator) {
   .addr-dropdown-item:hover{background:var(--gray-50);}
   .addr-dropdown-main{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700;}
   .addr-dropdown-addr{font-size:11px;color:var(--gray-500);margin-top:2px;}
+  .addr-dropdown-phone{font-size:11px;color:var(--coral-dark);font-weight:800;margin-top:3px;}
   .addr-dropdown-type{flex-shrink:0;font-size:10px;font-weight:700;color:var(--coral);background:var(--coral-light);border-radius:999px;padding:2px 7px;}
   .addr-dropdown-empty{padding:14px;font-size:12px;line-height:1.45;color:var(--gray-500);}
 
@@ -3660,7 +3661,8 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
   const cultureSpot = options && options.spot
     ? { ...options.spot, nameEn: options.spot.nameEn || displayNameEn, y: lat, x: lng }
     : null;
-  const mediaSpot = cultureSpot || {
+  const showMedia = !!cultureSpot || options.showMedia === true;
+  const mediaSpot = showMedia ? (cultureSpot || {
     place_name: displayName,
     name: displayName,
     y: lat,
@@ -3670,7 +3672,7 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
     cultureType: appLanguage === 'en' ? 'Place' : '장소',
     cultureValueStars: 1,
     transient: true
-  };
+  }) : null;
   const safeSub = String(sub || '').trim();
   aiPendingPlace = {
     lat,
@@ -3696,7 +3698,7 @@ function showAiPlaceCard(latlng, name, sub, options = {}) {
   if (desc) desc.textContent = '';
   if (card) card.style.display = 'block';
   updateAiPlaceSaveButton();
-  updateAiPlaceMedia(aiPendingPlace.mediaSpot);
+  updateAiPlaceMedia(showMedia ? aiPendingPlace.mediaSpot : null);
   const guide = document.getElementById('aiMapGuide');
   if (guide) guide.style.display = 'none';
   const input = document.getElementById('addrInput');
@@ -4048,6 +4050,15 @@ function useMyLocation() {
 let addrSearchTimer = null;
 let addrSearchSeq = 0;
 let addrSearchResults = [];
+const MAP_SEARCH_ALLOWED_CATEGORY_GROUPS = ['CT1', 'AT4', 'SW8', 'PO3', 'HP8', 'PM9'];
+const MAP_SEARCH_CATEGORY_LABELS = {
+  CT1: { ko: '문화', en: 'Culture' },
+  AT4: { ko: '관광', en: 'Tour' },
+  SW8: { ko: '역', en: 'Station' },
+  PO3: { ko: '공공', en: 'Public' },
+  HP8: { ko: '병원', en: 'Hospital' },
+  PM9: { ko: '약국', en: 'Pharmacy' }
+};
 
 function updateMapSearchClearButton() {
   const input = document.getElementById('addrInput');
@@ -4090,14 +4101,28 @@ function prepareAddressSearchInput(input) {
 async function fetchAddressSearchResults(query) {
   const trimmed = (query || '').trim();
   if (!trimmed || trimmed.length < 2) return [];
-  const [tmapPois, addresses, stations, stationAliases, places] = await Promise.all([
-    searchTmapPois(trimmed),
-    searchKakaoAddresses(trimmed),
-    isStationLikeQuery(trimmed) ? searchKakaoPlaces(trimmed, { categoryGroupCode: 'SW8', size: 5 }) : Promise.resolve([]),
-    isStationLikeQuery(trimmed) ? searchKakaoPlaces(trimmed + ' 지하철역', { categoryGroupCode: 'SW8', size: 5 }) : Promise.resolve([]),
-    searchKakaoPlaces(trimmed, { size: 10 })
+  const categorySearches = MAP_SEARCH_ALLOWED_CATEGORY_GROUPS.map(categoryGroupCode =>
+    searchKakaoPlaces(trimmed, { categoryGroupCode, size: 5 })
+  );
+  const stationAliasSearches = isStationLikeQuery(trimmed)
+    ? [
+      searchKakaoPlaces(trimmed + ' 지하철역', { categoryGroupCode: 'SW8', size: 5 }),
+      searchKakaoPlaces(trimmed + ' 기차역', { size: 5, filterAllowed: true })
+    ]
+    : [];
+  const addressSearch = isAddressLikeQuery(trimmed)
+    ? searchKakaoAddresses(trimmed)
+    : Promise.resolve([]);
+  const cultureSearch = searchLoadedCultureSpots(trimmed);
+  const generalFacilitySearch = searchKakaoPlaces(trimmed, { size: 12, filterAllowed: true });
+  const groups = await Promise.all([
+    cultureSearch,
+    addressSearch,
+    generalFacilitySearch,
+    ...categorySearches,
+    ...stationAliasSearches
   ]);
-  return mergeAddressResults(trimmed, tmapPois, addresses, stations, stationAliases, places);
+  return mergeAddressResults(trimmed, ...groups);
 }
 
 function searchAddress(query) {
@@ -4131,7 +4156,7 @@ function searchAddress(query) {
   }, 260);
 }
 
-function selectAddress(name, lat, lng) {
+function selectAddress(name, lat, lng, meta = {}) {
   const map = createMap || aiMap;
   if (!map) return;
   const latlng = new kakao.maps.LatLng(parseFloat(lat), parseFloat(lng));
@@ -4145,14 +4170,19 @@ function selectAddress(name, lat, lng) {
   document.getElementById('addrDropdown').style.display = 'none';
   setCultureMapSearch('');
   if (createMode === 'ai') {
-    showAiPlaceCard(latlng, displayName, appLanguage === 'en' ? 'Search result' : '검색한 장소');
+    const phoneLabel = formatSearchPhoneLabel(meta.phone);
+    const sub = [phoneLabel, meta.sub || (appLanguage === 'en' ? 'Search result' : '검색한 장소')].filter(Boolean).join(' · ');
+    showAiPlaceCard(latlng, displayName, sub, {
+      spot: meta.cultureSpot || null,
+      showMedia: !!meta.cultureSpot
+    });
   }
 }
 
 function selectAddressResult(index) {
   const item = addrSearchResults[index];
   if (!item) return;
-  selectAddress(item.name, item.lat, item.lng);
+  selectAddress(item.name, item.lat, item.lng, item);
 }
 
 function getMapCenterLatLng(map) {
@@ -4346,6 +4376,39 @@ function searchKakaoAddresses(query) {
   });
 }
 
+function searchLoadedCultureSpots(query) {
+  const q = normalizeSearchText(query);
+  if (!q) return [];
+  return (Array.isArray(lastCultureSpotResults) ? lastCultureSpotResults : [])
+    .filter(spot => {
+      const name = getCultureSpotOriginalName(spot, spot && (spot.place_name || spot.name) || '');
+      const displayName = getCultureSpotDisplayName(spot, name);
+      const address = spot && (spot.address_name || spot.addr1 || spot.address) || '';
+      return normalizeSearchText(`${name} ${displayName} ${address}`).includes(q);
+    })
+    .slice(0, 6)
+    .map(spot => {
+      const latlng = getCultureSpotLatLng(spot);
+      const name = getCultureSpotDisplayName(spot, getCultureSpotOriginalName(spot, t('cultureSpots')));
+      const address = spot.address_name || spot.addr1 || spot.address || '';
+      const dist = Number(spot.distFromMe);
+      const distanceMeters = Number.isFinite(dist) ? Math.round(dist * 1000) : getDistanceFromSearchCenter(getSearchCenter(), latlng.lat, latlng.lng);
+      return {
+        source: 'culture',
+        type: t('cultureSpots'),
+        name,
+        sub: [formatDistanceLabel(distanceMeters), address].filter(Boolean).join(' · '),
+        category: 'culture spot',
+        distanceMeters,
+        phone: '',
+        lat: latlng.lat,
+        lng: latlng.lng,
+        cultureSpot: spot
+      };
+    })
+    .filter(isValidSearchResult);
+}
+
 function searchKakaoPlaces(query, config = {}) {
   return new Promise(resolve => {
     const ps = new kakao.maps.services.Places();
@@ -4361,15 +4424,28 @@ function searchKakaoPlaces(query, config = {}) {
         resolve([]);
         return;
       }
-      resolve(data.slice(0, options.size).map(p => ({
-        type: isSubwayPlace(p) ? (appLanguage === 'en' ? 'Station' : '역') : (appLanguage === 'en' ? 'Place' : '장소'),
-        name: p.place_name,
-        sub: p.road_address_name || p.address_name || p.category_name || '',
-        category: p.category_name || '',
-        distanceMeters: Number.isFinite(parseFloat(p.distance || '')) ? parseFloat(p.distance || '') : getDistanceFromSearchCenter(center, parseFloat(p.y), parseFloat(p.x)),
-        lat: parseFloat(p.y),
-        lng: parseFloat(p.x)
-      })).filter(isValidSearchResult));
+      const filtered = config.filterAllowed ? data.filter(isAllowedMapSearchPlace) : data;
+      resolve(filtered.slice(0, options.size).map(p => {
+        const lat = parseFloat(p.y);
+        const lng = parseFloat(p.x);
+        const distanceMeters = Number.isFinite(parseFloat(p.distance || ''))
+          ? parseFloat(p.distance || '')
+          : getDistanceFromSearchCenter(center, lat, lng);
+        const address = p.road_address_name || p.address_name || p.category_name || '';
+        return {
+          source: 'kakao',
+          type: getKakaoPlaceType(p),
+          name: p.place_name,
+          sub: [formatDistanceLabel(distanceMeters), address].filter(Boolean).join(' · '),
+          category: p.category_name || '',
+          categoryGroupCode: p.category_group_code || config.categoryGroupCode || '',
+          distanceMeters,
+          phone: cleanPhoneNumber(p.phone),
+          placeUrl: p.place_url || '',
+          lat,
+          lng
+        };
+      }).filter(isValidSearchResult));
     }, options);
   });
 }
@@ -4396,7 +4472,9 @@ function renderAddressDropdown(results) {
   const dropdown = document.getElementById('addrDropdown');
   addrSearchResults = results;
   if (!results.length) {
-    renderAddressDropdownMessage('검색 결과가 없어요. 건물명, 역 이름, 동 이름을 조금 다르게 입력해보세요.');
+    renderAddressDropdownMessage(appLanguage === 'en'
+      ? 'No facility results. Try a culture spot, station, hospital, or public facility name.'
+      : '검색 결과가 없어요. 문화스팟, 역, 병원, 공공시설 이름으로 검색해보세요.');
     return;
   }
   dropdown.innerHTML = results.map((item, i) => {
@@ -4404,6 +4482,7 @@ function renderAddressDropdown(results) {
     const displaySub = appLanguage === 'en'
       ? localizeKoreanDisplayText(item.sub || '', 'Select location')
       : localizeRuntimeText(item.sub || '위치 선택');
+    const phoneLabel = formatSearchPhoneLabel(item.phone);
     return `
       <div class="addr-dropdown-item" onclick="selectAddressResult(${i})">
         <div class="addr-dropdown-main">
@@ -4411,6 +4490,7 @@ function renderAddressDropdown(results) {
           <span class="addr-dropdown-type">${escapeHtml(item.type)}</span>
         </div>
         <div class="addr-dropdown-addr">${escapeHtml(displaySub)}</div>
+        ${phoneLabel ? `<div class="addr-dropdown-phone">${escapeHtml(phoneLabel)}</div>` : ''}
       </div>`;
   }).join('');
   localizeStaticDom(dropdown);
@@ -4441,11 +4521,13 @@ function scoreSearchResult(query, item) {
   else if (name.startsWith(q)) score += 720;
   else if (name.includes(q)) score += 320;
   if (sub.includes(q)) score += 90;
-  if (item.source === 'tmap') score += 500;
+  if (item.source === 'culture') score += 720;
+  if (item.source === 'kakao') score += 180;
+  if (item.phone) score += 35;
 
   if (stationLike) {
     if (isStationResult(item)) score += 900;
-    if (item.type === '역' || item.type === 'Station') score += 550;
+    if (['역', 'Station', '기차역', 'Rail', '터미널', 'Terminal'].includes(item.type)) score += 550;
     if (name === q) score += 500;
     if (isBranchLikeStationResult(query, item)) score -= 850;
   } else if (addressLike) {
@@ -4469,7 +4551,7 @@ function normalizeSearchText(value) {
 }
 
 function isAddressLikeQuery(query) {
-  return /(\d|시|군|구|동|읍|면|로|길|번지|아파트|단지)/.test(query);
+  return /(\d|시|군|구|동|읍|면|로|길|번지)/.test(query);
 }
 
 function isStationLikeQuery(query) {
@@ -4481,8 +4563,41 @@ function isSubwayPlace(place) {
   return /지하철|전철|역/.test(category) || normalizeSearchText(place && place.place_name).endsWith('역');
 }
 
+function isAllowedMapSearchPlace(place) {
+  if (!place) return false;
+  const group = String(place.category_group_code || '').trim();
+  if (MAP_SEARCH_ALLOWED_CATEGORY_GROUPS.includes(group)) return true;
+  const text = `${place.place_name || ''} ${place.category_name || ''}`;
+  return /문화|관광|박물관|미술관|전시|공연|극장|문화재|유적|궁궐|고궁|왕릉|사찰|성곽|도서관|기차역|철도|KTX|SRT|터미널|버스터미널|경찰서|파출소|지구대|소방서|119|안전센터|보건소|병원|응급|약국|공원|광장/.test(text);
+}
+
+function getKakaoPlaceType(place) {
+  const group = String(place && place.category_group_code || '').trim();
+  if (MAP_SEARCH_CATEGORY_LABELS[group]) {
+    return MAP_SEARCH_CATEGORY_LABELS[group][appLanguage === 'en' ? 'en' : 'ko'];
+  }
+  const text = `${place && place.place_name || ''} ${place && place.category_name || ''}`;
+  if (/기차역|철도|KTX|SRT/.test(text)) return appLanguage === 'en' ? 'Rail' : '기차역';
+  if (/터미널|버스터미널/.test(text)) return appLanguage === 'en' ? 'Terminal' : '터미널';
+  if (/경찰서|파출소|지구대|소방서|119|안전센터/.test(text)) return appLanguage === 'en' ? 'Safety' : '안전';
+  if (/보건소/.test(text)) return appLanguage === 'en' ? 'Health' : '보건';
+  if (/공원|광장/.test(text)) return appLanguage === 'en' ? 'Public' : '공공';
+  if (/문화|관광|박물관|미술관|전시|공연|극장|문화재|유적|궁궐|고궁|왕릉|사찰|성곽/.test(text)) return appLanguage === 'en' ? 'Culture' : '문화';
+  return appLanguage === 'en' ? 'Facility' : '시설';
+}
+
+function cleanPhoneNumber(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+function formatSearchPhoneLabel(phone) {
+  const clean = cleanPhoneNumber(phone);
+  if (!clean) return '';
+  return (appLanguage === 'en' ? 'Tel ' : '전화 ') + clean;
+}
+
 function isStationResult(item) {
-  return item.type === '역' || item.type === 'Station' || isStationLikeQuery(item.name) || /지하철|전철|역/.test(item.category || '');
+  return ['역', 'Station', '기차역', 'Rail', '터미널', 'Terminal'].includes(item.type) || isStationLikeQuery(item.name) || /지하철|전철|역|기차|철도|터미널/.test(item.category || '');
 }
 
 function isBranchLikeStationResult(query, item) {
