@@ -1,4 +1,4 @@
-const CACHE_NAME = 'runloop-v176';
+const CACHE_NAME = 'runloop-v177';
 const CACHE_URLS = ['/', '/privacy.html'];
 
 self.addEventListener('install', e => {

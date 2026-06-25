@@ -419,6 +419,13 @@ if ('serviceWorker' in navigator) {
   .home-ai-visual.has-image .home-ai-photo{display:block;}
   .home-ai-fallback{padding:10px;}
   .home-ai-visual.has-image .home-ai-fallback{display:none;}
+  .home-heritage-card{width:100%;border:1px solid rgba(28,36,43,.08);background:linear-gradient(135deg,#FFFFFF 0%,#F7FBF8 52%,#FFF3EE 100%);border-radius:14px;padding:13px 14px;box-shadow:0 10px 24px rgba(28,36,43,.045);display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;font-family:inherit;cursor:pointer;color:inherit;}
+  .home-heritage-card:active{transform:scale(.99);}
+  .home-heritage-copy{min-width:0;display:flex;flex-direction:column;gap:4px;}
+  .home-heritage-kicker{font-size:11px;font-weight:950;color:var(--coral-dark);line-height:1;}
+  .home-heritage-title{font-size:15px;font-weight:950;color:var(--ink);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .home-heritage-desc{font-size:12px;font-weight:800;color:var(--gray-500);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .home-heritage-cta{width:38px;height:38px;border-radius:999px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:950;flex-shrink:0;}
   #screen-weather.settings-screen{overflow:hidden;}
   .weather-page{height:100%;min-height:0;padding:14px 14px 16px;background:linear-gradient(180deg,#FFFDF8 0%,#F7F3EC 100%);overflow:hidden;display:flex;flex-direction:column;gap:10px;}
   .weather-page .settings-page-header{margin-bottom:2px;flex-shrink:0;}
@@ -575,6 +582,41 @@ if ('serviceWorker' in navigator) {
   .schedule-empty{padding:34px 18px;text-align:center;color:var(--gray-500);background:#fff;border:1px solid var(--gray-100);border-radius:16px;}
   .schedule-empty-title{font-size:15px;font-weight:950;color:var(--ink);margin-bottom:6px;}
   .schedule-empty-desc{font-size:12px;font-weight:800;line-height:1.5;}
+  .heritage-find-page{display:flex;flex-direction:column;gap:12px;}
+  .heritage-upload-card{background:#fff;border:1px solid rgba(28,36,43,.08);border-radius:16px;padding:14px;box-shadow:0 10px 24px rgba(28,36,43,.045);}
+  .heritage-upload-main{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .heritage-upload-copy{min-width:0;}
+  .heritage-upload-kicker{font-size:11px;font-weight:950;color:var(--coral-dark);margin-bottom:6px;}
+  .heritage-upload-title{font-size:18px;font-weight:950;color:var(--ink);line-height:1.25;}
+  .heritage-upload-desc{font-size:12px;font-weight:800;color:var(--gray-500);line-height:1.45;margin-top:6px;}
+  .heritage-file-input{display:none;}
+  .heritage-primary-btn,.heritage-secondary-btn{height:40px;border-radius:12px;font-size:13px;font-weight:950;font-family:inherit;cursor:pointer;white-space:nowrap;padding:0 13px;}
+  .heritage-primary-btn{border:1px solid var(--ink);background:var(--ink);color:#fff;}
+  .heritage-primary-btn:disabled{opacity:.58;cursor:default;}
+  .heritage-secondary-btn{border:1px solid var(--gray-100);background:#fff;color:var(--gray-700);}
+  .heritage-preview{display:none;background:#fff;border:1px solid rgba(28,36,43,.08);border-radius:16px;padding:10px;box-shadow:0 8px 20px rgba(28,36,43,.035);}
+  .heritage-preview.active{display:block;}
+  .heritage-preview img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;background:var(--gray-50);}
+  .heritage-status{display:none;background:#fff;border:1px solid var(--gray-100);border-radius:14px;padding:13px 14px;font-size:13px;font-weight:850;color:var(--gray-600);line-height:1.45;}
+  .heritage-status.active{display:block;}
+  .heritage-status.error{border-color:rgba(224,82,82,.2);background:#FFF7F7;color:var(--red);}
+  .heritage-status strong{display:block;color:var(--ink);font-size:14px;font-weight:950;margin-bottom:4px;}
+  .heritage-results{display:flex;flex-direction:column;gap:10px;}
+  .heritage-result-card{background:#fff;border:1px solid rgba(28,36,43,.08);border-radius:16px;padding:13px;box-shadow:0 10px 24px rgba(28,36,43,.045);}
+  .heritage-result-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:8px;}
+  .heritage-result-label{font-size:11px;font-weight:950;color:var(--coral-dark);margin-bottom:5px;}
+  .heritage-result-title{font-size:17px;font-weight:950;color:var(--ink);line-height:1.28;word-break:keep-all;overflow-wrap:anywhere;}
+  .heritage-confidence{height:26px;display:flex;align-items:center;border-radius:999px;background:var(--coral-light);color:var(--coral-dark);font-size:11px;font-weight:950;padding:0 9px;white-space:nowrap;flex-shrink:0;}
+  .heritage-result-meta{font-size:12px;font-weight:850;color:var(--gray-500);line-height:1.45;margin-bottom:9px;}
+  .heritage-result-desc{font-size:13px;font-weight:750;color:var(--gray-800);line-height:1.55;word-break:keep-all;overflow-wrap:anywhere;}
+  .heritage-result-source{margin-top:8px;font-size:11px;font-weight:800;color:var(--gray-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .heritage-result-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;}
+  .heritage-result-actions.single{grid-template-columns:1fr;}
+  .heritage-result-actions button{height:38px;border-radius:12px;font-size:12px;font-weight:950;font-family:inherit;cursor:pointer;}
+  .heritage-map-btn{border:1px solid var(--ink);background:var(--ink);color:#fff;}
+  .heritage-save-btn{border:1px solid rgba(242,122,94,.26);background:#fff;color:var(--coral-dark);}
+  .heritage-save-btn.active{background:var(--coral-light);color:var(--ink);}
+  .heritage-empty{background:#fff;border:1px dashed var(--gray-200);border-radius:16px;padding:24px 16px;text-align:center;color:var(--gray-500);font-size:13px;font-weight:800;line-height:1.5;}
   .my-block-head{padding:16px 16px 8px;display:flex;justify-content:space-between;align-items:center;}
   .my-block-head .my-section{padding:0;}
   .my-head-action{border:none;background:var(--coral-light);border-radius:999px;color:var(--ink);height:28px;padding:0 10px;font-size:11px;font-weight:800;font-family:inherit;cursor:pointer;}
@@ -960,6 +1002,15 @@ if ('serviceWorker' in navigator) {
       <div class="home-ai-suggestion">오늘 목표와 가까운 장소를 함께 볼게요.</div>
     </div>
 
+    <button class="home-heritage-card" type="button" onclick="openHeritageFinderPage()" aria-label="사진으로 문화재 찾기">
+      <span class="home-heritage-copy">
+        <span class="home-heritage-kicker">AI 문화재</span>
+        <span class="home-heritage-title">사진으로 문화재 찾기</span>
+        <span class="home-heritage-desc">AI 추정 후보와 문화데이터 설명을 확인해요</span>
+      </span>
+      <span class="home-heritage-cta" aria-hidden="true">›</span>
+    </button>
+
     <div class="home-promo-section">
       <div class="home-promo-head">
         <div class="home-promo-head-copy">
@@ -1258,6 +1309,32 @@ if ('serviceWorker' in navigator) {
   </div>
 </div>
 
+<!-- 사진 문화재 찾기 화면 -->
+<div id="screen-heritage-find" class="screen settings-screen">
+  <div class="settings-page heritage-find-page">
+    <div class="settings-page-header">
+      <button class="settings-back-btn" type="button" onclick="closeHeritageFinderPage()" aria-label="뒤로 가기">‹</button>
+      <div class="settings-title" id="heritageFinderTitle">사진으로 문화재 찾기</div>
+    </div>
+    <div class="heritage-upload-card">
+      <div class="heritage-upload-main">
+        <div class="heritage-upload-copy">
+          <div class="heritage-upload-kicker">AI 추정</div>
+          <div class="heritage-upload-title">궁금한 사진을 올려보세요</div>
+          <div class="heritage-upload-desc">결과는 문화데이터 후보로 확인해요.</div>
+        </div>
+        <button class="heritage-primary-btn" type="button" onclick="startHeritagePhotoPick()" id="heritagePickButton">사진 선택</button>
+      </div>
+      <input class="heritage-file-input" type="file" id="heritagePhotoInput" accept="image/*" capture="environment" onchange="handleHeritagePhotoSelected(event)">
+    </div>
+    <div class="heritage-preview" id="heritagePhotoPreviewBox">
+      <img id="heritagePhotoPreview" alt="문화재 사진 미리보기">
+    </div>
+    <div class="heritage-status" id="heritageIdentifyStatus"></div>
+    <div class="heritage-results" id="heritageIdentifyResults"></div>
+  </div>
+</div>
+
 <!-- 프로필 편집 모달 -->
 <div id="profileEditModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1002;align-items:flex-end;justify-content:center;">
   <div style="background:#fff;border-radius:20px 20px 0 0;width:100%;max-width:430px;padding:24px 20px 32px;">
@@ -1486,6 +1563,7 @@ const TMAP_POI_URL = runloopApiUrl('/api/tmap-pois');
 const TOUR_SPOTS_URL = runloopApiUrl('/api/tour-spots');
 const TOUR_PHOTO_URL = runloopApiUrl('/api/tour-photo');
 const HERITAGE_PHOTO_URL = runloopApiUrl('/api/heritage-photo');
+const HERITAGE_IDENTIFY_URL = runloopApiUrl('/api/heritage-identify');
 const TOUR_DETAIL_URL = runloopApiUrl('/api/tour-detail');
 const TOUR_EVENTS_URL = runloopApiUrl('/api/tour-events');
 const OPEN_WEATHER_MAP_KEY = 'c4e77c4cac686498d868b622be22e841';
@@ -1896,6 +1974,19 @@ const UI_TRANSLATIONS_EN = {
   '미세 · 초미세': 'PM10 · PM2.5',
   '체감': 'Feels like',
   '날씨 불러오는 중…': 'Loading weather…',
+  '사진으로 문화재 찾기': 'Find Heritage by Photo',
+  'AI 문화재': 'AI Heritage',
+  'AI 추정 후보와 문화데이터 설명을 확인해요': 'Check AI candidates with culture data',
+  'AI 추정': 'AI estimate',
+  '궁금한 사진을 올려보세요': 'Add a photo',
+  '결과는 문화데이터 후보로 확인해요.': 'Results are shown as culture data candidates.',
+  '문화재 사진 미리보기': 'Heritage photo preview',
+  '분석 중이에요': 'Analyzing photo',
+  '사진 속 단서를 문화데이터와 맞춰보고 있어요.': 'Matching visual clues with culture data.',
+  'AI가 사진을 보고 찾은 추정 후보예요': 'AI-estimated candidates from the photo',
+  '다시 선택': 'Choose again',
+  '지도에서 보기': 'View on map',
+  '문화데이터 설명': 'Culture data description',
   '가까운 축제 일정': 'Nearby festivals',
   '가까운 체육 일정': 'Nearby sports events',
   '전체 일정': 'All events',
@@ -5372,6 +5463,11 @@ let nationalWeatherItems = [];
 let nationalWeatherLoadedAt = 0;
 let nationalWeatherLoading = false;
 let selectedWeatherCityId = 'seoul';
+let heritageFinderReturnTab = 'home';
+let heritageFinderImageDataUrl = '';
+let heritageFinderLoading = false;
+let heritageFinderError = '';
+let heritageFinderResult = null;
 
 function resetAiCourseSuggestions() {
   stopRouteGuidance('', { silent: true });
@@ -7517,6 +7613,264 @@ function closeWeatherPage() {
   switchTab(weatherReturnTab || 'home');
 }
 
+function openHeritageFinderPage() {
+  heritageFinderReturnTab = S.tab && !['heritage-find', 'weather', 'settings', 'schedule'].includes(S.tab) ? S.tab : 'home';
+  if (routeGuide.active) stopRouteGuidance('', { silent: true });
+  setMainChromeVisible(false);
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  const screen = document.getElementById('screen-heritage-find');
+  if (screen) screen.classList.add('active');
+  S.tab = 'heritage-find';
+  renderHeritageFinderPage();
+}
+
+function closeHeritageFinderPage() {
+  switchTab(heritageFinderReturnTab || 'home');
+}
+
+function startHeritagePhotoPick() {
+  const input = document.getElementById('heritagePhotoInput');
+  if (!input) return;
+  input.value = '';
+  input.click();
+}
+
+async function handleHeritagePhotoSelected(event) {
+  const file = event && event.target && event.target.files && event.target.files[0];
+  if (!file) return;
+  try {
+    heritageFinderImageDataUrl = await compressRunPhoto(file);
+    heritageFinderResult = null;
+    heritageFinderError = '';
+    renderHeritageFinderPage();
+    await analyzeHeritagePhoto();
+  } catch (error) {
+    console.warn('Heritage photo processing failed', error);
+    heritageFinderError = '사진을 불러오지 못했어요';
+    heritageFinderLoading = false;
+    renderHeritageFinderPage();
+  }
+}
+
+async function analyzeHeritagePhoto() {
+  if (!heritageFinderImageDataUrl || heritageFinderLoading) return;
+  heritageFinderLoading = true;
+  heritageFinderError = '';
+  renderHeritageFinderPage();
+  try {
+    const response = await fetch(HERITAGE_IDENTIFY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        imageDataUrl: heritageFinderImageDataUrl,
+        lat: S.lat,
+        lng: S.lng,
+        lang: appLanguage
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const retry = response.status === 429 ? '잠시 후 다시 시도해주세요' : '';
+      throw new Error(data && data.error ? data.error : retry || '문화재 후보를 찾지 못했어요');
+    }
+    heritageFinderResult = data || {};
+    if (!Array.isArray(heritageFinderResult.candidates) || !heritageFinderResult.candidates.length) {
+      heritageFinderError = '문화데이터 후보를 찾지 못했어요';
+    }
+  } catch (error) {
+    console.warn('Heritage identification failed', error);
+    heritageFinderError = error && error.message ? error.message : '문화재 후보를 찾지 못했어요';
+  } finally {
+    heritageFinderLoading = false;
+    renderHeritageFinderPage();
+  }
+}
+
+function renderHeritageFinderPage() {
+  const screen = document.getElementById('screen-heritage-find');
+  const previewBox = document.getElementById('heritagePhotoPreviewBox');
+  const preview = document.getElementById('heritagePhotoPreview');
+  const status = document.getElementById('heritageIdentifyStatus');
+  const results = document.getElementById('heritageIdentifyResults');
+  const pickButton = document.getElementById('heritagePickButton');
+  if (previewBox && preview) {
+    previewBox.classList.toggle('active', !!heritageFinderImageDataUrl);
+    if (heritageFinderImageDataUrl) preview.src = heritageFinderImageDataUrl;
+  }
+  if (pickButton) {
+    pickButton.textContent = heritageFinderImageDataUrl ? '다시 선택' : '사진 선택';
+    pickButton.disabled = heritageFinderLoading;
+  }
+  renderHeritageIdentifyStatus(status);
+  renderHeritageIdentifyResults(results);
+  localizeStaticDom(screen);
+}
+
+function renderHeritageIdentifyStatus(status) {
+  if (!status) return;
+  status.classList.remove('active', 'error');
+  status.innerHTML = '';
+  if (heritageFinderLoading) {
+    status.classList.add('active');
+    status.innerHTML = `<strong>${escapeHtml('분석 중이에요')}</strong>${escapeHtml('사진 속 단서를 문화데이터와 맞춰보고 있어요.')}`;
+    return;
+  }
+  if (heritageFinderError) {
+    status.classList.add('active', 'error');
+    status.innerHTML = `<strong>${escapeHtml('확인하지 못했어요')}</strong>${escapeHtml(heritageFinderError)}`;
+    return;
+  }
+  const candidates = heritageFinderResult && Array.isArray(heritageFinderResult.candidates) ? heritageFinderResult.candidates : [];
+  if (!candidates.length) return;
+  const summary = cleanCultureOverview(heritageFinderResult.analysis && heritageFinderResult.analysis.summary || '');
+  status.classList.add('active');
+  status.innerHTML = `<strong>${escapeHtml('AI가 사진을 보고 찾은 추정 후보예요')}</strong>${escapeHtml(summary || '가장 가까운 문화데이터 후보를 골랐어요.')}`;
+}
+
+function renderHeritageIdentifyResults(container) {
+  if (!container) return;
+  if (heritageFinderLoading) {
+    container.innerHTML = '';
+    return;
+  }
+  const candidates = heritageFinderResult && Array.isArray(heritageFinderResult.candidates) ? heritageFinderResult.candidates : [];
+  if (!candidates.length) {
+    container.innerHTML = heritageFinderImageDataUrl && heritageFinderError
+      ? `<div class="heritage-empty">${escapeHtml('다른 각도나 안내판이 보이는 사진으로 다시 시도해보세요.')}</div>`
+      : '';
+    return;
+  }
+  container.innerHTML = candidates.slice(0, 3).map((candidate, index) => renderHeritageCandidateCard(candidate, index)).join('');
+}
+
+function renderHeritageCandidateCard(candidate, index) {
+  const spot = getHeritageCandidateSpot(candidate);
+  const canUseMap = hasHeritageCandidateLocation(candidate);
+  const hasInfo = !!String(candidate && candidate.placeUrl || '').trim();
+  const saved = canUseMap && isCultureSpotFavorited(spot);
+  const name = cleanCultureOverview(candidate && candidate.name || '문화재 후보');
+  const description = cleanCultureOverview(candidate && (candidate.description || candidate.aiReason || candidate.reason) || '');
+  const meta = getHeritageCandidateMeta(candidate);
+  const source = cleanCultureOverview(candidate && (candidate.sourceLabel || candidate.source || '문화데이터') || '');
+  const confidence = getHeritageConfidenceLabel(candidate && candidate.confidence);
+  const actionButtons = [];
+  if (canUseMap) {
+    actionButtons.push(`<button class="heritage-map-btn" type="button" onclick="openHeritageCandidateOnMap(${index})">${escapeHtml('지도에서 보기')}</button>`);
+    actionButtons.push(`<button class="heritage-save-btn ${saved ? 'active' : ''}" type="button" onclick="toggleHeritageCandidateFavorite(${index})">${escapeHtml(saved ? t('saved') : t('favoriteAdd'))}</button>`);
+  } else if (hasInfo) {
+    actionButtons.push(`<button class="heritage-map-btn" type="button" onclick="openHeritageCandidateInfo(${index})">${escapeHtml(t('infoView'))}</button>`);
+  }
+  return `
+    <div class="heritage-result-card">
+      <div class="heritage-result-head">
+        <div>
+          <div class="heritage-result-label">${escapeHtml('문화데이터 설명')}</div>
+          <div class="heritage-result-title">${escapeHtml(name)}</div>
+        </div>
+        <div class="heritage-confidence">${escapeHtml(confidence)}</div>
+      </div>
+      ${meta ? `<div class="heritage-result-meta">${escapeHtml(meta)}</div>` : ''}
+      <div class="heritage-result-desc">${escapeHtml(description || '문화데이터와 사진 단서를 함께 본 후보예요.')}</div>
+      ${source ? `<div class="heritage-result-source">${escapeHtml(source)}</div>` : ''}
+      ${actionButtons.length ? `<div class="heritage-result-actions ${actionButtons.length === 1 ? 'single' : ''}">${actionButtons.join('')}</div>` : ''}
+    </div>`;
+}
+
+function getHeritageCandidates() {
+  return heritageFinderResult && Array.isArray(heritageFinderResult.candidates) ? heritageFinderResult.candidates : [];
+}
+
+function getHeritageCandidate(index) {
+  return getHeritageCandidates()[Number(index)] || null;
+}
+
+function hasHeritageCandidateLocation(candidate) {
+  const lat = Number(candidate && (candidate.lat ?? candidate.y));
+  const lng = Number(candidate && (candidate.lng ?? candidate.x));
+  return Number.isFinite(lat) && Number.isFinite(lng);
+}
+
+function getHeritageCandidateSpot(candidate) {
+  const lat = Number(candidate && (candidate.lat ?? candidate.y));
+  const lng = Number(candidate && (candidate.lng ?? candidate.x));
+  const name = cleanCultureOverview(candidate && candidate.name || '문화재 후보');
+  const imageUrl = String(candidate && (candidate.imageUrl || candidate.firstImage) || '').trim();
+  const sourceLabel = cleanCultureOverview(candidate && (candidate.sourceLabel || candidate.source || '문화데이터') || '');
+  return {
+    id: String(candidate && (candidate.contentId || candidate.id || candidate.uci) || ''),
+    contentId: String(candidate && (candidate.contentId || candidate.id) || ''),
+    place_name: name,
+    name,
+    y: lat,
+    x: lng,
+    lat,
+    lng,
+    cultureType: appLanguage === 'en' ? 'Heritage' : '문화재',
+    cultureValueStars: Math.max(4, Math.min(5, Math.round(Number(candidate && candidate.stars) || 4))),
+    cultureValueLabel: appLanguage === 'en' ? 'AI heritage candidate' : 'AI 추정 문화재',
+    address_name: cleanCultureOverview(candidate && (candidate.address || candidate.spatial) || ''),
+    place_url: String(candidate && candidate.placeUrl || getOfficialVisitKoreaSearchUrl(name, appLanguage) || ''),
+    firstImage: imageUrl,
+    photo: imageUrl ? {
+      imageUrl,
+      title: name,
+      source: sourceLabel
+    } : null,
+    overview: cleanCultureOverview(candidate && candidate.description || ''),
+    source: sourceLabel,
+    distFromMe: Number(candidate && candidate.distKm)
+  };
+}
+
+function getHeritageCandidateMeta(candidate) {
+  const parts = [];
+  const address = cleanCultureOverview(candidate && (candidate.address || candidate.spatial) || '');
+  if (address) parts.push(address);
+  const dist = Number(candidate && candidate.distKm);
+  if (Number.isFinite(dist)) parts.push(formatCultureSpotDistanceLabel(dist));
+  const type = cleanCultureOverview(candidate && (candidate.type || candidate.category) || '');
+  if (type) parts.push(type);
+  return parts.join(' · ');
+}
+
+function getHeritageConfidenceLabel(value) {
+  const score = Number(value);
+  if (!Number.isFinite(score)) return appLanguage === 'en' ? 'Estimate' : '추정';
+  if (score >= 0.76) return appLanguage === 'en' ? 'High' : '가능성 높음';
+  if (score >= 0.52) return appLanguage === 'en' ? 'Medium' : '가능성 보통';
+  return appLanguage === 'en' ? 'Low' : '참고 후보';
+}
+
+function openHeritageCandidateOnMap(index) {
+  const candidate = getHeritageCandidate(index);
+  if (!candidate || !hasHeritageCandidateLocation(candidate)) {
+    toast('지도에 표시할 위치 정보가 없어요');
+    return;
+  }
+  const spot = getHeritageCandidateSpot(candidate);
+  const createTab = document.querySelector('[data-tab="create"]');
+  switchTab('create', createTab);
+  showSavedSpotOnCreateMap(spot, 0);
+}
+
+function toggleHeritageCandidateFavorite(index) {
+  const candidate = getHeritageCandidate(index);
+  if (!candidate || !hasHeritageCandidateLocation(candidate)) {
+    toast('저장할 위치 정보가 없어요');
+    return;
+  }
+  toggleCultureSpotFavorite(getHeritageCandidateSpot(candidate));
+  renderHeritageFinderPage();
+}
+
+function openHeritageCandidateInfo(index) {
+  const candidate = getHeritageCandidate(index);
+  const url = String(candidate && candidate.placeUrl || '').trim();
+  if (!url) return;
+  window.open(url, '_blank', 'noopener');
+}
+
 function getWeatherCityName(city) {
   if (!city) return '';
   return appLanguage === 'en' ? (city.nameEn || city.name) : city.name;
@@ -8977,6 +9331,7 @@ function refreshCultureSpotFavoriteViews() {
   renderHomeActions();
   if (S.tab === 'mycourse') renderMyCourses();
   if (S.tab === 'mypage') renderRecords();
+  if (S.tab === 'heritage-find') renderHeritageFinderPage();
 }
 
 function updateCultureSpotSaveButtonLabels() {
