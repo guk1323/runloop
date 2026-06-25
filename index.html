@@ -1331,7 +1331,7 @@ if ('serviceWorker' in navigator) {
           <button class="heritage-primary-btn heritage-analyze-btn" type="button" onclick="analyzeHeritagePhoto()" id="heritageAnalyzeButton">AI로 찾기</button>
         </div>
       </div>
-      <input class="heritage-file-input" type="file" id="heritagePhotoInput" accept="image/*" capture="environment" onchange="handleHeritagePhotoSelected(event)">
+      <input class="heritage-file-input" type="file" id="heritagePhotoInput" accept="image/*" onchange="handleHeritagePhotoSelected(event)">
     </div>
     <div class="heritage-preview" id="heritagePhotoPreviewBox">
       <img id="heritagePhotoPreview" alt="문화재 사진 미리보기">

@@ -20,6 +20,7 @@ const RARE_HERITAGE_SEEDS = [
   { id: 'jongmyo', name: '종묘', nameEn: 'Jongmyo Shrine', lat: 37.574641, lng: 126.994085, region: '서울 종로구' },
   { id: 'suwon-hwaseong', name: '수원화성', nameEn: 'Suwon Hwaseong Fortress', lat: 37.287889, lng: 127.011778, region: '경기 수원시' },
   { id: 'namhansanseong', name: '남한산성', nameEn: 'Namhansanseong Fortress', lat: 37.478566, lng: 127.181466, region: '경기 광주시' },
+  { id: 'cheomseongdae', name: '첨성대', aliases: ['경주 첨성대'], nameEn: 'Cheomseongdae Observatory', lat: 35.834722, lng: 129.218611, region: '경북 경주시', stars: 4 },
   { id: 'bulguksa', name: '불국사', nameEn: 'Bulguksa Temple', lat: 35.790014, lng: 129.331961, region: '경북 경주시' },
   { id: 'seokguram', name: '석굴암', nameEn: 'Seokguram Grotto', lat: 35.794951, lng: 129.349157, region: '경북 경주시' },
   { id: 'haeinsa', name: '해인사', nameEn: 'Haeinsa Temple', lat: 35.801479, lng: 128.098118, region: '경남 합천군' },
@@ -75,6 +76,7 @@ export default async function handler(req, res) {
       spots = applyRareHeritageKeywordMatches(spots, keyword, lat, lng, lang);
       spots = await enrichWithChaHeritage(spots, lat, lng, radius, lang);
       spots = sortKeywordCultureSpots(spots, keyword);
+      spots = applyCultureSpotStarDistribution(spots, lang);
 
       return res.status(200).json({ spots, lang, displayLang: requestedLang });
     }
@@ -108,6 +110,7 @@ export default async function handler(req, res) {
         if (distDiff) return distDiff;
         return Number(b.cultureValueStars) - Number(a.cultureValueStars);
       });
+    spots = applyCultureSpotStarDistribution(spots, lang);
 
     return res.status(200).json({ spots, lang, displayLang: requestedLang });
   } catch (error) {
@@ -161,31 +164,39 @@ async function verifyExistingHeritageSpots(spots, serviceKey, lang) {
 }
 
 async function appendVerifiedHeritageSeeds(spots, userLat, userLng, radiusMeters, serviceKey, lang) {
-  const existingNames = new Set(spots.map(spot => normalizeHeritageName(spot.place_name || spot.name)));
-  const nearbySeeds = RARE_HERITAGE_SEEDS
-    .map(seed => ({ ...seed, distFromMe: getDistKm(userLat, userLng, seed.lat, seed.lng) }))
-    .filter(seed => seed.distFromMe * 1000 <= radiusMeters)
-    .filter(seed => !existingNames.has(normalizeHeritageName(seed.name)))
-    .slice(0, 6);
+  const nearbySeeds = getNearbyRareHeritageSeeds(userLat, userLng, radiusMeters).slice(0, 6);
   if (!nearbySeeds.length) return spots;
 
-  const additions = await Promise.all(nearbySeeds.map(async seed => {
+  const merged = spots.slice();
+  const additions = [];
+  await Promise.all(nearbySeeds.map(async seed => {
     const items = await fetchChaHeritageItems(seed.name, serviceKey, 5).catch(() => []);
     const match = findChaHeritageMatch(seed.name, items);
-    return match ? normalizeChaHeritageSeed(seed, match, lang) : normalizeRareHeritageSeed(seed, lang);
+    const matchIndex = merged.findIndex(spot => isRareHeritageSpotNameMatch(spot, seed));
+    if (matchIndex >= 0) {
+      merged[matchIndex] = match
+        ? applyChaHeritageMatch(merged[matchIndex], match, lang)
+        : applyRareHeritageSeed(merged[matchIndex], seed, lang);
+      return;
+    }
+    additions.push(match ? normalizeChaHeritageSeed(seed, match, lang) : normalizeRareHeritageSeed(seed, lang));
   }));
 
-  return spots.concat(additions.filter(Boolean));
+  return mergeNormalizedCultureSpots(merged.concat(additions.filter(Boolean)));
 }
 
 function appendKnownRareHeritageSeeds(spots, userLat, userLng, radiusMeters, lang) {
-  const existingNames = new Set(spots.map(spot => normalizeHeritageName(spot.place_name || spot.name)));
-  const additions = RARE_HERITAGE_SEEDS
-    .map(seed => ({ ...seed, distFromMe: getDistKm(userLat, userLng, seed.lat, seed.lng) }))
-    .filter(seed => seed.distFromMe * 1000 <= radiusMeters)
-    .filter(seed => !existingNames.has(normalizeHeritageName(seed.name)))
-    .map(seed => normalizeRareHeritageSeed(seed, lang));
-  return mergeNormalizedCultureSpots(spots.concat(additions));
+  const merged = spots.slice();
+  const additions = [];
+  getNearbyRareHeritageSeeds(userLat, userLng, radiusMeters).forEach(seed => {
+    const matchIndex = merged.findIndex(spot => isRareHeritageSpotNameMatch(spot, seed));
+    if (matchIndex >= 0) {
+      merged[matchIndex] = applyRareHeritageSeed(merged[matchIndex], seed, lang);
+      return;
+    }
+    additions.push(normalizeRareHeritageSeed(seed, lang));
+  });
+  return mergeNormalizedCultureSpots(merged.concat(additions));
 }
 
 function applyRareHeritageKeywordMatches(spots, keyword, userLat, userLng, lang) {
@@ -213,15 +224,55 @@ function getMatchingRareHeritageSeeds(keyword) {
   const query = normalizeHeritageName(keyword);
   if (!query) return [];
   return RARE_HERITAGE_SEEDS.filter(seed => {
-    const ko = normalizeHeritageName(seed.name);
+    const koNames = getRareHeritageSeedNameKeys(seed);
     const en = normalizeHeritageName(seed.nameEn);
-    return ko === query || ko.includes(query) || query.includes(ko)
+    return koNames.some(ko => ko === query || ko.includes(query) || query.includes(ko))
       || en === query || en.includes(query) || query.includes(en);
   }).slice(0, 6);
 }
 
+function getNearbyRareHeritageSeeds(userLat, userLng, radiusMeters) {
+  return RARE_HERITAGE_SEEDS
+    .map(seed => ({ ...seed, distFromMe: getDistKm(userLat, userLng, seed.lat, seed.lng) }))
+    .filter(seed => seed.distFromMe * 1000 <= radiusMeters);
+}
+
+function isRareHeritageSpotNameMatch(spot, seed) {
+  const spotKey = normalizeHeritageName(spot && (spot.place_name || spot.name));
+  if (!spotKey) return false;
+  return getRareHeritageSeedNameKeys(seed).some(seedKey => (
+    seedKey && (spotKey === seedKey || spotKey.includes(seedKey) || seedKey.includes(spotKey))
+  ));
+}
+
+function getRareHeritageSeedNameKeys(seed) {
+  return [seed && seed.name, ...(seed && seed.aliases || [])]
+    .map(normalizeHeritageName)
+    .filter(Boolean);
+}
+
+function getRareHeritageSeedAllNameKeys(seed) {
+  return [seed && seed.name, seed && seed.nameEn, ...(seed && seed.aliases || [])]
+    .map(normalizeHeritageName)
+    .filter(Boolean);
+}
+
+function getRareHeritageSeedStars(seed) {
+  return Math.max(4, Math.min(5, Math.round(Number(seed && seed.stars) || 5)));
+}
+
+function getCultureValueLabelForStars(stars, lang) {
+  const label = makeCultureLabeler(lang);
+  if (Number(stars) >= 5) return label('rare');
+  if (Number(stars) >= 4) return label('history');
+  if (Number(stars) >= 3) return label('facility');
+  if (Number(stars) >= 2) return label('local');
+  return label('light');
+}
+
 function normalizeRareHeritageSeed(seed, lang) {
   const type = lang === 'en' ? 'Heritage' : '문화재';
+  const stars = getRareHeritageSeedStars(seed);
   return {
     id: `cha-seed:${seed.id}`,
     contentId: '',
@@ -233,8 +284,8 @@ function normalizeRareHeritageSeed(seed, lang) {
     x: seed.lng,
     distFromMe: Number(seed.distFromMe),
     cultureType: type,
-    cultureValueStars: 5,
-    cultureValueLabel: lang === 'en' ? 'Verified rare heritage' : '공식 희귀 유산',
+    cultureValueStars: stars,
+    cultureValueLabel: getCultureValueLabelForStars(stars, lang),
     category_name: type,
     address_name: seed.region || '',
     firstImage: '',
@@ -245,13 +296,14 @@ function normalizeRareHeritageSeed(seed, lang) {
 
 function applyRareHeritageSeed(spot, seed, lang) {
   const type = lang === 'en' ? 'Heritage' : '문화재';
+  const stars = getRareHeritageSeedStars(seed);
   return {
     ...spot,
     nameEn: spot.nameEn || seed.nameEn,
     distFromMe: Number.isFinite(Number(spot.distFromMe)) ? Number(spot.distFromMe) : Number(seed.distFromMe),
     cultureType: type,
-    cultureValueStars: 5,
-    cultureValueLabel: lang === 'en' ? 'Verified rare heritage' : '공식 희귀 유산',
+    cultureValueStars: stars,
+    cultureValueLabel: getCultureValueLabelForStars(stars, lang),
     category_name: type,
     place_url: spot.place_url || getVisitKoreaSearchUrl(lang === 'en' ? seed.nameEn : seed.name, lang)
   };
@@ -270,6 +322,122 @@ function sortKeywordCultureSpots(spots, keyword) {
     const distDiff = Number(a.distFromMe) - Number(b.distFromMe);
     return Number.isFinite(distDiff) ? distDiff : 0;
   });
+}
+
+function applyCultureSpotStarDistribution(spots, lang) {
+  const list = (Array.isArray(spots) ? spots : [])
+    .filter(Boolean)
+    .map((spot, index) => ({
+      ...spot,
+      __starIndex: index,
+      __baseStars: getCultureSpotBaseStars(spot),
+      __rankScore: getCultureSpotRankScore(spot)
+    }));
+  const total = list.length;
+  if (!total) return [];
+
+  const limits = {
+    five: Math.min(2, getDistributionLimit(total, 0.03)),
+    four: getDistributionLimit(total, 0.10),
+    three: getDistributionLimit(total, 0.20)
+  };
+  const used = new Set();
+  const ranked = list.slice().sort(compareCultureSpotRank);
+  const label = makeCultureLabeler(lang);
+
+  assignDistributedStars(ranked.filter(isFiveStarDistributionCandidate), used, limits.five, 5, label('rare'));
+  assignDistributedStars(ranked.filter(spot => !used.has(spot.__starIndex) && isFourStarDistributionCandidate(spot)), used, limits.four, 4, label('history'));
+  assignDistributedStars(ranked.filter(spot => !used.has(spot.__starIndex) && isThreeStarDistributionCandidate(spot)), used, limits.three, 3, label('facility'));
+
+  list.forEach(spot => {
+    if (!used.has(spot.__starIndex)) {
+      const lowStars = getLowDistributionStars(spot);
+      spot.cultureValueStars = lowStars;
+      spot.cultureValueLabel = lowStars >= 2 ? label('local') : label('light');
+    }
+    delete spot.__starIndex;
+    delete spot.__baseStars;
+    delete spot.__rankScore;
+  });
+  return list;
+}
+
+function assignDistributedStars(candidates, used, limit, stars, valueLabel) {
+  if (limit <= 0) return;
+  candidates.slice(0, limit).forEach(spot => {
+    spot.cultureValueStars = stars;
+    spot.cultureValueLabel = valueLabel;
+    used.add(spot.__starIndex);
+  });
+}
+
+function getDistributionLimit(total, ratio) {
+  if (total <= 3) return 1;
+  return Math.max(1, Math.floor(total * ratio));
+}
+
+function compareCultureSpotRank(a, b) {
+  const scoreDiff = Number(b.__rankScore) - Number(a.__rankScore);
+  if (scoreDiff) return scoreDiff;
+  const starDiff = Number(b.__baseStars) - Number(a.__baseStars);
+  if (starDiff) return starDiff;
+  const distDiff = Number(a.distFromMe) - Number(b.distFromMe);
+  if (Number.isFinite(distDiff) && distDiff) return distDiff;
+  return Number(a.__starIndex) - Number(b.__starIndex);
+}
+
+function getCultureSpotBaseStars(spot) {
+  return Math.max(1, Math.min(5, Math.round(Number(spot && spot.cultureValueStars) || 1)));
+}
+
+function getCultureSpotRankScore(spot) {
+  const text = getCultureSpotRankText(spot);
+  const baseStars = getCultureSpotBaseStars(spot);
+  const dist = Number(spot && spot.distFromMe);
+  let score = baseStars * 100;
+  if (isFiveStarDistributionCandidate(spot)) score += 80;
+  if (/세계문화유산|세계유산|유네스코|unesco|worldheritage/i.test(text.replace(/\s+/g, ''))) score += 42;
+  if (/국보|보물|사적|문화재청|cha|heritage/i.test(text)) score += 22;
+  if (/궁|궁궐|왕릉|사찰|성곽|서원|향교|유적|palace|fortress|temple|shrine/i.test(text)) score += 12;
+  if (spot && spot.firstImage) score += 4;
+  if (Number.isFinite(dist)) score += Math.max(0, 12 - Math.min(dist, 12));
+  return score;
+}
+
+function isFiveStarDistributionCandidate(spot) {
+  const text = getCultureSpotRankText(spot);
+  return getCultureSpotBaseStars(spot) >= 5
+    && (isFiveStarCultureTitle(text, spot && spot.lang) || /세계문화유산|세계유산|유네스코|unesco|worldheritage/i.test(text.replace(/\s+/g, '')));
+}
+
+function isFourStarDistributionCandidate(spot) {
+  if (getCultureSpotBaseStars(spot) >= 4) return true;
+  return /문화재|유산|역사|궁|왕릉|서원|향교|사찰|성곽|유적|Heritage|Historic|Palace|Fortress|Temple|Shrine/i.test(getCultureSpotRankText(spot));
+}
+
+function isThreeStarDistributionCandidate(spot) {
+  if (getCultureSpotBaseStars(spot) >= 3) return true;
+  return /박물관|미술관|전시관|기념관|문학관|Museum|Gallery|Exhibition|Memorial/i.test(getCultureSpotRankText(spot));
+}
+
+function getLowDistributionStars(spot) {
+  if (getCultureSpotBaseStars(spot) >= 2) return 2;
+  return 1;
+}
+
+function getCultureSpotRankText(spot) {
+  return [
+    spot && spot.place_name,
+    spot && spot.name,
+    spot && spot.nameEn,
+    spot && spot.cultureType,
+    spot && spot.cultureValueLabel,
+    spot && spot.category_name,
+    spot && spot.address_name,
+    spot && spot.source,
+    spot && spot.heritage && spot.heritage.title,
+    spot && spot.heritage && spot.heritage.description
+  ].filter(Boolean).join(' ');
 }
 
 function mergeNormalizedCultureSpots(spots) {
@@ -296,14 +464,13 @@ function applyChaHeritageMatch(spot, match, lang) {
     ? 5
     : Math.max(4, Math.round(Number(spot.cultureValueStars) || 4));
   const type = lang === 'en' ? 'Heritage' : '문화재';
+  const label = makeCultureLabeler(lang);
   return {
     ...spot,
     source: spot.source === 'kto' ? 'kto+cha' : spot.source || 'cha',
     cultureType: type,
     cultureValueStars: stars,
-    cultureValueLabel: lang === 'en'
-      ? (stars >= 5 ? 'Verified rare heritage' : 'Verified heritage')
-      : (stars >= 5 ? '공식 희귀 유산' : '공식 문화재'),
+    cultureValueLabel: stars >= 5 ? label('rare') : label('history'),
     category_name: [type, '문화재청'].filter(Boolean).join(' · '),
     heritage: {
       title,
@@ -318,6 +485,7 @@ function applyChaHeritageMatch(spot, match, lang) {
 function normalizeChaHeritageSeed(seed, match, lang) {
   const type = lang === 'en' ? 'Heritage' : '문화재';
   const title = cleanText(match.title || seed.name, 80);
+  const stars = getRareHeritageSeedStars(seed);
   return {
     id: `cha:${seed.id}`,
     contentId: '',
@@ -329,8 +497,8 @@ function normalizeChaHeritageSeed(seed, match, lang) {
     x: seed.lng,
     distFromMe: seed.distFromMe,
     cultureType: type,
-    cultureValueStars: 5,
-    cultureValueLabel: lang === 'en' ? 'Verified rare heritage' : '공식 희귀 유산',
+    cultureValueStars: stars,
+    cultureValueLabel: getCultureValueLabelForStars(stars, lang),
     category_name: [type, '문화재청'].join(' · '),
     address_name: seed.region || cleanText(match.spatial || match.spatialCoverage, 140),
     firstImage: '',
@@ -386,7 +554,7 @@ function getHeritageKeyword(spot) {
   const raw = String(spot && (spot.place_name || spot.name) || '');
   if (!raw || HERITAGE_SUBPLACE_PATTERN.test(raw)) return '';
   const compact = raw.replace(/\s+/g, '');
-  const seed = RARE_HERITAGE_SEEDS.find(item => compact.includes(item.name));
+  const seed = RARE_HERITAGE_SEEDS.find(item => getRareHeritageSeedNameKeys(item).some(key => compact.includes(key)));
   return seed ? seed.name : raw.replace(/\([^)]*\)|\[[^\]]*\]/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 40);
 }
 
@@ -608,41 +776,30 @@ function isTouristInfoPoint(text, cat3) {
 }
 
 function isFiveStarCultureTitle(title, lang = 'ko') {
-  const compact = String(title || '').replace(/\s+/g, '');
-  const lower = compact.toLowerCase();
-  const exactNames = [
-    '경복궁', '창덕궁', '종묘', '수원화성', '남한산성',
-    '불국사', '석굴암', '해인사', '하회마을', '양동마을',
-    '공산성', '부소산성', '미륵사지', '왕궁리유적'
-  ];
-  const enNames = [
-    'gyeongbokgungpalace', 'changdeokgungpalace', 'jongmyoshrine',
-    'suwonhwaseongfortress', 'namhansanseongfortress', 'bulguksatemple',
-    'seokguramgrotto', 'haeinsatemple', 'hahoevillage', 'yangdongvillage',
-    'gongsanseongfortress', 'busosanseongfortress', 'mireuksajitemplesite',
-    'wanggungrihistoricsite'
-  ];
-  if (exactNames.some(name => compact === name)) return true;
-  if (lang === 'en' && enNames.some(name => lower.includes(name))) return true;
-  return /세계문화유산|세계유산|유네스코|unesco|worldheritage/i.test(compact);
+  const compact = normalizeHeritageName(title);
+  const fiveStarSeedKeys = RARE_HERITAGE_SEEDS
+    .filter(seed => getRareHeritageSeedStars(seed) >= 5)
+    .flatMap(getRareHeritageSeedAllNameKeys);
+  if (fiveStarSeedKeys.some(name => compact === name || name.length >= 3 && compact.includes(name))) return true;
+  return /세계문화유산|세계유산|유네스코|unesco|worldheritage/i.test(String(title || '').replace(/\s+/g, ''));
 }
 
 function makeCultureLabeler(lang) {
   const labels = lang === 'en'
     ? {
-        rare: 'World heritage',
-        history: 'Historic site',
+        rare: 'Signature heritage',
+        history: 'Major heritage',
         major: 'Major culture venue',
-        facility: 'Culture venue',
+        facility: 'Culture spot',
         local: 'Local culture',
         light: 'Light culture point',
         excluded: 'Excluded'
       }
     : {
-        rare: '희귀 유산',
-        history: '역사 명소',
+        rare: '대표 유산',
+        history: '주요 문화재',
         major: '대표 문화시설',
-        facility: '문화시설',
+        facility: '문화 명소',
         local: '지역 문화',
         light: '문화 포인트',
         excluded: '추천 제외'
