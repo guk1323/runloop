@@ -98,6 +98,7 @@ if ('serviceWorker' in navigator) {
   .map-place-card{display:none;position:absolute;left:12px;right:12px;bottom:12px;z-index:24;background:#fff;border:1px solid var(--gray-100);border-radius:var(--r);padding:13px;box-shadow:0 12px 30px rgba(28,36,43,.16);backdrop-filter:blur(14px);}
   .map-place-title{font-size:15px;font-weight:800;color:var(--gray-900);line-height:1.28;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .map-place-close{position:absolute;top:21px;left:21px;width:30px;height:30px;border:1px solid rgba(255,255,255,.72);border-radius:999px;background:rgba(255,255,255,.92);color:var(--gray-600);font-size:18px;font-weight:900;line-height:1;font-family:inherit;cursor:pointer;box-shadow:0 4px 12px rgba(28,36,43,.14);z-index:2;}
+  .map-place-card:not(.has-media) .map-place-close{top:9px;right:9px;left:auto;border-color:var(--gray-100);background:var(--gray-50);box-shadow:none;}
   .map-place-close:active{transform:scale(.94);}
   .map-place-sub{display:none;}
   .map-place-media{display:none;margin:0;}
@@ -107,6 +108,7 @@ if ('serviceWorker' in navigator) {
   .map-place-image.active{display:block;}
   .map-place-photo-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--gray-600);font-size:12px;font-weight:900;text-align:center;}
   .map-place-body{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-top:11px;}
+  .map-place-card:not(.has-media) .map-place-body{margin-top:0;padding-right:36px;}
   .map-place-main{min-width:0;flex:1;}
   .map-place-meta{font-size:11px;color:var(--gray-500);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .map-place-meta:empty{display:none;}
@@ -3796,7 +3798,7 @@ function updateAiPlaceMedia(spot) {
   if (card) {
     clearCardStatus();
     card.classList.toggle('has-meta', hasStars || hasDistance);
-    card.classList.toggle('has-media', !!photo && !!photo.imageUrl);
+    card.classList.toggle('has-media', !!spot);
     card.classList.add(getCultureSpotStatusClass(spot));
     card.style.setProperty('--spot-status-color', getCultureSpotStatusColor(spot));
   }
@@ -4110,6 +4112,7 @@ function useMyLocation() {
 let addrSearchTimer = null;
 let addrSearchSeq = 0;
 let addrSearchResults = [];
+const remoteCultureSpotSearchCache = new Map();
 const MAP_SEARCH_ALLOWED_CATEGORY_GROUPS = ['CT1', 'AT4', 'SW8', 'PO3', 'HP8', 'PM9'];
 const MAP_SEARCH_CATEGORY_LABELS = {
   CT1: { ko: '문화', en: 'Culture' },
@@ -4174,9 +4177,13 @@ async function fetchAddressSearchResults(query) {
     ? searchKakaoAddresses(trimmed)
     : Promise.resolve([]);
   const cultureSearch = searchLoadedCultureSpots(trimmed);
+  const remoteCultureSearch = shouldSearchRemoteCultureSpots(trimmed)
+    ? searchRemoteCultureSpots(trimmed)
+    : Promise.resolve([]);
   const generalFacilitySearch = searchKakaoPlaces(trimmed, { size: 12, filterAllowed: true });
   const groups = await Promise.all([
     cultureSearch,
+    remoteCultureSearch,
     addressSearch,
     generalFacilitySearch,
     ...categorySearches,
@@ -4469,6 +4476,82 @@ function searchLoadedCultureSpots(query) {
     .filter(isValidSearchResult);
 }
 
+async function searchRemoteCultureSpots(query) {
+  const q = normalizeSearchText(query);
+  const center = getSearchCenter();
+  if (!q || !center || !Number.isFinite(center.lat) || !Number.isFinite(center.lng)) return [];
+  const cacheKey = [
+    q,
+    appLanguage,
+    Number(center.lat).toFixed(2),
+    Number(center.lng).toFixed(2)
+  ].join(':');
+  if (remoteCultureSpotSearchCache.has(cacheKey)) {
+    return remoteCultureSpotSearchCache.get(cacheKey);
+  }
+  const request = fetchRemoteCultureSpotResults(query, center)
+    .catch(error => {
+      console.warn('Remote culture spot search failed', error);
+      return [];
+    });
+  remoteCultureSpotSearchCache.set(cacheKey, request);
+  return request;
+}
+
+async function fetchRemoteCultureSpotResults(query, center) {
+  const url = new URL(TOUR_SPOTS_URL, window.location.href);
+  url.searchParams.set('lat', String(center.lat));
+  url.searchParams.set('lng', String(center.lng));
+  url.searchParams.set('radius', String(CULTURE_SPOT_SEARCH_RADIUS_METERS));
+  url.searchParams.set('rows', '24');
+  url.searchParams.set('keyword', query);
+  url.searchParams.set('lang', 'ko');
+  url.searchParams.set('displayLang', appLanguage);
+  const response = await fetch(url.toString(), { headers: { Accept: 'application/json' } });
+  if (!response.ok) throw new Error('Tour spot keyword API failed');
+  const data = await response.json();
+  return (Array.isArray(data && data.spots) ? data.spots : [])
+    .slice(0, 8)
+    .map(mapCultureSpotSearchResult)
+    .filter(isValidSearchResult);
+}
+
+function mapCultureSpotSearchResult(spot) {
+  const latlng = getCultureSpotLatLng(spot);
+  const name = getCultureSpotDisplayName(spot, getCultureSpotOriginalName(spot, t('cultureSpots')));
+  const address = spot.address_name || spot.addr1 || spot.address || '';
+  const dist = Number(spot.distFromMe);
+  const distanceMeters = Number.isFinite(dist)
+    ? Math.round(dist * 1000)
+    : getDistanceFromSearchCenter(getSearchCenter(), latlng.lat, latlng.lng);
+  return {
+    source: 'culture',
+    type: t('cultureSpots'),
+    name,
+    sub: [formatDistanceLabel(distanceMeters), address].filter(Boolean).join(' · '),
+    category: 'culture spot',
+    distanceMeters,
+    phone: '',
+    lat: latlng.lat,
+    lng: latlng.lng,
+    cultureSpot: spot
+  };
+}
+
+function shouldSearchRemoteCultureSpots(query) {
+  const raw = String(query || '').trim();
+  const q = normalizeSearchText(raw);
+  if (q.length < 2) return false;
+  const cultureHint = /문화|관광|박물관|미술관|전시|공연|극장|문화재|유산|유적|궁|고궁|궁궐|왕릉|서원|향교|사찰|성곽|성당|절|기념관|역사|heritage|palace|museum|gallery|exhibition|historic|fortress|temple|shrine/i;
+  if (cultureHint.test(raw)) return true;
+  return Object.entries(CULTURE_SPOT_EN_NAME_MAP).some(([ko, en]) => {
+    const koKey = normalizeSearchText(ko);
+    const enKey = normalizeSearchText(en);
+    return koKey === q || koKey.includes(q) || q.includes(koKey)
+      || enKey === q || enKey.includes(q) || q.includes(enKey);
+  });
+}
+
 function searchKakaoPlaces(query, config = {}) {
   return new Promise(resolve => {
     const ps = new kakao.maps.services.Places();
@@ -4573,6 +4656,9 @@ function scoreSearchResult(query, item) {
   const name = normalizeSearchText(item.name);
   const sub = normalizeSearchText(item.sub || '');
   const category = normalizeSearchText(item.category || '');
+  const originalCultureName = item.cultureSpot
+    ? normalizeSearchText([item.cultureSpot.place_name, item.cultureSpot.name, item.cultureSpot.nameEn].filter(Boolean).join(' '))
+    : '';
   const addressLike = isAddressLikeQuery(query);
   const stationLike = isStationLikeQuery(query);
   let score = 0;
@@ -4580,6 +4666,9 @@ function scoreSearchResult(query, item) {
   if (name === q) score += 1200;
   else if (name.startsWith(q)) score += 720;
   else if (name.includes(q)) score += 320;
+  if (originalCultureName === q) score += 1200;
+  else if (originalCultureName.startsWith(q)) score += 720;
+  else if (originalCultureName.includes(q)) score += 320;
   if (sub.includes(q)) score += 90;
   if (item.source === 'culture') score += 720;
   if (item.source === 'kakao') score += 180;

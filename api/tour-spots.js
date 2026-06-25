@@ -55,6 +55,29 @@ export default async function handler(req, res) {
     const lng = clampNumber(getQueryValue(query.lng), -180, 180);
     const radius = cleanInt(getQueryValue(query.radius), 10000, 1000, 20000);
     const rows = cleanInt(getQueryValue(query.rows), 80, 10, 120);
+    const keyword = cleanText(getQueryValue(query.keyword), 80);
+
+    if (keyword) {
+      const searchParams = {
+        keyword,
+        arrange: 'A',
+        numOfRows: rows,
+        pageNo: 1
+      };
+      const [tourItems, cultureItems] = await Promise.all([
+        fetchKtoItems('searchKeyword2', { ...searchParams, contentTypeId: 12 }, serviceKey, lang),
+        fetchKtoItems('searchKeyword2', { ...searchParams, contentTypeId: 14 }, serviceKey, lang)
+      ]);
+
+      let spots = mergeKtoItems(tourItems.concat(cultureItems))
+        .map(item => normalizeKtoSpot(item, lat, lng, lang))
+        .filter(Boolean);
+      spots = applyRareHeritageKeywordMatches(spots, keyword, lat, lng, lang);
+      spots = await enrichWithChaHeritage(spots, lat, lng, radius, lang);
+      spots = sortKeywordCultureSpots(spots, keyword);
+
+      return res.status(200).json({ spots, lang, displayLang: requestedLang });
+    }
 
     const listParams = {
       mapX: lng,
@@ -79,6 +102,12 @@ export default async function handler(req, res) {
       });
 
     spots = await enrichWithChaHeritage(spots, lat, lng, radius, lang);
+    spots = appendKnownRareHeritageSeeds(spots, lat, lng, radius, lang)
+      .sort((a, b) => {
+        const distDiff = Number(a.distFromMe) - Number(b.distFromMe);
+        if (distDiff) return distDiff;
+        return Number(b.cultureValueStars) - Number(a.cultureValueStars);
+      });
 
     return res.status(200).json({ spots, lang, displayLang: requestedLang });
   } catch (error) {
@@ -143,10 +172,116 @@ async function appendVerifiedHeritageSeeds(spots, userLat, userLng, radiusMeters
   const additions = await Promise.all(nearbySeeds.map(async seed => {
     const items = await fetchChaHeritageItems(seed.name, serviceKey, 5).catch(() => []);
     const match = findChaHeritageMatch(seed.name, items);
-    return match ? normalizeChaHeritageSeed(seed, match, lang) : null;
+    return match ? normalizeChaHeritageSeed(seed, match, lang) : normalizeRareHeritageSeed(seed, lang);
   }));
 
   return spots.concat(additions.filter(Boolean));
+}
+
+function appendKnownRareHeritageSeeds(spots, userLat, userLng, radiusMeters, lang) {
+  const existingNames = new Set(spots.map(spot => normalizeHeritageName(spot.place_name || spot.name)));
+  const additions = RARE_HERITAGE_SEEDS
+    .map(seed => ({ ...seed, distFromMe: getDistKm(userLat, userLng, seed.lat, seed.lng) }))
+    .filter(seed => seed.distFromMe * 1000 <= radiusMeters)
+    .filter(seed => !existingNames.has(normalizeHeritageName(seed.name)))
+    .map(seed => normalizeRareHeritageSeed(seed, lang));
+  return mergeNormalizedCultureSpots(spots.concat(additions));
+}
+
+function applyRareHeritageKeywordMatches(spots, keyword, userLat, userLng, lang) {
+  const seeds = getMatchingRareHeritageSeeds(keyword)
+    .map(seed => ({ ...seed, distFromMe: getDistKm(userLat, userLng, seed.lat, seed.lng) }));
+  if (!seeds.length) return mergeNormalizedCultureSpots(spots);
+
+  const merged = spots.slice();
+  seeds.forEach(seed => {
+    const seedKey = normalizeHeritageName(seed.name);
+    const matchIndex = merged.findIndex(spot => {
+      const spotKey = normalizeHeritageName(spot.place_name || spot.name);
+      return spotKey === seedKey || spotKey.includes(seedKey) || seedKey.includes(spotKey);
+    });
+    if (matchIndex >= 0) {
+      merged[matchIndex] = applyRareHeritageSeed(merged[matchIndex], seed, lang);
+    } else {
+      merged.push(normalizeRareHeritageSeed(seed, lang));
+    }
+  });
+  return mergeNormalizedCultureSpots(merged);
+}
+
+function getMatchingRareHeritageSeeds(keyword) {
+  const query = normalizeHeritageName(keyword);
+  if (!query) return [];
+  return RARE_HERITAGE_SEEDS.filter(seed => {
+    const ko = normalizeHeritageName(seed.name);
+    const en = normalizeHeritageName(seed.nameEn);
+    return ko === query || ko.includes(query) || query.includes(ko)
+      || en === query || en.includes(query) || query.includes(en);
+  }).slice(0, 6);
+}
+
+function normalizeRareHeritageSeed(seed, lang) {
+  const type = lang === 'en' ? 'Heritage' : '문화재';
+  return {
+    id: `cha-seed:${seed.id}`,
+    contentId: '',
+    source: 'cha-seed',
+    place_name: seed.name,
+    name: seed.name,
+    nameEn: seed.nameEn,
+    y: seed.lat,
+    x: seed.lng,
+    distFromMe: Number(seed.distFromMe),
+    cultureType: type,
+    cultureValueStars: 5,
+    cultureValueLabel: lang === 'en' ? 'Verified rare heritage' : '공식 희귀 유산',
+    category_name: type,
+    address_name: seed.region || '',
+    firstImage: '',
+    place_url: getVisitKoreaSearchUrl(lang === 'en' ? seed.nameEn : seed.name, lang),
+    lang
+  };
+}
+
+function applyRareHeritageSeed(spot, seed, lang) {
+  const type = lang === 'en' ? 'Heritage' : '문화재';
+  return {
+    ...spot,
+    nameEn: spot.nameEn || seed.nameEn,
+    distFromMe: Number.isFinite(Number(spot.distFromMe)) ? Number(spot.distFromMe) : Number(seed.distFromMe),
+    cultureType: type,
+    cultureValueStars: 5,
+    cultureValueLabel: lang === 'en' ? 'Verified rare heritage' : '공식 희귀 유산',
+    category_name: type,
+    place_url: spot.place_url || getVisitKoreaSearchUrl(lang === 'en' ? seed.nameEn : seed.name, lang)
+  };
+}
+
+function sortKeywordCultureSpots(spots, keyword) {
+  const query = normalizeHeritageName(keyword);
+  return mergeNormalizedCultureSpots(spots).sort((a, b) => {
+    const aName = normalizeHeritageName([a.place_name, a.name, a.nameEn].filter(Boolean).join(' '));
+    const bName = normalizeHeritageName([b.place_name, b.name, b.nameEn].filter(Boolean).join(' '));
+    const aExact = aName === query ? 1 : 0;
+    const bExact = bName === query ? 1 : 0;
+    if (aExact !== bExact) return bExact - aExact;
+    const starDiff = Number(b.cultureValueStars) - Number(a.cultureValueStars);
+    if (starDiff) return starDiff;
+    const distDiff = Number(a.distFromMe) - Number(b.distFromMe);
+    return Number.isFinite(distDiff) ? distDiff : 0;
+  });
+}
+
+function mergeNormalizedCultureSpots(spots) {
+  const seen = new Set();
+  return spots.filter(spot => {
+    const nameKey = normalizeHeritageName(spot && (spot.place_name || spot.name));
+    const key = String(spot && (spot.contentId || spot.id) || '').trim()
+      || `${nameKey}:${Math.round(Number(spot && spot.y) * 10000)}:${Math.round(Number(spot && spot.x) * 10000)}`;
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function isHeritageVerificationCandidate(spot) {
