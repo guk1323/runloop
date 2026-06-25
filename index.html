@@ -590,10 +590,13 @@ if ('serviceWorker' in navigator) {
   .heritage-upload-title{font-size:18px;font-weight:950;color:var(--ink);line-height:1.25;}
   .heritage-upload-desc{font-size:12px;font-weight:800;color:var(--gray-500);line-height:1.45;margin-top:6px;}
   .heritage-file-input{display:none;}
+  .heritage-upload-actions{display:flex;align-items:center;gap:8px;flex-shrink:0;}
   .heritage-primary-btn,.heritage-secondary-btn{height:40px;border-radius:12px;font-size:13px;font-weight:950;font-family:inherit;cursor:pointer;white-space:nowrap;padding:0 13px;}
   .heritage-primary-btn{border:1px solid var(--ink);background:var(--ink);color:#fff;}
   .heritage-primary-btn:disabled{opacity:.58;cursor:default;}
   .heritage-secondary-btn{border:1px solid var(--gray-100);background:#fff;color:var(--gray-700);}
+  .heritage-analyze-btn{display:none;}
+  .heritage-analyze-btn.visible{display:inline-flex;align-items:center;justify-content:center;}
   .heritage-preview{display:none;background:#fff;border:1px solid rgba(28,36,43,.08);border-radius:16px;padding:10px;box-shadow:0 8px 20px rgba(28,36,43,.035);}
   .heritage-preview.active{display:block;}
   .heritage-preview img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:12px;background:var(--gray-50);}
@@ -1323,7 +1326,10 @@ if ('serviceWorker' in navigator) {
           <div class="heritage-upload-title">궁금한 사진을 올려보세요</div>
           <div class="heritage-upload-desc">결과는 문화데이터 후보로 확인해요.</div>
         </div>
-        <button class="heritage-primary-btn" type="button" onclick="startHeritagePhotoPick()" id="heritagePickButton">사진 선택</button>
+        <div class="heritage-upload-actions">
+          <button class="heritage-secondary-btn" type="button" onclick="startHeritagePhotoPick()" id="heritagePickButton">사진 선택</button>
+          <button class="heritage-primary-btn heritage-analyze-btn" type="button" onclick="analyzeHeritagePhoto()" id="heritageAnalyzeButton">AI로 찾기</button>
+        </div>
       </div>
       <input class="heritage-file-input" type="file" id="heritagePhotoInput" accept="image/*" capture="environment" onchange="handleHeritagePhotoSelected(event)">
     </div>
@@ -1981,6 +1987,10 @@ const UI_TRANSLATIONS_EN = {
   '궁금한 사진을 올려보세요': 'Add a photo',
   '결과는 문화데이터 후보로 확인해요.': 'Results are shown as culture data candidates.',
   '문화재 사진 미리보기': 'Heritage photo preview',
+  'AI로 찾기': 'Find with AI',
+  '다시 찾기': 'Find again',
+  'AI 분석을 시작할까요?': 'Start AI analysis?',
+  '선택한 사진은 문화재 추정을 위해 AI 분석에 사용돼요.': 'The selected photo is used for AI heritage estimation.',
   '분석 중이에요': 'Analyzing photo',
   '사진 속 단서를 문화데이터와 맞춰보고 있어요.': 'Matching visual clues with culture data.',
   'AI가 사진을 보고 찾은 추정 후보예요': 'AI-estimated candidates from the photo',
@@ -7644,7 +7654,6 @@ async function handleHeritagePhotoSelected(event) {
     heritageFinderResult = null;
     heritageFinderError = '';
     renderHeritageFinderPage();
-    await analyzeHeritagePhoto();
   } catch (error) {
     console.warn('Heritage photo processing failed', error);
     heritageFinderError = '사진을 불러오지 못했어요';
@@ -7694,6 +7703,7 @@ function renderHeritageFinderPage() {
   const status = document.getElementById('heritageIdentifyStatus');
   const results = document.getElementById('heritageIdentifyResults');
   const pickButton = document.getElementById('heritagePickButton');
+  const analyzeButton = document.getElementById('heritageAnalyzeButton');
   if (previewBox && preview) {
     previewBox.classList.toggle('active', !!heritageFinderImageDataUrl);
     if (heritageFinderImageDataUrl) preview.src = heritageFinderImageDataUrl;
@@ -7701,6 +7711,12 @@ function renderHeritageFinderPage() {
   if (pickButton) {
     pickButton.textContent = heritageFinderImageDataUrl ? '다시 선택' : '사진 선택';
     pickButton.disabled = heritageFinderLoading;
+  }
+  if (analyzeButton) {
+    const canAnalyze = !!heritageFinderImageDataUrl && !heritageFinderLoading;
+    analyzeButton.classList.toggle('visible', !!heritageFinderImageDataUrl);
+    analyzeButton.disabled = !canAnalyze;
+    analyzeButton.textContent = heritageFinderResult ? '다시 찾기' : 'AI로 찾기';
   }
   renderHeritageIdentifyStatus(status);
   renderHeritageIdentifyResults(results);
@@ -7714,6 +7730,11 @@ function renderHeritageIdentifyStatus(status) {
   if (heritageFinderLoading) {
     status.classList.add('active');
     status.innerHTML = `<strong>${escapeHtml('분석 중이에요')}</strong>${escapeHtml('사진 속 단서를 문화데이터와 맞춰보고 있어요.')}`;
+    return;
+  }
+  if (heritageFinderImageDataUrl && !heritageFinderResult && !heritageFinderError) {
+    status.classList.add('active');
+    status.innerHTML = `<strong>${escapeHtml('AI 분석을 시작할까요?')}</strong>${escapeHtml('선택한 사진은 문화재 추정을 위해 AI 분석에 사용돼요.')}`;
     return;
   }
   if (heritageFinderError) {

@@ -13,6 +13,52 @@ const ALLOWED_ORIGINS = new Set([
   'capacitor://localhost',
   'ionic://localhost'
 ]);
+const KNOWN_HERITAGE_SEEDS = [
+  {
+    id: 'cheomseongdae',
+    name: '첨성대',
+    aliases: ['첨성대', '경주 첨성대', 'Cheomseongdae', '천문대', '석조 천문대', 'astronomical observatory', 'stone observatory'],
+    visualKeywords: ['첨성대', '천문대', '석조천문대', '석조 천문대', '관측대', '원통형', '병 모양', '돌탑', '석조', '사각 창', '네모난 창', '신라', '경주', 'observatory', 'astronomical', 'stone tower', 'cylindrical', 'square window'],
+    lat: 35.834722,
+    lng: 129.218611,
+    address: '경북 경주시 인왕동',
+    type: '문화재',
+    description: '신라 시대에 만들어진 것으로 알려진 석조 천문 관측 시설이에요. 원통형에 가까운 돌 구조와 중간의 사각 창이 특징입니다.'
+  },
+  {
+    id: 'gyeongbokgung',
+    name: '경복궁',
+    aliases: ['경복궁', '근정전', 'Gyeongbokgung', 'Geunjeongjeon'],
+    visualKeywords: ['궁궐', '궁전', '근정전', '경복궁', '단청', '월대', 'palace', 'royal palace'],
+    lat: 37.579617,
+    lng: 126.977041,
+    address: '서울 종로구 사직로 161',
+    type: '궁궐',
+    description: '조선 왕조의 법궁으로, 왕실 의례와 국가 행사가 열리던 대표 궁궐입니다.'
+  },
+  {
+    id: 'bulguksa',
+    name: '불국사',
+    aliases: ['불국사', 'Bulguksa', '청운교', '백운교'],
+    visualKeywords: ['사찰', '절', '불국사', '석가탑', '다보탑', 'temple', 'pagoda'],
+    lat: 35.790014,
+    lng: 129.331961,
+    address: '경북 경주시 불국로 385',
+    type: '사찰',
+    description: '통일신라 불교문화의 대표 유산으로 석가탑, 다보탑 등과 함께 세계유산으로 알려져 있습니다.'
+  },
+  {
+    id: 'suwon-hwaseong',
+    name: '수원화성',
+    aliases: ['수원화성', '화성행궁', 'Hwaseong Fortress'],
+    visualKeywords: ['성곽', '성벽', '장안문', '팔달문', '화성', 'fortress', 'city wall'],
+    lat: 37.287889,
+    lng: 127.011778,
+    address: '경기 수원시 장안구 영화동',
+    type: '성곽',
+    description: '정조 시대에 축성된 계획도시 성곽으로, 군사·도시·건축 기술이 함께 담긴 세계유산입니다.'
+  }
+];
 const rateBuckets = globalThis.__runloopHeritageIdentifyRateBuckets || (globalThis.__runloopHeritageIdentifyRateBuckets = new Map());
 
 export default async function handler(req, res) {
@@ -109,6 +155,7 @@ async function analyzeImageWithOpenAi(apiKey, context) {
           'Return valid JSON only. Do not claim certainty.',
           'Extract visible Korean or English text when present.',
           'Suggest searchable Korean place or heritage names, not broad generic categories only.',
+          'Recognize iconic Korean heritage when visually distinctive, for example Cheomseongdae is a stone astronomical observatory with a cylindrical stone body and square window.',
           'If unsure, provide multiple candidates with cautious reasons.'
         ].join(' '),
         input: [{
@@ -162,6 +209,9 @@ async function buildCultureDataCandidates(analysis, context) {
   const queries = getSearchQueries(analysis);
   const sources = [];
   const bucket = new Map();
+  const knownMatches = getKnownHeritageMatches(analysis, context);
+  knownMatches.forEach(candidate => addCandidate(bucket, candidate));
+  if (knownMatches.length) sources.push('대표 문화재 보정 후보');
 
   for (const [queryIndex, query] of queries.entries()) {
     const baseScore = Math.max(24, 100 - queryIndex * 9);
@@ -193,6 +243,7 @@ async function buildCultureDataCandidates(analysis, context) {
 
 function getSearchQueries(analysis) {
   const raw = []
+    .concat(getKnownHeritageExpandedQueries(analysis))
     .concat(analysis.queries || [])
     .concat((analysis.candidates || []).map(item => item && item.name))
     .concat(analysis.visibleText || []);
@@ -208,6 +259,78 @@ function getSearchQueries(analysis) {
       return true;
     })
     .slice(0, 6);
+}
+
+function getKnownHeritageExpandedQueries(analysis) {
+  const text = getAnalysisSearchText(analysis);
+  const queries = [];
+  KNOWN_HERITAGE_SEEDS.forEach(seed => {
+    const exact = seed.aliases.some(alias => includesNormalized(text, alias));
+    const visualHits = seed.visualKeywords.filter(keyword => includesNormalized(text, keyword)).length;
+    if (exact || visualHits >= 2 || isCheomseongdaeVisualMatch(seed, text)) {
+      queries.push(seed.name);
+      queries.push(...seed.aliases.slice(0, 2));
+    }
+  });
+  return queries;
+}
+
+function getKnownHeritageMatches(analysis, context) {
+  const text = getAnalysisSearchText(analysis);
+  return KNOWN_HERITAGE_SEEDS
+    .map(seed => {
+      const aliasHit = seed.aliases.some(alias => includesNormalized(text, alias));
+      const visualHits = seed.visualKeywords.filter(keyword => includesNormalized(text, keyword)).length;
+      const cheomseongdaeShapeHit = isCheomseongdaeVisualMatch(seed, text);
+      if (!aliasHit && visualHits < 2 && !cheomseongdaeShapeHit) return null;
+      const distKm = context.lat !== null && context.lng !== null
+        ? getDistKm(context.lat, context.lng, seed.lat, seed.lng)
+        : null;
+      return {
+        key: normalizeName(seed.name),
+        id: `known:${seed.id}`,
+        contentId: '',
+        name: seed.name,
+        type: seed.type || '문화재',
+        address: seed.address || '',
+        lat: seed.lat,
+        lng: seed.lng,
+        distKm,
+        imageUrl: '',
+        description: seed.description,
+        source: 'known',
+        sourceLabel: '대표 문화재 보정 후보',
+        placeUrl: getVisitKoreaSearchUrl(seed.name),
+        score: 118 + (aliasHit ? 30 : 0) + visualHits * 10 + (cheomseongdaeShapeHit ? 24 : 0) + getDistanceScore(distKm),
+        confidence: aliasHit ? 0.82 : cheomseongdaeShapeHit ? 0.74 : 0.66
+      };
+    })
+    .filter(Boolean);
+}
+
+function isCheomseongdaeVisualMatch(seed, text) {
+  if (seed.id !== 'cheomseongdae') return false;
+  const stone = /석조|돌|stone|masonry|brick|granite/i.test(text);
+  const tower = /탑|기둥|원통|병\s*모양|tower|cylindrical|column|barrel/i.test(text);
+  const window = /창|구멍|window|opening|square/i.test(text);
+  const observatory = /천문|관측|observatory|astronomical|astronomy/i.test(text);
+  return observatory || stone && tower && window;
+}
+
+function getAnalysisSearchText(analysis) {
+  return [
+    analysis && analysis.summary,
+    ...(analysis && analysis.visibleText || []),
+    ...(analysis && analysis.visualTags || []),
+    ...(analysis && analysis.queries || []),
+    ...(analysis && analysis.candidates || []).flatMap(item => [item && item.name, item && item.reason])
+  ].filter(Boolean).join(' ');
+}
+
+function includesNormalized(text, needle) {
+  const haystack = normalizeName(text);
+  const target = normalizeName(needle);
+  return !!target && haystack.includes(target);
 }
 
 async function fetchKtoKeywordItems(keyword, serviceKey) {
