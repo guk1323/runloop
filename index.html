@@ -396,6 +396,16 @@ if ('serviceWorker' in navigator) {
 
   #weatherCard{background:linear-gradient(135deg,#FFFFFF 0%,#FFF6F1 100%)!important;border:1px solid rgba(28,36,43,.07)!important;box-shadow:0 12px 28px rgba(28,36,43,.06)!important;cursor:pointer;transition:transform .15s,box-shadow .15s;}
   #weatherCard:active{transform:scale(.99);}
+  .home-ai-card{background:#fff;border:1px solid rgba(28,36,43,.08);border-radius:14px;padding:15px 15px 14px;box-shadow:0 10px 24px rgba(28,36,43,.05);}
+  .home-ai-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:9px;}
+  .home-ai-kicker{font-size:11px;font-weight:950;color:var(--coral-dark);line-height:1;}
+  .home-ai-save{position:static;width:30px;height:30px;flex-shrink:0;}
+  .home-ai-title{font-size:17px;font-weight:950;color:var(--ink);line-height:1.34;word-break:keep-all;overflow-wrap:anywhere;margin-bottom:5px;}
+  .home-ai-suggestion{font-size:14px;font-weight:900;color:var(--gray-800);line-height:1.38;word-break:keep-all;overflow-wrap:anywhere;margin-bottom:9px;}
+  .home-ai-reason{font-size:12px;font-weight:750;color:var(--gray-500);line-height:1.5;margin-bottom:12px;}
+  .home-ai-bottom{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+  .home-ai-meta{min-width:0;font-size:11px;font-weight:850;color:var(--gray-600);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .home-ai-map{height:32px;border:none;border-radius:999px;background:var(--ink);color:#fff;font-size:12px;font-weight:900;font-family:inherit;padding:0 12px;cursor:pointer;white-space:nowrap;flex-shrink:0;}
   #screen-weather.settings-screen{overflow:hidden;}
   .weather-page{height:100%;min-height:0;padding:14px 14px 16px;background:linear-gradient(180deg,#FFFDF8 0%,#F7F3EC 100%);overflow:hidden;display:flex;flex-direction:column;gap:10px;}
   .weather-page .settings-page-header{margin-bottom:2px;flex-shrink:0;}
@@ -927,6 +937,12 @@ if ('serviceWorker' in navigator) {
       </div>
       <!-- 3행: 날씨 요약 -->
       <div style="margin-top:10px;font-size:12px;color:var(--gray-500);border-top:1px solid var(--gray-100);padding-top:10px;" id="wSummary">날씨 불러오는 중…</div>
+    </div>
+
+    <div id="homeAiSpotCard" class="home-ai-card" aria-live="polite">
+      <div class="home-ai-kicker">AI 다음 문화스팟</div>
+      <div class="home-ai-title">주변 문화스팟을 불러오는 중이에요</div>
+      <div class="home-ai-suggestion">오늘 목표와 가까운 장소를 함께 볼게요.</div>
     </div>
 
     <div class="home-promo-section">
@@ -5291,6 +5307,7 @@ let cultureSchedulePendingReload = false;
 let homeScheduleCarouselTimer = null;
 let homeScheduleCarouselIndex = 0;
 let homeActionsSignature = '';
+let homeAiSpotRecommendation = null;
 let scheduleReturnTab = 'home';
 let schedulePageMode = 'all';
 const CULTURE_SCHEDULE_TTL_MS = 15 * 60 * 1000;
@@ -6956,7 +6973,221 @@ function saveRecord() {
   toast(appLanguage === 'en' ? `Record saved! +${earnedPts} points` : `기록 저장 완료! +${earnedPts}포인트 🏆`);
 }
 
+function getHomeAiGoalSummary() {
+  const goalKm = getDailyGoal();
+  let records = [];
+  try { records = JSON.parse(localStorage.getItem('runRecords') || '[]'); } catch (_) {}
+  const todayKm = getTodayActivityDistance(records);
+  const remainingKm = Math.max(0, goalKm - todayKm);
+  return {
+    goalKm,
+    todayKm,
+    remainingKm,
+    achieved: remainingKm <= 0.05
+  };
+}
+
+function formatHomeAiKm(value) {
+  const number = Math.max(0, Number(value) || 0);
+  if (number < 0.05) return '0';
+  return (number < 10 ? number.toFixed(1) : Math.round(number).toString()).replace(/\.0$/, '');
+}
+
+function formatWalkingMinutesFromKm(km) {
+  const number = Number(km);
+  if (!Number.isFinite(number) || number <= 0) return '';
+  return Math.max(3, Math.round(number * 12));
+}
+
+function getCultureSpotPreferenceBucket(spot) {
+  if (!spot) return '';
+  const text = [
+    spot.cultureType,
+    spot.type,
+    spot.category_name,
+    spot.cultureValueLabel,
+    spot.place_name,
+    spot.name,
+    spot.nameEn,
+    spot.address_name,
+    spot.addr1,
+    spot.address
+  ].filter(Boolean).join(' ');
+  if (/문화재|궁|향교|사찰|성곽|유적|역사|heritage|palace|historic|temple|fortress|shrine/i.test(text)) return 'heritage';
+  if (/미술관|갤러리|전시|gallery|exhibition|art museum/i.test(text)) return 'exhibition';
+  if (/박물관|기념관|museum|memorial/i.test(text)) return 'museum';
+  if (/공연|극장|콘서트|performance|theater|theatre|concert/i.test(text)) return 'performance';
+  return '';
+}
+
+function getCulturePreferenceLabel(bucket) {
+  return {
+    heritage: '역사 문화',
+    exhibition: '전시',
+    museum: '박물관',
+    performance: '공연'
+  }[bucket] || '문화';
+}
+
+function getCulturePreferenceSummary() {
+  const counts = {};
+  const add = spot => {
+    const bucket = getCultureSpotPreferenceBucket(spot);
+    if (!bucket) return;
+    counts[bucket] = (counts[bucket] || 0) + 1;
+  };
+  getFavoriteCultureSpotList().forEach(add);
+  getCultureSpotVisitList().map(getVisitedSpotAsCultureSpot).forEach(add);
+  const top = Object.entries(counts).sort((a, b) => b[1] - a[1])[0];
+  return top && top[1] >= 2 ? { bucket: top[0], count: top[1] } : null;
+}
+
+function getHomeAiCandidateSpots() {
+  const current = [];
+  const saved = [];
+  const seen = new Set();
+  const add = (spot, target) => {
+    if (!spot || spot.fallback) return;
+    const latlng = getCultureSpotLatLng(spot);
+    if (!Number.isFinite(Number(latlng.lat)) || !Number.isFinite(Number(latlng.lng))) return;
+    const normalized = withCurrentCultureSpotDistance({
+      ...spot,
+      y: Number(latlng.lat),
+      x: Number(latlng.lng),
+      lat: Number(latlng.lat),
+      lng: Number(latlng.lng)
+    });
+    const key = getCultureSpotFavoriteKey(normalized) || `${Number(latlng.lat).toFixed(5)}:${Number(latlng.lng).toFixed(5)}`;
+    if (seen.has(key)) return;
+    seen.add(key);
+    target.push(normalized);
+  };
+
+  (Array.isArray(lastCultureSpotResults) ? lastCultureSpotResults : []).forEach(spot => add(spot, current));
+  if (current.length) return current;
+  getFavoriteCultureSpotList().forEach(spot => add(spot, saved));
+  getCultureSpotVisitList().map(getVisitedSpotAsCultureSpot).forEach(spot => add(spot, saved));
+  return saved;
+}
+
+function scoreHomeAiSpot(spot, goalSummary, preference) {
+  const distKm = Number(spot && spot.distFromMe);
+  const remaining = goalSummary && Number(goalSummary.remainingKm) || 0;
+  const targetKm = goalSummary && goalSummary.achieved
+    ? 1.2
+    : Math.min(4, Math.max(0.5, remaining));
+  const distanceScore = Number.isFinite(distKm) ? Math.max(0, 36 - Math.abs(distKm - targetKm) * 9) : 0;
+  const stars = Math.max(1, Math.min(5, Math.round(Number(spot && (spot.cultureValueStars || spot.stars)) || 1)));
+  const valueScore = stars * 4;
+  const bucket = getCultureSpotPreferenceBucket(spot);
+  const preferenceScore = preference && preference.bucket && bucket === preference.bucket ? 18 : 0;
+  const favoriteScore = isCultureSpotFavorited(spot) ? 5 : 0;
+  const visitedPenalty = isCultureSpotMarkedVisited(spot) ? -28 : 0;
+  return distanceScore + valueScore + preferenceScore + favoriteScore + visitedPenalty;
+}
+
+function buildHomeAiSpotRecommendation() {
+  const candidates = getHomeAiCandidateSpots();
+  if (!candidates.length) return null;
+  const goalSummary = getHomeAiGoalSummary();
+  const preference = getCulturePreferenceSummary();
+  const ranked = candidates
+    .map(spot => ({
+      spot,
+      score: scoreHomeAiSpot(spot, goalSummary, preference),
+      distKm: Number(spot && spot.distFromMe)
+    }))
+    .sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      const aDist = Number.isFinite(a.distKm) ? a.distKm : Number.MAX_SAFE_INTEGER;
+      const bDist = Number.isFinite(b.distKm) ? b.distKm : Number.MAX_SAFE_INTEGER;
+      return aDist - bDist;
+    });
+  return {
+    spot: ranked[0].spot,
+    goalSummary,
+    preference
+  };
+}
+
+function getHomeAiReason(recommendation) {
+  const spot = recommendation && recommendation.spot;
+  const preference = recommendation && recommendation.preference;
+  if (preference && preference.bucket) {
+    return `최근 ${getCulturePreferenceLabel(preference.bucket)} 관심이 보여서 골랐어요.`;
+  }
+  if (spot && isCultureSpotFavorited(spot)) return '관심 장소 중 오늘 들르기 좋아요.';
+  if (spot && isCultureSpotMarkedVisited(spot)) return '방문 기록이 있어 다시 보기 좋아요.';
+  return '가볍게 둘러보기 좋은 장소예요.';
+}
+
+function renderHomeAiSpotCard() {
+  const card = document.getElementById('homeAiSpotCard');
+  if (!card) return;
+  const recommendation = buildHomeAiSpotRecommendation();
+  homeAiSpotRecommendation = recommendation;
+
+  if (!recommendation) {
+    const pendingFirstLoad = cultureSpotLoading || !cultureSpotLoadedAt;
+    const title = pendingFirstLoad ? '주변 문화스팟을 불러오는 중이에요' : '추천할 문화스팟을 찾는 중이에요';
+    const suggestion = pendingFirstLoad ? '오늘 목표와 가까운 장소를 함께 볼게요.' : '위치를 켜면 다음 장소를 제안할게요.';
+    card.innerHTML = `
+      <div class="home-ai-kicker">AI 다음 문화스팟</div>
+      <div class="home-ai-title">${escapeHtml(title)}</div>
+      <div class="home-ai-suggestion">${escapeHtml(suggestion)}</div>`;
+    return;
+  }
+
+  const spot = recommendation.spot;
+  const goal = recommendation.goalSummary;
+  const displayName = getCultureSpotDisplayName(spot, getCultureSpotOriginalName(spot, '문화스팟'));
+  const title = goal.achieved
+    ? '오늘 목표를 채웠어요'
+    : `오늘 목표까지 ${formatHomeAiKm(goal.remainingKm)}km 남았어요`;
+  const suggestion = goal.achieved
+    ? `${displayName}에서 가볍게 더 걸어볼까요?`
+    : `${displayName}까지 걸어가보는 건 어때요?`;
+  const walkingMinutes = formatWalkingMinutesFromKm(spot.distFromMe);
+  const meta = walkingMinutes ? `걸어서 약 ${walkingMinutes}분` : '지도에서 위치 확인';
+  const active = isCultureSpotFavorited(spot);
+  const label = active ? t('favoriteRemove') : t('favoriteAdd');
+  const key = getCultureSpotFavoriteKey(spot);
+
+  card.innerHTML = `
+    <div class="home-ai-top">
+      <div class="home-ai-kicker">AI 다음 문화스팟</div>
+      <button class="mc-fav culture-spot-heart home-ai-save ${active ? 'active' : ''}" type="button" data-key="${escapeHtml(key)}" onclick="toggleHomeAiSpotFavorite(event)" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">♥</button>
+    </div>
+    <div class="home-ai-title">${escapeHtml(title)}</div>
+    <div class="home-ai-suggestion">${escapeHtml(suggestion)}</div>
+    <div class="home-ai-reason">${escapeHtml(getHomeAiReason(recommendation))}</div>
+    <div class="home-ai-bottom">
+      <div class="home-ai-meta">${escapeHtml(meta)}</div>
+      <button class="home-ai-map" type="button" onclick="openHomeAiSpotOnMap()">지도에서 보기</button>
+    </div>`;
+}
+
+function toggleHomeAiSpotFavorite(clickEvent) {
+  if (clickEvent) {
+    clickEvent.preventDefault();
+    clickEvent.stopPropagation();
+  }
+  const recommendation = homeAiSpotRecommendation || buildHomeAiSpotRecommendation();
+  if (!recommendation || !recommendation.spot) return;
+  toggleCultureSpotFavorite(recommendation.spot);
+  renderHomeAiSpotCard();
+}
+
+function openHomeAiSpotOnMap() {
+  const recommendation = homeAiSpotRecommendation || buildHomeAiSpotRecommendation();
+  if (!recommendation || !recommendation.spot) return;
+  const createTab = document.querySelector('[data-tab="create"]');
+  switchTab('create', createTab);
+  showSavedSpotOnCreateMap(recommendation.spot, 0);
+}
+
 function renderHomeActions() {
+  renderHomeAiSpotCard();
   const track = document.getElementById('homeScheduleTrack');
   const dots = document.getElementById('homeScheduleDots');
   const titleEl = document.getElementById('homeScheduleTitle');
@@ -8997,6 +9228,7 @@ function renderNearCourses(results) {
   const wrap = document.getElementById('nearCourseList');
   const safeResults = Array.isArray(results) ? results : [];
   lastCultureSpotResults = safeResults.slice();
+  renderHomeAiSpotCard();
   updateCultureSpotFilterButtons();
 
   const unique = selectHomeCultureSpots(safeResults);
@@ -9957,6 +10189,7 @@ function renderRecords() {
   const textEl = document.getElementById('homeGoalText');
   if (fillEl) fillEl.style.width = pct + '%';
   if (textEl) textEl.textContent = todayTotal.toFixed(1) + ' / ' + formatDailyGoal(goal) + 'km';
+  renderHomeAiSpotCard();
   renderActivityCalendar(records, goal);
 
   if (!wrap) return;
@@ -12415,6 +12648,7 @@ function updateGoalBar() {
   if (fill) fill.style.width = pct + '%';
   if (pctEl) pctEl.textContent = pct + '%';
   if (textEl) textEl.textContent = todayDist.toFixed(1) + ' / ' + formatDailyGoal(goal) + 'km';
+  renderHomeAiSpotCard();
 }
 
 function getCultureSpotVisitList() {
