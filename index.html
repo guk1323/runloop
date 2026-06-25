@@ -399,14 +399,16 @@ if ('serviceWorker' in navigator) {
 
   #weatherCard{background:linear-gradient(135deg,#FFFFFF 0%,#FFF6F1 100%)!important;border:1px solid rgba(28,36,43,.07)!important;box-shadow:0 12px 28px rgba(28,36,43,.06)!important;cursor:pointer;transition:transform .15s,box-shadow .15s;}
   #weatherCard:active{transform:scale(.99);}
-  .home-ai-card{background:#fff;border:1px solid rgba(28,36,43,.08);border-radius:14px;padding:14px;box-shadow:0 10px 24px rgba(28,36,43,.05);}
+  .home-ai-assistant{background:#fff;border:1px solid rgba(28,36,43,.08);border-radius:16px;padding:14px;box-shadow:0 10px 24px rgba(28,36,43,.05);display:flex;flex-direction:column;gap:12px;}
+  .home-ai-section-title{font-size:12px;font-weight:950;color:var(--coral-dark);line-height:1;}
+  .home-ai-card{position:relative;}
   .home-ai-card.is-empty{display:block;}
   .home-ai-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:9px;}
   .home-ai-body{display:grid;grid-template-columns:minmax(0,1fr) 92px;gap:12px;align-items:center;}
   .home-ai-copy{min-width:0;}
   .home-ai-top{display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;}
   .home-ai-kicker{font-size:11px;font-weight:950;color:var(--coral-dark);line-height:1;}
-  .home-ai-save{position:static;width:30px;height:30px;flex-shrink:0;background:rgba(255,255,255,.92);}
+  .home-ai-save{position:absolute;top:0;right:0;z-index:2;width:30px;height:30px;flex-shrink:0;background:rgba(255,255,255,.92);}
   .home-ai-title{font-size:16px;font-weight:950;color:var(--ink);line-height:1.34;word-break:keep-all;overflow-wrap:anywhere;margin-bottom:5px;}
   .home-ai-suggestion{font-size:13px;font-weight:900;color:var(--gray-800);line-height:1.38;word-break:keep-all;overflow-wrap:anywhere;margin-bottom:8px;}
   .home-ai-reason{font-size:12px;font-weight:750;color:var(--gray-500);line-height:1.45;}
@@ -419,13 +421,13 @@ if ('serviceWorker' in navigator) {
   .home-ai-visual.has-image .home-ai-photo{display:block;}
   .home-ai-fallback{padding:10px;}
   .home-ai-visual.has-image .home-ai-fallback{display:none;}
-  .home-heritage-card{width:100%;border:1px solid rgba(28,36,43,.08);background:linear-gradient(135deg,#FFFFFF 0%,#F7FBF8 52%,#FFF3EE 100%);border-radius:14px;padding:13px 14px;box-shadow:0 10px 24px rgba(28,36,43,.045);display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;font-family:inherit;cursor:pointer;color:inherit;}
+  .home-heritage-card{width:100%;border:none;border-top:1px solid var(--gray-100);background:transparent;border-radius:0;padding:12px 0 0;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;font-family:inherit;cursor:pointer;color:inherit;}
   .home-heritage-card:active{transform:scale(.99);}
-  .home-heritage-copy{min-width:0;display:flex;flex-direction:column;gap:4px;}
+  .home-heritage-copy{min-width:0;display:flex;align-items:center;gap:8px;}
   .home-heritage-kicker{font-size:11px;font-weight:950;color:var(--coral-dark);line-height:1;}
   .home-heritage-title{font-size:15px;font-weight:950;color:var(--ink);line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .home-heritage-desc{font-size:12px;font-weight:800;color:var(--gray-500);line-height:1.35;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .home-heritage-cta{width:38px;height:38px;border-radius:999px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:950;flex-shrink:0;}
+  .home-heritage-cta{width:32px;height:32px;border-radius:999px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:19px;font-weight:950;flex-shrink:0;}
   #screen-weather.settings-screen{overflow:hidden;}
   .weather-page{height:100%;min-height:0;padding:14px 14px 16px;background:linear-gradient(180deg,#FFFDF8 0%,#F7F3EC 100%);overflow:hidden;display:flex;flex-direction:column;gap:10px;}
   .weather-page .settings-page-header{margin-bottom:2px;flex-shrink:0;}
@@ -999,20 +1001,19 @@ if ('serviceWorker' in navigator) {
       <div style="margin-top:10px;font-size:12px;color:var(--gray-500);border-top:1px solid var(--gray-100);padding-top:10px;" id="wSummary">날씨 불러오는 중…</div>
     </div>
 
-    <div id="homeAiSpotCard" class="home-ai-card is-empty" aria-live="polite">
-      <div class="home-ai-kicker">AI 추천</div>
-      <div class="home-ai-title">주변 문화스팟을 불러오는 중이에요</div>
-      <div class="home-ai-suggestion">오늘 목표와 가까운 장소를 함께 볼게요.</div>
-    </div>
-
-    <button class="home-heritage-card" type="button" onclick="openHeritageFinderPage()" aria-label="사진으로 문화재 찾기">
-      <span class="home-heritage-copy">
-        <span class="home-heritage-kicker">AI 문화재</span>
-        <span class="home-heritage-title">사진으로 문화재 찾기</span>
-        <span class="home-heritage-desc">AI 추정 후보와 문화데이터 설명을 확인해요</span>
-      </span>
-      <span class="home-heritage-cta" aria-hidden="true">›</span>
-    </button>
+    <section class="home-ai-assistant" aria-labelledby="homeAiAssistantTitle">
+      <div class="home-ai-section-title" id="homeAiAssistantTitle">AI 문화 도우미</div>
+      <div id="homeAiSpotCard" class="home-ai-card is-empty" aria-live="polite">
+        <div class="home-ai-title">주변 문화스팟을 불러오는 중이에요</div>
+        <div class="home-ai-suggestion">오늘 목표와 가까운 장소를 함께 볼게요.</div>
+      </div>
+      <button class="home-heritage-card" type="button" onclick="openHeritageFinderPage()" aria-label="사진으로 문화재 찾기">
+        <span class="home-heritage-copy">
+          <span class="home-heritage-title">사진으로 문화재 찾기</span>
+        </span>
+        <span class="home-heritage-cta" aria-hidden="true">›</span>
+      </button>
+    </section>
 
     <div class="home-promo-section">
       <div class="home-promo-head">
@@ -7311,7 +7312,6 @@ function renderHomeAiSpotCard() {
     const suggestion = pendingFirstLoad ? '오늘 목표와 가까운 장소를 함께 볼게요.' : '위치를 켜면 다음 장소를 제안할게요.';
     card.classList.add('is-empty');
     card.innerHTML = `
-      <div class="home-ai-kicker">AI 추천</div>
       <div class="home-ai-title">${escapeHtml(title)}</div>
       <div class="home-ai-suggestion">${escapeHtml(suggestion)}</div>`;
     return;
@@ -7336,15 +7336,11 @@ function renderHomeAiSpotCard() {
   const key = getCultureSpotFavoriteKey(spot);
 
   card.innerHTML = `
-    <div class="home-ai-head">
-      <div class="home-ai-kicker">AI 추천</div>
-      <button class="mc-fav culture-spot-heart home-ai-save ${active ? 'active' : ''}" type="button" data-key="${escapeHtml(key)}" onclick="toggleHomeAiSpotFavorite(event)" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">♥</button>
-    </div>
+    <button class="mc-fav culture-spot-heart home-ai-save ${active ? 'active' : ''}" type="button" data-key="${escapeHtml(key)}" onclick="toggleHomeAiSpotFavorite(event)" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">♥</button>
     <div class="home-ai-body">
       <div class="home-ai-copy">
         <div class="home-ai-title">${escapeHtml(title)}</div>
         <div class="home-ai-suggestion">${escapeHtml(suggestion)}</div>
-        <div class="home-ai-reason">${escapeHtml(getHomeAiReason(recommendation))}</div>
       </div>
       <div class="home-ai-visual${image ? ' has-image' : ''}">
         ${image ? `<img class="home-ai-photo" src="${escapeHtml(image)}" alt="${escapeHtml(displayName)}" loading="lazy">` : '<span class="home-ai-fallback">문화<br>스팟</span>'}
