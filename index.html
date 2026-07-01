@@ -229,80 +229,6 @@ if ('serviceWorker' in navigator) {
   .course-scroll::-webkit-scrollbar-thumb{background:var(--gray-300);border-radius:2px;}
 
   /* ── 런닝 화면 ── */
-  .run-screen{position:fixed;inset:0;background:var(--paper);z-index:999;display:none;flex-direction:column;max-width:430px;margin:0 auto;overflow:hidden;}
-  .run-screen.active{display:flex;}
-  .run-header{padding:12px 18px 9px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--gray-100);flex-shrink:0;}
-  .run-title{font-size:16px;font-weight:700;color:var(--gray-900);}
-  .run-live{display:flex;align-items:center;gap:5px;background:#FEECEC;color:var(--red);padding:5px 12px;border-radius:var(--rp);font-size:12px;font-weight:500;}
-  .live-dot{width:7px;height:7px;border-radius:50%;background:var(--red);animation:blink 1s infinite;}
-  @keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
-  .run-map{flex:1;min-height:280px;background:#EEEADF;position:relative;}
-  .gps-chip{position:absolute;top:10px;left:10px;z-index:6;background:rgba(255,255,255,.92);border:1px solid var(--gray-100);border-radius:999px;padding:6px 10px;font-size:11px;font-weight:700;color:var(--gray-700);box-shadow:0 2px 8px rgba(0,0,0,.08);}
-  .gps-chip.good{color:#3F7D5A;}
-  .gps-chip.warn{color:#BA7517;}
-  .gps-chip.bad{color:#A32D2D;}
-  .run-map-actions{position:absolute;top:10px;right:10px;z-index:7;display:flex;gap:6px;}
-  .run-map-btn{width:36px;height:36px;border-radius:999px;background:rgba(255,255,255,.94);border:1px solid var(--gray-100);box-shadow:0 2px 8px rgba(0,0,0,.08);font-size:17px;font-weight:800;color:var(--coral-dark);cursor:pointer;font-family:inherit;display:flex;align-items:center;justify-content:center;}
-  .run-map-progress{position:absolute;top:46px;left:10px;z-index:6;background:rgba(255,253,248,.94);border:1px solid var(--gray-100);border-radius:var(--rs);padding:7px 10px;box-shadow:0 2px 8px rgba(0,0,0,.08);min-width:116px;}
-  .run-map-progress span{display:block;font-size:10px;color:var(--gray-500);margin-bottom:2px;}
-  .run-map-progress strong{display:block;font-size:13px;color:var(--ink);line-height:1.1;}
-  .run-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:7px;padding:10px 14px;flex-shrink:0;}
-  .rstat{background:var(--gray-50);border-radius:var(--rs);padding:9px 11px;}
-  .rstat-l{font-size:11px;color:var(--gray-500);margin-bottom:4px;}
-  .rstat-v{font-size:22px;font-weight:700;color:var(--gray-900);line-height:1;}
-  .rstat-v.g{color:var(--coral);}
-  .rstat-u{font-size:13px;font-weight:400;color:var(--gray-500);}
-  .pace-wrap{padding:0 14px 9px;flex-shrink:0;}
-  .pace-top{display:flex;justify-content:space-between;font-size:12px;color:var(--gray-500);margin-bottom:6px;}
-  .pace-track{height:7px;background:var(--gray-100);border-radius:4px;overflow:hidden;}
-  .pace-fill{height:100%;background:var(--coral);border-radius:4px;transition:width .5s;}
-  .km-track{display:flex;gap:6px;padding:0 14px 10px;overflow-x:auto;flex-shrink:0;}
-  .km-track::-webkit-scrollbar{display:none;}
-  .km-chip{min-width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0;}
-  .km-done{background:var(--lime);color:var(--ink);}
-  .km-cur{background:var(--ink);color:#fff;}
-  .km-todo{background:var(--gray-100);color:var(--gray-500);}
-  .run-controls{display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 14px 10px;flex-shrink:0;}
-  .ctrl-stop{height:34px;border-radius:999px;background:var(--red-light);border:1px solid #f09595;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;font-weight:800;color:var(--red);padding:0 14px;font-family:inherit;}
-  .ctrl-pause{height:38px;border-radius:999px;background:var(--ink);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;font-weight:800;color:#fff;transition:background .15s;padding:0 20px;font-family:inherit;}
-  .ctrl-pause.paused{background:var(--amber-light);color:var(--ink);}
-  .ctrl-extra{width:54px;height:54px;border-radius:50%;background:var(--gray-100);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px;}
-  /* 완료 오버레이 */
-  .finish-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1000;display:none;align-items:center;justify-content:center;}
-  .finish-overlay.active{display:flex;}
-  .finish-card{background:#fff;border-radius:var(--r);padding:24px 20px;width:320px;max-width:90vw;max-height:88dvh;overflow-y:auto;}
-  .finish-emoji{font-size:36px;text-align:center;margin-bottom:8px;}
-  .finish-title{font-size:18px;font-weight:700;text-align:center;margin-bottom:4px;}
-  .finish-sub{font-size:13px;color:var(--gray-500);text-align:center;margin-bottom:16px;}
-  .finish-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px;}
-  .fstat{background:var(--gray-50);border-radius:var(--rs);padding:10px;text-align:center;}
-  .fstat-l{font-size:11px;color:var(--gray-500);margin-bottom:2px;}
-  .fstat-v{font-size:18px;font-weight:700;}
-  .fstat-v.g{color:var(--coral);}
-  .finish-save{width:100%;height:48px;background:var(--ink);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;font-family:inherit;cursor:pointer;margin-bottom:8px;}
-  .finish-discard{width:100%;height:40px;background:none;border:1px solid var(--gray-300);border-radius:var(--r);font-size:13px;font-family:inherit;cursor:pointer;color:var(--gray-500);}
-  .photo-prompt-overlay{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:1001;display:none;align-items:center;justify-content:center;}
-  .photo-prompt-overlay.active{display:flex;}
-  .photo-prompt-card{background:#fff;border-radius:var(--r);padding:24px 20px;width:310px;max-width:90vw;text-align:center;box-shadow:0 18px 46px rgba(0,0,0,.18);}
-  .photo-prompt-icon{font-size:34px;margin-bottom:8px;}
-  .photo-prompt-title{font-size:18px;font-weight:800;margin-bottom:6px;color:var(--gray-900);}
-  .photo-prompt-desc{font-size:13px;line-height:1.55;color:var(--gray-500);margin-bottom:18px;}
-  .photo-prompt-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
-  .photo-prompt-btn{height:44px;border-radius:var(--rs);font-size:14px;font-weight:800;font-family:inherit;cursor:pointer;border:1px solid transparent;}
-  .photo-prompt-yes{background:var(--ink);color:#fff;}
-  .photo-prompt-no{background:#fff;color:var(--gray-700);border-color:var(--gray-300);}
-  .finish-photo{display:none;margin-bottom:14px;}
-  .finish-photo.active{display:block;}
-  .finish-photo-img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:var(--rs);border:1px solid var(--gray-100);display:block;background:var(--gray-50);}
-  .finish-photo-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;}
-  .finish-photo-actions button{height:36px;border-radius:var(--rs);font-size:12px;font-weight:800;font-family:inherit;cursor:pointer;}
-  .finish-photo-retake{background:var(--gray-50);border:1px solid var(--gray-100);color:var(--gray-700);}
-  .finish-photo-remove{background:#fff;border:1px solid var(--gray-300);color:var(--gray-500);}
-  .condition-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
-  .condition-value{font-size:13px;font-weight:900;color:var(--coral);}
-  .condition-slider{width:100%;accent-color:var(--coral);}
-  .condition-ticks{display:grid;grid-template-columns:repeat(11,1fr);font-size:10px;color:var(--gray-500);margin-top:4px;text-align:center;}
-  .condition-caption{display:flex;justify-content:space-between;font-size:11px;color:var(--gray-500);margin-top:6px;}
 
   .record-card{background:#fff;border-radius:var(--r);border:1px solid var(--gray-100);padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;}
   .record-icon{width:42px;height:42px;border-radius:50%;background:var(--coral-light);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
@@ -1454,97 +1380,6 @@ if ('serviceWorker' in navigator) {
 </div>
 
 <div class="toast" id="toast"></div>
-
-<!-- 런닝 진행 화면 -->
-<div class="run-screen" id="runScreen">
-  <div class="run-header">
-    <div class="run-title" id="runTitle">Han River Line</div>
-    <div class="run-live"><div class="live-dot"></div>라이브</div>
-  </div>
-  <div class="run-map" id="runMap">
-    <div id="runKakaoMap" style="width:100%;height:100%;"></div>
-    <canvas id="runCanvas" style="width:100%;height:100%;display:block;position:absolute;top:0;left:0;pointer-events:none;display:none;"></canvas>
-    <div class="gps-chip warn" id="gpsChip">GPS 대기</div>
-    <div class="run-map-progress"><span>진행</span><strong id="runMapProgressText">0.00 / 0.00km</strong></div>
-    <div class="run-map-actions">
-      <button class="run-map-btn" onclick="recenterRunMap()" aria-label="현재 위치 중심" title="현재 위치 중심">◎</button>
-    </div>
-  </div>
-  <div class="run-stats">
-    <div class="rstat"><div class="rstat-l">달린 거리</div><div><span class="rstat-v g" id="rDist">0.00</span><span class="rstat-u"> km</span></div></div>
-    <div class="rstat"><div class="rstat-l">경과 시간</div><div><span class="rstat-v" id="rTime">00:00</span></div></div>
-    <div class="rstat"><div class="rstat-l">현재 페이스</div><div><span class="rstat-v" id="rPace">—</span><span class="rstat-u" id="rPaceU"></span></div></div>
-    <div class="rstat"><div class="rstat-l">소모 칼로리</div><div><span class="rstat-v" id="rCal">0</span><span class="rstat-u"> kcal</span></div></div>
-  </div>
-  <div class="pace-wrap">
-    <div class="pace-top"><span>목표 페이스 6'30"/km</span><span id="paceStatus" style="color:var(--coral)">대기 중</span></div>
-    <div class="pace-track"><div class="pace-fill" id="paceFill" style="width:0%"></div></div>
-  </div>
-  <div class="km-track" id="kmTrack"></div>
-  <div class="run-controls">
-    <button class="ctrl-stop" onclick="stopRun()">종료</button>
-    <button class="ctrl-pause" id="pauseBtn" onclick="togglePause()">일시정지</button>
-  </div>
-</div>
-
-<!-- 인증샷 확인 오버레이 -->
-<div class="photo-prompt-overlay" id="photoPromptOverlay">
-  <div class="photo-prompt-card">
-    <div class="photo-prompt-icon">📷</div>
-    <div class="photo-prompt-title">인증샷을 남길까요?</div>
-    <div class="photo-prompt-desc">오늘 코스 기록에 사진 한 장을 함께 저장할 수 있어요.</div>
-    <div class="photo-prompt-actions">
-      <button class="photo-prompt-btn photo-prompt-no" onclick="skipFinishPhoto()">아니오</button>
-      <button class="photo-prompt-btn photo-prompt-yes" onclick="startFinishPhotoCapture()">예</button>
-    </div>
-  </div>
-</div>
-<input type="file" id="finishPhotoInput" accept="image/*" capture="environment" style="display:none" onchange="handleFinishPhotoSelected(event)">
-
-<!-- 런닝 완료 오버레이 -->
-<div class="finish-overlay" id="finishOverlay">
-  <div class="finish-card">
-    <div class="finish-emoji">🎉</div>
-    <div class="finish-title">런닝 완료!</div>
-    <div class="finish-sub" id="finishSub">오늘 · Han River Line</div>
-    <div class="finish-grid">
-      <div class="fstat"><div class="fstat-l">총 거리</div><div class="fstat-v g" id="fDist">—</div></div>
-      <div class="fstat"><div class="fstat-l">총 시간</div><div class="fstat-v" id="fTime">—</div></div>
-      <div class="fstat"><div class="fstat-l">평균 페이스</div><div class="fstat-v" id="fPace">—</div></div>
-      <div class="fstat"><div class="fstat-l">칼로리</div><div class="fstat-v" id="fCal">—</div></div>
-    </div>
-    <!-- 제목 편집 -->
-    <div style="margin-bottom:10px;">
-      <div style="font-size:11px;color:var(--gray-500);margin-bottom:5px;">기록 제목</div>
-      <input type="text" id="finishTitle" style="width:100%;height:40px;border:1px solid var(--gray-300);border-radius:var(--rs);padding:0 12px;font-size:14px;font-family:inherit;outline:none;" placeholder="오늘 런닝 제목을 입력해보세요">
-    </div>
-    <div class="finish-photo" id="finishPhotoBox">
-      <div style="font-size:11px;color:var(--gray-500);margin-bottom:5px;">인증샷</div>
-      <img class="finish-photo-img" id="finishPhotoPreview" alt="런닝 인증샷 미리보기">
-      <div class="finish-photo-actions">
-        <button class="finish-photo-retake" onclick="startFinishPhotoCapture()">다시 찍기</button>
-        <button class="finish-photo-remove" onclick="removeFinishPhoto()">사진 삭제</button>
-      </div>
-    </div>
-    <!-- 한 줄 메모 -->
-    <div style="margin-bottom:14px;">
-      <div style="font-size:11px;color:var(--gray-500);margin-bottom:5px;">오늘의 한 줄 메모</div>
-      <textarea id="finishMemo" rows="2" style="width:100%;border:1px solid var(--gray-300);border-radius:var(--rs);padding:10px 12px;font-size:13px;font-family:inherit;outline:none;resize:none;line-height:1.5;" placeholder="오늘 컨디션은 어땠나요? 자유롭게 기록해보세요"></textarea>
-    </div>
-    <!-- 오늘 컨디션 -->
-    <div style="margin-bottom:14px;">
-      <div class="condition-head">
-        <div style="font-size:11px;color:var(--gray-500);">오늘 컨디션</div>
-        <div class="condition-value"><span id="conditionScoreValue">5</span>/10</div>
-      </div>
-      <input class="condition-slider" id="conditionScore" type="range" min="0" max="10" step="1" value="5" oninput="updateConditionScore(this.value)">
-      <div class="condition-ticks"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10</span></div>
-      <div class="condition-caption"><span>낮음</span><span>최상</span></div>
-    </div>
-    <button class="finish-save" onclick="saveRecord()">기록 저장 →</button>
-    <button class="finish-discard" onclick="closeFinish()">저장 안 함</button>
-  </div>
-</div>
 
 
 <script>
@@ -5480,6 +5315,31 @@ let heritageFinderLoading = false;
 let heritageFinderError = '';
 let heritageFinderResult = null;
 
+function compressRunPhoto(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = reject;
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = reject;
+      img.onload = () => {
+        const maxSide = 1200;
+        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+        const width = Math.max(1, Math.round(img.width * scale));
+        const height = Math.max(1, Math.round(img.height * scale));
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL('image/jpeg', 0.72));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
 function resetAiCourseSuggestions() {
   stopRouteGuidance('', { silent: true });
   S.courses = [];
@@ -6876,239 +6736,7 @@ function ensureAiRouteZoomListener() {
 }
 
 /* ── 런닝 상태 ── */
-const R = {
-  running: false, elapsed: 0, dist: 0,
-  totalKm: 5, interval: null, courseName: '', watchId: null, gpsActive: false,
-  lastLat: null, lastLng: null, gpsAccuracy: null, lowAccuracyWarned: false
-};
-let finishPhotoDataUrl = '';
-let finishPhotoAwaitingFile = false;
 
-function buildKmTrack(total) {
-  const wrap = document.getElementById('kmTrack');
-  wrap.innerHTML = '';
-  for (let i = 1; i <= Math.ceil(total); i++) {
-    const d = document.createElement('div');
-    d.className = 'km-chip km-todo';
-    d.id = 'kc' + i;
-    d.textContent = i + 'km';
-    wrap.appendChild(d);
-  }
-}
-
-function runTick() {
-  if (!R.running) return;
-  R.elapsed++;
-  // 실제 위치가 들어오기 전에는 거리를 누적하지 않는다.
-  updateRunStats();
-  if (!runMap) drawRunCanvas();
-}
-
-function fmtTime(s) {
-  return String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
-}
-
-function updateRunStats() {
-  document.getElementById('rDist').textContent = R.dist.toFixed(2);
-  document.getElementById('rTime').textContent = fmtTime(R.elapsed);
-  document.getElementById('rCal').textContent = calcCalories(R.dist);
-  updateRunMapProgress();
-  if (R.dist > 0.05 && R.elapsed > 0) {
-    const pace = R.elapsed / R.dist;
-    const pm = Math.floor(pace/60), ps = Math.round(pace%60);
-    document.getElementById('rPace').textContent = pm + "'" + String(ps).padStart(2,'0');
-    document.getElementById('rPaceU').textContent = '"/km';
-    const pct = Math.min((390 / pace) * 100, 100);
-    document.getElementById('paceFill').style.width = pct + '%';
-    document.getElementById('paceStatus').textContent = localizeRuntimeText(pace <= 390 ? '목표 달성 중 🎯' : '페이스 올리기 💪');
-    document.getElementById('paceStatus').style.color = pace <= 390 ? 'var(--coral)' : 'var(--amber)';
-  }
-  for (let i = 1; i <= Math.ceil(R.totalKm); i++) {
-    const el = document.getElementById('kc' + i);
-    if (!el) continue;
-    el.className = 'km-chip ' + (R.dist >= i ? 'km-done' : R.dist >= i-1 ? 'km-cur' : 'km-todo');
-  }
-}
-
-function updateRunMapProgress() {
-  const el = document.getElementById('runMapProgressText');
-  if (!el) return;
-  const total = Number.isFinite(R.totalKm) ? R.totalKm : 0;
-  el.textContent = R.dist.toFixed(2) + ' / ' + total.toFixed(2) + 'km';
-}
-
-function updateGpsChip(text, status = 'warn') {
-  const chip = document.getElementById('gpsChip');
-  if (!chip) return;
-  chip.textContent = localizeRuntimeText(text);
-  chip.className = 'gps-chip ' + status;
-}
-
-function togglePause() {
-  R.running = !R.running;
-  const btn = document.getElementById('pauseBtn');
-  btn.textContent = localizeRuntimeText(R.running ? '일시정지' : '계속');
-  btn.className = 'ctrl-pause' + (R.running ? '' : ' paused');
-}
-
-function stopRun() {
-  clearInterval(R.interval);
-  if (R.watchId) { clearRunloopWatch(R.watchId); R.watchId = null; }
-  R.running = false;
-  resetFinishPhoto();
-  document.getElementById('photoPromptOverlay').classList.add('active');
-}
-
-function skipFinishPhoto() {
-  finishPhotoAwaitingFile = false;
-  document.getElementById('photoPromptOverlay').classList.remove('active');
-  showFinish();
-}
-
-function showFinish() {
-  document.getElementById('fDist').textContent = R.dist.toFixed(2) + 'km';
-  document.getElementById('fTime').textContent = fmtTime(R.elapsed);
-  document.getElementById('fCal').textContent = calcCalories(R.dist) + 'kcal';
-  document.getElementById('finishSub').textContent = (appLanguage === 'en' ? 'Today · ' : '오늘 · ') + R.courseName;
-  if (R.dist > 0.05) {
-    const pace = R.elapsed / R.dist;
-    document.getElementById('fPace').textContent = Math.floor(pace/60) + "'" + String(Math.round(pace%60)).padStart(2,'0') + '"';
-  } else {
-    document.getElementById('fPace').textContent = '—';
-  }
-  // 입력 초기화
-  document.getElementById('finishTitle').value = R.courseName;
-  document.getElementById('finishMemo').value = '';
-  updateConditionScore(5);
-  renderFinishPhoto();
-  document.getElementById('finishOverlay').classList.add('active');
-}
-
-function startFinishPhotoCapture() {
-  const input = document.getElementById('finishPhotoInput');
-  if (!input) {
-    skipFinishPhoto();
-    return;
-  }
-  document.getElementById('photoPromptOverlay').classList.remove('active');
-  input.value = '';
-  finishPhotoAwaitingFile = true;
-  setTimeout(() => {
-    window.addEventListener('focus', handleFinishPhotoFocusReturn, { once: true });
-  }, 500);
-  input.click();
-}
-
-function handleFinishPhotoFocusReturn() {
-  setTimeout(() => {
-    if (!finishPhotoAwaitingFile) return;
-    finishPhotoAwaitingFile = false;
-    showFinish();
-  }, 350);
-}
-
-async function handleFinishPhotoSelected(event) {
-  const file = event && event.target && event.target.files && event.target.files[0];
-  finishPhotoAwaitingFile = false;
-  if (!file) {
-    showFinish();
-    return;
-  }
-  try {
-    finishPhotoDataUrl = await compressRunPhoto(file);
-    showFinish();
-  } catch (error) {
-    console.warn('Run photo processing failed', error);
-    toast('사진을 불러오지 못했어요');
-    showFinish();
-  }
-}
-
-function compressRunPhoto(file) {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onerror = reject;
-    reader.onload = () => {
-      const img = new Image();
-      img.onerror = reject;
-      img.onload = () => {
-        const maxSide = 1200;
-        const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
-        const width = Math.max(1, Math.round(img.width * scale));
-        const height = Math.max(1, Math.round(img.height * scale));
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL('image/jpeg', 0.72));
-      };
-      img.src = reader.result;
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-function resetFinishPhoto() {
-  finishPhotoDataUrl = '';
-  finishPhotoAwaitingFile = false;
-  const input = document.getElementById('finishPhotoInput');
-  if (input) input.value = '';
-  renderFinishPhoto();
-}
-
-function removeFinishPhoto() {
-  finishPhotoDataUrl = '';
-  renderFinishPhoto();
-}
-
-function renderFinishPhoto() {
-  const box = document.getElementById('finishPhotoBox');
-  const img = document.getElementById('finishPhotoPreview');
-  if (!box || !img) return;
-  box.classList.toggle('active', !!finishPhotoDataUrl);
-  if (finishPhotoDataUrl) img.src = finishPhotoDataUrl;
-  else img.removeAttribute('src');
-}
-
-function updateConditionScore(value) {
-  const score = Math.max(0, Math.min(10, parseInt(value, 10) || 0));
-  const input = document.getElementById('conditionScore');
-  const label = document.getElementById('conditionScoreValue');
-  if (input) input.value = score;
-  if (label) label.textContent = score;
-}
-
-function saveRecord() {
-  const memo = document.getElementById('finishMemo').value.trim();
-  const title = document.getElementById('finishTitle').value.trim();
-  const conditionScore = Math.max(0, Math.min(10, parseInt(document.getElementById('conditionScore').value, 10) || 0));
-
-  const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
-  const now = new Date();
-  records.unshift({
-    id: Date.now(),
-    name: title || R.courseName,
-    dist: R.dist.toFixed(2),
-    time: fmtTime(R.elapsed),
-    cal: calcCalories(R.dist),
-    date: now.toLocaleDateString(appLanguage === 'en' ? 'en-US' : 'ko-KR', {month:'long', day:'numeric', weekday:'short'}),
-    createdAt: now.toISOString(),
-    pace: R.dist > 0.05 ? (()=>{ const p=R.elapsed/R.dist; return Math.floor(p/60)+"'"+String(Math.round(p%60)).padStart(2,'0')+'"'; })() : '—',
-    memo: memo,
-    conditionScore,
-    photo: finishPhotoDataUrl,
-    source: R.gpsActive ? getRunloopLocationSource() : 'web_sim',
-    gpsAccuracy: R.gpsAccuracy ? Math.round(R.gpsAccuracy) : null,
-    path: runPath.map(p => ({ lat: p.getLat(), lng: p.getLng() }))
-  });
-  localStorage.setItem('runRecords', JSON.stringify(records));
-  const earnedPts = Math.round(R.dist * 100);
-  document.getElementById('finishOverlay').classList.remove('active');
-  document.getElementById('runScreen').classList.remove('active');
-  resetFinishPhoto();
-  toast(appLanguage === 'en' ? `Record saved! +${earnedPts} points` : `기록 저장 완료! +${earnedPts}포인트 🏆`);
-}
 
 function getHomeAiGoalSummary() {
   const goalKm = getDailyGoal();
@@ -11964,23 +11592,6 @@ function deleteEditingCourse() {
   removeMyCourse(id);
 }
 
-function startMyCoursRun(id) {
-  const courses = JSON.parse(localStorage.getItem('myCourses') || '[]');
-  const c = courses.find(x => x.id === id);
-  if (!c) return;
-  R.totalKm = parseFloat(c.dist);
-  R.courseName = c.name;
-  R.elapsed = 0; R.dist = 0; R.running = true;
-  R.gpsAccuracy = null; R.lowAccuracyWarned = false;
-  document.getElementById('runTitle').textContent = c.name;
-  document.getElementById('runScreen').classList.add('active');
-  updateGpsChip('GPS 대기', 'warn');
-  buildKmTrack(R.totalKm);
-  updateRunMapProgress();
-  clearInterval(R.interval);
-  R.interval = setInterval(runTick, 1000);
-  initRunMap(c.points || null);
-}
 
 function makeWeatherSummary(temp, humid, wind, weatherId) {
   if (appLanguage === 'en') return makeWeatherSummaryEn(temp, humid, wind, weatherId);
@@ -12431,203 +12042,6 @@ function getWeatherDesc(id) {
   return '맑음';
 }
 
-function closeFinish() {
-  finishPhotoAwaitingFile = false;
-  document.getElementById('photoPromptOverlay').classList.remove('active');
-  document.getElementById('finishOverlay').classList.remove('active');
-  document.getElementById('runScreen').classList.remove('active');
-  resetFinishPhoto();
-}
-
-/* ── 런닝 중 실제 카카오맵 ── */
-let runMap = null, runMarker = null, runPolyline = null, runPath = [];
-
-function recenterRunMap() {
-  if (!runMap) return;
-  let latlng = null;
-  if (runPath.length) {
-    latlng = runPath[runPath.length - 1];
-  } else if (R.lastLat !== null && R.lastLng !== null) {
-    latlng = new kakao.maps.LatLng(R.lastLat, R.lastLng);
-  } else {
-    latlng = new kakao.maps.LatLng(S.lat, S.lng);
-  }
-  runMap.setCenter(latlng);
-  toast('현재 위치를 중심으로 맞췄어요');
-}
-
-function initRunMap(savedPoints) {
-  const container = document.getElementById('runKakaoMap');
-  const center = new kakao.maps.LatLng(S.lat, S.lng);
-
-  if (runMap) {
-    runMap.setCenter(center);
-    // 기존 오버레이 초기화
-    if (runMarker) runMarker.setMap(null);
-    if (runPolyline) runPolyline.setMap(null);
-    runPath = [];
-  } else {
-    runMap = new kakao.maps.Map(container, { center, level: 4 });
-  }
-
-  setTimeout(() => kakao.maps.event.trigger(runMap, 'resize'), 100);
-
-  // 내 위치 마커
-  runMarker = new kakao.maps.CustomOverlay({
-    map: runMap,
-    position: center,
-    content: getMapPointMarkerHtml('current'),
-    xAnchor: 0.5,
-    yAnchor: 0.5,
-    zIndex: 5
-  });
-
-  // 저장된 코스 경로가 있으면 점선으로 표시
-  if (savedPoints && savedPoints.length > 1) {
-    const path = savedPoints.map(p => new kakao.maps.LatLng(p.lat, p.lng));
-    new kakao.maps.Polyline({
-      map: runMap, path,
-      strokeWeight: 3, strokeColor: DRAW_ROUTE_PLANNED_COLOR,
-      strokeOpacity: 0.8, strokeStyle: 'shortdash'
-    });
-    // 시작점 마커
-    new kakao.maps.CustomOverlay({
-      map: runMap,
-      position: path[0],
-      content: '<div style="width:10px;height:10px;background:#fff;border:2px solid #F27A5E;border-radius:50%;"></div>',
-      zIndex: 3
-    });
-  }
-
-  // GPS watchPosition으로 실시간 위치 추적
-  if (R.watchId) clearRunloopWatch(R.watchId);
-  R.gpsActive = false;
-  R.lastLat = null; R.lastLng = null;
-  R.gpsAccuracy = null; R.lowAccuracyWarned = false;
-  updateGpsChip('GPS 찾는 중', 'warn');
-
-  if (hasRunloopGeolocation()) {
-    R.watchId = runloopWatchPosition(pos => {
-      const lat = pos.coords.latitude;
-      const lng = pos.coords.longitude;
-      const accuracy = pos.coords.accuracy || Infinity;
-      const latlng = new kakao.maps.LatLng(lat, lng);
-      R.gpsAccuracy = accuracy;
-      const sourceLabel = getRunloopLocationSourceLabel();
-      updateGpsChip(
-        Number.isFinite(accuracy)
-          ? `${sourceLabel} ${Math.round(accuracy)}m`
-          : (appLanguage === 'en' ? `${sourceLabel} received` : `${sourceLabel} 수신`),
-        accuracy <= 30 ? 'good' : accuracy <= 80 ? 'warn' : 'bad'
-      );
-
-      // GPS 첫 수신 이후부터 실제 거리만 누적
-      if (!R.gpsActive) {
-        R.gpsActive = true;
-        toast(accuracy <= 80 ? 'GPS 연결됐어요! 실제 거리로 측정해요' : 'GPS 정확도가 낮아요. 실내에서는 거리 누적을 보수적으로 봐요');
-      }
-
-      const usableAccuracy = accuracy <= 80;
-      if (!usableAccuracy) {
-        if (!R.lowAccuracyWarned) {
-          R.lowAccuracyWarned = true;
-          toast('GPS 오차가 커서 이 위치 변화는 거리에서 제외했어요');
-        }
-      } else {
-        if (R.lastLat !== null) {
-          const moved = getDistKm(R.lastLat, R.lastLng, lat, lng);
-          if (moved > 0.003 && moved < 0.2) {
-            R.dist = Math.min(R.dist + moved, R.totalKm * 1.5);
-          }
-        }
-        R.lastLat = lat; R.lastLng = lng;
-        runPath.push(latlng);
-      }
-
-      // 마커 이동
-      if (runMarker) runMarker.setMap(null);
-      runMarker = new kakao.maps.CustomOverlay({
-        map: runMap, position: latlng,
-        content: getMapPointMarkerHtml('current'),
-        xAnchor: 0.5,
-        yAnchor: 0.5,
-        zIndex: 5
-      });
-      runMap.setCenter(latlng);
-
-      // 달린 경로 그리기
-      if (runPolyline) runPolyline.setMap(null);
-      if (runPath.length > 1) {
-        runPolyline = new kakao.maps.Polyline({
-          map: runMap, path: runPath,
-          strokeWeight: 4, strokeColor: DRAW_ROUTE_COLOR, strokeOpacity: 0.95
-        });
-      }
-
-      updateRunStats();
-
-    }, (err) => {
-      updateGpsChip('GPS 대기', 'warn');
-      if (!R.gpsActive) toast('GPS를 찾는 중이에요… 실제 위치가 잡히면 거리 측정을 시작해요');
-    }, { enableHighAccuracy: true, maximumAge: 1000, timeout: 10000 });
-  } else {
-    updateGpsChip('GPS 없음', 'bad');
-  }
-}
-
-/* 런닝 중 경로 캔버스 (GPS 없을 때 폴백) */
-function initRunCanvas() {
-  const cv = document.getElementById('runCanvas');
-  const dpr = window.devicePixelRatio || 1;
-  cv.width = cv.offsetWidth * dpr;
-  cv.height = cv.offsetHeight * dpr;
-  const ctx = cv.getContext('2d');
-  ctx.scale(dpr, dpr);
-}
-
-function drawRunCanvas() {
-  const cv = document.getElementById('runCanvas');
-  const ctx = cv.getContext('2d');
-  const w = cv.offsetWidth, h = cv.offsetHeight;
-  ctx.clearRect(0,0,w,h);
-  ctx.fillStyle = '#EEEADF'; ctx.fillRect(0,0,w,h);
-  ctx.strokeStyle = '#D8D2C3'; ctx.lineWidth = 0.5;
-  for (let x=0;x<w;x+=28){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke();}
-  for (let y=0;y<h;y+=28){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke();}
-  ctx.fillStyle = '#c8dff0'; ctx.fillRect(0, h*.7, w, h*.18);
-  ctx.strokeStyle = '#d8ccc0'; ctx.lineWidth = 6;
-  [h*.35, h*.58].forEach(y => { ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(w,y);ctx.stroke(); });
-  [w*.3, w*.65].forEach(x => { ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,h);ctx.stroke(); });
-
-  // 전체 코스 (점선)
-  const pts = [{x:.1,y:.55},{x:.25,y:.42},{x:.45,y:.38},{x:.65,y:.42},{x:.82,y:.5},{x:.88,y:.62},{x:.75,y:.72},{x:.55,y:.76},{x:.35,y:.72},{x:.18,y:.65},{x:.1,y:.55}];
-  ctx.setLineDash([5,5]); ctx.strokeStyle = DRAW_ROUTE_PLANNED_COLOR; ctx.lineWidth = 2;
-  ctx.beginPath(); ctx.moveTo(pts[0].x*w, pts[0].y*h);
-  pts.slice(1).forEach(p => ctx.lineTo(p.x*w, p.y*h)); ctx.stroke(); ctx.setLineDash([]);
-
-  // 달린 구간
-  const prog = R.dist / R.totalKm;
-  const total = pts.length - 1;
-  const idx = prog * total;
-  const floor = Math.floor(idx), frac = idx - floor;
-  const drawn = pts.slice(0, floor+1);
-  if (floor < total) {
-    const a = pts[floor], b = pts[floor+1];
-    drawn.push({ x: a.x+(b.x-a.x)*frac, y: a.y+(b.y-a.y)*frac });
-  }
-  if (drawn.length > 1) {
-    ctx.strokeStyle = DRAW_ROUTE_COLOR; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(drawn[0].x*w, drawn[0].y*h);
-    drawn.slice(1).forEach(p => ctx.lineTo(p.x*w, p.y*h)); ctx.stroke();
-  }
-  // 현재 위치 점
-  const cur = drawn[drawn.length-1] || pts[0];
-  ctx.fillStyle = 'rgba(242,122,94,.18)'; ctx.beginPath(); ctx.arc(cur.x*w,cur.y*h,12,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle = DRAW_ROUTE_MARKER_COLOR; ctx.beginPath(); ctx.arc(cur.x*w,cur.y*h,5,0,Math.PI*2); ctx.fill();
-  // 시작점
-  ctx.fillStyle='#fff'; ctx.strokeStyle=DRAW_ROUTE_MARKER_COLOR; ctx.lineWidth=2;
-  ctx.beginPath(); ctx.arc(pts[0].x*w,pts[0].y*h,5,0,Math.PI*2); ctx.fill(); ctx.stroke();
-}
 
 /* 미니맵 (AI 추천 카드) */
 function miniMap(cv, type, color, routePoints = []) {
