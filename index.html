@@ -215,10 +215,6 @@ if ('serviceWorker' in navigator) {
   .map-loading button{height:38px;border:1px solid var(--gray-200);background:#fff;border-radius:999px;padding:0 16px;font-family:inherit;font-size:13px;font-weight:800;color:var(--ink);box-shadow:0 6px 16px rgba(28,36,43,.08);cursor:pointer;}
   .map-loading small{display:block;max-width:260px;font-size:11px;line-height:1.45;color:var(--gray-500);}
   .ml-spin{width:28px;height:28px;border:3px solid var(--gray-300);border-top-color:var(--coral);border-radius:50%;animation:spin .8s linear infinite;}
-  .leaflet-container{font-family:'Inter','Noto Sans KR',sans-serif;background:#EEEADF;}
-  .leaflet-control-attribution{font-size:9px!important;}
-  .runloop-leaflet-overlay{background:transparent!important;border:0!important;}
-  .runloop-leaflet-overlay > div{transform:translate(-50%,-50%);}
   .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none;}
   @keyframes spin{to{transform:rotate(360deg);}}
 
@@ -1329,15 +1325,12 @@ const S = {
   kakaoReady: false
 };
 
-const RUNLOOP_FORCE_LEAFLET_MAP = new URLSearchParams(window.location.search).get('map') === 'leaflet';
 const RUNLOOP_IS_NATIVE_APP = isRunloopNativeApp();
 const RUNLOOP_REMOTE_API_ORIGIN = 'https://runloop-jet.vercel.app';
 const RUNLOOP_STATIC_LOCAL_HOSTS = ['127.0.0.1:5500', 'localhost:5500'];
 const RUNLOOP_STATIC_LOCAL_HOSTNAMES = ['127.0.0.1', 'localhost'];
 const RUNLOOP_API_ORIGIN = getRunloopApiOrigin();
 const KAKAO_MAP_APP_KEY = '056307d59b47ef5080ae7fc5f1413f51';
-const LEAFLET_CSS_URL = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css';
-const LEAFLET_JS_URL = 'https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js';
 const TMAP_PEDESTRIAN_URL = runloopApiUrl('/api/tmap-pedestrian');
 const TMAP_POI_URL = runloopApiUrl('/api/tmap-pois');
 const TOUR_SPOTS_URL = runloopApiUrl('/api/tour-spots');
@@ -2425,21 +2418,15 @@ async function bootMapProvider(options = {}) {
           await loadKakaoMapSdk({ forceReload: true });
         } catch (secondError) {
           console.warn('Orotgil Kakao map provider failed', secondError);
-          const fallbackReady = await installFallbackMapProvider(secondError);
-          if (!fallbackReady) {
-            S.kakaoReady = false;
-            showMapProviderError(secondError);
-          }
-          return fallbackReady;
+          S.kakaoReady = false;
+          showMapProviderError(secondError);
+          return false;
         }
       } else {
         console.warn('Orotgil Kakao map provider failed', firstError);
-        const fallbackReady = await installFallbackMapProvider(firstError);
-        if (!fallbackReady) {
-          S.kakaoReady = false;
-          showMapProviderError(firstError);
-        }
-        return fallbackReady;
+        S.kakaoReady = false;
+        showMapProviderError(firstError);
+        return false;
       }
     } finally {
       mapProviderBootPromise = null;
@@ -2452,17 +2439,6 @@ async function bootMapProvider(options = {}) {
   return mapProviderBootPromise;
 }
 
-async function installFallbackMapProvider(originalError) {
-  try {
-    await installLeafletKakaoAdapter();
-    S.kakaoReady = true;
-    if (S.tab === 'create') initCreateMap();
-    return true;
-  } catch (fallbackError) {
-    console.warn('Orotgil fallback map provider failed', fallbackError || originalError);
-    return false;
-  }
-}
 
 function loadKakaoMapSdk(options = {}) {
   if (isKakaoMapsReady() && !options.forceReload) return Promise.resolve();
@@ -2528,233 +2504,6 @@ function loadKakaoMapSdk(options = {}) {
   return kakaoMapSdkLoadPromise;
 }
 
-async function installLeafletKakaoAdapter() {
-  await loadExternalStyle(LEAFLET_CSS_URL);
-  await loadExternalScript(LEAFLET_JS_URL);
-  if (!window.L) throw new Error('Leaflet is unavailable');
-  if (window.kakao && kakao.maps && kakao.maps.__runloopLeaflet) return;
-
-  const L = window.L;
-  const toLeafletZoom = level => Math.max(3, Math.min(19, 18 - (Number(level) || 4)));
-  const toKakaoLevel = zoom => Math.max(1, Math.min(14, Math.round(18 - (Number(zoom) || 14))));
-  const toLatLng = point => point instanceof LeafletLatLng
-    ? point
-    : new LeafletLatLng(point && typeof point.getLat === 'function' ? point.getLat() : point.lat, point && typeof point.getLng === 'function' ? point.getLng() : point.lng);
-
-  class LeafletLatLng {
-    constructor(lat, lng) {
-      this.Ma = Number(lat);
-      this.La = Number(lng);
-      this.lat = this.Ma;
-      this.lng = this.La;
-    }
-    getLat() { return this.Ma; }
-    getLng() { return this.La; }
-  }
-
-  class LeafletPoint {
-    constructor(x, y) {
-      this.x = x;
-      this.y = y;
-    }
-  }
-
-  class LeafletLatLngBounds {
-    constructor() {
-      this._bounds = null;
-    }
-    extend(point) {
-      const latlng = toLatLng(point);
-      const next = L.latLng(latlng.getLat(), latlng.getLng());
-      this._bounds = this._bounds ? this._bounds.extend(next) : L.latLngBounds(next, next);
-      return this;
-    }
-    toLeafletBounds() {
-      return this._bounds;
-    }
-  }
-
-  class LeafletMap {
-    constructor(container, options = {}) {
-      const center = toLatLng(options.center || new LeafletLatLng(S.lat, S.lng));
-      this._level = options.level || 4;
-      this._map = L.map(container, {
-        center: [center.getLat(), center.getLng()],
-        zoom: toLeafletZoom(this._level),
-        zoomControl: false,
-        attributionControl: true,
-        preferCanvas: true,
-        scrollWheelZoom: options.scrollwheel !== false,
-        dragging: options.draggable !== false
-      });
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        maxZoom: 19,
-        attribution: '&copy; OpenStreetMap contributors'
-      }).addTo(this._map);
-      setTimeout(() => this._map.invalidateSize(), 80);
-    }
-    setCenter(point) {
-      const latlng = toLatLng(point);
-      this._map.setView([latlng.getLat(), latlng.getLng()], this._map.getZoom(), { animate: false });
-    }
-    getCenter() {
-      const center = this._map.getCenter();
-      return new LeafletLatLng(center.lat, center.lng);
-    }
-    setLevel(level) {
-      this._level = level;
-      this._map.setZoom(toLeafletZoom(level), { animate: false });
-    }
-    getLevel() {
-      return toKakaoLevel(this._map.getZoom());
-    }
-    setBounds(bounds) {
-      const leafletBounds = bounds && bounds.toLeafletBounds ? bounds.toLeafletBounds() : null;
-      if (leafletBounds && leafletBounds.isValid()) this._map.fitBounds(leafletBounds, { padding: [24, 24], animate: false });
-    }
-    getProjection() {
-      return {
-        coordsFromContainerPoint: point => {
-          const latlng = this._map.containerPointToLatLng([point.x, point.y]);
-          return new LeafletLatLng(latlng.lat, latlng.lng);
-        }
-      };
-    }
-    _addListener(type, handler) {
-      const eventName = type === 'zoom_changed' ? 'zoomend' : type;
-      const wrapped = e => handler({
-        latLng: e && e.latlng ? new LeafletLatLng(e.latlng.lat, e.latlng.lng) : undefined
-      });
-      this._map.on(eventName, wrapped);
-      return { remove: () => this._map.off(eventName, wrapped) };
-    }
-    _trigger(type) {
-      if (type === 'resize') this._map.invalidateSize();
-    }
-  }
-
-  class LeafletOverlay {
-    constructor(options = {}) {
-      this._mapWrapper = null;
-      this._position = toLatLng(options.position || new LeafletLatLng(S.lat, S.lng));
-      this._content = options.content || '';
-      this._clickable = !!options.clickable;
-      this._zIndex = options.zIndex || 1;
-      this._marker = null;
-      if (options.map) this.setMap(options.map);
-    }
-    _makeMarker() {
-      return L.marker([this._position.getLat(), this._position.getLng()], {
-        interactive: this._clickable,
-        bubblingMouseEvents: false,
-        zIndexOffset: this._zIndex * 100,
-        icon: L.divIcon({
-          html: this._content,
-          className: 'runloop-leaflet-overlay',
-          iconSize: [1, 1],
-          iconAnchor: [0, 0]
-        })
-      });
-    }
-    setMap(mapWrapper) {
-      if (this._marker && this._mapWrapper) this._marker.removeFrom(this._mapWrapper._map);
-      this._mapWrapper = mapWrapper || null;
-      if (!mapWrapper) return;
-      this._marker = this._makeMarker();
-      this._marker.addTo(mapWrapper._map);
-    }
-    setPosition(position) {
-      this._position = toLatLng(position);
-      if (this._marker) this._marker.setLatLng([this._position.getLat(), this._position.getLng()]);
-    }
-  }
-
-  class LeafletPolyline {
-    constructor(options = {}) {
-      this._mapWrapper = null;
-      this._path = options.path || [];
-      this._line = L.polyline(this._path.map(p => {
-        const latlng = toLatLng(p);
-        return [latlng.getLat(), latlng.getLng()];
-      }), {
-        color: options.strokeColor || DRAW_ROUTE_COLOR,
-        weight: options.strokeWeight || DRAW_ROUTE_WEIGHT,
-        opacity: options.strokeOpacity == null ? 1 : options.strokeOpacity,
-        dashArray: options.strokeStyle === 'dash' ? '6 8' : null,
-        lineCap: 'round',
-        lineJoin: 'round'
-      });
-      if (options.map) this.setMap(options.map);
-    }
-    setMap(mapWrapper) {
-      if (this._mapWrapper) this._line.removeFrom(this._mapWrapper._map);
-      this._mapWrapper = mapWrapper || null;
-      if (mapWrapper) this._line.addTo(mapWrapper._map);
-    }
-  }
-
-  class LeafletCircle {
-    constructor(options = {}) {
-      this._mapWrapper = null;
-      const center = toLatLng(options.center || new LeafletLatLng(S.lat, S.lng));
-      this._circle = L.circleMarker([center.getLat(), center.getLng()], {
-        radius: options.radius || 6,
-        color: options.strokeColor || DRAW_ROUTE_MARKER_COLOR,
-        weight: options.strokeWeight || 2,
-        fillColor: options.fillColor || '#fff',
-        fillOpacity: options.fillOpacity == null ? 1 : options.fillOpacity
-      });
-      if (options.map) this.setMap(options.map);
-    }
-    setMap(mapWrapper) {
-      if (this._mapWrapper) this._circle.removeFrom(this._mapWrapper._map);
-      this._mapWrapper = mapWrapper || null;
-      if (mapWrapper) this._circle.addTo(mapWrapper._map);
-    }
-  }
-
-  class LeafletGeocoder {
-    coord2Address(lng, lat, callback) {
-      callback([{
-        address: { address_name: `${Number(lat).toFixed(4)}, ${Number(lng).toFixed(4)}` },
-        road_address: null
-      }], 'OK');
-    }
-    addressSearch(_query, callback) {
-      callback([], 'ZERO_RESULT');
-    }
-  }
-
-  class LeafletPlaces {
-    keywordSearch(_query, callback) {
-      callback([], 'ZERO_RESULT');
-    }
-  }
-
-  window.kakao = {
-    maps: {
-      __runloopLeaflet: true,
-      load: callback => callback(),
-      LatLng: LeafletLatLng,
-      Point: LeafletPoint,
-      LatLngBounds: LeafletLatLngBounds,
-      Map: LeafletMap,
-      CustomOverlay: LeafletOverlay,
-      Polyline: LeafletPolyline,
-      Circle: LeafletCircle,
-      event: {
-        addListener: (target, type, handler) => target && target._addListener ? target._addListener(type, handler) : null,
-        trigger: (target, type) => { if (target && target._trigger) target._trigger(type); }
-      },
-      services: {
-        Status: { OK: 'OK', ZERO_RESULT: 'ZERO_RESULT', ERROR: 'ERROR' },
-        SortBy: { DISTANCE: 'distance' },
-        Geocoder: LeafletGeocoder,
-        Places: LeafletPlaces
-      }
-    }
-  };
-}
 
 function retryMapProvider() {
   bootMapProvider({ forceReload: true });
@@ -5046,36 +4795,6 @@ function clearDraw() {
 
 /* 통계 업데이트 */
 /* ── 칼로리 계산 ── */
-function getAvgPaceSecPerKm() {
-  const records = JSON.parse(localStorage.getItem('runRecords') || '[]');
-  const valid = records.filter(r => r.pace && r.pace !== '—' && parseFloat(r.dist) > 0.5);
-  if (valid.length === 0) return 420;
-  const paces = valid.map(r => {
-    const match = r.pace.match(/(\d+)'(\d+)/);
-    return match ? parseInt(match[1]) * 60 + parseInt(match[2]) : 420;
-  });
-  return Math.round(paces.reduce((a, b) => a + b, 0) / paces.length);
-}
-
-function getMET(paceSecPerKm) {
-  const kmph = 3600 / paceSecPerKm;
-  if (kmph >= 12) return 11;
-  if (kmph >= 10) return 10;
-  if (kmph >= 8.5) return 8.5;
-  if (kmph >= 7.5) return 7.5;
-  if (kmph >= 6.5) return 6.5;
-  return 6;
-}
-
-function calcCalories(km) {
-  if (!km || km <= 0) return 0;
-  const profile = JSON.parse(localStorage.getItem('runProfile') || '{}');
-  const weight = profile.weight || 65;
-  const avgPace = getAvgPaceSecPerKm();
-  const met = getMET(avgPace);
-  const hours = (km * avgPace) / 3600;
-  return Math.round(met * weight * hours);
-}
 
 function refreshStats(km) {
   // hudDist 제거됨
@@ -5637,6 +5356,31 @@ function buildStartBasedRunnerCandidates(targetKm, count) {
   });
 }
 
+function buildAiOvalLoop(start, targetMeters, type, index) {
+  const ratio = type === 'river' ? 1.85 : 1.25;
+  const basePerimeter = getEllipsePerimeter(ratio, 1);
+  const scale = targetMeters / basePerimeter;
+  const rx = ratio * scale;
+  const ry = scale;
+  const bearing = type === 'river'
+    ? ([0.25, -0.18, 0.42][index] || 0.25)
+    : ([0.65, -0.55, 1.15][index] || 0.65);
+  const points = [];
+  const segments = 18;
+  for (let i = 0; i <= segments; i++) {
+    const angle = Math.PI - (Math.PI * 2 * i / segments);
+    const north = Math.sin(angle) * ry;
+    const east = rx + Math.cos(angle) * rx;
+    points.push(makeRouteLatLngOffset(start, north, east, bearing));
+  }
+  return points;
+}
+
+function getEllipsePerimeter(rx, ry) {
+  const h = Math.pow(rx - ry, 2) / Math.pow(rx + ry, 2);
+  return Math.PI * (rx + ry) * (1 + (3 * h) / (10 + Math.sqrt(4 - 3 * h)));
+}
+
 function buildAiSpotLoopPath(spot, loopMeters, type, index) {
   if (type === 'track') return buildAiTrackLoopPath(spot, loopMeters, index);
   if (type === 'river') return buildAiOutAndBackPath(spot, loopMeters, type, index + 3);
@@ -6064,14 +5808,9 @@ function buildAiLoopPath(course, index, targetKm) {
   const start = makeRouteLatLng(S.lat, S.lng);
   const targetMeters = Math.max(800, Math.min(22000, targetKm * 1000));
   const type = course.pt || ['river', 'urban', 'park'][index] || 'urban';
-  if (shouldUseOutAndBackRoute(course, type)) return buildAiOutAndBackPath(start, targetMeters, type, index);
-  if (type === 'urban') return buildAiRectLoop(start, targetMeters, index);
-  return buildAiOvalLoop(start, targetMeters, type, index);
+  return buildAiOutAndBackPath(start, targetMeters, type, index);
 }
 
-function shouldUseOutAndBackRoute() {
-  return true;
-}
 
 function buildAiOutAndBackPath(start, targetMeters, type, index) {
   const forward = targetMeters * 0.49;
@@ -6086,43 +5825,6 @@ function buildAiOutAndBackPath(start, targetMeters, type, index) {
   ].map(([north, east]) => makeRouteLatLngOffset(start, north, east, bearing));
 }
 
-function buildAiRectLoop(start, targetMeters, index) {
-  const width = targetMeters * (0.28 + index * 0.025);
-  const height = Math.max(260, targetMeters / 2 - width);
-  const bearing = [0.15, 0.95, -0.75][index] || 0;
-  return [
-    [0, 0],
-    [0, width],
-    [height, width],
-    [height, 0],
-    [0, 0]
-  ].map(([north, east]) => makeRouteLatLngOffset(start, north, east, bearing));
-}
-
-function buildAiOvalLoop(start, targetMeters, type, index) {
-  const ratio = type === 'river' ? 1.85 : 1.25;
-  const basePerimeter = getEllipsePerimeter(ratio, 1);
-  const scale = targetMeters / basePerimeter;
-  const rx = ratio * scale;
-  const ry = scale;
-  const bearing = type === 'river'
-    ? ([0.25, -0.18, 0.42][index] || 0.25)
-    : ([0.65, -0.55, 1.15][index] || 0.65);
-  const points = [];
-  const segments = 18;
-  for (let i = 0; i <= segments; i++) {
-    const angle = Math.PI - (Math.PI * 2 * i / segments);
-    const north = Math.sin(angle) * ry;
-    const east = rx + Math.cos(angle) * rx;
-    points.push(makeRouteLatLngOffset(start, north, east, bearing));
-  }
-  return points;
-}
-
-function getEllipsePerimeter(rx, ry) {
-  const h = Math.pow(rx - ry, 2) / Math.pow(rx + ry, 2);
-  return Math.PI * (rx + ry) * (1 + (3 * h) / (10 + Math.sqrt(4 - 3 * h)));
-}
 
 function makeRouteLatLngOffset(origin, northMeters, eastMeters, bearingRad = 0) {
   const rotatedNorth = northMeters * Math.cos(bearingRad) - eastMeters * Math.sin(bearingRad);
