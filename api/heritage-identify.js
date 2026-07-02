@@ -1,4 +1,5 @@
-const DEFAULT_MODEL = 'gpt-5-mini';
+const GEMINI_MODEL = 'gemini-2.0-flash';
+const GEMINI_API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 const RATE_LIMIT_MAX_PER_WINDOW = 3;
 const RATE_LIMIT_DAY_MS = 24 * 60 * 60 * 1000;
@@ -86,8 +87,8 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiKey = String(process.env.OPENAI_API_KEY || '').trim();
-  if (!apiKey) return res.status(500).json({ error: 'OPENAI_API_KEY is not configured' });
+  const apiKey = getServiceKey(['GEMINI_API_KEY', 'GOOGLE_GEMINI_API_KEY', 'GOOGLE_API_KEY']);
+  if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY is not configured' });
 
   const rateLimit = checkRateLimit(req);
   if (!rateLimit.ok) {
@@ -105,13 +106,13 @@ export default async function handler(req, res) {
     const lat = clampOptionalNumber(body.lat, -90, 90);
     const lng = clampOptionalNumber(body.lng, -180, 180);
     const lang = String(body.lang || '').toLowerCase().startsWith('en') ? 'en' : 'ko';
-    const aiResult = await analyzeImageWithOpenAi(apiKey, { imageDataUrl, lat, lng });
+    const aiResult = await analyzeImageWithGemini(apiKey, { imageDataUrl, lat, lng });
     if (!aiResult.ok) {
-      console.error('OpenAI heritage identification failed', aiResult.status, aiResult.error);
+      console.error('Gemini heritage identification failed', aiResult.status, aiResult.error);
       return res.status(502).json({ error: 'AI image analysis failed' });
     }
 
-    const analysis = normalizeAiAnalysis(parseJsonText(extractOpenAiText(aiResult.data)));
+    const analysis = normalizeAiAnalysis(parseJsonText(extractGeminiText(aiResult.data)));
     const dataResult = await buildCultureDataCandidates(analysis, { lat, lng, lang });
     const candidates = mergeAiFallbackCandidates(dataResult.candidates, analysis, { lat, lng, lang }).slice(0, 3);
 
@@ -124,7 +125,7 @@ export default async function handler(req, res) {
       },
       candidates,
       sources: dataResult.sources,
-      model: aiResult.model
+      model: GEMINI_MODEL
     });
   } catch (error) {
     console.error('Heritage identification error', error);
@@ -153,70 +154,70 @@ function isAllowedCorsOrigin(origin) {
   }
 }
 
-async function analyzeImageWithOpenAi(apiKey, context) {
-  const models = getModelCandidates();
-  let lastError = null;
+async function analyzeImageWithGemini(apiKey, context) {
+  const { mimeType, base64Data } = parseImageDataUrl(context.imageDataUrl);
+  const locationHint = context.lat !== null && context.lng !== null
+    ? `사용자 현재 위치: ${context.lat.toFixed(5)}, ${context.lng.toFixed(5)}`
+    : '사용자 현재 위치: 없음';
 
-  for (const model of models) {
-    const aiRes = await fetch('https://api.openai.com/v1/responses', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`
+  const prompt = [
+    '사진 속 한국 문화재 또는 문화유산 후보를 찾기 위한 단서를 추출해줘.',
+    locationHint,
+    '경복궁, 불국사, 첨성대, 수원화성처럼 유명한 문화재는 정확한 이름으로 답해줘.',
+    'JSON만 반환해. 마크다운 없이: {"summary":"사진 단서 한 문장","visibleText":["보이는 글자"],"visualTags":["궁궐","석탑"],"queries":["검색할 한국어 후보명"],"candidates":[{"name":"후보명","reason":"짧은 이유","confidence":0.0}]}',
+    'queries는 3~6개, candidates는 1~3개. 확실하지 않으면 confidence를 낮게 줘.'
+  ].join('\n');
+
+  const url = `${GEMINI_API_BASE}/${GEMINI_MODEL}:generateContent?key=${apiKey}`;
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      systemInstruction: {
+        parts: [{
+          text: [
+            'You are a Korean cultural heritage expert for Orotgil, a cultural walking app.',
+            'Analyze photos to identify Korean cultural heritage sites, monuments, palaces, temples, and historic structures.',
+            'Return ONLY valid JSON with no markdown formatting.',
+            'Prioritize specific Korean heritage names over generic descriptions.',
+            'If you recognize a famous landmark, name it precisely in Korean.'
+          ].join(' ')
+        }]
       },
-      body: JSON.stringify({
-        model,
-        instructions: [
-          'You analyze Korean cultural heritage photos for Orotgil.',
-          'Return valid JSON only. Do not claim certainty.',
-          'Extract visible Korean or English text when present.',
-          'Suggest searchable Korean place or heritage names, not broad generic categories only.',
-          'Recognize iconic Korean heritage when visually distinctive, for example Cheomseongdae is a stone astronomical observatory with a cylindrical stone body and square window.',
-          'If unsure, provide multiple candidates with cautious reasons.'
-        ].join(' '),
-        input: [{
-          role: 'user',
-          content: [
-            {
-              type: 'input_text',
-              text: [
-                '사진 속 문화재 또는 문화유산 후보를 찾기 위한 단서를 추출해줘.',
-                context.lat !== null && context.lng !== null ? `사용자 현재 위치: ${context.lat.toFixed(5)}, ${context.lng.toFixed(5)}` : '사용자 현재 위치: 없음',
-                'JSON 형식: {"summary":"사진 단서 한 문장","visibleText":["보이는 글자"],"visualTags":["궁궐","석탑"],"queries":["검색할 한국어 후보명"],"candidates":[{"name":"후보명","reason":"짧은 이유","confidence":0.0}]}',
-                'queries는 3~6개, candidates는 1~3개. 모르면 confidence를 낮게 둬.'
-              ].join('\n')
-            },
-            {
-              type: 'input_image',
-              image_url: context.imageDataUrl
-            }
-          ]
-        }],
-        max_output_tokens: 1200
-      })
-    });
+      contents: [{
+        parts: [
+          { text: prompt },
+          { inline_data: { mime_type: mimeType, data: base64Data } }
+        ]
+      }],
+      generationConfig: {
+        maxOutputTokens: 1200,
+        temperature: 0.2,
+        responseMimeType: 'application/json'
+      }
+    })
+  });
 
-    const data = await aiRes.json().catch(() => ({}));
-    if (aiRes.ok) return { ok: true, data, model };
-
-    lastError = { model, status: aiRes.status, error: data && data.error };
-    console.error('OpenAI vision model attempt failed', lastError);
-    if (!shouldTryNextModel(aiRes.status, data && data.error)) break;
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    console.error('Gemini vision API failed', res.status, data);
+    return { ok: false, status: res.status, error: data };
   }
-
-  return { ok: false, status: lastError && lastError.status, error: lastError };
+  return { ok: true, data };
 }
 
-function getModelCandidates() {
-  return [process.env.OPENAI_VISION_MODEL, process.env.OPENAI_MODEL, DEFAULT_MODEL, 'gpt-4.1-mini']
-    .map(model => String(model || '').trim())
-    .filter(Boolean)
-    .filter((model, index, arr) => arr.indexOf(model) === index);
+function extractGeminiText(data) {
+  const candidates = data && data.candidates;
+  if (!Array.isArray(candidates) || !candidates.length) return '';
+  const parts = candidates[0] && candidates[0].content && candidates[0].content.parts;
+  if (!Array.isArray(parts) || !parts.length) return '';
+  return parts.map(p => (p && p.text) || '').filter(Boolean).join('\n');
 }
 
-function shouldTryNextModel(status, error) {
-  const message = String((error && (error.message || error.code || error.type)) || '');
-  return status === 400 || status === 404 || /model|not found|does not exist|access|vision|image|modalit/i.test(message);
+function parseImageDataUrl(dataUrl) {
+  const match = String(dataUrl || '').match(/^data:(image\/[a-z]+);base64,(.+)$/i);
+  if (!match) return { mimeType: 'image/jpeg', base64Data: '' };
+  return { mimeType: match[1].toLowerCase(), base64Data: match[2] };
 }
 
 async function buildCultureDataCandidates(analysis, context) {
@@ -996,16 +997,6 @@ function parseRequestBody(body) {
     try { return JSON.parse(body); } catch (_) { return {}; }
   }
   return body;
-}
-
-function extractOpenAiText(data) {
-  if (typeof data.output_text === 'string') return data.output_text;
-  if (!Array.isArray(data.output)) return '';
-  return data.output
-    .flatMap(item => Array.isArray(item.content) ? item.content : [])
-    .map(part => part && (part.text || part.output_text || ''))
-    .filter(Boolean)
-    .join('\n');
 }
 
 function parseJsonText(text) {

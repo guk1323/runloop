@@ -3,3 +3,7 @@
 .vercel
 node_modules
 www
+*.mp4
+*.mov
+*.docx
+*.xlsx
