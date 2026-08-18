@@ -1,33 +1,95 @@
-# Runloop Project Notes
+# 개발 노트
 
-## Product Direction
+기능을 만들며 내린 결정과 그 이유를 기록한 문서입니다.
 
-- Runloop should stay primarily a personal running app: planning, running, saving, and reviewing my own runs are the core experience.
-- Social features are secondary. Shared local routes, likes, reviews, and hidden neighborhood paths should support the personal running flow, not replace it.
-- Future Apple Watch integration is a product goal. Plan data structures so records can later come from web, iPhone HealthKit, or Apple Watch workouts.
+---
 
-## Future Apple Watch / HealthKit Readiness
+## 방향 전환: Runloop → 오롯길
 
-- Keep run records source-aware: `web`, `web_gps`, `healthkit`, `apple_watch`.
-- Leave room for watch-derived fields: heart rate, cadence, elevation, active energy, GPS route, HealthKit workout id, and device source.
-- Web/PWA can validate the core UX, but real Apple Watch integration will require native iOS and watchOS apps.
+처음에는 개인 러닝 기록 앱(Runloop)으로 시작했습니다. GPS로 달린 경로를 기록하고, 코스를 저장하고, 다른 사람과 코스를 공유하는 구조였습니다.
 
-## iOS Release Path
+만들다 보니 러닝 기록 앱은 이미 좋은 것들이 많았고, 차별점이 없었습니다. 반면 코스를 짜다가 "이 길에 뭐가 있지?"를 알려주는 부분은 다른 앱에 없었습니다. **길 자체보다 길 위에서 만나는 것**으로 중심을 옮겼습니다.
 
-- Use Capacitor for the first App Store version and defer Apple Watch/native rewrite.
-- Release market is Korea-first. Do not trade away Korean map legibility for global map coverage in v1.
-- Web/PWA map quality target is Kakao Maps JS.
-- Kakao Maps JS inside iOS WebView on `capacitor://localhost` is blocked by domain mismatch, so the App Store build needs a native Korean map bridge.
-- First native map candidate: KakaoMapsSDK v2 for iOS to match the web map provider. Backup candidate: Naver Maps SDK for iOS if Kakao native integration is slower or route overlay controls are weaker.
-- Leaflet/Mapbox are temporary fallback/spike options only, not the intended release map for Korea.
-- Keep TMAP as the pedestrian route correction engine; the Korean map SDK should primarily render the base map, markers, and route overlays.
-- TMAP route/POI calls should move behind Vercel API routes before submission so the TMAP key is not shipped in the app bundle.
-- Current local setup has Node, npm, Xcode, iOS Simulator, and Capacitor iOS running. Next blocker is a native Korean map SDK key/setup for the iOS bridge.
+이 판단에 따라 제거한 것:
+- GPS 러닝 진행 화면 (실시간 페이스·시간 측정)
+- 소셜 기능 (코스 공유, 좋아요, 리뷰)
 
-## Recent Field Test Feedback
+남긴 것:
+- 코스 만들기 (걷는 길 안내는 여전히 필요)
+- HealthKit 연동 (걸음 수 기록은 문화 탐방에도 의미가 있음)
 
-- Drag-to-draw routes interferes with screen gestures. Prefer tap/point-based route creation.
-- Running screen controls should take less vertical space so the map is easier to see while moving.
-- Indoor GPS can be noisy. The app should expose GPS accuracy and avoid counting low-accuracy jumps as real distance.
-- Saved run records need a detail view, not only a list item.
-- Main navigation should use a bottom tab bar because Runloop is primarily a mobile/PWA experience.
+---
+
+## 지도 SDK 선택
+
+**결론: 카카오맵**
+
+한국 도보 경로에서 지도 가독성이 가장 중요하다고 봤습니다. 구글맵은 국내 데이터가 약하고, Mapbox·Leaflet은 한국 지형지물 표기가 부족합니다.
+
+문제는 Capacitor가 앱을 `capacitor://localhost`로 띄운다는 점이었습니다. 카카오맵 JS SDK는 등록된 도메인이 아니면 로딩을 거부합니다.
+
+시도한 것들:
+1. Leaflet 대체 어댑터 — 카카오맵이 실패하면 Leaflet으로 폴백. 임시방편이었고 지도 품질이 떨어져서 결국 제거
+2. **iOS 빌드가 원격 URL을 직접 로드** (`scripts/use-ios-remote-url.mjs`) — 채택
+
+원격 URL 방식은 앱 안에서도 실제 웹 도메인으로 동작하므로 카카오맵 도메인 검증을 통과합니다. 대신 오프라인에서 앱이 안 뜨는 트레이드오프가 있습니다.
+
+---
+
+## 경로 탐색은 TMAP
+
+지도는 카카오, 보행자 경로 계산은 TMAP으로 분리했습니다. TMAP 보행자 API가 실제 인도·횡단보도를 반영한 경로를 줍니다.
+
+사용자가 지도에서 지점을 찍으면 직선으로 잇는 게 아니라, TMAP에 보내 실제 걸을 수 있는 길로 보정합니다.
+
+---
+
+## API 키를 앱에 넣지 않기
+
+초기에는 TMAP·KTO 키가 클라이언트 JavaScript 안에 있었습니다. 앱 번들을 뜯으면 키가 그대로 나오는 구조였습니다.
+
+모든 외부 API 호출을 Vercel 서버리스 함수 뒤로 옮겼습니다. 앱은 우리 서버에만 요청하고, 실제 키는 서버 환경변수에만 존재합니다.
+
+여기에 더해:
+- **CORS 허용 출처 지정** — 우리 도메인과 Capacitor 스킴에서만 호출 가능
+- **호출 제한** — AI 기능은 분당 3회, 하루 20~30회로 제한 (비용 통제)
+
+---
+
+## 사진으로 문화재 찾기
+
+사진 한 장으로 "여기가 어디인지" 알려주는 기능입니다. 이름을 모르면 검색조차 못 하는 상황을 풀려고 만들었습니다.
+
+**1차 구조 (OpenAI)**: 사진 → 비전 모델이 텍스트로 설명 → 그 텍스트로 문화재 DB 키워드 검색 → 후보 반환
+
+정확도가 낮았습니다. 원인은 두 가지였습니다:
+- 모델 이름을 `gpt-5-mini`로 잘못 지정해 실제로는 폴백 모델이 돌고 있었음
+- 이미지를 텍스트로 바꾸는 과정에서 정보가 손실됨
+
+**2차 구조 (Gemini)**: Google Gemini Flash로 교체했습니다. 한국 문화유산에 대한 사전 지식이 더 좋아서, 유명한 곳은 텍스트 검색을 거치지 않고 바로 이름을 맞힙니다. 무료 한도(하루 1,500회)도 충분했습니다.
+
+---
+
+## 실내 GPS 처리 (러닝 화면 시절)
+
+실내에서는 GPS가 수십 미터씩 튑니다. 가만히 있어도 거리가 쌓이는 문제가 있어서, 좌표와 함께 오는 정확도(accuracy) 값을 기록하고 정확도가 낮을 때는 거리를 보수적으로 누적하도록 처리했습니다.
+
+이 로직은 GPS 러닝 진행 화면과 함께 제거됐습니다. 지금은 기록 상세 화면에서 당시 GPS 정확도를 보여주는 부분만 남아 있습니다.
+
+---
+
+## 현장 테스트에서 고친 것들
+
+실제로 밖에서 써보며 나온 문제들입니다.
+
+- **드래그로 경로 그리기가 화면 스크롤과 충돌** → 점을 찍는 방식으로 변경
+- **컨트롤이 화면을 너무 많이 차지** → 지도 영역을 넓히고 컨트롤 축소
+- **저장한 기록을 자세히 볼 수 없음** → 상세 화면 추가
+- **상단 네비게이션이 모바일에서 불편** → 하단 탭바로 변경
+
+---
+
+## 앞으로
+
+- Apple Watch 연동 — 기록 데이터에 `source` 필드(`web`, `healthkit`, `apple_watch`)를 미리 넣어둬서, 나중에 워치 기록이 들어와도 구조 변경 없이 받을 수 있습니다
+- 영어 버전 문구 다듬기 — 번역은 되어 있으나 자연스러움 개선 필요
